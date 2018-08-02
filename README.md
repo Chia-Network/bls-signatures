@@ -247,6 +247,11 @@ make test
 make bench
 ```
 
+### Link the library to use it
+```bash
+g++ -Ibls-signatures/lib/relic/include -Ibls-signatures/lib/relic/relic-target/include -Ibls-signatures/src  -L./bls-signatures -l bls yourfilename.cpp
+```
+
 ### Code style
 * Always use uint8_t for bytes
 * Use size_t for size variables
