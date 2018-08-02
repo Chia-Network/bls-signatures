@@ -128,8 +128,8 @@ void benchBatchVerification() {
 
 
     start = startStopwatch();
-    aggregate.DivideBy(cache);
-    assert(BLS::Verify(aggregate));
+    const BLSSignature aggSmall = aggregate.DivideBy(cache);
+    assert(BLS::Verify(aggSmall));
     endStopwatch(testName + " with cached verifications", start, numIters);
 }
 

@@ -77,7 +77,7 @@ void BLSSignature::SetAggregationInfo(
     aggregationInfo = newAggregationInfo;
 }
 
-void BLSSignature::DivideBy(vector<const BLSSignature> const &divisorSigs) {
+BLSSignature BLSSignature::DivideBy(vector<const BLSSignature> const &divisorSigs) const {
     bn_t ord;
     g2_get_ord(ord);
 
@@ -135,9 +135,11 @@ void BLSSignature::DivideBy(vector<const BLSSignature> const &divisorSigs) {
         g2_mul(newSig, newSig, quotient);
         g2_add(prod, prod, newSig);
     }
-    g2_add(sig, sig, prod);
-    CompressPoint(data, &sig);
-    aggregationInfo.RemoveEntries(messageHashesToRemove, pubKeysToRemove);
+    BLSSignature copy = *this;
+    g2_add(copy.sig, copy.sig, prod);
+    CompressPoint(copy.data, &copy.sig);
+    copy.aggregationInfo.RemoveEntries(messageHashesToRemove, pubKeysToRemove);
+    return copy;
 }
 
 const uint8_t& BLSSignature::operator[](size_t pos) const {

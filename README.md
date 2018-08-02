@@ -100,23 +100,26 @@ BLSSignature sig2 = sk2.Sign(msg, sizeof(msg));
 BLSSignature sig3 = sk3.Sign(msg2, sizeof(msg2));
 
 // They can be noninteractibly combined by anyone
-vector<BLSSignature> sigs = {sig1, sig2, sig3};
+vector<BLSSignature> sigs = {sig1, sig2};
 
 // Aggregation below can also be done by the verifier, to
 // make batch verification more efficient
 BLSSignature aggSig = BLS::AggregateSigs(sigs);
 
-aggSig.SetAggregationInfo(*aggSig.GetAggregationInfo());
-bool ok = BLS::Verify(aggSig);
+// Arbitrary trees of aggregates
+vector<BLSSignature> sigs2 = {aggSig, sig3};
+BLSSignature aggSig2 = BLS::AggregateSigs(sigs2);
+
+bool ok = BLS::Verify(aggSig2);
 
 // If you previously verified a signature, you can also divide
-// the aggregate signature by the signature you already verified
-bool ok2 = BLS::Verify(sig3);
-vector<const BLSSignature> cache = {sig3};
+// the aggregate signature by the signature you already verified.
+bool ok2 = BLS::Verify(aggSig);
+vector<const BLSSignature> cache = {aggSig};
 
-aggSig.DivideBy(cache);
+aggSig2 = aggSig2.DivideBy(cache);
 
-bool ok3 = BLS::Verify(aggSig));
+bool ok3 = BLS::Verify(aggSig2));
 ```
 
 #### Aggregate private keys
@@ -129,7 +132,7 @@ vector<const BLSPublicKey> pubKeys = {pk1, pk2};
 const BLSPrivateKey aggSk = BLS::AggregatePrivKeys(
         privateKeys, pubKeys, true);
 
-BLSSignature aggSig2 = aggSk.Sign(msg, sizeof(msg));
+BLSSignature aggSig3 = aggSk.Sign(msg, sizeof(msg));
 ```
 
 #### HD keys

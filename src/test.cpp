@@ -331,10 +331,12 @@ TEST_CASE("Signatures") {
         REQUIRE(BLS::Verify(aggSig));
 
         REQUIRE(aggSig.GetAggregationInfo()->GetPubKeys().size() == 3);
-        aggSig.DivideBy(divisorSigs);
-        REQUIRE(aggSig.GetAggregationInfo()->GetPubKeys().size() == 1);
+        const BLSSignature aggSig2 = aggSig.DivideBy(divisorSigs);
+        REQUIRE(aggSig.GetAggregationInfo()->GetPubKeys().size() == 3);
+        REQUIRE(aggSig2.GetAggregationInfo()->GetPubKeys().size() == 1);
 
         REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(BLS::Verify(aggSig2));
     }
 
     SECTION("Should divide aggregate signatures") {
@@ -385,7 +387,7 @@ TEST_CASE("Signatures") {
         REQUIRE(BLS::Verify(aggSigFinal));
         REQUIRE(aggSigFinal.GetAggregationInfo()->GetPubKeys().size() == 6);
         vector<const BLSSignature> divisorSigs = {aggSigL, sig6};
-        aggSigFinal.DivideBy(divisorSigs);
+        aggSigFinal = aggSigFinal.DivideBy(divisorSigs);
         REQUIRE(aggSigFinal.GetAggregationInfo()->GetPubKeys().size() == 3);
         REQUIRE(BLS::Verify(aggSigFinal));
 
@@ -395,7 +397,7 @@ TEST_CASE("Signatures") {
         BLSSignature aggSigFinal2 = BLS::AggregateSigs(sigsFinal2);
         vector<const BLSSignature> divisorSigs2 = {aggSigL};
         vector<const BLSSignature> divisorSigs3 = {sig6};
-        aggSigFinal2.DivideBy(divisorSigs3);
+        aggSigFinal2 = aggSigFinal2.DivideBy(divisorSigs3);
         REQUIRE_THROWS(aggSigFinal2.DivideBy(divisorSigs));
     }
 
@@ -537,8 +539,9 @@ TEST_CASE("Signatures") {
         // Verifier generates a batch signature for efficiency
         BLSSignature aggSig = BLS::AggregateSigs(sigs);
 
-        aggSig.DivideBy(cache);
+        const BLSSignature aggSig2 = aggSig.DivideBy(cache);
         REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(BLS::Verify(aggSig2));
     }
 
     SECTION("Should aggregate same message with agg sk") {

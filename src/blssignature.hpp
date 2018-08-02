@@ -45,6 +45,11 @@ class BLSSignature {
     // Copy constructor. Deep copies contents.
     BLSSignature(const BLSSignature &signature);
 
+    // Divides the aggregate signature (this) by a list of signatures.
+    // These divisors can be single or aggregate signatures, but all
+    // msg/pk pairs in these signatures must be distinct and unique.
+    BLSSignature DivideBy(vector<const BLSSignature> const &divisorSigs) const;
+
     // Gets the native relic point for this signature.
     void GetPoint(relic::g2_t output) const;
 
@@ -55,11 +60,6 @@ class BLSSignature {
     // describes how this signature was generated, and how it should
     // be verified.
     void SetAggregationInfo(const AggregationInfo &newAggregationInfo);
-
-    // Divides the aggregate signature (this) by a list of signatures.
-    // These divisors can be single or aggregate signatures, but all
-    // msg/pk pairs in these signatures must be distinct and unique.
-    void DivideBy(vector<const BLSSignature> const &divisorSigs);
 
     const uint8_t& operator[](size_t pos) const;
     const uint8_t* begin() const;
