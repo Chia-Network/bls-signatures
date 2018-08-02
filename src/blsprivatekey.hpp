@@ -44,6 +44,7 @@ class BLSPrivateKey {
     // Compare to different private key
     friend bool operator==(const BLSPrivateKey& a, const BLSPrivateKey& b);
     friend bool operator!=(const BLSPrivateKey& a, const BLSPrivateKey& b);
+    BLSPrivateKey& operator=(const BLSPrivateKey& rhs);
 
     // Simple read-only vector-like interface.
     size_t size() const;
