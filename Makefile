@@ -3,7 +3,7 @@ TARGET_BENCH ?= blsbench
 TMPFILE  = libbls1.a
 OUTPUTFILE  = libbls.a
 
-SRC_DIRS ?= ./include ./src ./lib/catch ./lib/libsodium-1.0.16/src/libsodium/include
+SRC_DIRS ?= ./src ./lib/relic/include ./lib/relic/relic-target/include ./lib/catch ./lib/libsodium-1.0.16/src/libsodium/include
 SRCS_BIN := $(shell find $(SRC_DIRS) -name *.c -or ! \( ! -name *.cpp -or -name test-bench.cpp  -or -name test.cpp \) )
 SRCS_TEST := $(shell find $(SRC_DIRS) -name *.c -or ! \( ! -name *.cpp -or -name test-bench.cpp \) )
 SRCS_BENCH := $(shell find $(SRC_DIRS) -name *.c -or ! \( ! -name *.cpp -or -name test.cpp \) )
