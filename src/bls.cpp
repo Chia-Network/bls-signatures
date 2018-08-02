@@ -183,7 +183,7 @@ BLSSignature BLS::AggregateSigs(
         }
     }
     BLSSignature ret = AggregateSigsInternal(sigs, pubKeys,
-                                                    messageHashes);
+                                             messageHashes);
     for (vector<const uint8_t*> group : messageHashes) {
         for (const uint8_t* messageHash : group) {
             delete[] messageHash;
@@ -193,11 +193,11 @@ BLSSignature BLS::AggregateSigs(
 }
 
 BLSSignature BLS::AggregateSigsInternal(
-        vector<const BLSSignature> const &sigsArg,
+        vector<const BLSSignature> const &sigs,
         vector<vector<const BLSPublicKey> > const &pubKeys,
         vector<vector<const uint8_t*> > const &messageHashes) {
     BLS::AssertInitialized();
-    if (sigsArg.size() != pubKeys.size()
+    if (sigs.size() != pubKeys.size()
         || pubKeys.size() != messageHashes.size()) {
         throw string("Lengths of vectors must match.");
     }
@@ -205,13 +205,6 @@ BLSSignature BLS::AggregateSigsInternal(
         if (pubKeys[i].size() != messageHashes[i].size()) {
             throw string("Lengths of vectors must match.");
         }
-    }
-
-    // Remove const
-    vector<const BLSSignature> sigs;
-    for (size_t i = 0; i < sigsArg.size(); i++) {
-        BLSSignature sigCp = sigsArg[i];
-        sigs.push_back(sigCp);
     }
 
     // Find colliding vectors, save colliding messages
@@ -270,7 +263,7 @@ BLSSignature BLS::AggregateSigsInternal(
             }
         }
 
-        // sort signatures by aggInfo
+        // Sort signatures by aggInfo
         vector<BLSSignature> sigsSorted;
         for (const BLSSignature &sig : collidingSigs) {
             sigsSorted.push_back(sig);
@@ -451,6 +444,7 @@ BLSPublicKey BLS::AggregatePubKeys(
         pubKeysSorted.push_back(pk);
     }
     sort(begin(pubKeysSorted), end(pubKeysSorted));
+
     bn_t* computedTs = new bn_t[pubKeysSorted.size()];
     if (secure) {
         for (size_t i = 0; i < pubKeysSorted.size(); i++) {
@@ -568,13 +562,15 @@ bool BLS::VerifyNative(
     g1_get_gen(g1);
 
     relic::gt_t target, candidate;
-    relic::gt_set_unity(candidate);
-    pc_map(target, g1, aggSig);  // = e(g1, aggsig)
 
-    // prod e(pubkey_i, hash_i);
+    // e(g1, aggsig)
+    pc_map(target, g1, aggSig);
+
+    // prod e(pubkey[i], hash[i]);
     // Performs pubKeys.size() pairings
     pc_map_sim(candidate, pubKeys, mappedHashes, len);
 
+    // e(g1, aggsig) =? prod e(pubkey[i], hash[i]);
     if (relic::fp12_cmp(target, candidate) != CMP_EQ ||
             relic::core_get()->code != STS_OK) {
         relic::core_get()->code = STS_OK;
@@ -596,12 +592,12 @@ void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
 void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
                       vector<BLSPublicKey> const &pubKeys) {
     uint8_t *pkBuffer = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE
-                                  * (pubKeys.size())];
+                                    * (pubKeys.size())];
     bn_t order;
 
     for (size_t i = 0; i < pubKeys.size(); i++) {
         pubKeys[i].Serialize(pkBuffer +
-                                i * BLSPublicKey::PUBLIC_KEY_SIZE);
+                             i * BLSPublicKey::PUBLIC_KEY_SIZE);
     }
 
     bn_new(order);
@@ -609,7 +605,7 @@ void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
 
     uint8_t pkHash[32];
     BLSUtil::Hash256(pkHash, pkBuffer,
-                        BLSPublicKey::PUBLIC_KEY_SIZE * pubKeys.size());
+                     BLSPublicKey::PUBLIC_KEY_SIZE * pubKeys.size());
     for (size_t i = 0; i < numOutputs; i++) {
         uint8_t hash[32];
         uint8_t buffer[4 + 32];

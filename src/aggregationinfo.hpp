@@ -53,7 +53,7 @@ class AggregationInfo {
 
     // Merge two AggregationInfo objects into one.
     static AggregationInfo MergeInfos(vector<const AggregationInfo>
-            const &infos);
+                                      const &infos);
 
     // Copy constructor, deep copies data.
     AggregationInfo(const AggregationInfo& info);
@@ -64,7 +64,7 @@ class AggregationInfo {
 
     // Public accessors
     void GetExponent(relic::bn_t *result, const uint8_t* messageHash,
-                             const BLSPublicKey &pubkey) const;
+                     const BLSPublicKey &pubkey) const;
     vector<const BLSPublicKey> GetPubKeys() const;
     vector<const uint8_t*> GetMessageHashes() const;
     bool Empty() const;
@@ -83,7 +83,7 @@ class AggregationInfo {
     // This is the data structure that maps messages (32) and
     // public keys (48) to exponents (bn_t*).
     typedef std::map<const uint8_t*, relic::bn_t*,
-                BLSUtil::BytesCompare80> AggregationTree;
+                     BLSUtil::BytesCompare80> AggregationTree;
 
     explicit AggregationInfo(const AggregationTree& tr,
                              vector<const uint8_t*> ms,
@@ -93,7 +93,7 @@ class AggregationInfo {
            sortedPubKeys(pks) {}
 
     static void InsertIntoTree(AggregationTree &tree,
-                        const AggregationInfo& info);
+                               const AggregationInfo& info);
     static void SortIntoVectors(vector<const uint8_t*> &ms,
                                 vector<const BLSPublicKey> &pks,
                                 const AggregationTree &tree);

@@ -32,7 +32,7 @@ uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
                   19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
                   82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22};
 
-BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed);
+BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, sizeof(seed));
 ```
 
 #### Serializing keys and signatures to bytes
@@ -80,8 +80,8 @@ BLSSignature sig1 = sk1.Sign(msg, sizeof(msg));
 BLSPublicKey pk2 = sk2.GetPublicKey();
 BLSSignature sig2 = sk2.Sign(msg, sizeof(msg));
 
-vector<BLSSignature> const sigs = {sig1, sig2};
-vector<BLSPublicKey> const pubKeys = {pk1, pk2};
+vector<const BLSSignature> sigs = {sig1, sig2};
+vector<const BLSPublicKey> pubKeys = {pk1, pk2};
 BLSSignature aggSig = BLS::AggregateSigs(sigs);
 
 // For same message, public keys can be aggregated into one
@@ -94,23 +94,13 @@ bool ok = BLS::Verify(aggSig);
 
 #### Aggregate signatures for non-identical messages
 ```c++
-// Generate first sig
-BLSPublicKey pk1 = sk1.GetPublicKey();
+// Generate the signatures
 BLSSignature sig1 = sk1.Sign(msg, sizeof(msg));
-
-// Generate second sig
-BLSPublicKey pk2 = sk2.GetPublicKey();
 BLSSignature sig2 = sk2.Sign(msg, sizeof(msg));
-
-// Generate third sig
-BLSPublicKey pk3 = sk3.GetPublicKey();
 BLSSignature sig3 = sk3.Sign(msg2, sizeof(msg2));
 
-
-vector<BLSSignature> const sigs = {sig1, sig2, sig3};
-vector<BLSPublicKey> const pubKeys = {pk1, pk2, pk3};
-vector<unt8_t*> messages = {msg, msg, msg2};
-vector<size_t> messageLens = {sizeof(msg), sizeof(msg), sizeof(msg2)};
+// They can be noninteractibly combined by anyone
+vector<BLSSignature> sigs = {sig1, sig2, sig3};
 
 // Aggregation below can also be done by the verifier, to
 // make batch verification more efficient
@@ -126,9 +116,7 @@ vector<const BLSSignature> cache = {sig3};
 
 aggSig.DivideBy(cache);
 
-aggSig.SetAggregationInfo(*aggSig.GetAggregationInfo());
 bool ok3 = BLS::Verify(aggSig));
-
 ```
 
 #### Aggregate private keys

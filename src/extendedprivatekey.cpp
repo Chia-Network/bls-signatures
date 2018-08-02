@@ -23,7 +23,7 @@
 using relic::bn_t;
 
 ExtendedPrivateKey ExtendedPrivateKey::FromSeed(const uint8_t* seed,
-        size_t seedLen) {
+                                                size_t seedLen) {
     BLS::AssertInitialized();
 
     // "BLS HD seed" in ascii
@@ -65,8 +65,7 @@ ExtendedPrivateKey ExtendedPrivateKey::FromSeed(const uint8_t* seed,
     return esk;
 }
 
-ExtendedPrivateKey ExtendedPrivateKey::FromBytes(
-        const uint8_t* serialized) {
+ExtendedPrivateKey ExtendedPrivateKey::FromBytes(const uint8_t* serialized) {
     BLS::AssertInitialized();
     uint32_t version = BLSUtil::FourBytesToInt(serialized);
     uint32_t depth = serialized[4];
@@ -134,7 +133,7 @@ ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
     bn_mod_basic(*newSk, *newSk, order);
 
     uint8_t* newSkBytes = BLSUtil::SecAlloc<uint8_t>(
-                    BLSPrivateKey::PRIVATE_KEY_SIZE);
+            BLSPrivateKey::PRIVATE_KEY_SIZE);
     bn_write_bin(newSkBytes, BLSPrivateKey::PRIVATE_KEY_SIZE, *newSk);
 
     ExtendedPrivateKey esk(version, depth + 1,

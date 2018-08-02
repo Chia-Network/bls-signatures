@@ -85,7 +85,7 @@ AggregationInfo AggregationInfo::FromVectors(
 
 // Merges multiple AggregationInfo objects together.
 AggregationInfo AggregationInfo::MergeInfos(vector<const AggregationInfo>
-            const &infos) {
+                                            const &infos) {
     // Find messages that are in multiple infos
     set<const uint8_t*, BLSUtil::BytesCompare32> messages;
     set<const uint8_t*, BLSUtil::BytesCompare32> collidingMessages;
@@ -95,7 +95,7 @@ AggregationInfo AggregationInfo::MergeInfos(vector<const AggregationInfo>
             auto lookupEntry = messages.find(mapEntry.first);
             auto lookupEntryLocal = messagesLocal.find(mapEntry.first);
             if (lookupEntryLocal == messagesLocal.end() &&
-                        lookupEntry != messages.end()) {
+                    lookupEntry != messages.end()) {
                 collidingMessages.insert(mapEntry.first);
             }
             messages.insert(mapEntry.first);
@@ -138,7 +138,7 @@ AggregationInfo::AggregationInfo(const AggregationInfo& info) {
 }
 
 void AggregationInfo::RemoveEntries(vector<const uint8_t*> const &messages,
-                                   vector<const BLSPublicKey> const &pubKeys) {
+                                    vector<const BLSPublicKey> const &pubKeys) {
     if (messages.size() != pubKeys.size() || messages.size() < 1) {
         throw std::string("Invalid entries");
     }
@@ -162,7 +162,7 @@ void AggregationInfo::RemoveEntries(vector<const uint8_t*> const &messages,
 }
 
 void AggregationInfo::GetExponent(bn_t *result, const uint8_t* messageHash,
-                                   const BLSPublicKey &pubKey) const {
+                                  const BLSPublicKey &pubKey) const {
     uint8_t mapKey[BLS::MESSAGE_HASH_LEN +
             BLSPublicKey::PUBLIC_KEY_SIZE];
     memcpy(mapKey, messageHash, BLS::MESSAGE_HASH_LEN);
@@ -278,8 +278,8 @@ void AggregationInfo::InsertIntoTree(AggregationInfo::AggregationTree &tree,
 // This method is used to keep an alternate copy of the tree
 // keys (hashes and pks) in sorted order, for easy access
 void AggregationInfo::SortIntoVectors(vector<const uint8_t*> &ms,
-                     vector<const BLSPublicKey> &pks,
-                     const AggregationInfo::AggregationTree &tree) {
+            vector<const BLSPublicKey> &pks,
+            const AggregationInfo::AggregationTree &tree) {
     for (auto &kv : tree) {
         ms.push_back(kv.first);
     }

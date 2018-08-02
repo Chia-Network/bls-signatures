@@ -20,9 +20,13 @@
 
 class BLSPrivateKey {
  public:
+    // Private keys are represented as 32 byte field elements. Note that
+    // not all 32 byte integers are valid keys, the private key must be
+    // less than the group order (which is in bls.hpp).
     static const size_t PRIVATE_KEY_SIZE = 32;
 
     // Generates a private key from a seed, similar to HD key generation
+    // (hashes the seed), and reduces it mod the group order.
     static BLSPrivateKey FromSeed(
             const uint8_t* seed, size_t seedLen);
 

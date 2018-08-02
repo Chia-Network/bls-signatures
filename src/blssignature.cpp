@@ -67,6 +67,7 @@ void BLSSignature::GetPoint(relic::g2_t output) const {
     BLS::AssertInitialized();
     *output = *sig;
 }
+
 const AggregationInfo* BLSSignature::GetAggregationInfo() const {
     return &aggregationInfo;
 }

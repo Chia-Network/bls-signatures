@@ -78,8 +78,8 @@ class ExtendedPrivateKey {
  private:
     // Private constructor, force use of static methods
     explicit ExtendedPrivateKey(const uint32_t v, const uint8_t d,
-                               const uint32_t pfp, const uint32_t cn,
-                               const ChainCode code, const BLSPrivateKey key)
+                                const uint32_t pfp, const uint32_t cn,
+                                const ChainCode code, const BLSPrivateKey key)
          : version(v),
           depth(d),
           parentFingerprint(pfp),
