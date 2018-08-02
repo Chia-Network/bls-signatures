@@ -102,6 +102,14 @@ bool operator!=(const BLSPrivateKey& a, const BLSPrivateKey& b) {
     return !(a == b);
 }
 
+BLSPrivateKey& BLSPrivateKey::operator=(const BLSPrivateKey &rhs) {
+    BLS::AssertInitialized();
+    BLSUtil::SecFree(keydata);
+    AllocateKeyData();
+    bn_copy(*keydata, *rhs.GetValue());
+    return *this;
+}
+
 size_t BLSPrivateKey::size() const {
     BLS::AssertInitialized();
     return BLSPrivateKey::PRIVATE_KEY_SIZE;
