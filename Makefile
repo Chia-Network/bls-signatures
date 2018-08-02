@@ -1,9 +1,12 @@
 TARGET_TEST ?= blstest
 TARGET_BENCH ?= blsbench
+OUTPUTFILE  = libbls.a
 
 SRC_DIRS ?= ./src ./lib/relic/include ./lib/relic/relic-target/include ./lib/catch ./lib/libsodium-1.0.16/src/libsodium/include
+SRCS_BIN := $(shell find $(SRC_DIRS) -name *.c -or ! \( ! -name *.cpp -or -name test-bench.cpp  -or -name test.cpp \) )
 SRCS_TEST := $(shell find $(SRC_DIRS) -name *.c -or ! \( ! -name *.cpp -or -name test-bench.cpp \) )
 SRCS_BENCH := $(shell find $(SRC_DIRS) -name *.c -or ! \( ! -name *.cpp -or -name test.cpp \) )
+OBJS_BIN := $(addsuffix .o,$(basename $(SRCS_BIN)))
 OBJS_TEST := $(addsuffix .o,$(basename $(SRCS_TEST)))
 OBJS_BENCH := $(addsuffix .o,$(basename $(SRCS_BENCH)))
 
@@ -12,9 +15,19 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 LIBS = -L ./lib/relic/relic-target/lib -lrelic_s \
        -L ./lib/libsodium-1.0.16/src/libsodium/.libs -lsodium -lsodium.23 \
 	   -L ./lib/gmp-6.1.2/.libs -lgmp
+LIBS2 = ./lib/relic/relic-target/lib/librelic_s.a \
+        ./lib/libsodium-1.0.16/src/libsodium/.libs/libsodium.a \
+	    ./lib/gmp-6.1.2/.libs/libgmp.a
 
 CPP = g++
 CPPFLAGS ?= $(INC_FLAGS) -std=c++11 -Wall -pedantic -g
+
+.PHONY: all
+all: $(OUTPUTFILE)
+
+$(OUTPUTFILE): $(OBJS_BIN)
+	ar ru $@ $^
+	ranlib $@
 
 $(TARGET_TEST): $(OBJS_TEST)
 	$(CPP) $(LIBS) -o $(TARGET_TEST) $(OBJS_TEST)

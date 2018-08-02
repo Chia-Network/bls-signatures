@@ -1,7 +1,6 @@
 ### BLS Signatures implementation
 
-NOTE: THIS LIBRARY IS NOT PRODUCTION READY AND MAY CONTAIN SERIOUS
-SECURITY VULNERABILITIES
+NOTE: THIS LIBRARY IS A DRAFT AND NOT REVIEWED FOR SECURITY
 
 Implements BLS signatures with aggregation as in Boneh, Drijvers, Neven 2018 [https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html], using
 relic toolkit for cryptographic primitives (pairings, EC, hashing).
@@ -18,21 +17,25 @@ Features:
 * Batch verification
 * Signature division (divide an aggregate by a previously verified signature)
 
-
 #### Import the library
 ```c++
 #include "bls.hpp"
 ```
 
-#### Creating a new key using a seed
+#### Creating keys and signatures
 ```c++
 // Example seed, used to generate private key. Always use
 // a secure RNG with sufficient entropy to generate a seed.
-uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
+uint8_t seed[] = {0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
                   19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
                   82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22};
 
 BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+BLSPublicKey pk = sk.GetPublicKey();
+
+uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
+
+BLSSignature sig = sk.Sign(msg, sizeof(msg));
 ```
 
 #### Serializing keys and signatures to bytes
@@ -49,21 +52,17 @@ sig.Serialize(sigBytes); // 96 bytes
 #### Loading keys and signatures from bytes
 ```c++
 // Takes array of 32 bytes
-BLSPrivateKey sk = BLSPrivateKey::FromBytes(skBytes);
+sk = BLSPrivateKey::FromBytes(skBytes);
 
 // Takes array of 48 bytes
-BLSPublicKey pk = BLSPublicKey::FromBytes(pkBytes);
+pk = BLSPublicKey::FromBytes(pkBytes);
 
 // Takes array of 96 bytes
-BLSSignature sig = BLSSignature::FromBytes(sigBytes);
+sig = BLSSignature::FromBytes(sigBytes);
 ```
 
-#### Signing and verifying
+#### Verifying signatures
 ```c++
-uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
-
-BLSSignature sig = sk.Sign(msg, sizeof(msg));
-
 // Add information required for verification, to sig object
 sig.SetAggregationInfo(AggregationInfo::FromMsg(pk, msg, sizeof(msg)));
 
@@ -72,8 +71,15 @@ bool ok = BLS::Verify(sig);
 
 #### Aggregate signatures for identical message
 ```c++
+seed[0] = 1;
+BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+seed[0] = 2;
+BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+seed[0] = 3;
+BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+
 // Generate first sig
-BLSPublicKey pk1 = sk1.GetPublicKey();
+BLSPublicKey pk2 = sk2.GetPublicKey();
 BLSSignature sig1 = sk1.Sign(msg, sizeof(msg));
 
 // Generate second sig
@@ -84,17 +90,15 @@ vector<const BLSSignature> sigs = {sig1, sig2};
 vector<const BLSPublicKey> pubKeys = {pk1, pk2};
 BLSSignature aggSig = BLS::AggregateSigs(sigs);
 
-// For same message, public keys can be aggregated into one
+// For same message, public keys can be aggregated into one.
+// The signature can be verified the same as a single signature,
+// using this public key.
 BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
-
-// Verify using one aggregated key and one aggregated message
-aggSig.SetAggregationInfo(AggregationInfo::FromMsg(aggPubKey, msg, sizeof(msg)));
-bool ok = BLS::Verify(aggSig);
 ```
 
 #### Aggregate signatures for non-identical messages
 ```c++
-// Generate the signatures
+// Generate the signatures, assuming we have 3 private keys
 BLSSignature sig1 = sk1.Sign(msg, sizeof(msg));
 BLSSignature sig2 = sk2.Sign(msg, sizeof(msg));
 BLSSignature sig3 = sk3.Sign(msg2, sizeof(msg2));
