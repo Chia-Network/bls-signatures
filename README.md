@@ -2,8 +2,8 @@
 
 NOTE: THIS LIBRARY IS A DRAFT AND NOT REVIEWED FOR SECURITY
 
-Implements BLS signatures with aggregation as in Boneh, Drijvers, Neven 2018 [https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html], using
-relic toolkit for cryptographic primitives (pairings, EC, hashing).
+Implements BLS signatures with aggregation as in [Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html), using
+[relic toolkit](https://github.com/relic-toolkit/relic) for cryptographic primitives (pairings, EC, hashing).
 The BLS12-381 curve is used.
 
 Features:
