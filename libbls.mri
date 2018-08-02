@@ -1,0 +1,6 @@
+create libbls.a
+addlib libbls1.a
+
+addlib libxyz.a
+save
+end

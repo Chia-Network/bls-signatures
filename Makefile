@@ -1,6 +1,6 @@
 TARGET_TEST ?= blstest
 TARGET_BENCH ?= blsbench
-OUTPUTFILE  = libbls.a
+OUTPUTFILE  = libbls1.a
 
 SRC_DIRS ?= ./src ./lib/relic/include ./lib/relic/relic-target/include ./lib/catch ./lib/libsodium-1.0.16/src/libsodium/include
 SRCS_BIN := $(shell find $(SRC_DIRS) -name *.c -or ! \( ! -name *.cpp -or -name test-bench.cpp  -or -name test.cpp \) )
@@ -26,8 +26,9 @@ CPPFLAGS ?= $(INC_FLAGS) -std=c++11 -Wall -pedantic -g
 all: $(OUTPUTFILE)
 
 $(OUTPUTFILE): $(OBJS_BIN)
-	ar ru $@ $^
+	ar rsv $@ $^
 	ranlib $@
+
 
 $(TARGET_TEST): $(OBJS_TEST)
 	$(CPP) $(LIBS) -o $(TARGET_TEST) $(OBJS_TEST)
