@@ -951,119 +951,118 @@ TEST_CASE("AggregationInfo") {
         REQUIRE(BLS::Verify(aggSig));
     }
     SECTION("README") {
+        // Example seed, used to generate private key. Always use
+        // a secure RNG with sufficient entropy to generate a seed.
+        uint8_t seed[] = {0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
+                        19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
+                        82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22};
 
-    // Example seed, used to generate private key. Always use
-    // a secure RNG with sufficient entropy to generate a seed.
-    uint8_t seed[] = {0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
-                    19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
-                    82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22};
+        BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+        BLSPublicKey pk = sk.GetPublicKey();
 
-    BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, sizeof(seed));
-    BLSPublicKey pk = sk.GetPublicKey();
+        uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
 
-    uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
+        BLSSignature sig = sk.Sign(msg, sizeof(msg));
 
-    BLSSignature sig = sk.Sign(msg, sizeof(msg));
+        uint8_t skBytes[BLSPrivateKey::PRIVATE_KEY_SIZE];  // 32 byte array
+        uint8_t pkBytes[BLSPublicKey::PUBLIC_KEY_SIZE];    // 48 byte array
+        uint8_t sigBytes[BLSSignature::SIGNATURE_SIZE];    // 96 byte array
 
-    uint8_t skBytes[BLSPrivateKey::PRIVATE_KEY_SIZE];  // 32 byte array
-    uint8_t pkBytes[BLSPublicKey::PUBLIC_KEY_SIZE];    // 48 byte array
-    uint8_t sigBytes[BLSSignature::SIGNATURE_SIZE];    // 96 byte array
+        sk.Serialize(skBytes);   // 32 bytes
+        pk.Serialize(pkBytes);   // 48 bytes
+        sig.Serialize(sigBytes); // 96 bytes
+        // Takes array of 32 bytes
+        sk = BLSPrivateKey::FromBytes(skBytes);
 
-    sk.Serialize(skBytes);   // 32 bytes
-    pk.Serialize(pkBytes);   // 48 bytes
-    sig.Serialize(sigBytes); // 96 bytes
-    // Takes array of 32 bytes
-    sk = BLSPrivateKey::FromBytes(skBytes);
+        // Takes array of 48 bytes
+        pk = BLSPublicKey::FromBytes(pkBytes);
 
-    // Takes array of 48 bytes
-    pk = BLSPublicKey::FromBytes(pkBytes);
+        // Takes array of 96 bytes
+        sig = BLSSignature::FromBytes(sigBytes);
+        // Add information required for verification, to sig object
+        sig.SetAggregationInfo(AggregationInfo::FromMsg(pk, msg, sizeof(msg)));
 
-    // Takes array of 96 bytes
-    sig = BLSSignature::FromBytes(sigBytes);
-    // Add information required for verification, to sig object
-    sig.SetAggregationInfo(AggregationInfo::FromMsg(pk, msg, sizeof(msg)));
+        bool ok = BLS::Verify(sig);
+        // Generate some more private keys
+        seed[0] = 1;
+        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+        seed[0] = 2;
+        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
 
-    bool ok = BLS::Verify(sig);
-    // Generate some more private keys
-    seed[0] = 1;
-    BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
-    seed[0] = 2;
-    BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+        // Generate first sig
+        BLSPublicKey pk1 = sk1.GetPublicKey();
+        BLSSignature sig1 = sk1.Sign(msg, sizeof(msg));
 
-    // Generate first sig
-    BLSPublicKey pk1 = sk1.GetPublicKey();
-    BLSSignature sig1 = sk1.Sign(msg, sizeof(msg));
+        // Generate second sig
+        BLSPublicKey pk2 = sk2.GetPublicKey();
+        BLSSignature sig2 = sk2.Sign(msg, sizeof(msg));
 
-    // Generate second sig
-    BLSPublicKey pk2 = sk2.GetPublicKey();
-    BLSSignature sig2 = sk2.Sign(msg, sizeof(msg));
+        // Aggregate signatures together
+        vector<const BLSSignature> sigs = {sig1, sig2};
+        BLSSignature aggSig = BLS::AggregateSigs(sigs);
 
-    // Aggregate signatures together
-    vector<const BLSSignature> sigs = {sig1, sig2};
-    BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        // For same message, public keys can be aggregated into one.
+        // The signature can be verified the same as a single signature,
+        // using this public key.
+        vector<const BLSPublicKey> pubKeys = {pk1, pk2};
+        BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
+        // Generate one more key
+        seed[0] = 3;
+        BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+        BLSPublicKey pk3 = sk3.GetPublicKey();
+        uint8_t msg2[] = {100, 2, 254, 88, 90, 45, 23};
 
-    // For same message, public keys can be aggregated into one.
-    // The signature can be verified the same as a single signature,
-    // using this public key.
-    vector<const BLSPublicKey> pubKeys = {pk1, pk2};
-    BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
-    // Generate one more key
-    seed[0] = 3;
-    BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
-    BLSPublicKey pk3 = sk3.GetPublicKey();
-    uint8_t msg2[] = {100, 2, 254, 88, 90, 45, 23};
+        // Generate the signatures, assuming we have 3 private keys
+        sig1 = sk1.Sign(msg, sizeof(msg));
+        sig2 = sk2.Sign(msg, sizeof(msg));
+        BLSSignature sig3 = sk3.Sign(msg2, sizeof(msg2));
 
-    // Generate the signatures, assuming we have 3 private keys
-    sig1 = sk1.Sign(msg, sizeof(msg));
-    sig2 = sk2.Sign(msg, sizeof(msg));
-    BLSSignature sig3 = sk3.Sign(msg2, sizeof(msg2));
+        // They can be noninteractively combined by anyone
+        // Aggregation below can also be done by the verifier, to
+        // make batch verification more efficient
+        vector<const BLSSignature> sigsL = {sig1, sig2};
+        BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
 
-    // They can be noninteractively combined by anyone
-    // Aggregation below can also be done by the verifier, to
-    // make batch verification more efficient
-    vector<const BLSSignature> sigsL = {sig1, sig2};
-    BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
+        // Arbitrary trees of aggregates
+        vector<const BLSSignature> sigsFinal = {aggSigL, sig3};
+        BLSSignature aggSigFinal = BLS::AggregateSigs(sigsFinal);
 
-    // Arbitrary trees of aggregates
-    vector<const BLSSignature> sigsFinal = {aggSigL, sig3};
-    BLSSignature aggSigFinal = BLS::AggregateSigs(sigsFinal);
+        // Serialize the final signature
+        aggSigFinal.Serialize(sigBytes);
+        // Deserialize aggregate signature
+        aggSigFinal = BLSSignature::FromBytes(sigBytes);
 
-    // Serialize the final signature
-    aggSigFinal.Serialize(sigBytes);
-    // Deserialize aggregate signature
-    aggSigFinal = BLSSignature::FromBytes(sigBytes);
+        // Create aggregation information (or deserialize it)
+        AggregationInfo a1 = AggregationInfo::FromMsg(pk1, msg, sizeof(msg));
+        AggregationInfo a2 = AggregationInfo::FromMsg(pk2, msg, sizeof(msg));
+        AggregationInfo a3 = AggregationInfo::FromMsg(pk3, msg2, sizeof(msg2));
+        vector<const AggregationInfo> infos = {a1, a2};
+        AggregationInfo a1a2 = AggregationInfo::MergeInfos(infos);
+        vector<const AggregationInfo> infos2 = {a1a2, a3};
+        AggregationInfo aFinal = AggregationInfo::MergeInfos(infos2);
 
-    // Create aggregation information (or deserialize it)
-    AggregationInfo a1 = AggregationInfo::FromMsg(pk1, msg, sizeof(msg));
-    AggregationInfo a2 = AggregationInfo::FromMsg(pk2, msg, sizeof(msg));
-    AggregationInfo a3 = AggregationInfo::FromMsg(pk3, msg2, sizeof(msg2));
-    vector<const AggregationInfo> infos = {a1, a2};
-    AggregationInfo a1a2 = AggregationInfo::MergeInfos(infos);
-    vector<const AggregationInfo> infos2 = {a1a2, a3};
-    AggregationInfo aFinal = AggregationInfo::MergeInfos(infos2);
+        // Verify final signature using the aggregation info
+        aggSigFinal.SetAggregationInfo(aFinal);
+        ok = BLS::Verify(aggSigFinal);
 
-    // Verify final signature using the aggregation info
-    aggSigFinal.SetAggregationInfo(aFinal);
-    ok = BLS::Verify(aggSigFinal);
+        // If you previously verified a signature, you can also divide
+        // the aggregate signature by the signature you already verified.
+        ok = BLS::Verify(aggSigL);
+        vector<const BLSSignature> cache = {aggSigL};
+        aggSigFinal = aggSigFinal.DivideBy(cache);
 
-    // If you previously verified a signature, you can also divide
-    // the aggregate signature by the signature you already verified.
-    ok = BLS::Verify(aggSigL);
-    vector<const BLSSignature> cache = {aggSigL};
-    aggSigFinal = aggSigFinal.DivideBy(cache);
+        // Final verification is now more efficient
+        ok = BLS::Verify(aggSigFinal);
 
-    // Final verification is now more efficient
-    ok = BLS::Verify(aggSigFinal);
+        vector<const BLSPrivateKey> privateKeysList = {sk1, sk2};
+        vector<const BLSPublicKey> pubKeysList = {pk1, pk2};
 
-    vector<const BLSPrivateKey> privateKeysList = {sk1, sk2};
-    vector<const BLSPublicKey> pubKeysList = {pk1, pk2};
+        // Create an aggregate private key, that can generate
+        // aggregate signatures
+        const BLSPrivateKey aggSk = BLS::AggregatePrivKeys(
+                privateKeysList, pubKeysList, true);
 
-    // Create an aggregate private key, that can generate
-    // aggregate signatures
-    const BLSPrivateKey aggSk = BLS::AggregatePrivKeys(
-            privateKeysList, pubKeysList, true);
-
-    BLSSignature aggSig3 = aggSk.Sign(msg, sizeof(msg));
+        BLSSignature aggSig3 = aggSk.Sign(msg, sizeof(msg));
     }
 }
 
