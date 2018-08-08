@@ -21,6 +21,9 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+#define STR(x) #x
+#define ASSERT(x) if (!(x)) { printf("BLS assertion failed: (%s), function %s, file %s, line %d.\n", STR(x), __PRETTY_FUNCTION__, __FILE__, __LINE__); abort(); }
+
 std::chrono::time_point<std::chrono::steady_clock> startStopwatch() {
     return std::chrono::steady_clock::now();
 }

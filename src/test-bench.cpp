@@ -21,7 +21,6 @@ using std::vector;
 using std::cout;
 using std::endl;
 
-
 void benchSigs() {
     string testName = "Sigining";
     double numIters = 1000;
@@ -59,7 +58,8 @@ void benchVerification() {
     for (size_t i = 0; i < numIters; i++) {
         uint8_t message[4];
         BLSUtil::IntToFourBytes(message, i);
-        assert(BLS::Verify(sigs[i]));
+        bool ok = BLS::Verify(sigs[i]);
+        ASSERT(ok);
     }
     endStopwatch(testName, start, numIters);
 }
@@ -69,8 +69,8 @@ void benchAggregateSigsSecure() {
     double numIters = 1000;
 
     vector<BLSPrivateKey> sks;
-    vector<const BLSPublicKey> pks;
-    vector<const BLSSignature> sigs;
+    vector<BLSPublicKey> pks;
+    vector<BLSSignature> sigs;
 
     for (int i = 0; i < numIters; i++) {
         uint8_t seed[32];
@@ -95,7 +95,7 @@ void benchAggregateSigsSecure() {
     auto start3 = startStopwatch();
     aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
             aggPubKey, message1, sizeof(message1)));
-    assert(BLS::Verify(aggSig));
+    ASSERT(BLS::Verify(aggSig));
     endStopwatch("Verify agg signature, same message", start3, numIters);
 }
 
@@ -103,8 +103,8 @@ void benchBatchVerification() {
     string testName = "Batch verification";
     double numIters = 1000;
 
-    vector<const BLSSignature> sigs;
-    vector<const BLSSignature> cache;
+    vector<BLSSignature> sigs;
+    vector<BLSSignature> cache;
     for (size_t i = 0; i < numIters; i++) {
         uint8_t seed[32];
         getRandomSeed(seed);
@@ -123,20 +123,20 @@ void benchBatchVerification() {
     BLSSignature aggregate = BLS::AggregateSigs(sigs);
 
     auto start = startStopwatch();
-    assert(BLS::Verify(aggregate));
+    ASSERT(BLS::Verify(aggregate));
     endStopwatch(testName, start, numIters);
 
 
     start = startStopwatch();
     const BLSSignature aggSmall = aggregate.DivideBy(cache);
-    assert(BLS::Verify(aggSmall));
+    ASSERT(BLS::Verify(aggSmall));
     endStopwatch(testName + " with cached verifications", start, numIters);
 }
 
 void benchAggregateSigsSimple() {
     double numIters = 1000;
     vector<BLSPrivateKey> sks;
-    vector<const BLSSignature> sigs;
+    vector<BLSSignature> sigs;
 
     for (int i = 0; i < numIters; i++) {
         uint8_t* message = new uint8_t[48];
@@ -156,7 +156,7 @@ void benchAggregateSigsSimple() {
                  start, numIters);
 
     auto start2 = startStopwatch();
-    assert(BLS::Verify(aggSig));
+    ASSERT(BLS::Verify(aggSig));
     endStopwatch("Verify aggregate signature, distinct messages",
                  start2, numIters);
 }
@@ -174,14 +174,14 @@ void benchDegenerateTree() {
         getRandomSeed(seed);
         BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
         BLSSignature sig = sk.Sign(message1, sizeof(message1));
-        vector<const BLSSignature> sigs = {aggSig, sig};
+        vector<BLSSignature> sigs = {aggSig, sig};
         aggSig = BLS::AggregateSigs(sigs);
     }
     endStopwatch("Generate degenerate aggSig tree",
                  start, numIters);
 
     start = startStopwatch();
-    assert(BLS::Verify(aggSig));
+    ASSERT(BLS::Verify(aggSig));
     endStopwatch("Verify degenerate aggSig tree",
                  start, numIters);
 }

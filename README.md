@@ -16,6 +16,7 @@ Features:
 * Key and signature serialization
 * Batch verification
 * Signature division (divide an aggregate by a previously verified signature)
+* Python bindings
 
 #### Import the library
 ```c++
@@ -86,13 +87,13 @@ BLSPublicKey pk2 = sk2.GetPublicKey();
 BLSSignature sig2 = sk2.Sign(msg, sizeof(msg));
 
 // Aggregate signatures together
-vector<const BLSSignature> sigs = {sig1, sig2};
+vector<BLSSignature> sigs = {sig1, sig2};
 BLSSignature aggSig = BLS::AggregateSigs(sigs);
 
 // For same message, public keys can be aggregated into one.
 // The signature can be verified the same as a single signature,
 // using this public key.
-vector<const BLSPublicKey> pubKeys = {pk1, pk2};
+vector<BLSPublicKey> pubKeys = {pk1, pk2};
 BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
 ```
 
@@ -112,11 +113,11 @@ BLSSignature sig3 = sk3.Sign(msg2, sizeof(msg2));
 // They can be noninteractively combined by anyone
 // Aggregation below can also be done by the verifier, to
 // make batch verification more efficient
-vector<const BLSSignature> sigsL = {sig1, sig2};
+vector<BLSSignature> sigsL = {sig1, sig2};
 BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
 
 // Arbitrary trees of aggregates
-vector<const BLSSignature> sigsFinal = {aggSigL, sig3};
+vector<BLSSignature> sigsFinal = {aggSigL, sig3};
 BLSSignature aggSigFinal = BLS::AggregateSigs(sigsFinal);
 
 // Serialize the final signature
@@ -132,9 +133,9 @@ aggSigFinal = BLSSignature::FromBytes(sigBytes);
 AggregationInfo a1 = AggregationInfo::FromMsg(pk1, msg, sizeof(msg));
 AggregationInfo a2 = AggregationInfo::FromMsg(pk2, msg, sizeof(msg));
 AggregationInfo a3 = AggregationInfo::FromMsg(pk3, msg2, sizeof(msg2));
-vector<const AggregationInfo> infos = {a1, a2};
+vector<AggregationInfo> infos = {a1, a2};
 AggregationInfo a1a2 = AggregationInfo::MergeInfos(infos);
-vector<const AggregationInfo> infos2 = {a1a2, a3};
+vector<AggregationInfo> infos2 = {a1a2, a3};
 AggregationInfo aFinal = AggregationInfo::MergeInfos(infos2);
 
 // Verify final signature using the aggregation info
@@ -144,8 +145,8 @@ ok = BLS::Verify(aggSigFinal);
 // If you previously verified a signature, you can also divide
 // the aggregate signature by the signature you already verified.
 ok = BLS::Verify(aggSigL);
-vector<const BLSSignature> cache = {aggSigL};
-aggSigFinal = aggSig2.DivideBy(cache);
+vector<BLSSignature> cache = {aggSigL};
+aggSigFinal = aggSigFinal.DivideBy(cache);
 
 // Final verification is now more efficient
 ok = BLS::Verify(aggSigFinal);
@@ -153,8 +154,8 @@ ok = BLS::Verify(aggSigFinal);
 
 #### Aggregate private keys
 ```c++
-vector<const BLSPrivateKey> privateKeysList = {sk1, sk2};
-vector<const BLSPublicKey> pubKeysList = {pk1, pk2};
+vector<BLSPrivateKey> privateKeysList = {sk1, sk2};
+vector<BLSPublicKey> pubKeysList = {pk1, pk2};
 
 // Create an aggregate private key, that can generate
 // aggregate signatures
@@ -177,10 +178,10 @@ ExtendedPrivateKey esk = ExtendedPrivateKey::FromSeed(
 ExtendedPublicKey epk = esk.GetExtendedPublicKey();
 
 // Use i >= 2^31 for hardened keys
-ExtendedPrivateKey pkChild = esk.PrivateChild(0)
+ExtendedPrivateKey skChild = esk.PrivateChild(0)
                                 .PrivateChild(5);
 
-ExtendedPublicKey skChild = epk.PublicChild(0)
+ExtendedPublicKey pkChild = epk.PublicChild(0)
                                .PublicChild(5);
 
 // Serialize extended keys
@@ -191,68 +192,36 @@ pkChild.Serialize(buffer1);
 skChild.Serialize(buffer2);
 ```
 
-
-### Build Dependencies
-#### GMP (optional, LGPL v3)
-GMP can be used to speed up bignum operations.
+### Build
+Cmake and a c++ compiler are required for building.
 ```bash
-cd lib
-gunzip -c gmp-6.1.2.tar.gz | tar xopf -
-cd gmp-6.1.2
-make clean
-./configure
-make && make check
-make install
-```
-
-#### Relic (LGPL v2.1)
-If using GMP, replace easy with gmp.
-Changes performed: Added config files for Chia, and added gmp include in relic.h.
-Allow passing in hash to ep2_map.
-
-```bash
-cd lib
-gunzip -c catch.tar.gz | tar xopf -
-gunzip -c relic.tar.gz | tar xopf -
-cd relic
-rm CMakeCache.txt
-rm -rf relic-target
-mkdir -p relic-target
-cd relic-target
-../preset/chia-easy-linux.sh ../    (or chia-easy-mac if running on a mac)
-make -j 6
-```
-
-#### Libsodium
-Libsodium is used for allocating memory for private keys.
-```bash
-cd lib
-gunzip -c libsodium-1.0.16.tar.gz | tar xopf -
-cd libsodium-1.0.16
-./configure
-make && make check
-make install
-```
-
-### Make Project
-```bash
-make
+cd build
+cmake ../
+cmake --build . -- -j 6
 ```
 
 ### Run tests
 ```bash
-make test
+./build/runtest
 ```
 
 ### Run benchmarks
 ```bash
-make bench
+./build/runbench
 ```
 
 ### Link the library to use it
 ```bash
 g++ -Ibls-signatures/lib/relic/include -Ibls-signatures/lib/relic/relic-target/include -Ibls-signatures/src  -L./bls-signatures -l bls yourfilename.cpp
 ```
+
+### Notes on dependencies
+Changes performed to relic: Added config files for Chia, and added gmp include in relic.h.
+Allow passing in hash to ep2_map. Custom inversion function. Note: relic is an LGPL 2.1 dependency.
+
+Libsodium and GMP are optional dependencies: libsodium gives secure memory allocation,
+and GMP speeds up the library by ~ 3x. To install them, unzip the directories in contrib,
+and follow the instructions for each repo.
 
 ### Code style
 * Always use uint8_t for bytes
@@ -269,7 +238,6 @@ g++ -Ibls-signatures/lib/relic/include -Ibls-signatures/lib/relic/relic-target/i
 * Secure allocation during signing, key derivation
 * Threshold signatures
 * Full python implementation
-* Python bindings
 * Remove unnecessary dependency files
 * Constant time and side channel attacks
 * Adaptor signatures / Blind signatures

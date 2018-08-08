@@ -16,6 +16,7 @@
 #define SRC_EXTENDEDPRIVATEKEY_CPP_
 
 #include <string>
+#include <cstring>
 #include "extendedprivatekey.hpp"
 #include "blsutil.hpp"
 #include "bls.hpp"
@@ -30,7 +31,7 @@ ExtendedPrivateKey ExtendedPrivateKey::FromSeed(const uint8_t* seed,
     const uint8_t prefix[] = {66, 76, 83, 32, 72, 68, 32, 115, 101, 101, 100};
 
     uint8_t* hashInput = BLSUtil::SecAlloc<uint8_t>(seedLen + 1);
-    memcpy(hashInput, seed, seedLen);
+    std::memcpy(hashInput, seed, seedLen);
 
     // 32 bytes for secret key, and 32 bytes for chaincode
     uint8_t* ILeft = BLSUtil::SecAlloc<uint8_t>(

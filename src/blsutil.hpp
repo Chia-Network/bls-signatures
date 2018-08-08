@@ -19,11 +19,15 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <cstdlib>
 
-namespace sodium {
+#if BLSALLOC
+namespace libsodium {
     #include "sodium/utils.h"
     #include "sodium/core.h"
 }
+#endif
+
 namespace relic {
     #include "relic.h"
     #include "relic_test.h"
@@ -70,15 +74,23 @@ class BLSUtil {
      */
     template<class T>
     static T* SecAlloc(size_t numTs) {
-        return static_cast<T*>(sodium::sodium_malloc
+#if BLSALLOC
+        return static_cast<T*>(libsodium::sodium_malloc
                 (sizeof(T) * numTs));
+#else
+        return static_cast<T*>(malloc(sizeof(T) * numTs));
+#endif
     }
 
     /*
      * Frees memory allocated using SecAlloc.
      */
     static void SecFree(void* ptr) {
-        sodium::sodium_free(ptr);
+#if BLSALLOC
+        libsodium::sodium_free(ptr);
+#else
+        free(ptr);
+#endif
     }
 
     /*

@@ -14,6 +14,7 @@
 
 #include <set>
 #include <string>
+#include <cstring>
 #include <algorithm>
 
 #include "bls.hpp"
@@ -52,10 +53,12 @@ bool BLS::Init() {
         std::cout << "ep_param_set_any_pairf() failed";
         return false;
     }
+#if BLSALLOC
     if (sodium::sodium_init() < 0) {
         std::cout << "libsodium init failed";
         return false;
     }
+#endif
     return true;
 }
 
@@ -63,16 +66,18 @@ void BLS::AssertInitialized() {
     if (!relic::core_get()) {
         throw string("Library not initialized properly. Call BLS::Init()");
     }
+#if BLSALLOC
     if (sodium::sodium_init() < 0) {
         throw string("Libsodium initialization failed.");
     }
+#endif
 }
 
 void BLS::Clean() {
     relic::core_clean();
 }
 
-BLSSignature BLS::AggregateSigsSimple(vector<const BLSSignature> const &sigs) {
+BLSSignature BLS::AggregateSigsSimple(vector<BLSSignature> const &sigs) {
     if (sigs.size() < 1) {
         throw string("Must have atleast one signatures and key");
     }
@@ -93,9 +98,9 @@ BLSSignature BLS::AggregateSigsSimple(vector<const BLSSignature> const &sigs) {
 }
 
 BLSSignature BLS::AggregateSigsSecure(
-        vector<const BLSSignature> const &sigs,
-        vector<const BLSPublicKey> const &pubKeys,
-        vector<const uint8_t*> const &messageHashes) {
+        vector<BLSSignature> const &sigs,
+        vector<BLSPublicKey> const &pubKeys,
+        vector<uint8_t*> const &messageHashes) {
     if (sigs.size() != pubKeys.size() || sigs.size() != messageHashes.size()
         || sigs.size() < 1) {
         throw string("Must have atleast one signature, key, and message");
@@ -108,15 +113,15 @@ BLSSignature BLS::AggregateSigsSecure(
     for (size_t i = 0; i < pubKeys.size(); i++) {
         uint8_t* sortKey = new uint8_t[MESSAGE_HASH_LEN
                                        + BLSPublicKey::PUBLIC_KEY_SIZE];
-        memcpy(sortKey, messageHashes[i], MESSAGE_HASH_LEN);
+        std::memcpy(sortKey, messageHashes[i], MESSAGE_HASH_LEN);
         pubKeys[i].Serialize(sortKey + BLS::MESSAGE_HASH_LEN);
         sigsMap.insert(std::make_pair(sortKey, sigs[i]));
         pkMap.insert(std::make_pair(sortKey, pubKeys[i]));
         sortKeysSorted.push_back(sortKey);
     }
     sort(begin(sortKeysSorted), end(sortKeysSorted), BLSUtil::BytesCompare80());
-    vector<const BLSSignature> sigsSorted;
-    vector<const BLSPublicKey> pubKeysSorted;
+    vector<BLSSignature> sigsSorted;
+    vector<BLSPublicKey> pubKeysSorted;
 
     for (const uint8_t* k : sortKeysSorted) {
         sigsSorted.push_back(sigsMap.at(k));
@@ -147,10 +152,10 @@ BLSSignature BLS::AggregateSigsSecure(
 }
 
 BLSSignature BLS::AggregateSigs(
-        vector<const BLSSignature> const &sigs) {
+        vector<BLSSignature> const &sigs) {
     BLS::AssertInitialized();
-    vector<vector<const BLSPublicKey> > pubKeys;
-    vector<vector<const uint8_t*> > messageHashes;
+    vector<vector<BLSPublicKey> > pubKeys;
+    vector<vector<uint8_t*> > messageHashes;
 
     // Extracts the public keys and messages from the aggregation info
     for (const BLSSignature &sig : sigs) {
@@ -158,16 +163,16 @@ BLSSignature BLS::AggregateSigs(
         if (info.Empty()) {
             throw string("Signature must include aggregation info.");
         }
-        vector<const BLSPublicKey> infoPubKeys = info.GetPubKeys();
-        vector<const uint8_t*> infoMessageHashes = info.GetMessageHashes();
+        vector<BLSPublicKey> infoPubKeys = info.GetPubKeys();
+        vector<uint8_t*> infoMessageHashes = info.GetMessageHashes();
         if (infoPubKeys.size() < 1 || infoMessageHashes.size() < 1) {
             throw string("AggregationInfo must have items");
         }
         pubKeys.push_back(infoPubKeys);
-        vector<const uint8_t*> currMessageHashes;
+        vector<uint8_t*> currMessageHashes;
         for (const uint8_t* infoMessageHash : infoMessageHashes) {
             uint8_t* messageHash = new uint8_t[BLS::MESSAGE_HASH_LEN];
-            memcpy(messageHash, infoMessageHash, BLS::MESSAGE_HASH_LEN);
+            std::memcpy(messageHash, infoMessageHash, BLS::MESSAGE_HASH_LEN);
             currMessageHashes.push_back(messageHash);
         }
         messageHashes.push_back(currMessageHashes);
@@ -184,7 +189,7 @@ BLSSignature BLS::AggregateSigs(
     }
     BLSSignature ret = AggregateSigsInternal(sigs, pubKeys,
                                              messageHashes);
-    for (vector<const uint8_t*> group : messageHashes) {
+    for (vector<uint8_t*> group : messageHashes) {
         for (const uint8_t* messageHash : group) {
             delete[] messageHash;
         }
@@ -193,9 +198,9 @@ BLSSignature BLS::AggregateSigs(
 }
 
 BLSSignature BLS::AggregateSigsInternal(
-        vector<const BLSSignature> const &sigs,
-        vector<vector<const BLSPublicKey> > const &pubKeys,
-        vector<vector<const uint8_t*> > const &messageHashes) {
+        vector<BLSSignature> const &sigs,
+        vector<vector<BLSPublicKey> > const &pubKeys,
+        vector<vector<uint8_t*> > const &messageHashes) {
     BLS::AssertInitialized();
     if (sigs.size() != pubKeys.size()
         || pubKeys.size() != messageHashes.size()) {
@@ -230,7 +235,7 @@ BLSSignature BLS::AggregateSigsInternal(
         // or insecure signature is given, and invalid signature will
         // be created. We don't verify for performance reasons.
         BLSSignature ret = AggregateSigsSimple(sigs);
-        vector<const AggregationInfo> infos;
+        vector<AggregationInfo> infos;
         for (const BLSSignature &sig : sigs) {
             infos.push_back(*sig.GetAggregationInfo());
         }
@@ -241,10 +246,10 @@ BLSSignature BLS::AggregateSigsInternal(
         // to use a secure form of aggregation. First we find which
         // groups collide, and securely aggregate these. Then, we
         // use simple aggregation at the end.
-        vector<const BLSSignature > collidingSigs;
-        vector<const BLSSignature> nonCollidingSigs;
-        vector<vector<const uint8_t*> > collidingMessageHashes;
-        vector<vector<const BLSPublicKey> > collidingPks;
+        vector<BLSSignature > collidingSigs;
+        vector<BLSSignature> nonCollidingSigs;
+        vector<vector<uint8_t*> > collidingMessageHashes;
+        vector<vector<BLSPublicKey> > collidingPks;
 
         for (size_t i = 0; i < sigs.size(); i++) {
             bool groupCollides = false;
@@ -272,12 +277,12 @@ BLSSignature BLS::AggregateSigsInternal(
                   [](const BLSSignature &a, const BLSSignature &b) -> bool {
             return *a.GetAggregationInfo() < *b.GetAggregationInfo();
         });
-        vector<const uint8_t*> sortKeysSorted;
+        vector<uint8_t*> sortKeysSorted;
         for (size_t i = 0; i < collidingPks.size(); i++) {
             for (size_t j = 0; j < collidingPks[i].size(); j++) {
                 uint8_t* sortKey = new uint8_t[MESSAGE_HASH_LEN
                                             + BLSPublicKey::PUBLIC_KEY_SIZE];
-                memcpy(sortKey, collidingMessageHashes[i][j], MESSAGE_HASH_LEN);
+                std::memcpy(sortKey, collidingMessageHashes[i][j], MESSAGE_HASH_LEN);
                 collidingPks[i][j].Serialize(sortKey + BLS::MESSAGE_HASH_LEN);
                 sortKeysSorted.push_back(sortKey);
             }
@@ -286,7 +291,7 @@ BLSSignature BLS::AggregateSigsInternal(
         sort(begin(sortKeysSorted), end(sortKeysSorted),
              BLSUtil::BytesCompare80());
 
-        vector<const BLSPublicKey> pubKeysSorted;
+        vector<BLSPublicKey> pubKeysSorted;
         for (const uint8_t* sortKey : sortKeysSorted) {
             pubKeysSorted.push_back(BLSPublicKey::FromBytes(sortKey
                     + BLS::MESSAGE_HASH_LEN));
@@ -301,7 +306,7 @@ BLSSignature BLS::AggregateSigsInternal(
         // sigComp, and multiply all together into aggSig
         g2_t sig, sigComp, aggSig;
         g2_set_infty(aggSig);
-        vector<const AggregationInfo> infos;
+        vector<AggregationInfo> infos;
 
         // Also accumulates aggregation info for each signature
         for (size_t i = 0; i < sigsSorted.size(); i++) {
@@ -346,16 +351,16 @@ bool BLS::Verify(const BLSSignature &aggSig) {
     if (aggSig.GetAggregationInfo()->Empty()) {
         return false;
     }
-    vector<const BLSPublicKey> pubKeys = aggSig.GetAggregationInfo()
+    vector<BLSPublicKey> pubKeys = aggSig.GetAggregationInfo()
             ->GetPubKeys();
-    vector<const uint8_t*> messageHashes = aggSig.GetAggregationInfo()
+    vector<uint8_t*> messageHashes = aggSig.GetAggregationInfo()
             ->GetMessageHashes();
     if (pubKeys.size() != messageHashes.size()) {
         return false;
     }
     // Group all of the messages that are idential, with the
     // pubkeys and signatures, the maps's key is the message hash
-    map<const uint8_t*, vector<const BLSPublicKey>,
+    map<uint8_t*, vector<BLSPublicKey>,
         BLSUtil::BytesCompare32> hashToPubKeys;
 
     for (size_t i = 0; i < messageHashes.size(); i++) {
@@ -365,14 +370,14 @@ bool BLS::Verify(const BLSSignature &aggSig) {
             pubKeyIter->second.push_back(pubKeys[i]);
         } else {
             // First time seeing this message, so create a vector
-            vector<const BLSPublicKey> newPubKey = {pubKeys[i]};
+            vector<BLSPublicKey> newPubKey = {pubKeys[i]};
             hashToPubKeys.insert(make_pair(messageHashes[i], newPubKey));
         }
     }
 
     // Aggregate pubkeys of identical messages
-    vector<const BLSPublicKey> finalPubKeys;
-    vector<const uint8_t*> finalMessageHashes;
+    vector<BLSPublicKey> finalPubKeys;
+    vector<uint8_t*> finalMessageHashes;
     vector<uint8_t*> collidingKeys;
     for (const auto &kv : hashToPubKeys) {
         g1_t prod;
@@ -432,7 +437,7 @@ bool BLS::Verify(const BLSSignature &aggSig) {
 }
 
 BLSPublicKey BLS::AggregatePubKeys(
-        vector<const BLSPublicKey> const &pubKeys, bool secure) {
+        vector<BLSPublicKey> const &pubKeys, bool secure) {
     // bool secure = true; // Force the use of secure pubkeys
     if (pubKeys.size() < 1) {
         throw string("Number of public keys must be at least 1");
@@ -480,8 +485,8 @@ BLSPublicKey BLS::AggregatePubKeys(
 }
 
 BLSPrivateKey BLS::AggregatePrivKeys(
-        vector<const BLSPrivateKey> const &privateKeys,
-        vector<const BLSPublicKey> const &pubKeys,
+        vector<BLSPrivateKey> const &privateKeys,
+        vector<BLSPublicKey> const &pubKeys,
         bool secure) {
     if (secure && pubKeys.size() != privateKeys.size()) {
         throw string("Number of public keys must equal number of private keys");
@@ -581,15 +586,6 @@ bool BLS::VerifyNative(
 }
 
 void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
-                      vector<const BLSPublicKey> const &pubKeys) {
-    vector<BLSPublicKey> pubKeysNonConst;
-    for (BLSPublicKey pk : pubKeys) {
-        pubKeysNonConst.push_back(pk);
-    }
-    return HashPubKeys(output, numOutputs, pubKeysNonConst);
-}
-
-void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
                       vector<BLSPublicKey> const &pubKeys) {
     uint8_t *pkBuffer = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE
                                     * (pubKeys.size())];
@@ -613,7 +609,7 @@ void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
         // Set first 4 bytes to index, to generate different ts
         BLSUtil::IntToFourBytes(buffer, i);
         // Set next 32 bytes as the hash of all the public keys
-        memcpy(buffer + 4, pkHash, 32);
+        std::memcpy(buffer + 4, pkHash, 32);
         BLSUtil::Hash256(hash, buffer, 4 + 32);
 
         bn_read_bin(output[i], hash, 32);

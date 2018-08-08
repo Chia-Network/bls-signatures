@@ -34,10 +34,10 @@ class BLSSignature {
     static const size_t SIGNATURE_SIZE = 96;
 
     // Initializes from serialized byte array/
-    static BLSSignature FromBytes(uint8_t *data);
+    static BLSSignature FromBytes(const uint8_t *data);
 
     // Initializes from bytes with AggregationInfo/
-    static BLSSignature FromBytes(uint8_t *data, const AggregationInfo &info);
+    static BLSSignature FromBytes(const uint8_t *data, const AggregationInfo &info);
 
     // Initializes from native relic g2 element/
     static BLSSignature FromG2(relic::g2_t* element);
@@ -48,7 +48,7 @@ class BLSSignature {
     // Divides the aggregate signature (this) by a list of signatures.
     // These divisors can be single or aggregate signatures, but all
     // msg/pk pairs in these signatures must be distinct and unique.
-    BLSSignature DivideBy(vector<const BLSSignature> const &divisorSigs) const;
+    BLSSignature DivideBy(vector<BLSSignature> const &divisorSigs) const;
 
     // Gets the native relic point for this signature.
     void GetPoint(relic::g2_t output) const;
@@ -72,6 +72,7 @@ class BLSSignature {
 
     friend bool operator==(BLSSignature const &a, BLSSignature const &b);
     friend bool operator!=(BLSSignature const &a, BLSSignature const &b);
+    friend bool operator<(BLSSignature const &a,  BLSSignature const &b);
     friend std::ostream &operator<<(std::ostream &os, BLSSignature const &s);
     BLSSignature& operator=(const BLSSignature& rhs);
 
