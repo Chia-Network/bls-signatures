@@ -275,9 +275,7 @@ if(TEMP GREATER -1)
 endif(TEMP GREATER -1)
 
 # Choose the arithmetic backend.
-message("SETTING ARITH, before ${ARITH}")
 set(ARITH "easy" CACHE STRING "Arithmetic backend")
-message("after ${ARITH}")
 
 # Choose the memory-allocation policy.
 set(ALLOC "AUTO" CACHE STRING "Allocation policy")

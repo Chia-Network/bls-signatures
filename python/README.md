@@ -5,6 +5,7 @@ To install, run the following, in the project root directory:
 ```bash
 pip3 install .
 ```
+If that doesn't work, try python3 setup.py install.
 
 Then, to use:
 

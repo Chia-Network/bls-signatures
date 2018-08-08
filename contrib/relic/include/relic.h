@@ -75,9 +75,7 @@
 #ifndef RELIC_H
 #define RELIC_H
 
-#include "relic_conf.h"
-
-#if ARITH == GMP
+#if defined GMP && ARITH == GMP
 #include <gmp.h>
 #endif
 

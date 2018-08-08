@@ -13,21 +13,14 @@ blspy.egg-info
 main
 .o
 obj/
-lib/catch
-lib/relic
-lib/relic-doc
-lib/**/*.o
-lib/**/*.lo
-lib/**/*.la
-lib/**/*.a
-lib/libsodium-1.0.16
-lib/gmp-6.1.2
 src/*.o
 contrib/relic/CTestTestfile.cmake
 contrib/relic/bench/CTestTestfile.cmake
 contrib/relic/bin
 contrib/relic/include/relic.conf.h
 contrib/relic/test/CTestTestfile.cmake
+contrib/gmp-6.1.2/
+contrib/libsodium-1.0.16/
 
 .vscode
 blstest
