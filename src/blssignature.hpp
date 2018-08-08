@@ -48,7 +48,7 @@ class BLSSignature {
     // Divides the aggregate signature (this) by a list of signatures.
     // These divisors can be single or aggregate signatures, but all
     // msg/pk pairs in these signatures must be distinct and unique.
-    BLSSignature DivideBy(vector<const BLSSignature> const &divisorSigs) const;
+    BLSSignature DivideBy(vector<BLSSignature> const &divisorSigs) const;
 
     // Gets the native relic point for this signature.
     void GetPoint(relic::g2_t output) const;

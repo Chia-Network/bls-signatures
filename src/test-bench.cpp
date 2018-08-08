@@ -69,8 +69,8 @@ void benchAggregateSigsSecure() {
     double numIters = 1000;
 
     vector<BLSPrivateKey> sks;
-    vector<const BLSPublicKey> pks;
-    vector<const BLSSignature> sigs;
+    vector<BLSPublicKey> pks;
+    vector<BLSSignature> sigs;
 
     for (int i = 0; i < numIters; i++) {
         uint8_t seed[32];
@@ -103,8 +103,8 @@ void benchBatchVerification() {
     string testName = "Batch verification";
     double numIters = 1000;
 
-    vector<const BLSSignature> sigs;
-    vector<const BLSSignature> cache;
+    vector<BLSSignature> sigs;
+    vector<BLSSignature> cache;
     for (size_t i = 0; i < numIters; i++) {
         uint8_t seed[32];
         getRandomSeed(seed);
@@ -136,7 +136,7 @@ void benchBatchVerification() {
 void benchAggregateSigsSimple() {
     double numIters = 1000;
     vector<BLSPrivateKey> sks;
-    vector<const BLSSignature> sigs;
+    vector<BLSSignature> sigs;
 
     for (int i = 0; i < numIters; i++) {
         uint8_t* message = new uint8_t[48];
@@ -174,7 +174,7 @@ void benchDegenerateTree() {
         getRandomSeed(seed);
         BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
         BLSSignature sig = sk.Sign(message1, sizeof(message1));
-        vector<const BLSSignature> sigs = {aggSig, sig};
+        vector<BLSSignature> sigs = {aggSig, sig};
         aggSig = BLS::AggregateSigs(sigs);
     }
     endStopwatch("Generate degenerate aggSig tree",

@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <cstdlib>
 
 #if BLSALLOC
 namespace libsodium {

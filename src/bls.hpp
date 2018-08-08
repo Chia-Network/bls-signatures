@@ -53,7 +53,7 @@ class BLS {
     // using VerifyAggregate. The returned signature contains
     // information on how the aggregation was done (AggragationInfo).
     static BLSSignature AggregateSigs(
-            vector<const BLSSignature> const &sigs);
+            vector<BLSSignature> const &sigs);
 
     // Verifies a single or aggregate signature.
     // Performs two pairing operations, sig must contain information on
@@ -63,18 +63,14 @@ class BLS {
 
     // Creates a combined public/private key that can be used to create
     // or verify aggregate signatures on the same message
-    static BLSPublicKey AggregatePubKeys(vector<const BLSPublicKey> const &pubKeys,
+    static BLSPublicKey AggregatePubKeys(vector<BLSPublicKey> const &pubKeys,
             bool secure);
     static BLSPrivateKey AggregatePrivKeys(
-            vector<const BLSPrivateKey> const &privateKeys,
-            vector<const BLSPublicKey> const &pubKeys,
+            vector<BLSPrivateKey> const &privateKeys,
+            vector<BLSPublicKey> const &pubKeys,
             bool secure);
 
     // Used for secure aggregation
-    static void HashPubKeys(
-            relic::bn_t* output,
-            size_t numOutputs,
-            vector<const BLSPublicKey> const &pubKeys);
     static void HashPubKeys(
             relic::bn_t* output,
             size_t numOutputs,
@@ -84,20 +80,20 @@ class BLS {
     // Efficiently aggregates many signatures using the simple aggregation
     // method. Performs only n g2 operations.
     static BLSSignature AggregateSigsSimple(
-            vector<const BLSSignature> const &sigs);
+            vector<BLSSignature> const &sigs);
 
     // Aggregates many signatures using the secure aggregation method.
     // Performs ~ n * 256 g2 operations.
     static BLSSignature AggregateSigsSecure(
-            vector<const BLSSignature> const &sigs,
-            vector<const BLSPublicKey> const &pubKeys,
-            vector<const uint8_t*> const &messageHashes);
+            vector<BLSSignature> const &sigs,
+            vector<BLSPublicKey> const &pubKeys,
+            vector<uint8_t*> const &messageHashes);
 
     // Internal methods
     static BLSSignature AggregateSigsInternal(
-            vector<const BLSSignature> const &sigs,
-            vector<vector<const BLSPublicKey> > const &pubKeys,
-            vector<vector<const uint8_t*> > const &messageHashes);
+            vector<BLSSignature> const &sigs,
+            vector<vector<BLSPublicKey> > const &pubKeys,
+            vector<vector<uint8_t*> > const &messageHashes);
 
     static bool VerifyNative(
             relic::g2_t aggSig,

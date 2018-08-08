@@ -22,7 +22,7 @@ PYBIND11_MODULE(blspy, m) {
         .def("merge_infos", &AggregationInfo::MergeInfos)
         .def("get_pubkeys", &AggregationInfo::GetPubKeys)
         .def("get_msg_hashes", [](const AggregationInfo &self) {
-            vector<const uint8_t*> msgHashes = self.GetMessageHashes();
+            vector<uint8_t*> msgHashes = self.GetMessageHashes();
             vector<py::bytes> ret;
             for (const uint8_t* msgHash : msgHashes) {
                 ret.push_back(py::bytes(reinterpret_cast<const char*>(msgHash), BLS::MESSAGE_HASH_LEN));

@@ -86,13 +86,13 @@ BLSPublicKey pk2 = sk2.GetPublicKey();
 BLSSignature sig2 = sk2.Sign(msg, sizeof(msg));
 
 // Aggregate signatures together
-vector<const BLSSignature> sigs = {sig1, sig2};
+vector<BLSSignature> sigs = {sig1, sig2};
 BLSSignature aggSig = BLS::AggregateSigs(sigs);
 
 // For same message, public keys can be aggregated into one.
 // The signature can be verified the same as a single signature,
 // using this public key.
-vector<const BLSPublicKey> pubKeys = {pk1, pk2};
+vector<BLSPublicKey> pubKeys = {pk1, pk2};
 BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
 ```
 
@@ -112,11 +112,11 @@ BLSSignature sig3 = sk3.Sign(msg2, sizeof(msg2));
 // They can be noninteractively combined by anyone
 // Aggregation below can also be done by the verifier, to
 // make batch verification more efficient
-vector<const BLSSignature> sigsL = {sig1, sig2};
+vector<BLSSignature> sigsL = {sig1, sig2};
 BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
 
 // Arbitrary trees of aggregates
-vector<const BLSSignature> sigsFinal = {aggSigL, sig3};
+vector<BLSSignature> sigsFinal = {aggSigL, sig3};
 BLSSignature aggSigFinal = BLS::AggregateSigs(sigsFinal);
 
 // Serialize the final signature
@@ -132,9 +132,9 @@ aggSigFinal = BLSSignature::FromBytes(sigBytes);
 AggregationInfo a1 = AggregationInfo::FromMsg(pk1, msg, sizeof(msg));
 AggregationInfo a2 = AggregationInfo::FromMsg(pk2, msg, sizeof(msg));
 AggregationInfo a3 = AggregationInfo::FromMsg(pk3, msg2, sizeof(msg2));
-vector<const AggregationInfo> infos = {a1, a2};
+vector<AggregationInfo> infos = {a1, a2};
 AggregationInfo a1a2 = AggregationInfo::MergeInfos(infos);
-vector<const AggregationInfo> infos2 = {a1a2, a3};
+vector<AggregationInfo> infos2 = {a1a2, a3};
 AggregationInfo aFinal = AggregationInfo::MergeInfos(infos2);
 
 // Verify final signature using the aggregation info
@@ -144,7 +144,7 @@ ok = BLS::Verify(aggSigFinal);
 // If you previously verified a signature, you can also divide
 // the aggregate signature by the signature you already verified.
 ok = BLS::Verify(aggSigL);
-vector<const BLSSignature> cache = {aggSigL};
+vector<BLSSignature> cache = {aggSigL};
 aggSigFinal = aggSigFinal.DivideBy(cache);
 
 // Final verification is now more efficient
@@ -153,8 +153,8 @@ ok = BLS::Verify(aggSigFinal);
 
 #### Aggregate private keys
 ```c++
-vector<const BLSPrivateKey> privateKeysList = {sk1, sk2};
-vector<const BLSPublicKey> pubKeysList = {pk1, pk2};
+vector<BLSPrivateKey> privateKeysList = {sk1, sk2};
+vector<BLSPublicKey> pubKeysList = {pk1, pk2};
 
 // Create an aggregate private key, that can generate
 // aggregate signatures
@@ -192,6 +192,7 @@ skChild.Serialize(buffer2);
 ```
 
 ### Build
+Cmake and a c++ compiler are required for building.
 ```bash
 cd build
 cmake ../
@@ -200,12 +201,12 @@ cmake --build . -- -j 6
 
 ### Run tests
 ```bash
-./build/test
+./build/runtest
 ```
 
 ### Run benchmarks
 ```bash
-./build/bench
+./build/runbench
 ```
 
 ### Link the library to use it

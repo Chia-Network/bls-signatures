@@ -22,13 +22,13 @@ add_library(bls ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/aggregationinfo.cpp
 )
 
-add_executable(test test.cpp)
-add_executable(bench test-bench.cpp)
+add_executable(runtest test.cpp)
+add_executable(runbench test-bench.cpp)
 
 if (SODIUM_FOUND)
-  target_link_libraries(test bls relic_s sodium)
-  target_link_libraries(bench bls relic_s sodium)
+  target_link_libraries(runtest bls relic_s sodium)
+  target_link_libraries(runbench bls relic_s sodium)
 else()
-  target_link_libraries(test bls relic_s)
-  target_link_libraries(bench bls relic_s)
+  target_link_libraries(runtest bls relic_s)
+  target_link_libraries(runbench bls relic_s)
 endif()

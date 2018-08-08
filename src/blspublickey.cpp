@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <iostream>
+#include <cstring>
 
 #include "blspublickey.hpp"
 #include "blsutil.hpp"
@@ -21,9 +22,9 @@
 BLSPublicKey BLSPublicKey::FromBytes(const uint8_t * key) {
     BLS::AssertInitialized();
     BLSPublicKey pk = BLSPublicKey();
-    memcpy(pk.data, key, PUBLIC_KEY_SIZE);
+    std::memcpy(pk.data, key, PUBLIC_KEY_SIZE);
     uint8_t uncompressed[PUBLIC_KEY_SIZE + 1];
-    memcpy(uncompressed + 1, key, PUBLIC_KEY_SIZE);
+    std::memcpy(uncompressed + 1, key, PUBLIC_KEY_SIZE);
     if (key[0] & 0x80) {
         uncompressed[0] = 0x03;   // Insert extra byte for Y=1
         uncompressed[1] &= 0x7f;  // Remove initial Y bit
@@ -68,7 +69,7 @@ const uint8_t& BLSPublicKey::operator[](size_t pos) const {
 
 void BLSPublicKey::Serialize(uint8_t *buffer) const {
     BLS::AssertInitialized();
-    memcpy(buffer, data, PUBLIC_KEY_SIZE);
+    std::memcpy(buffer, data, PUBLIC_KEY_SIZE);
 }
 
 // Comparator implementation.
@@ -82,7 +83,7 @@ bool operator!=(BLSPublicKey const&a,  BLSPublicKey const&b) {
 }
 
 bool operator<(BLSPublicKey const&a,  BLSPublicKey const&b) {
-    return memcmp(a.data, b.data, BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
+    return std::memcmp(a.data, b.data, BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
 }
 
 std::ostream &operator<<(std::ostream &os, BLSPublicKey const &pk) {
@@ -106,5 +107,5 @@ void BLSPublicKey::CompressPoint(uint8_t* result, const relic::g1_t* point) {
     if (buffer[0] == 0x03) {
         buffer[1] |= 0x80;
     }
-    memcpy(result, buffer + 1, PUBLIC_KEY_SIZE);
+    std::memcpy(result, buffer + 1, PUBLIC_KEY_SIZE);
 }

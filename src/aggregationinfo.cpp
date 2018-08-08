@@ -16,6 +16,7 @@
 #define SRC_AGGREGATIONINFO_CPP_
 
 #include <string>
+#include <cstring>
 #include <set>
 #include <algorithm>
 #include <utility>
@@ -34,7 +35,7 @@ AggregationInfo AggregationInfo::FromMsgHash(const BLSPublicKey &pk,
     uint8_t* mapKey = new uint8_t[BLS::MESSAGE_HASH_LEN +
                                   BLSPublicKey::PUBLIC_KEY_SIZE];
 
-    memcpy(mapKey, messageHash, BLS::MESSAGE_HASH_LEN);
+    std::memcpy(mapKey, messageHash, BLS::MESSAGE_HASH_LEN);
     pk.Serialize(mapKey + BLS::MESSAGE_HASH_LEN);
     AggregationInfo::AggregationTree tree;
     bn_t *one = new bn_t[1];
@@ -43,8 +44,8 @@ AggregationInfo AggregationInfo::FromMsgHash(const BLSPublicKey &pk,
     bn_set_dig(*one, 1);
     tree.insert(make_pair(mapKey, one));
 
-    vector<const uint8_t*> hashes = {mapKey};
-    vector<const BLSPublicKey> pks = {pk};
+    vector<uint8_t*> hashes = {mapKey};
+    vector<BLSPublicKey> pks = {pk};
 
     return AggregationInfo(tree, hashes, pks);
 }
@@ -58,9 +59,9 @@ AggregationInfo AggregationInfo::FromMsg(const BLSPublicKey &pk,
 }
 
 AggregationInfo AggregationInfo::FromVectors(
-        vector<const BLSPublicKey> const &pubKeys,
-        vector<const uint8_t*> const &messageHashes,
-        vector<const bn_t*> const &exponents) {
+        vector<BLSPublicKey> const &pubKeys,
+        vector<uint8_t*> const &messageHashes,
+        vector<bn_t*> const &exponents) {
     if (pubKeys.size() != messageHashes.size() || messageHashes.size() !=
             exponents.size()) {
          throw std::string(("Invalid input, all vectors must have\
@@ -70,21 +71,21 @@ AggregationInfo AggregationInfo::FromVectors(
     for (size_t i = 0; i < pubKeys.size(); i++) {
         uint8_t * mapKey = new uint8_t[BLS::MESSAGE_HASH_LEN +
                                        BLSPublicKey::PUBLIC_KEY_SIZE];
-        memcpy(mapKey, messageHashes[i], BLS::MESSAGE_HASH_LEN);
+        std::memcpy(mapKey, messageHashes[i], BLS::MESSAGE_HASH_LEN);
         pubKeys[i].Serialize(mapKey + BLS::MESSAGE_HASH_LEN);
         bn_t *mapValue = new bn_t[1];
         bn_new(*mapValue)
         bn_copy(*mapValue, *exponents[i]);
         tree.insert(make_pair(mapKey, mapValue));
     }
-    vector<const BLSPublicKey> sortedPubKeys;
-    vector<const uint8_t*> sortedMessageHashes;
+    vector<BLSPublicKey> sortedPubKeys;
+    vector<uint8_t*> sortedMessageHashes;
     SortIntoVectors(sortedMessageHashes, sortedPubKeys, tree);
     return AggregationInfo(tree, sortedMessageHashes, sortedPubKeys);
 }
 
 // Merges multiple AggregationInfo objects together.
-AggregationInfo AggregationInfo::MergeInfos(vector<const AggregationInfo>
+AggregationInfo AggregationInfo::MergeInfos(vector<AggregationInfo>
                                             const &infos) {
     // Find messages that are in multiple infos
     set<const uint8_t*, BLSUtil::BytesCompare32> messages;
@@ -107,8 +108,8 @@ AggregationInfo AggregationInfo::MergeInfos(vector<const AggregationInfo>
         return SimpleMergeInfos(infos);
     } else {
         // Otherwise, figure out with infos collide
-        vector<const AggregationInfo> collidingInfos;
-        vector<const AggregationInfo> nonCollidingInfos;
+        vector<AggregationInfo> collidingInfos;
+        vector<AggregationInfo> nonCollidingInfos;
         for (const AggregationInfo &info : infos) {
             bool infoCollides = false;
             for (auto &mapEntry : info.tree) {
@@ -137,15 +138,15 @@ AggregationInfo::AggregationInfo(const AggregationInfo& info) {
     SortIntoVectors(sortedMessageHashes, sortedPubKeys, tree);
 }
 
-void AggregationInfo::RemoveEntries(vector<const uint8_t*> const &messages,
-                                    vector<const BLSPublicKey> const &pubKeys) {
+void AggregationInfo::RemoveEntries(vector<uint8_t*> const &messages,
+                                    vector<BLSPublicKey> const &pubKeys) {
     if (messages.size() != pubKeys.size() || messages.size() < 1) {
         throw std::string("Invalid entries");
     }
     // Erase the keys from the tree
     for (size_t i = 0; i < messages.size(); i++) {
         uint8_t entry[BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE];
-        memcpy(entry, messages[i], BLS::MESSAGE_HASH_LEN);
+        std::memcpy(entry, messages[i], BLS::MESSAGE_HASH_LEN);
         pubKeys[i].Serialize(entry + BLS::MESSAGE_HASH_LEN);
         auto kv = tree.find(entry);
         const uint8_t* first = kv->first;
@@ -158,23 +159,22 @@ void AggregationInfo::RemoveEntries(vector<const uint8_t*> const &messages,
     sortedMessageHashes.clear();
     sortedPubKeys.clear();
     SortIntoVectors(sortedMessageHashes, sortedPubKeys, tree);
-    assert(sortedPubKeys.size() == sortedMessageHashes.size());
 }
 
 void AggregationInfo::GetExponent(bn_t *result, const uint8_t* messageHash,
                                   const BLSPublicKey &pubKey) const {
     uint8_t mapKey[BLS::MESSAGE_HASH_LEN +
             BLSPublicKey::PUBLIC_KEY_SIZE];
-    memcpy(mapKey, messageHash, BLS::MESSAGE_HASH_LEN);
+    std::memcpy(mapKey, messageHash, BLS::MESSAGE_HASH_LEN);
     pubKey.Serialize(mapKey + BLS::MESSAGE_HASH_LEN);
     bn_copy(*result, *tree.at(mapKey));
 }
 
-vector<const BLSPublicKey> AggregationInfo::GetPubKeys() const {
+vector<BLSPublicKey> AggregationInfo::GetPubKeys() const {
     return sortedPubKeys;
 }
 
-vector<const uint8_t*> AggregationInfo::GetMessageHashes() const {
+vector<uint8_t*> AggregationInfo::GetMessageHashes() const {
     return sortedMessageHashes;
 }
 
@@ -202,16 +202,16 @@ bool operator<(AggregationInfo const&a, AggregationInfo const&b) {
         // Otherwise, generate the msgHash || pk element, and compare
         uint8_t bufferA[BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE];
         uint8_t bufferB[BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE];
-        memcpy(bufferA, a.sortedMessageHashes[i], BLS::MESSAGE_HASH_LEN);
-        memcpy(bufferB, b.sortedMessageHashes[i], BLS::MESSAGE_HASH_LEN);
+        std::memcpy(bufferA, a.sortedMessageHashes[i], BLS::MESSAGE_HASH_LEN);
+        std::memcpy(bufferB, b.sortedMessageHashes[i], BLS::MESSAGE_HASH_LEN);
         a.sortedPubKeys[i].Serialize(bufferA + BLS::MESSAGE_HASH_LEN);
         b.sortedPubKeys[i].Serialize(bufferB + BLS::MESSAGE_HASH_LEN);
-        if (memcmp(bufferA, bufferB, BLS::MESSAGE_HASH_LEN
-                   + BLSPublicKey::PUBLIC_KEY_SIZE) < 0) {
+        if (std::memcmp(bufferA, bufferB, BLS::MESSAGE_HASH_LEN
+                        + BLSPublicKey::PUBLIC_KEY_SIZE) < 0) {
             lessThan = true;
             break;
-        } else if (memcmp(bufferA, bufferB, BLS::MESSAGE_HASH_LEN
-                          + BLSPublicKey::PUBLIC_KEY_SIZE) > 0) {
+        } else if (std::memcmp(bufferA, bufferB, BLS::MESSAGE_HASH_LEN
+                               + BLSPublicKey::PUBLIC_KEY_SIZE) > 0) {
             lessThan = false;
             break;
         }
@@ -262,7 +262,7 @@ void AggregationInfo::InsertIntoTree(AggregationInfo::AggregationTree &tree,
     for (auto &mapEntry : info.tree) {
         uint8_t* messageCopy = new uint8_t[BLS::MESSAGE_HASH_LEN
                 + BLSPublicKey::PUBLIC_KEY_SIZE];
-        memcpy(messageCopy, mapEntry.first, BLS::MESSAGE_HASH_LEN
+        std::memcpy(messageCopy, mapEntry.first, BLS::MESSAGE_HASH_LEN
                 + BLSPublicKey::PUBLIC_KEY_SIZE);
         bn_t * exponent = new bn_t[1];
         relic::bn_new(*exponent);
@@ -276,8 +276,8 @@ void AggregationInfo::InsertIntoTree(AggregationInfo::AggregationTree &tree,
 
 // This method is used to keep an alternate copy of the tree
 // keys (hashes and pks) in sorted order, for easy access
-void AggregationInfo::SortIntoVectors(vector<const uint8_t*> &ms,
-            vector<const BLSPublicKey> &pks,
+void AggregationInfo::SortIntoVectors(vector<uint8_t*> &ms,
+            vector<BLSPublicKey> &pks,
             const AggregationInfo::AggregationTree &tree) {
     for (auto &kv : tree) {
         ms.push_back(kv.first);
@@ -291,22 +291,22 @@ void AggregationInfo::SortIntoVectors(vector<const uint8_t*> &ms,
 
 // Simple merging, no exponentiation is performed
 AggregationInfo AggregationInfo::SimpleMergeInfos(
-        vector<const AggregationInfo> const &infos) {
+        vector<AggregationInfo> const &infos) {
     set<const BLSPublicKey> pubKeysDedup;
 
     AggregationTree newTree;
     for (const AggregationInfo &info : infos) {
         InsertIntoTree(newTree, info);
     }
-    vector<const BLSPublicKey> pks;
-    vector<const uint8_t*> messageHashes;
+    vector<BLSPublicKey> pks;
+    vector<uint8_t*> messageHashes;
     SortIntoVectors(messageHashes, pks, newTree);
 
     return AggregationInfo(newTree, messageHashes, pks);
 }
 
 AggregationInfo AggregationInfo::SecureMergeInfos(
-            vector<const AggregationInfo> const &collidingInfosArg) {
+            vector<AggregationInfo> const &collidingInfosArg) {
     // Sort colliding Infos
     vector<AggregationInfo> collidingInfos;
     for (const AggregationInfo &info : collidingInfosArg) {
@@ -317,7 +317,7 @@ AggregationInfo AggregationInfo::SecureMergeInfos(
     // exponentiated by one of the Ts
     std::sort(begin(collidingInfos), end(collidingInfos));
 
-    vector<const uint8_t*> sortedKeys;
+    vector<uint8_t*> sortedKeys;
     for (auto &info : collidingInfos) {
         for (auto &mapEntry : info.tree) {
             sortedKeys.push_back(mapEntry.first);
@@ -325,7 +325,7 @@ AggregationInfo AggregationInfo::SecureMergeInfos(
     }
     // Pks are sorted by message then pk
     std::sort(begin(sortedKeys), end(sortedKeys), BLSUtil::BytesCompare80());
-    vector<const BLSPublicKey> sortedPks;
+    vector<BLSPublicKey> sortedPks;
     for (const uint8_t* key : sortedKeys) {
         sortedPks.push_back(BLSPublicKey::FromBytes(
                 key + BLS::MESSAGE_HASH_LEN));
@@ -353,7 +353,7 @@ AggregationInfo AggregationInfo::SecureMergeInfos(
                 // This message & pk has not been included yet
                 uint8_t* mapKeyCopy = new uint8_t[BLS::MESSAGE_HASH_LEN
                         + BLSPublicKey::PUBLIC_KEY_SIZE];
-                memcpy(mapKeyCopy, mapEntry.first, BLS::MESSAGE_HASH_LEN
+                std::memcpy(mapKeyCopy, mapEntry.first, BLS::MESSAGE_HASH_LEN
                     + BLSPublicKey::PUBLIC_KEY_SIZE);
 
                 relic::bn_t * exponent = new bn_t[1];
@@ -374,8 +374,8 @@ AggregationInfo AggregationInfo::SecureMergeInfos(
         }
     }
     delete[] computedTs;
-    vector<const BLSPublicKey> pks;
-    vector<const uint8_t*> messageHashes;
+    vector<BLSPublicKey> pks;
+    vector<uint8_t*> messageHashes;
     SortIntoVectors(messageHashes, pks, newTree);
 
     return AggregationInfo(newTree, messageHashes, pks);
@@ -385,7 +385,7 @@ AggregationInfo AggregationInfo::SecureMergeInfos(
 void AggregationInfo::Clear() {
     sortedMessageHashes.clear();
     sortedPubKeys.clear();
-    vector<const uint8_t*> mapKeys;
+    vector<uint8_t*> mapKeys;
     for (auto &mapEntry : tree) {
         delete[] mapEntry.second;
         mapKeys.push_back(mapEntry.first);
