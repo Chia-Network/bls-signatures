@@ -16,6 +16,7 @@ Features:
 * Key and signature serialization
 * Batch verification
 * Signature division (divide an aggregate by a previously verified signature)
+* Python bindings
 
 #### Import the library
 ```c++
