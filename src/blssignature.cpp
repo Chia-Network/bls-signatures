@@ -23,7 +23,7 @@ using std::string;
 using relic::bn_t;
 using relic::fp_t;
 
-BLSSignature BLSSignature::FromBytes(uint8_t *data) {
+BLSSignature BLSSignature::FromBytes(const uint8_t *data) {
     BLS::AssertInitialized();
     BLSSignature sigObj = BLSSignature();
     memcpy(sigObj.data, data, BLSSignature::SIGNATURE_SIZE);
@@ -39,7 +39,7 @@ BLSSignature BLSSignature::FromBytes(uint8_t *data) {
     return sigObj;
 }
 
-BLSSignature BLSSignature::FromBytes(uint8_t *data,
+BLSSignature BLSSignature::FromBytes(const uint8_t *data,
                                      const AggregationInfo &info) {
     BLSSignature ret = FromBytes(data);
     ret.SetAggregationInfo(info);
@@ -170,6 +170,10 @@ bool operator==(BLSSignature const &a, BLSSignature const &b) {
 
 bool operator!=(BLSSignature const &a, BLSSignature const &b) {
     return !(a == b);
+}
+
+bool operator<(BLSSignature const&a,  BLSSignature const&b) {
+    return memcmp(a.data, b.data, BLSSignature::SIGNATURE_SIZE) < 0;
 }
 
 std::ostream &operator<<(std::ostream &os, BLSSignature const &s) {

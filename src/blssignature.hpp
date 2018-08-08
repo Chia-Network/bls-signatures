@@ -34,10 +34,10 @@ class BLSSignature {
     static const size_t SIGNATURE_SIZE = 96;
 
     // Initializes from serialized byte array/
-    static BLSSignature FromBytes(uint8_t *data);
+    static BLSSignature FromBytes(const uint8_t *data);
 
     // Initializes from bytes with AggregationInfo/
-    static BLSSignature FromBytes(uint8_t *data, const AggregationInfo &info);
+    static BLSSignature FromBytes(const uint8_t *data, const AggregationInfo &info);
 
     // Initializes from native relic g2 element/
     static BLSSignature FromG2(relic::g2_t* element);
@@ -72,6 +72,7 @@ class BLSSignature {
 
     friend bool operator==(BLSSignature const &a, BLSSignature const &b);
     friend bool operator!=(BLSSignature const &a, BLSSignature const &b);
+    friend bool operator<(BLSSignature const &a,  BLSSignature const &b);
     friend std::ostream &operator<<(std::ostream &os, BLSSignature const &s);
     BLSSignature& operator=(const BLSSignature& rhs);
 

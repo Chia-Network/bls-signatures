@@ -240,7 +240,6 @@ bool operator!=(AggregationInfo const&a, AggregationInfo const&b) {
 }
 
 std::ostream &operator<<(std::ostream &os, AggregationInfo const &a) {
-    os << "AggregationInfo:" << std::endl;
     for (auto &kv : a.tree) {
         os << BLSUtil::HexStr(kv.first, 80) << ".." << ":" << std::endl;
         uint8_t str[RELIC_BN_BYTES * 3 + 1];

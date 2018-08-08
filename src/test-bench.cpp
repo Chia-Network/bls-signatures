@@ -21,7 +21,6 @@ using std::vector;
 using std::cout;
 using std::endl;
 
-
 void benchSigs() {
     string testName = "Sigining";
     double numIters = 1000;
@@ -59,7 +58,8 @@ void benchVerification() {
     for (size_t i = 0; i < numIters; i++) {
         uint8_t message[4];
         BLSUtil::IntToFourBytes(message, i);
-        assert(BLS::Verify(sigs[i]));
+        bool ok = BLS::Verify(sigs[i]);
+        ASSERT(ok);
     }
     endStopwatch(testName, start, numIters);
 }
@@ -95,7 +95,7 @@ void benchAggregateSigsSecure() {
     auto start3 = startStopwatch();
     aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
             aggPubKey, message1, sizeof(message1)));
-    assert(BLS::Verify(aggSig));
+    ASSERT(BLS::Verify(aggSig));
     endStopwatch("Verify agg signature, same message", start3, numIters);
 }
 
@@ -123,13 +123,13 @@ void benchBatchVerification() {
     BLSSignature aggregate = BLS::AggregateSigs(sigs);
 
     auto start = startStopwatch();
-    assert(BLS::Verify(aggregate));
+    ASSERT(BLS::Verify(aggregate));
     endStopwatch(testName, start, numIters);
 
 
     start = startStopwatch();
     const BLSSignature aggSmall = aggregate.DivideBy(cache);
-    assert(BLS::Verify(aggSmall));
+    ASSERT(BLS::Verify(aggSmall));
     endStopwatch(testName + " with cached verifications", start, numIters);
 }
 
@@ -156,7 +156,7 @@ void benchAggregateSigsSimple() {
                  start, numIters);
 
     auto start2 = startStopwatch();
-    assert(BLS::Verify(aggSig));
+    ASSERT(BLS::Verify(aggSig));
     endStopwatch("Verify aggregate signature, distinct messages",
                  start2, numIters);
 }
@@ -181,7 +181,7 @@ void benchDegenerateTree() {
                  start, numIters);
 
     start = startStopwatch();
-    assert(BLS::Verify(aggSig));
+    ASSERT(BLS::Verify(aggSig));
     endStopwatch("Verify degenerate aggSig tree",
                  start, numIters);
 }

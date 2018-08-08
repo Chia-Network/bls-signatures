@@ -24,16 +24,13 @@ using std::endl;
 
 TEST_CASE("Key generation") {
     SECTION("Should generate a keypair from a seed") {
-        uint8_t seed[] = {8, 102, 6, 244, 24, 198, 1, 25, 52, 88, 199,
-                          19, 18, 12, 89, 6, 5, 18, 102, 58, 209,
-                          83, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22,
-                          92, 11, 9, 225, 102};
+        uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 
         BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, sizeof(seed));
         BLSPublicKey pk = sk.GetPublicKey();
         REQUIRE(relic::core_get()->code == STS_OK);
-        REQUIRE(pk.GetFingerprint() == 0xaf068c91);
+        REQUIRE(pk.GetFingerprint() == 0xddad59bb);
     }
 }
 
@@ -64,9 +61,8 @@ TEST_CASE("Signatures") {
     SECTION("Should sign and verify") {
         uint8_t message1[7] = {1, 65, 254, 88, 90, 45, 22};
 
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
+        uint8_t seed[6] = {28, 20, 102, 229, 1, 157};
+        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
         BLSPublicKey pk1 = sk1.GetPublicKey();
         BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
 
@@ -571,7 +567,7 @@ TEST_CASE("Signatures") {
         vector<const uint8_t*> const messages = {message1, message1};
         vector<size_t> const messageLens = {sizeof(message1), sizeof(message1)};
         BLSSignature aggSig = BLS::AggregateSigs(sigs);
-        assert(aggSig == aggSig2);
+        ASSERT(aggSig == aggSig2);
 
         const BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
         REQUIRE(BLS::Verify(aggSig));
@@ -824,7 +820,7 @@ TEST_CASE("AggregationInfo") {
 
     SECTION("Should aggregate with multiple levels.") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t message2[7] = {192, 29, 2, 0, 0, 45, 23};
+        uint8_t message2[8] = {192, 29, 2, 0, 0, 45, 23, 192};
         uint8_t message3[7] = {52, 29, 2, 0, 0, 45, 102};
         uint8_t message4[7] = {99, 29, 2, 0, 0, 45, 222};
 
@@ -844,31 +840,18 @@ TEST_CASE("AggregationInfo") {
         BLSSignature sig3 = sk2.Sign(message1, sizeof(message1));
         BLSSignature sig4 = sk1.Sign(message3, sizeof(message3));
         BLSSignature sig5 = sk1.Sign(message4, sizeof(message4));
+        BLSSignature sig6 = sk1.Sign(message1, sizeof(message1));
 
         vector<const BLSSignature> const sigsL = {sig1, sig2};
         vector<const BLSPublicKey> const pksL = {pk1, pk2};
-        vector<const uint8_t*> const messagesL = {message1, message2};
-        vector<size_t> const messageLensL = {sizeof(message1),
-                                             sizeof(message2)};
         const BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
 
-        vector<const BLSSignature> const sigsR = {sig3, sig4};
-        vector<const BLSPublicKey> const pksR = {pk2, pk1};
-        vector<const uint8_t*> const messagesR = {message1, message3};
-        vector<size_t> const messageLensR = {sizeof(message1),
-                                             sizeof(message3)};
+        vector<const BLSSignature> const sigsR = {sig3, sig4, sig6};
         const BLSSignature aggSigR = BLS::AggregateSigs(sigsR);
 
         vector<const BLSPublicKey> pk1Vec = {pk1};
-        vector<const uint8_t*> msg4Vec = {message4};
-        vector<size_t> msg4Len = {sizeof(message4)};
 
         vector<const BLSSignature> sigs = {aggSigL, aggSigR, sig5};
-        vector<vector<const BLSPublicKey> > pks = {pksL, pksR, pk1Vec};
-        vector<vector<const uint8_t*> > messages = {messagesL, messagesR,
-                                                    msg4Vec};
-        vector<vector<size_t> > messageLens = {messageLensL, messageLensR,
-                                               msg4Len};
 
         const BLSSignature aggSig = BLS::AggregateSigs(sigs);
 

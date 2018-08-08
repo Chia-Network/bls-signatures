@@ -145,7 +145,7 @@ ok = BLS::Verify(aggSigFinal);
 // the aggregate signature by the signature you already verified.
 ok = BLS::Verify(aggSigL);
 vector<const BLSSignature> cache = {aggSigL};
-aggSigFinal = aggSig2.DivideBy(cache);
+aggSigFinal = aggSigFinal.DivideBy(cache);
 
 // Final verification is now more efficient
 ok = BLS::Verify(aggSigFinal);
@@ -177,10 +177,10 @@ ExtendedPrivateKey esk = ExtendedPrivateKey::FromSeed(
 ExtendedPublicKey epk = esk.GetExtendedPublicKey();
 
 // Use i >= 2^31 for hardened keys
-ExtendedPrivateKey pkChild = esk.PrivateChild(0)
+ExtendedPrivateKey skChild = esk.PrivateChild(0)
                                 .PrivateChild(5);
 
-ExtendedPublicKey skChild = epk.PublicChild(0)
+ExtendedPublicKey pkChild = epk.PublicChild(0)
                                .PublicChild(5);
 
 // Serialize extended keys
@@ -191,68 +191,35 @@ pkChild.Serialize(buffer1);
 skChild.Serialize(buffer2);
 ```
 
-
-### Build Dependencies
-#### GMP (optional, LGPL v3)
-GMP can be used to speed up bignum operations.
+### Build
 ```bash
-cd lib
-gunzip -c gmp-6.1.2.tar.gz | tar xopf -
-cd gmp-6.1.2
-make clean
-./configure
-make && make check
-make install
-```
-
-#### Relic (LGPL v2.1)
-If using GMP, replace easy with gmp.
-Changes performed: Added config files for Chia, and added gmp include in relic.h.
-Allow passing in hash to ep2_map.
-
-```bash
-cd lib
-gunzip -c catch.tar.gz | tar xopf -
-gunzip -c relic.tar.gz | tar xopf -
-cd relic
-rm CMakeCache.txt
-rm -rf relic-target
-mkdir -p relic-target
-cd relic-target
-../preset/chia-easy-linux.sh ../    (or chia-easy-mac if running on a mac)
-make -j 6
-```
-
-#### Libsodium
-Libsodium is used for allocating memory for private keys.
-```bash
-cd lib
-gunzip -c libsodium-1.0.16.tar.gz | tar xopf -
-cd libsodium-1.0.16
-./configure
-make && make check
-make install
-```
-
-### Make Project
-```bash
-make
+cd build
+cmake ../
+cmake --build . -- -j 6
 ```
 
 ### Run tests
 ```bash
-make test
+./build/test
 ```
 
 ### Run benchmarks
 ```bash
-make bench
+./build/bench
 ```
 
 ### Link the library to use it
 ```bash
 g++ -Ibls-signatures/lib/relic/include -Ibls-signatures/lib/relic/relic-target/include -Ibls-signatures/src  -L./bls-signatures -l bls yourfilename.cpp
 ```
+
+### Notes on dependencies
+Changes performed to relic: Added config files for Chia, and added gmp include in relic.h.
+Allow passing in hash to ep2_map. Custom inversion function. Note: relic is an LGPL 2.1 dependency.
+
+Libsodium and GMP are optional dependencies: libsodium gives secure memory allocation,
+and GMP speeds up the library by ~ 3x. To install them, unzip the directories in contrib,
+and follow the instructions for each repo.
 
 ### Code style
 * Always use uint8_t for bytes
@@ -269,7 +236,6 @@ g++ -Ibls-signatures/lib/relic/include -Ibls-signatures/lib/relic/relic-target/i
 * Secure allocation during signing, key derivation
 * Threshold signatures
 * Full python implementation
-* Python bindings
 * Remove unnecessary dependency files
 * Constant time and side channel attacks
 * Adaptor signatures / Blind signatures
