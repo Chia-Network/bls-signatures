@@ -195,6 +195,8 @@ skChild.Serialize(buffer2);
 ### Build
 Cmake and a c++ compiler are required for building.
 ```bash
+git submodule init
+git submodule update
 cd build
 cmake ../
 cmake --build . -- -j 6

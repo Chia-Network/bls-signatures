@@ -9,6 +9,7 @@ src/cmake_install.cmake
 src/CMakeFile
 build/*
 blspy.egg-info
+dist
 
 main
 .o

@@ -12,7 +12,7 @@ from distutils.version import LooseVersion
 
 class CMakeExtension(Extension):
     def __init__(self, name, sourcedir=''):
-        Extension.__init__(self, name, sources=[])
+        Extension.__init__(self, name, sources=['./'])
         self.sourcedir = os.path.abspath(sourcedir)
 
 
@@ -37,6 +37,7 @@ class CMakeBuild(build_ext):
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(
                     self.get_ext_fullpath(ext.name)))
+        print("EXTDIR IS", extdir)
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable]
 
@@ -67,13 +68,13 @@ class CMakeBuild(build_ext):
 
 setup(
     name='blspy',
-    version='0.0.1',
+    version='0.0.3',
     author='Mariano Sorgente',
     author_email='mariano@chia.net',
     description='BLS signatures in c++ (python bindings)',
     python_requires='>3.1',
-    long_description='',
-    ext_modules=[CMakeExtension('blspy')],
+    long_description='BLS signatures with aggregation. Uses fast c++ implementation. See https://github.com/Chia-Network/bls-signatures for more details',
+    ext_modules=[CMakeExtension('blspy', '.')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
 )

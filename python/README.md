@@ -1,11 +1,19 @@
 ## Python bindings
+Install
+```bash
+pip3 install blspy
+```
 
-To install, run the following, in the project root directory:
+To install from source, run the following, in the project root directory:
 
 ```bash
+git submodule init
+git submodule update
 pip3 install .
 ```
-If that doesn't work, try python3 setup.py install.
+
+Cmake, a c++ compiler, and a recent version of pip3 are required.
+GMP and libsodium are optional dependencies.
 
 Then, to use:
 
