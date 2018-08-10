@@ -36,7 +36,7 @@ BLSSignature BLSSignature::FromBytes(const uint8_t *data) {
     } else {
         uncompressed[0] = 0x02;   // Insert extra byte for Y=0
     }
-    g2_read_bin(sigObj.sig, uncompressed, SIGNATURE_SIZE + 1);
+    relic::g2_read_bin(sigObj.sig, uncompressed, SIGNATURE_SIZE + 1);
     return sigObj;
 }
 
@@ -78,31 +78,31 @@ void BLSSignature::SetAggregationInfo(
     aggregationInfo = newAggregationInfo;
 }
 
-BLSSignature BLSSignature::DivideBy(vector<BLSSignature> const &divisorSigs) const {
-    bn_t ord;
+BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs) const {
+    relic::bn_t ord;
     g2_get_ord(ord);
 
-    vector<uint8_t*> messageHashesToRemove;
-    vector<BLSPublicKey> pubKeysToRemove;
+    std::vector<uint8_t*> messageHashesToRemove;
+    std::vector<BLSPublicKey> pubKeysToRemove;
 
     relic::g2_t prod;
     relic::g2_set_infty(prod);
     for (const BLSSignature &divisorSig : divisorSigs) {
-        vector<BLSPublicKey> pks = divisorSig.GetAggregationInfo()
+        std::vector<BLSPublicKey> pks = divisorSig.GetAggregationInfo()
                 ->GetPubKeys();
-        vector<uint8_t*> messageHashes = divisorSig.GetAggregationInfo()
+        std::vector<uint8_t*> messageHashes = divisorSig.GetAggregationInfo()
                 ->GetMessageHashes();
         if (pks.size() != messageHashes.size()) {
             throw string("Invalid aggregation info.");
         }
-        bn_t quotient;
+        relic::bn_t quotient;
         for (size_t i = 0; i < pks.size(); i++) {
-            bn_t divisor;
+            relic::bn_t divisor;
             bn_new(divisor);
             divisorSig.GetAggregationInfo()->GetExponent(&divisor,
                     messageHashes[i],
                     pks[i]);
-            bn_t dividend;
+            relic::bn_t dividend;
             bn_new(dividend);
             try {
                 aggregationInfo.GetExponent(&dividend, messageHashes[i],
@@ -111,14 +111,14 @@ BLSSignature BLSSignature::DivideBy(vector<BLSSignature> const &divisorSigs) con
                 throw string("Signature is not a subset.");
             }
 
-            bn_t inverted;
+            relic::bn_t inverted;
             relic::fp_inv_exgcd_bn(inverted, divisor, ord);
 
             if (i == 0) {
                 relic::bn_mul(quotient, dividend, inverted);
                 relic::bn_mod(quotient, quotient, ord);
             } else {
-                bn_t newQuotient;
+                relic::bn_t newQuotient;
                 relic::bn_mul(newQuotient, dividend, inverted);
                 relic::bn_mod(newQuotient, newQuotient, ord);
 

@@ -20,9 +20,6 @@
 #include "blspublickey.hpp"
 #include "blsutil.hpp"
 
-using std::vector;
-using std::map;
-
 /**
  * Represents information about how aggregation was performed,
  * or how a signature was generated (pks, messageHashes, etc).
@@ -47,26 +44,26 @@ class AggregationInfo {
                                    size_t len);
 
     static AggregationInfo FromVectors(
-                vector<BLSPublicKey> const &pubKeys,
-                vector<uint8_t*> const &messageHashes,
-                vector<relic::bn_t*> const &exponents);
+                std::vector<BLSPublicKey> const &pubKeys,
+                std::vector<uint8_t*> const &messageHashes,
+                std::vector<relic::bn_t*> const &exponents);
 
     // Merge two AggregationInfo objects into one.
-    static AggregationInfo MergeInfos(vector<AggregationInfo>
+    static AggregationInfo MergeInfos(std::vector<AggregationInfo>
                                       const &infos);
 
     // Copy constructor, deep copies data.
     AggregationInfo(const AggregationInfo& info);
 
     // Removes the messages and pubkeys from the tree
-    void RemoveEntries(vector<uint8_t*> const &messages,
-                       vector<BLSPublicKey> const &pubKeys);
+    void RemoveEntries(std::vector<uint8_t*> const &messages,
+                       std::vector<BLSPublicKey> const &pubKeys);
 
     // Public accessors
     void GetExponent(relic::bn_t *result, const uint8_t* messageHash,
                      const BLSPublicKey &pubkey) const;
-    vector<BLSPublicKey> GetPubKeys() const;
-    vector<uint8_t*> GetMessageHashes() const;
+    std::vector<BLSPublicKey> GetPubKeys() const;
+    std::vector<uint8_t*> GetMessageHashes() const;
     bool Empty() const;
 
     // Overloaded operators.
@@ -86,26 +83,26 @@ class AggregationInfo {
                      BLSUtil::BytesCompare80> AggregationTree;
 
     explicit AggregationInfo(const AggregationTree& tr,
-                             vector<uint8_t*> ms,
-                             vector<BLSPublicKey> pks)
+                             std::vector<uint8_t*> ms,
+                             std::vector<BLSPublicKey> pks)
          : tree(tr),
            sortedMessageHashes(ms),
            sortedPubKeys(pks) {}
 
     static void InsertIntoTree(AggregationTree &tree,
                                const AggregationInfo& info);
-    static void SortIntoVectors(vector<uint8_t*> &ms,
-                                vector<BLSPublicKey> &pks,
+    static void SortIntoVectors(std::vector<uint8_t*> &ms,
+                                std::vector<BLSPublicKey> &pks,
                                 const AggregationTree &tree);
     static AggregationInfo SimpleMergeInfos(
-            vector<AggregationInfo> const &infos);
+            std::vector<AggregationInfo> const &infos);
     static AggregationInfo SecureMergeInfos(
-            vector<AggregationInfo> const &infos);
+            std::vector<AggregationInfo> const &infos);
     void Clear();
 
     AggregationTree tree;
-    vector<uint8_t*> sortedMessageHashes;
-    vector<BLSPublicKey> sortedPubKeys;
+    std::vector<uint8_t*> sortedMessageHashes;
+    std::vector<BLSPublicKey> sortedPubKeys;
 };
 
 #endif  // SRC_AGGREGATIONINFO_HPP_

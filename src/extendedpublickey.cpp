@@ -21,9 +21,6 @@
 #include "blsutil.hpp"
 #include "bls.hpp"
 
-using relic::bn_t;
-using relic::g1_t;
-
 ExtendedPublicKey ExtendedPublicKey::FromBytes(
         const uint8_t* serialized) {
     BLS::AssertInitialized();
@@ -77,16 +74,16 @@ ExtendedPublicKey ExtendedPublicKey::PublicChild(uint32_t i) const {
     relic::md_hmac(IRight, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
-    bn_t leftSk;
+    relic::bn_t leftSk;
     bn_new(leftSk);
     bn_read_bin(leftSk, ILeft, BLSPrivateKey::PRIVATE_KEY_SIZE);
 
-    bn_t order;
+    relic::bn_t order;
     bn_new(order);
     g2_get_ord(order);
 
     bn_mod_basic(leftSk, leftSk, order);
-    g1_t newPk, oldPk;
+    relic::g1_t newPk, oldPk;
     g1_mul_gen(newPk, leftSk);
     pk.GetPoint(oldPk);
     g1_add(newPk, newPk, oldPk);

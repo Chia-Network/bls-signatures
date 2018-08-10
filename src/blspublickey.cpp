@@ -31,7 +31,7 @@ BLSPublicKey BLSPublicKey::FromBytes(const uint8_t * key) {
     } else {
         uncompressed[0] = 0x02;   // Insert extra byte for Y=0
     }
-    g1_read_bin(pk.q, uncompressed, PUBLIC_KEY_SIZE + 1);
+    relic::g1_read_bin(pk.q, uncompressed, PUBLIC_KEY_SIZE + 1);
     return pk;
 }
 

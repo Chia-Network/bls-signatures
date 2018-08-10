@@ -21,8 +21,6 @@
 #include "blsutil.hpp"
 #include "bls.hpp"
 
-using relic::bn_t;
-
 ExtendedPrivateKey ExtendedPrivateKey::FromSeed(const uint8_t* seed,
                                                 size_t seedLen) {
     BLS::AssertInitialized();
@@ -46,8 +44,8 @@ ExtendedPrivateKey ExtendedPrivateKey::FromSeed(const uint8_t* seed,
     relic::md_hmac(IRight, hashInput, seedLen + 1, prefix, sizeof(prefix));
 
     // Make sure private key is less than the curve order
-    bn_t* skBn = BLSUtil::SecAlloc<bn_t>(1);
-    bn_t order;
+    relic::bn_t* skBn = BLSUtil::SecAlloc<relic::bn_t>(1);
+    relic::bn_t order;
     bn_new(order);
     g1_get_ord(order);
 
@@ -122,11 +120,11 @@ ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
     relic::md_hmac(IRight, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
-    bn_t* newSk = BLSUtil::SecAlloc<bn_t>(1);
+    relic::bn_t* newSk = BLSUtil::SecAlloc<relic::bn_t>(1);
     bn_new(*newSk);
     bn_read_bin(*newSk, ILeft, BLSPrivateKey::PRIVATE_KEY_SIZE);
 
-    bn_t order;
+    relic::bn_t order;
     bn_new(order);
     g2_get_ord(order);
 

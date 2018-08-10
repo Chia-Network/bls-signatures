@@ -16,7 +16,6 @@
 #define SRC_BLSPUBLICKEY_HPP_
 
 #include <iostream>
-#include <stdexcept>
 #include <vector>
 
 #include "blsutil.hpp"
