@@ -18,11 +18,6 @@
 #include "blsutil.hpp"
 #include "blsprivatekey.hpp"
 
-using std::string;
-using relic::g1_t;
-using relic::g2_t;
-using relic::bn_t;
-
 BLSPrivateKey BLSPrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
     BLS::AssertInitialized();
 
@@ -36,12 +31,12 @@ BLSPrivateKey BLSPrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
     // Hash the seed into sk
     relic::md_hmac(hash, seed, seedLen, hmacKey, sizeof(hmacKey));
 
-    bn_t order;
+    relic::bn_t order;
     bn_new(order);
     g1_get_ord(order);
 
     // Make sure private key is less than the curve order
-    bn_t* skBn = BLSUtil::SecAlloc<bn_t>(1);
+    relic::bn_t* skBn = BLSUtil::SecAlloc<relic::bn_t>(1);
     bn_new(*skBn);
     bn_read_bin(*skBn, hash, BLSPrivateKey::PRIVATE_KEY_SIZE);
     bn_mod_basic(*skBn, *skBn, order);
@@ -61,11 +56,11 @@ BLSPrivateKey BLSPrivateKey::FromBytes(const uint8_t* bytes) {
     BLSPrivateKey k = BLSPrivateKey();
     k.AllocateKeyData();
     bn_read_bin(*k.keydata, bytes, BLSPrivateKey::PRIVATE_KEY_SIZE);
-    bn_t ord;
+    relic::bn_t ord;
     bn_new(ord);
     g1_get_ord(ord);
     if (bn_cmp(*k.keydata, ord) > 0) {
-        throw string("Key data too large, must be smaller than group order");
+        throw std::string("Key data too large, must be smaller than group order");
     }
     return k;
 }
@@ -84,7 +79,7 @@ BLSPrivateKey::~BLSPrivateKey() {
 
 BLSPublicKey BLSPrivateKey::GetPublicKey() const {
     BLS::AssertInitialized();
-    g1_t *q = BLSUtil::SecAlloc<g1_t>(1);
+    relic::g1_t *q = BLSUtil::SecAlloc<relic::g1_t>(1);
     g1_mul_gen(*q, *keydata);
 
     const BLSPublicKey ret = BLSPublicKey::FromG1(q);
@@ -138,7 +133,7 @@ BLSSignature BLSPrivateKey::Sign(uint8_t *msg, size_t len) const {
 
 BLSSignature BLSPrivateKey::SignPrehashed(uint8_t *messageHash) const {
     BLS::AssertInitialized();
-    g2_t sig, point;
+    relic::g2_t sig, point;
 
     g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN, 0);
     g2_mul(sig, point, *keydata);
@@ -153,6 +148,6 @@ BLSSignature BLSPrivateKey::SignPrehashed(uint8_t *messageHash) const {
 
 void BLSPrivateKey::AllocateKeyData() {
     BLS::AssertInitialized();
-    keydata = BLSUtil::SecAlloc<bn_t>(1);
+    keydata = BLSUtil::SecAlloc<relic::bn_t>(1);
     bn_new(*keydata);  // Freed in destructor
 }

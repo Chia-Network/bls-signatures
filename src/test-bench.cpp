@@ -46,7 +46,7 @@ void benchVerification() {
     getRandomSeed(seed);
     BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
 
-    vector<BLSSignature> sigs;
+    std::vector<BLSSignature> sigs;
 
     for (size_t i = 0; i < numIters; i++) {
         uint8_t message[4];
@@ -68,9 +68,9 @@ void benchAggregateSigsSecure() {
     uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
     double numIters = 1000;
 
-    vector<BLSPrivateKey> sks;
-    vector<BLSPublicKey> pks;
-    vector<BLSSignature> sigs;
+    std::vector<BLSPrivateKey> sks;
+    std::vector<BLSPublicKey> pks;
+    std::vector<BLSSignature> sigs;
 
     for (int i = 0; i < numIters; i++) {
         uint8_t seed[32];
@@ -103,8 +103,8 @@ void benchBatchVerification() {
     string testName = "Batch verification";
     double numIters = 1000;
 
-    vector<BLSSignature> sigs;
-    vector<BLSSignature> cache;
+    std::vector<BLSSignature> sigs;
+    std::vector<BLSSignature> cache;
     for (size_t i = 0; i < numIters; i++) {
         uint8_t seed[32];
         getRandomSeed(seed);
@@ -135,8 +135,8 @@ void benchBatchVerification() {
 
 void benchAggregateSigsSimple() {
     double numIters = 1000;
-    vector<BLSPrivateKey> sks;
-    vector<BLSSignature> sigs;
+    std::vector<BLSPrivateKey> sks;
+    std::vector<BLSSignature> sigs;
 
     for (int i = 0; i < numIters; i++) {
         uint8_t* message = new uint8_t[48];
@@ -174,7 +174,7 @@ void benchDegenerateTree() {
         getRandomSeed(seed);
         BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
         BLSSignature sig = sk.Sign(message1, sizeof(message1));
-        vector<BLSSignature> sigs = {aggSig, sig};
+        std::vector<BLSSignature> sigs = {aggSig, sig};
         aggSig = BLS::AggregateSigs(sigs);
     }
     endStopwatch("Generate degenerate aggSig tree",

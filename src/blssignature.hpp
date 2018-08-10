@@ -16,7 +16,6 @@
 #define SRC_BLSSIGNATURE_HPP_
 
 #include <iostream>
-#include <stdexcept>
 #include <vector>
 
 #include "blsutil.hpp"
@@ -48,7 +47,7 @@ class BLSSignature {
     // Divides the aggregate signature (this) by a list of signatures.
     // These divisors can be single or aggregate signatures, but all
     // msg/pk pairs in these signatures must be distinct and unique.
-    BLSSignature DivideBy(vector<BLSSignature> const &divisorSigs) const;
+    BLSSignature DivideBy(std::vector<BLSSignature> const &divisorSigs) const;
 
     // Gets the native relic point for this signature.
     void GetPoint(relic::g2_t output) const;

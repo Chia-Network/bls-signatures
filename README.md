@@ -16,7 +16,8 @@ Features:
 * Key and signature serialization
 * Batch verification
 * Signature division (divide an aggregate by a previously verified signature)
-* Python bindings
+* [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/master/python)
+
 
 #### Import the library
 ```c++
