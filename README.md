@@ -227,6 +227,14 @@ Libsodium and GMP are optional dependencies: libsodium gives secure memory alloc
 and GMP speeds up the library by ~ 3x. To install them, unzip the directories in contrib,
 and follow the instructions for each repo.
 
+### Discussion
+Discussion about this library and other Chia related development is on Keybase.
+Install Keybase, and run the following to join the Chia public channels:
+
+```bash
+keybase team request-access chia_network
+```
+
 ### Code style
 * Always use uint8_t for bytes
 * Use size_t for size variables
