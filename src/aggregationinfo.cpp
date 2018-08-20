@@ -286,7 +286,7 @@ void AggregationInfo::SortIntoVectors(std::vector<uint8_t*> &ms,
 // Simple merging, no exponentiation is performed
 AggregationInfo AggregationInfo::SimpleMergeInfos(
         std::vector<AggregationInfo> const &infos) {
-    std::set<const BLSPublicKey> pubKeysDedup;
+    std::set<BLSPublicKey> pubKeysDedup;
 
     AggregationTree newTree;
     for (const AggregationInfo &info : infos) {
