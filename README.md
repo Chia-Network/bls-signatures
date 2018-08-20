@@ -198,6 +198,7 @@ Cmake and a c++ compiler are required for building.
 ```bash
 git submodule init
 git submodule update
+mkdir build
 cd build
 cmake ../
 cmake --build . -- -j 6
