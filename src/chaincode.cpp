@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SRC_CHAINCODE_CPP_
-#define SRC_CHAINCODE_CPP_
-
 #include "chaincode.hpp"
 #include "bls.hpp"
 
@@ -52,6 +49,3 @@ std::ostream &operator<<(std::ostream &os, ChainCode const &s) {
 void ChainCode::Serialize(uint8_t *buffer) const {
     bn_write_bin(buffer, ChainCode::CHAIN_CODE_SIZE, chainCode);
 }
-
-#endif  // SRC_CHAINCODE_CPP_
-

@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SRC_AGGREGATIONINFO_CPP_
-#define SRC_AGGREGATIONINFO_CPP_
-
 #include <string>
 #include <cstring>
 #include <set>
@@ -395,5 +392,3 @@ AggregationInfo::AggregationInfo() {}
 AggregationInfo::~AggregationInfo() {
     Clear();
 }
-
-#endif  // SRC_BLSAGGREGATIONINFO_HPP_

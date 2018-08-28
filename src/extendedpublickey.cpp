@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SRC_EXTENDEDPUBLICKEY_CPP_
-#define SRC_EXTENDEDPUBLICKEY_CPP_
-
 #include <string>
 #include "extendedpublickey.hpp"
 #include "extendedprivatekey.hpp"
@@ -58,7 +55,7 @@ ExtendedPublicKey ExtendedPublicKey::PublicChild(uint32_t i) const {
     size_t inputLen = BLSPublicKey::PUBLIC_KEY_SIZE + 4 + 1;
 
     // Hmac input includes sk or pk, int i, and byte with 0 or 1
-    uint8_t hmacInput[inputLen];
+    uint8_t hmacInput[BLSPublicKey::PUBLIC_KEY_SIZE + 4 + 1];
 
     // Fill the input with the required data
     pk.Serialize(hmacInput);
@@ -145,5 +142,3 @@ void ExtendedPublicKey::Serialize(uint8_t *buffer) const {
     chainCode.Serialize(buffer + 13);
     pk.Serialize(buffer + 13 + ChainCode::CHAIN_CODE_SIZE);
 }
-
-#endif  // SRC_EXTENDEDPUBLICKEY_CPP_

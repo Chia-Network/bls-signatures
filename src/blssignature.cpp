@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SRC_BLSSIGNATURE_CPP_
-#define SRC_BLSSIGNATURE_CPP_
-
 #include <string>
 #include <cstring>
 #include "blssignature.hpp"
@@ -201,5 +198,3 @@ void BLSSignature::CompressPoint(uint8_t* result, relic::g2_t* point) {
     }
     std::memcpy(result, buffer + 1, SIGNATURE_SIZE);
 }
-
-#endif  // SRC_BLSSIGNATURE_CPP_

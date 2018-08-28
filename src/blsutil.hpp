@@ -21,7 +21,7 @@
 #include <string>
 #include <cstdlib>
 
-#if BLSALLOC
+#if BLSALLOC == sodium
 namespace libsodium {
     #include "sodium/utils.h"
     #include "sodium/core.h"

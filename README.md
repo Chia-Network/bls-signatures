@@ -248,10 +248,9 @@ keybase team request-access chia_network
 
 ### TODO
 * Serialize aggregation info
-* Optimize performance
+* New constant time hashing to g2
 * Secure allocation during signing, key derivation
 * Threshold signatures
-* Full python implementation
 * Remove unnecessary dependency files
 * Constant time and side channel attacks
 * Adaptor signatures / Blind signatures

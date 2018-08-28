@@ -40,8 +40,8 @@ bool BLS::Init() {
         std::cout << "ep_param_set_any_pairf() failed";
         return false;
     }
-#if BLSALLOC
-    if (sodium::sodium_init() < 0) {
+#if BLSALLOC == sodium
+    if (libsodium::sodium_init() < 0) {
         std::cout << "libsodium init failed";
         return false;
     }
@@ -53,8 +53,8 @@ void BLS::AssertInitialized() {
     if (!relic::core_get()) {
         throw std::string("Library not initialized properly. Call BLS::Init()");
     }
-#if BLSALLOC
-    if (sodium::sodium_init() < 0) {
+#if BLSALLOC == sodium
+    if (libsodium::sodium_init() < 0) {
         throw std::string("Libsodium initialization failed.");
     }
 #endif

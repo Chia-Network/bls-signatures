@@ -12,9 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef SRC_EXTENDEDPRIVATEKEY_CPP_
-#define SRC_EXTENDEDPRIVATEKEY_CPP_
-
 #include <string>
 #include <cstring>
 #include "extendedprivatekey.hpp"
@@ -218,5 +215,3 @@ void ExtendedPrivateKey::Serialize(uint8_t *buffer) const {
 
 // Destructors in BLSPrivateKey and ChainCode handle cleaning of memory
 ExtendedPrivateKey::~ExtendedPrivateKey() {}
-
-#endif  // SRC_EXTENDEDPRIVATEKEY_CPP_
