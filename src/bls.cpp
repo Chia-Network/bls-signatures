@@ -396,22 +396,29 @@ bool BLS::Verify(const BLSSignature &aggSig) {
     // Now we have all distinct messages, so we can verify
     relic::g1_t* pubKeysNative;
     relic::g2_t* mappedHashes;
-    // Convert messages into points
-    mappedHashes = new relic::g2_t[finalMessageHashes.size()];
+    // Convert messages into points. Reserve the first slot in the
+    // array for the signature
+    mappedHashes = new relic::g2_t[finalMessageHashes.size() + 1];
+    aggSig.GetPoint(mappedHashes[0]);
     for (size_t i = 0; i < finalMessageHashes.size(); i++) {
-        g2_map(mappedHashes[i], finalMessageHashes[i],
+        g2_map(mappedHashes[i + 1], finalMessageHashes[i],
                BLS::MESSAGE_HASH_LEN, 0);
     }
     // Get points array from pubkey std::vector
-    pubKeysNative = new relic::g1_t[finalPubKeys.size()];
+    pubKeysNative = new relic::g1_t[finalPubKeys.size() + 1];
+
+    // Order - 1 (which is equivalent to -1 % order)
+    g1_get_gen(pubKeysNative[0]);
+    relic::bn_t ordMinus1;
+    relic::bn_new(ordMinus1);
+    relic::g1_get_ord(ordMinus1);
+    relic::bn_sub_dig(ordMinus1, ordMinus1, 1);
+    relic::g1_mul(pubKeysNative[0], pubKeysNative[0], ordMinus1);
     for (size_t i = 0; i < finalPubKeys.size(); i++) {
-        finalPubKeys[i].GetPoint(pubKeysNative[i]);
+        finalPubKeys[i].GetPoint(pubKeysNative[i + 1]);
     }
-    // Get points array from signature std::vector
-    relic::g2_t aggSigNative;
-    aggSig.GetPoint(aggSigNative);
-    bool result = VerifyNative(aggSigNative, pubKeysNative,
-                               mappedHashes, finalPubKeys.size());
+    bool result = VerifyNative(pubKeysNative, mappedHashes,
+                               finalPubKeys.size() + 1);
 
     // Free allocated memory
     delete[] mappedHashes;
@@ -541,7 +548,6 @@ BLSPrivateKey BLS::AggregatePrivKeys(
 }
 
 bool BLS::VerifyNative(
-        relic::g2_t aggSig,
         relic::g1_t* pubKeys,
         relic::g2_t* mappedHashes,
         size_t len) {
@@ -550,19 +556,17 @@ bool BLS::VerifyNative(
             return false;
         }
     }
-    relic::g1_t g1;
-    g1_get_gen(g1);
-
     relic::gt_t target, candidate;
 
-    // e(g1, aggsig)
-    pc_map(target, g1, aggSig);
+    // Target = 1
+    relic::fp12_zero(target);
+    relic::fp_set_dig(target[0][0][0], 1);
 
-    // prod e(pubkey[i], hash[i]);
+    // prod e(pubkey[i], hash[i]) * e(-1 * g1, aggSig)
     // Performs pubKeys.size() pairings
     pc_map_sim(candidate, pubKeys, mappedHashes, len);
 
-    // e(g1, aggsig) =? prod e(pubkey[i], hash[i]);
+    // 1 =? prod e(pubkey[i], hash[i]) * e(g1, aggSig)
     if (relic::fp12_cmp(target, candidate) != CMP_EQ ||
             relic::core_get()->code != STS_OK) {
         relic::core_get()->code = STS_OK;

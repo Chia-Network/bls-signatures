@@ -94,7 +94,6 @@ class BLS {
             std::vector<std::vector<uint8_t*> > const &messageHashes);
 
     static bool VerifyNative(
-            relic::g2_t aggSig,
             relic::g1_t* pubKeys,
             relic::g2_t* mappedHashes,
             size_t len);
