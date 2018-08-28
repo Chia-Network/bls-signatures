@@ -10,6 +10,7 @@ src/CMakeFile
 build/*
 blspy.egg-info
 dist
+python-impl/__pycache__/
 
 main
 .o
