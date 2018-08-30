@@ -83,17 +83,20 @@ def test_vectors():
     assert(sk1.serialize() == bytes.fromhex("022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e"))
     assert(pk1.get_fingerprint() == 0x26d53247)
     assert(pk2.get_fingerprint() == 0x289bb56e)
-    assert(sig1.serialize() == bytes.fromhex("8f562d96ddabc780ce2ec4b00078e13ee265d7fb24fc2358f3aeb900d7e05f0c880388fe0abc4b460ab1ea3f843c0c28042503e005f357d3124151b87ba2df18b6a5d91afb9cd09cfed16876a25e505fe3bdfb8ccf1ba18be4ca35a095d81957"))
+    assert(sig1.serialize() == bytes.fromhex("0f562d96ddabc780ce2ec4b00078e13ee265d7fb24fc2358f3aeb900d7e05f0c880388fe0abc4b460ab1ea3f843c0c28042503e005f357d3124151b87ba2df18b6a5d91afb9cd09cfed16876a25e505fe3bdfb8ccf1ba18be4ca35a095d81957"))
     assert(sig2.serialize() == bytes.fromhex("8388b5451e0d387fbcade62af7563705635f7eedaaf5c2d97ce2e116150f159256b7fe045f03a8a0013312bd5ea153130943caa0f409b6fac4850b0102e5f5f8ffc27ba900bd624317ba19cb19c5a681a083ef8167a4930bbc17aac8ea40bbd5"))
 
     agg_sig = BLS.aggregate_sigs([sig1, sig2])
-    assert(agg_sig.serialize() == bytes.fromhex("867d44075175669de7ebd5151c256d60b6a7ebbe06d0f680d135f26f912b7fbbe049a1b42fa910bbfa8a38e4466c4dbf02062fd347174015624b1885351104830354a89d307bc509489cd33fa0c79826672288250f27024b8ea0bcafcdcfd386"))
+    assert(agg_sig.serialize() == bytes.fromhex("067d44075175669de7ebd5151c256d60b6a7ebbe06d0f680d135f26f912b7fbbe049a1b42fa910bbfa8a38e4466c4dbf02062fd347174015624b1885351104830354a89d307bc509489cd33fa0c79826672288250f27024b8ea0bcafcdcfd386"))
 
     ok = BLS.verify(sig1)
     ok2 = BLS.verify(agg_sig)
 
     assert(ok)
     assert(ok2)
+    sig1.set_aggregation_info(sig2.aggregation_info)
+    ok3 = BLS.verify(sig1)
+    assert(not ok3)
 
 
 def test_bls():

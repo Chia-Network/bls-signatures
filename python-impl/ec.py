@@ -95,7 +95,7 @@ class AffinePoint:
             if self.y > (self.ec.q // 2):
                 output[0] |= 0x80
         elif self.FE == Fq2:
-            if self.y[0] > (self.ec.q // 2):
+            if self.y[1] > (self.ec.q // 2):
                 output[0] |= 0x80
 
         return bytes(output)

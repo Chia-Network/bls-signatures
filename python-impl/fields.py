@@ -195,7 +195,6 @@ class FieldExtBase(tuple):
         else:
             other_new = other
 
-            # other = cls.from_fq(self.Q, Fq(self.Q, other))
         ret = super().__new__(cls, (a + b for a, b in zip(self, other_new)))
         ret.Q = self.Q
         ret.root = self.root
@@ -260,7 +259,8 @@ class FieldExtBase(tuple):
             return (super().__eq__(other) and self.Q == other.Q)
 
     def __lt__(self, other):
-        return (super().__lt__(other))
+        # Reverse the order for comparison (3i + 1 > 2i + 7)
+        return self[::-1].__lt__(other[::-1])
 
     def __gt__(self, other):
         return (super().__gt__(other))

@@ -47,7 +47,7 @@ TEST_CASE("Test vectors") {
         sk1.Serialize(buf2);
 
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-             == "8f562d96ddabc780ce2ec4b00078e13ee265d7fb24fc2358f3aeb900d7e05f0c880388fe0abc4b460ab1ea3f843c0c28042503e005f357d3124151b87ba2df18b6a5d91afb9cd09cfed16876a25e505fe3bdfb8ccf1ba18be4ca35a095d81957");
+             == "0f562d96ddabc780ce2ec4b00078e13ee265d7fb24fc2358f3aeb900d7e05f0c880388fe0abc4b460ab1ea3f843c0c28042503e005f357d3124151b87ba2df18b6a5d91afb9cd09cfed16876a25e505fe3bdfb8ccf1ba18be4ca35a095d81957");
         REQUIRE(BLSUtil::HexStr(buf2, BLSPrivateKey::PRIVATE_KEY_SIZE)
              == "022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e");
 
@@ -60,7 +60,7 @@ TEST_CASE("Test vectors") {
 
         aggSig1.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-             == "867d44075175669de7ebd5151c256d60b6a7ebbe06d0f680d135f26f912b7fbbe049a1b42fa910bbfa8a38e4466c4dbf02062fd347174015624b1885351104830354a89d307bc509489cd33fa0c79826672288250f27024b8ea0bcafcdcfd386");
+             == "067d44075175669de7ebd5151c256d60b6a7ebbe06d0f680d135f26f912b7fbbe049a1b42fa910bbfa8a38e4466c4dbf02062fd347174015624b1885351104830354a89d307bc509489cd33fa0c79826672288250f27024b8ea0bcafcdcfd386");
         REQUIRE(BLS::Verify(aggSig1));
     }
 }
@@ -211,6 +211,7 @@ TEST_CASE("Signatures") {
         REQUIRE(BLS::Verify(sig2));
         BLSUtil::SecFree(skData);
     }
+
     SECTION("Should throw on a bad private key") {
         uint8_t seed[32];
         getRandomSeed(seed);

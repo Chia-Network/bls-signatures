@@ -46,13 +46,9 @@ void ep2_pck(ep2_t r, ep2_t p) {
 	bn_t yValue;
 	bn_null(yValue);
 	bn_new(yValue);
-	fp_prime_back(yValue, p->y[0]);
-	bn_print(yValue);
+	fp_prime_back(yValue, p->y[1]);
 
 	int b = bn_cmp(yValue, halfQ) == CMP_GT;
-
-	bn_free(yValue);
-	bn_free(halfQ);
 
 	fp2_copy(r->x, p->x);
 	fp2_zero(r->y);
@@ -61,6 +57,9 @@ void ep2_pck(ep2_t r, ep2_t p) {
 	fp_set_dig(r->z[0], 1);
 	fp_zero(r->z[1]);
 	r->norm = 1;
+
+	bn_free(yValue);
+	bn_free(halfQ);
 }
 
 int ep2_upk(ep2_t r, ep2_t p) {
@@ -90,7 +89,7 @@ int ep2_upk(ep2_t r, ep2_t p) {
 			bn_t yValue;
 			bn_null(yValue);
 			bn_new(yValue);
-			fp_prime_back(yValue, p->y[0]);
+			fp_prime_back(yValue, t[1]);
 
 			int b = bn_cmp(yValue, halfQ) == CMP_GT;
 
