@@ -36,7 +36,24 @@
 /*============================================================================*/
 
 void ep2_pck(ep2_t r, ep2_t p) {
-	int b = fp_get_bit(p->y[0], 0);
+	bn_t halfQ;
+	bn_null(halfQ);
+	bn_new(halfQ);
+	halfQ->used = FP_DIGS;
+	dv_copy(halfQ->dp, fp_prime_get(), FP_DIGS);
+	bn_hlv(halfQ, halfQ);
+
+	bn_t yValue;
+	bn_null(yValue);
+	bn_new(yValue);
+	fp_prime_back(yValue, p->y[0]);
+	bn_print(yValue);
+
+	int b = bn_cmp(yValue, halfQ) == CMP_GT;
+
+	bn_free(yValue);
+	bn_free(halfQ);
+
 	fp2_copy(r->x, p->x);
 	fp2_zero(r->y);
 	fp_set_bit(r->y[0], 0, b);
@@ -61,9 +78,23 @@ int ep2_upk(ep2_t r, ep2_t p) {
 		result = fp2_srt(t, t);
 
 		if (result) {
-			/* Verify if least significant bit of the result matches the
+			/* Verify whether the y coordinate is the larger one, matches the
 			 * compressed y-coordinate. */
-			if (fp_get_bit(t[0], 0) != fp_get_bit(p->y[0], 0)) {
+			bn_t halfQ;
+			bn_null(halfQ);
+			bn_new(halfQ);
+			halfQ->used = FP_DIGS;
+			dv_copy(halfQ->dp, fp_prime_get(), FP_DIGS);
+			bn_hlv(halfQ, halfQ);
+
+			bn_t yValue;
+			bn_null(yValue);
+			bn_new(yValue);
+			fp_prime_back(yValue, p->y[0]);
+
+			int b = bn_cmp(yValue, halfQ) == CMP_GT;
+
+			if (b != fp_get_bit(p->y[0], 0)) {
 				fp2_neg(t, t);
 			}
 			fp2_copy(r->x, p->x);
@@ -78,6 +109,8 @@ int ep2_upk(ep2_t r, ep2_t p) {
 	}
 	FINALLY {
 		fp2_free(t);
+		bn_free(yValue);
+		bn_free(halfQ);
 	}
 	return result;
 }

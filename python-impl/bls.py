@@ -1,7 +1,6 @@
 from ec import (generator_Fq, hash_to_point_Fq2, default_ec,
-                default_ec_twist,
                 hash_to_point_prehashed_Fq2, y_for_x,
-                AffinePoint)
+                AffinePoint, JacobianPoint)
 from fields import Fq, Fq2, Fq12
 from util import hmac256, hash256
 from pairing import ate_pairing_multi
@@ -28,13 +27,10 @@ class BLSPublicKey:
         return int.from_bytes(hash256(ser)[:4], "big")
 
     def serialize(self):
-        value_affine = self.value.to_affine()
-        x_bytes = bytearray(int(value_affine.x).to_bytes(
-                self.PUBLIC_KEY_SIZE, "big"))
-        y_bytes = int(value_affine.y).to_bytes(self.PUBLIC_KEY_SIZE, "big")
-        if (y_bytes[0] & 0x01 != 0x00):
-            x_bytes[0] |= 0x80
-        return bytes(x_bytes)
+        return self.value.serialize()
+
+    def __lt__(self, other):
+        return self.value.serialize() < other.value.serialize()
 
     def __str__(self):
         return "BLSPublicKey(" + self.value.to_affine().__str__() + ")"
@@ -68,14 +64,20 @@ class BLSPrivateKey:
 
     def sign(self, m):
         r = hash_to_point_Fq2(m).to_jacobian()
-        return BLSSignature.from_g2(self.value * r)
+        aggregation_info = AggregationInfo.from_msg(self.get_public_key(), m)
+        return BLSSignature.from_g2(self.value * r, aggregation_info)
 
     def sign_prehashed(self, h):
         r = hash_to_point_prehashed_Fq2(h).to_jacobian()
-        return BLSSignature.from_g2(self.value * r)
+        aggregation_info = AggregationInfo.from_msg_hash(self.get_public_key(),
+                                                         h)
+        return BLSSignature.from_g2(self.value * r, aggregation_info)
+
+    def __lt__(self, other):
+        return self.value.serialize() < other.value.serialize()
 
     def serialize(self):
-        return int(self.value).to_bytes(self.PRIVATE_KEY_SIZE, "big")
+        return self.value.to_bytes(self.PRIVATE_KEY_SIZE, "big")
 
     def __str__(self):
         return "BLSPrivateKey(" + self.value.__str__() + ")"
@@ -85,52 +87,154 @@ class BLSPrivateKey:
 
 
 class AggregationInfo:
-    def __init__(self, tree, message_hashes, pks):
+    def __init__(self, tree, message_hashes, public_keys):
         self.tree = tree
         self.message_hashes = message_hashes
-        self.pks = pks
+        self.public_keys = public_keys
+
+    def empty(self):
+        return not self.tree
+
+    def __lt__(self, other):
+        combined = [(self.message_hashes[i], self.public_keys[i],
+                     self.tree[(self.message_hashes[i], self.public_keys[i])])
+                    for i in range(len(self.public_keys))]
+        combined_other = [(other.message_hashes[i], other.public_keys[i],
+                           other.tree[(other.message_hashes[i],
+                                       other.public_keys[i])])
+                          for i in range(len(other.public_keys))]
+
+        for i in range(len(combined)):
+            if i >= len(combined_other):
+                return False
+            if combined[i] < combined_other[i]:
+                return True
+            if combined_other[i] < combined[i]:
+                return False
+        return True
 
     @staticmethod
-    def from_msg_hash(pk, message_hash):
+    def from_msg_hash(public_key, message_hash):
         tree = {}
-        serialized = message_hash + pk.serialize()
-        tree[serialized] = 1
-        return AggregationInfo(tree, [message_hash], [pk])
+        tree[(message_hash, public_key)] = 1
+        return AggregationInfo(tree, [message_hash], [public_key])
 
     @staticmethod
     def from_msg(pk, message):
-        return AggregationInfo.from_msg_hash(hash256(message))
+        return AggregationInfo.from_msg_hash(pk, hash256(message))
+
+    @staticmethod
+    def simple_merge_infos(aggregation_infos):
+        new_tree = {}
+        for info in aggregation_infos:
+            new_tree.update(info.tree)
+        mh_pubkeys = [k for k, v in new_tree.items()]
+
+        mh_pubkeys.sort()
+
+        message_hashes = [message_hash for (message_hash, public_key)
+                          in mh_pubkeys]
+        public_keys = [public_key for (message_hash, public_key)
+                       in mh_pubkeys]
+
+        return AggregationInfo(new_tree, message_hashes, public_keys)
+
+    @staticmethod
+    def secure_merge_infos(colliding_infos):
+        # Groups are sorted by message then pk then exponent
+        # Each info object (and all of it's exponents) will be
+        # exponentiated by one of the Ts
+        colliding_infos.sort()
+
+        sorted_keys = []
+        for info in colliding_infos:
+            for key, value in info.tree.items():
+                sorted_keys.append(key)
+        sorted_keys.sort()
+        sorted_pks = [public_key for (message_hash, public_key)
+                      in sorted_keys]
+        computed_Ts = BLS.hash_pks(len(colliding_infos), sorted_pks)
+
+        # Group order, exponents can be reduced mod the order
+        order = sorted_pks[0].value.ec.n
+
+        new_tree = {}
+        for i in range(len(colliding_infos)):
+            for key, value in colliding_infos[i].tree.items():
+                if key not in new_tree:
+                    # This message & pk have not been included yet
+                    new_tree[key] = (value * computed_Ts[i]) % order
+                else:
+                    # This message and pk are already included, so multiply
+                    addend = value * computed_Ts[i]
+                    new_tree[key] = (new_tree[key] + addend) % order
+        mh_pubkeys = [k for k, v in new_tree.items()]
+        mh_pubkeys.sort()
+        message_hashes = [message_hash for (message_hash, public_key)
+                          in mh_pubkeys]
+        public_keys = [public_key for (message_hash, public_key)
+                       in mh_pubkeys]
+        return AggregationInfo(new_tree, message_hashes, public_keys)
+
+    @staticmethod
+    def merge_infos(aggregation_infos):
+        messages = set()
+        colliding_messages = set()
+        for info in aggregation_infos:
+            messages_local = set()
+            for key, value in info.tree.items():
+                if key[0] in messages and key[0] not in messages_local:
+                    colliding_messages.add(key[0])
+                messages.add(key[0])
+                messages_local.add(key[0])
+
+        if len(colliding_messages) == 0:
+            return AggregationInfo.simple_merge_infos(aggregation_infos)
+
+        colliding_infos = []
+        non_colliding_infos = []
+        for info in aggregation_infos:
+            info_collides = False
+            for key, value in info.tree.items():
+                if key[0] in colliding_messages:
+                    info_collides = True
+                    colliding_infos.append(info)
+            if not info_collides:
+                non_colliding_infos.append(info)
+
+        combined = AggregationInfo.secure_merge_infos(colliding_infos)
+        non_colliding_infos.append(combined)
+        return AggregationInfo.simple_merge_infos(non_colliding_infos)
 
 
 class BLSSignature:
     SIGNATURE_SIZE = 96
 
-    def __init__(self, value):
+    def __init__(self, value, aggregation_info=None):
         self.value = value
-        self.aggregation_info = None
+        self.aggregation_info = aggregation_info
 
     @staticmethod
-    def from_bytes(buffer):
+    def from_bytes(buffer, aggregation_info=None):
         x0 = int.from_bytes(buffer[:48], "big")
         x1 = int.from_bytes(buffer[48:], "big")
         x = Fq2(default_ec.q, Fq(default_ec.q, x0), Fq(default_ec.q, x1))
         y = y_for_x(x)
-        return BLSPublicKey(AffinePoint(x, y, False, default_ec).to_jacobian())
+        return BLSSignature(AffinePoint(x, y, False, default_ec).to_jacobian(),
+                            aggregation_info)
 
     @staticmethod
-    def from_g2(g2_el):
-        return BLSSignature(g2_el)
+    def from_g2(g2_el, aggregation_info=None):
+        return BLSSignature(g2_el, aggregation_info)
+
+    def set_aggregation_info(self, aggregation_info):
+        self.aggregation_info = aggregation_info
+
+    def __lt__(self, other):
+        return self.value.serialize() < other.value.serialize()
 
     def serialize(self):
-        value_affine = self.value.to_affine()
-        x_bytes = bytearray(int(value_affine.x[0]).to_bytes(
-                    self.SIGNATURE_SIZE // 2, "big") +
-                int(value_affine.x[1]).to_bytes(self.SIGNATURE_SIZE//2, "big"))
-
-        ys = y_for_x(value_affine.x, default_ec_twist, Fq2)
-        if (ys[1] == value_affine.y):
-            x_bytes[0] |= 0xf0
-        return bytes(x_bytes)
+        return self.value.serialize()
 
     def __str__(self):
         return "BLSSignature(" + self.value.to_affine().__str__() + ")"
@@ -141,24 +245,188 @@ class BLSSignature:
 
 class BLS:
     @staticmethod
-    def aggregate_sigs(signatures):
+    def aggregate_sigs_simple(signatures):
         q = default_ec.q
         agg_sig = (AffinePoint(Fq2.zero(q), Fq2.zero(q), True, default_ec)
                    .to_jacobian())
 
         for sig in signatures:
             agg_sig += sig.value
+
         return BLSSignature.from_g2(agg_sig)
 
     @staticmethod
-    def verify(message, pk, signature):
+    def aggregate_sigs_secure(signatures, public_keys, message_hashes):
+        if (len(signatures) != len(public_keys) or
+                len(public_keys) != len(message_hashes)):
+            raise "Invalid number of keys"
+        mh_pub_sigs = [(message_hashes[i], public_keys[i], signatures[i])
+                       for i in range(len(signatures))]
+
+        # Sort by message hash + pk
+        mh_pub_sigs.sort()
+
+        computed_Ts = BLS.hash_pks(len(public_keys), public_keys)
+
+        # Raise each sig to a power of each t,
+        # and multiply all together into agg_sig
+        ec = public_keys[0].ec
+        agg_sig = JacobianPoint(Fq2.one(ec.q), Fq2.one(ec.q),
+                                Fq2.zero(ec.q), True, ec)
+
+        for i, (_, _, signature) in enumerate(mh_pub_sigs):
+            agg_sig += signature * computed_Ts[i]
+
+        return BLSSignature.from_g2(agg_sig)
+
+    @staticmethod
+    def aggregate_sigs(signatures):
+        public_keys = []  # List of lists
+        message_hashes = []  # List of lists
+
+        for signature in signatures:
+            if signature.aggregation_info.empty():
+                raise "Each signature must have a valid aggregation info"
+            public_keys.append(signature.aggregation_info.public_keys)
+            message_hashes.append(signature.aggregation_info.message_hashes)
+
+        # Find colliding vectors, save colliding messages
+        messages_set = set()
+        colliding_messages_set = set()
+
+        for msg_vector in message_hashes:
+            messages_set_local = set()
+            for msg in msg_vector:
+                if msg in messages_set and msg not in messages_set_local:
+                    colliding_messages_set.add(msg)
+                messages_set.add(msg)
+                messages_set_local.add(msg)
+
+        if len(colliding_messages_set) == 0:
+            # There are no colliding messages between the groups, so we
+            # will just aggregate them all simply. Note that we assume
+            # that every group is a valid aggregate signature. If an invalid
+            # or insecure signature is given, and invalid signature will
+            # be created. We don't verify for performance reasons.
+            final_sig = BLS.aggregate_sigs_simple(signatures)
+            aggregation_infos = [sig.aggregation_info for sig in signatures]
+            final_agg_info = AggregationInfo.merge_infos(aggregation_infos)
+            final_sig.set_aggregation_info(final_agg_info)
+            return final_sig
+
+        # There are groups that share messages, therefore we need
+        # to use a secure form of aggregation. First we find which
+        # groups collide, and securely aggregate these. Then, we
+        # use simple aggregation at the end.
+        colliding_sigs = []
+        non_colliding_sigs = []
+        colliding_message_hashes = []  # List of lists
+        colliding_public_keys = []  # List of lists
+
+        for i in range(len(signatures)):
+            group_collides = False
+            for msg in message_hashes[i]:
+                if msg in colliding_messages_set:
+                    group_collides = True
+                    colliding_sigs.append(signatures[i])
+                    colliding_message_hashes.append(message_hashes[i])
+                    colliding_public_keys.append(public_keys[i])
+                    break
+            if not group_collides:
+                non_colliding_sigs.append(signatures[i])
+
+        # Arrange all signatures, sorted by their aggregation info
+        colliding_sigs.sort(key=lambda s: s.aggregation_info)
+
+        # Arrange all public keys in sorted order, by (m, pk)
+        sort_keys_sorted = []
+        for i in range(len(colliding_public_keys)):
+            for j in range(len(colliding_public_keys[i])):
+                sort_keys_sorted.append((colliding_message_hashes[i][j],
+                                         colliding_public_keys[i][j]))
+        sort_keys_sorted.sort()
+        sorted_public_keys = [pk for (mh, pk) in sort_keys_sorted]
+
+        computed_Ts = BLS.hash_pks(len(sorted_public_keys), sorted_public_keys)
+
+        # Raise each sig to a power of each t,
+        # and multiply all together into agg_sig
+        ec = sorted_public_keys[0].value.ec
+        agg_sig = JacobianPoint(Fq2.one(ec.q), Fq2.one(ec.q),
+                                Fq2.zero(ec.q), True, ec)
+
+        for i, signature in enumerate(colliding_sigs):
+            agg_sig += signature.value * computed_Ts[i]
+
+        final_sig = BLSSignature.from_g2(agg_sig)
+        aggregation_infos = [sig.aggregation_info for sig in signatures]
+        final_agg_info = AggregationInfo.merge_infos(aggregation_infos)
+        final_sig.set_aggregation_info(final_agg_info)
+
+        return final_sig
+
+    @staticmethod
+    def verify(message, public_key, signature):
         message_hash = hash_to_point_Fq2(message)
         g1 = -1 * generator_Fq()
 
-        Ps = [g1, pk.value.to_affine()]
+        Ps = [g1, public_key.value.to_affine()]
         Qs = [signature.value.to_affine(), message_hash]
         res = ate_pairing_multi(Ps, Qs, default_ec)
         return res == Fq12.one(default_ec.q)
+
+    @staticmethod
+    def aggregate_public_keys(public_keys, secure):
+        if len(public_keys) < 1:
+            raise "Invalid number of keys"
+        public_keys.sort()
+
+        computed_Ts = BLS.hash_pks(len(public_keys), public_keys)
+
+        ec = public_keys[0].ec
+        sum_keys = JacobianPoint(Fq.one(ec.q), Fq.one(ec.q),
+                                 Fq.zero(ec.q), True, ec)
+        for i in range(len(public_keys)):
+            addend = public_keys[i]
+            if secure:
+                addend *= computed_Ts[i]
+            sum_keys += addend
+
+        return BLSPublicKey.from_g1(sum_keys)
+
+    @staticmethod
+    def aggregate_private_keys(private_keys, public_keys, secure):
+        if secure and len(private_keys) != len(public_keys):
+            raise "Invalid number of keys"
+
+        priv_pub_keys = [(public_keys[i], private_keys[i])
+                         for i in range(len(private_keys))]
+        # Sort by public keys
+        priv_pub_keys.sort()
+
+        computed_Ts = BLS.hash_pks(len(private_keys), public_keys)
+
+        n = public_keys[0].ec.n
+        sum_keys = 0
+        for i in range(len(priv_pub_keys)):
+            addend = priv_pub_keys[i][1]
+            if (secure):
+                addend *= computed_Ts[i]
+            sum_keys = (sum_keys + addend) % n
+
+        return BLSPrivateKey.from_bytes(sum_keys.to_bytes(32, "big"))
+
+    @staticmethod
+    def hash_pks(num_outputs, public_keys):
+        input_bytes = b''.join([pk.serialize() for pk in public_keys])
+        pk_hash = hash256(input_bytes)
+
+        computed_Ts = []
+        for i in range(num_outputs):
+            t = int.from_bytes(hash256(i.to_bytes(4, "big") + pk_hash), "big")
+            computed_Ts.append(t)
+
+        return computed_Ts
 
 
 """

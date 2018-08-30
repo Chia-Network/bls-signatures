@@ -266,7 +266,8 @@ void AggregationInfo::InsertIntoTree(AggregationInfo::AggregationTree &tree,
 }
 
 // This method is used to keep an alternate copy of the tree
-// keys (hashes and pks) in sorted order, for easy access
+// keys (hashes and pks) in sorted order, for easy access.
+// Note: these are sorted in mh + pk order.
 void AggregationInfo::SortIntoVectors(std::vector<uint8_t*> &ms,
             std::vector<BLSPublicKey> &pks,
             const AggregationInfo::AggregationTree &tree) {

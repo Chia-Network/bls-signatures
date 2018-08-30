@@ -167,11 +167,11 @@ BLSSignature BLS::AggregateSigs(
 
     if (sigs.size() != pubKeys.size()
         || pubKeys.size() != messageHashes.size()) {
-        throw std::string("Lengths of std::vectors must match.");
+        throw std::string("Lengths of vectors must match.");
     }
     for (size_t i = 0; i < messageHashes.size(); i++) {
         if (pubKeys[i].size() != messageHashes[i].size()) {
-            throw std::string("Lengths of std::vectors must match.");
+            throw std::string("Lengths of vectors must match.");
         }
     }
     BLSSignature ret = AggregateSigsInternal(sigs, pubKeys,
@@ -228,98 +228,98 @@ BLSSignature BLS::AggregateSigsInternal(
         }
         ret.SetAggregationInfo(AggregationInfo::MergeInfos(infos));
         return ret;
-    } else {
-        // There are groups that share messages, therefore we need
-        // to use a secure form of aggregation. First we find which
-        // groups collide, and securely aggregate these. Then, we
-        // use simple aggregation at the end.
-        std::vector<BLSSignature > collidingSigs;
-        std::vector<BLSSignature> nonCollidingSigs;
-        std::vector<std::vector<uint8_t*> > collidingMessageHashes;
-        std::vector<std::vector<BLSPublicKey> > collidingPks;
-
-        for (size_t i = 0; i < sigs.size(); i++) {
-            bool groupCollides = false;
-            for (const uint8_t* msg : messageHashes[i]) {
-                auto lookupEntry = collidingMessagesSet.find(msg);
-                if (lookupEntry != collidingMessagesSet.end()) {
-                    groupCollides = true;
-                    collidingSigs.push_back(sigs[i]);
-                    collidingMessageHashes.push_back(messageHashes[i]);
-                    collidingPks.push_back(pubKeys[i]);
-                    break;
-                }
-            }
-            if (!groupCollides) {
-                nonCollidingSigs.push_back(sigs[i]);
-            }
-        }
-
-        // Sort signatures by aggInfo
-        std::vector<BLSSignature> sigsSorted;
-        for (const BLSSignature &sig : collidingSigs) {
-            sigsSorted.push_back(sig);
-        }
-        std::sort(begin(sigsSorted), end(sigsSorted),
-                  [](const BLSSignature &a, const BLSSignature &b) -> bool {
-            return *a.GetAggregationInfo() < *b.GetAggregationInfo();
-        });
-        std::vector<uint8_t*> sortKeysSorted;
-        for (size_t i = 0; i < collidingPks.size(); i++) {
-            for (size_t j = 0; j < collidingPks[i].size(); j++) {
-                uint8_t* sortKey = new uint8_t[MESSAGE_HASH_LEN
-                                            + BLSPublicKey::PUBLIC_KEY_SIZE];
-                std::memcpy(sortKey, collidingMessageHashes[i][j], MESSAGE_HASH_LEN);
-                collidingPks[i][j].Serialize(sortKey + BLS::MESSAGE_HASH_LEN);
-                sortKeysSorted.push_back(sortKey);
-            }
-        }
-        // Sort everything according to message || pubkey
-        sort(begin(sortKeysSorted), end(sortKeysSorted),
-             BLSUtil::BytesCompare80());
-
-        std::vector<BLSPublicKey> pubKeysSorted;
-        for (const uint8_t* sortKey : sortKeysSorted) {
-            pubKeysSorted.push_back(BLSPublicKey::FromBytes(sortKey
-                    + BLS::MESSAGE_HASH_LEN));
-        }
-        relic::bn_t* computedTs = new relic::bn_t[sigsSorted.size()];
-        for (size_t i = 0; i < sigsSorted.size(); i++) {
-            bn_new(computedTs[i]);
-        }
-        HashPubKeys(computedTs, sigsSorted.size(), pubKeysSorted);
-
-        // Copy each signature into sig, raise to power of each t for
-        // sigComp, and multiply all together into aggSig
-        relic::g2_t sig, sigComp, aggSig;
-        g2_set_infty(aggSig);
-        std::vector<AggregationInfo> infos;
-
-        // Also accumulates aggregation info for each signature
-        for (size_t i = 0; i < sigsSorted.size(); i++) {
-            sigsSorted[i].GetPoint(sig);
-            g2_mul(sigComp, sig, computedTs[i]);
-            g2_add(aggSig, aggSig, sigComp);
-            infos.push_back(*sigsSorted[i].GetAggregationInfo());
-        }
-
-        for (const BLSSignature &nonColliding : nonCollidingSigs) {
-            nonColliding.GetPoint(sig);
-            g2_add(aggSig, aggSig, sig);
-            infos.push_back(*nonColliding.GetAggregationInfo());
-        }
-        BLSSignature ret = BLSSignature::FromG2(&aggSig);
-
-        // Merge the aggregation infos, which will be combined in an
-        // identical way as above.
-        ret.SetAggregationInfo(AggregationInfo::MergeInfos(infos));
-
-        delete[] computedTs;
-        for (const uint8_t* sortKey : sortKeysSorted) {
-            delete[] sortKey;
-        }
-        return ret;
     }
+
+    // There are groups that share messages, therefore we need
+    // to use a secure form of aggregation. First we find which
+    // groups collide, and securely aggregate these. Then, we
+    // use simple aggregation at the end.
+    std::vector<BLSSignature > collidingSigs;
+    std::vector<BLSSignature> nonCollidingSigs;
+    std::vector<std::vector<uint8_t*> > collidingMessageHashes;
+    std::vector<std::vector<BLSPublicKey> > collidingPks;
+
+    for (size_t i = 0; i < sigs.size(); i++) {
+        bool groupCollides = false;
+        for (const uint8_t* msg : messageHashes[i]) {
+            auto lookupEntry = collidingMessagesSet.find(msg);
+            if (lookupEntry != collidingMessagesSet.end()) {
+                groupCollides = true;
+                collidingSigs.push_back(sigs[i]);
+                collidingMessageHashes.push_back(messageHashes[i]);
+                collidingPks.push_back(pubKeys[i]);
+                break;
+            }
+        }
+        if (!groupCollides) {
+            nonCollidingSigs.push_back(sigs[i]);
+        }
+    }
+
+    // Sort signatures by aggInfo
+    std::vector<BLSSignature> sigsSorted;
+    for (const BLSSignature &sig : collidingSigs) {
+        sigsSorted.push_back(sig);
+    }
+    std::sort(begin(sigsSorted), end(sigsSorted),
+                [](const BLSSignature &a, const BLSSignature &b) -> bool {
+        return *a.GetAggregationInfo() < *b.GetAggregationInfo();
+    });
+    std::vector<uint8_t*> sortKeysSorted;
+    for (size_t i = 0; i < collidingPks.size(); i++) {
+        for (size_t j = 0; j < collidingPks[i].size(); j++) {
+            uint8_t* sortKey = new uint8_t[MESSAGE_HASH_LEN
+                                        + BLSPublicKey::PUBLIC_KEY_SIZE];
+            std::memcpy(sortKey, collidingMessageHashes[i][j], MESSAGE_HASH_LEN);
+            collidingPks[i][j].Serialize(sortKey + BLS::MESSAGE_HASH_LEN);
+            sortKeysSorted.push_back(sortKey);
+        }
+    }
+    // Sort everything according to message || pubkey
+    sort(begin(sortKeysSorted), end(sortKeysSorted),
+            BLSUtil::BytesCompare80());
+
+    std::vector<BLSPublicKey> pubKeysSorted;
+    for (const uint8_t* sortKey : sortKeysSorted) {
+        pubKeysSorted.push_back(BLSPublicKey::FromBytes(sortKey
+                + BLS::MESSAGE_HASH_LEN));
+    }
+    relic::bn_t* computedTs = new relic::bn_t[sigsSorted.size()];
+    for (size_t i = 0; i < sigsSorted.size(); i++) {
+        bn_new(computedTs[i]);
+    }
+    HashPubKeys(computedTs, sigsSorted.size(), pubKeysSorted);
+
+    // Copy each signature into sig, raise to power of each t for
+    // sigComp, and multiply all together into aggSig
+    relic::g2_t sig, sigComp, aggSig;
+    g2_set_infty(aggSig);
+    std::vector<AggregationInfo> infos;
+
+    // Also accumulates aggregation info for each signature
+    for (size_t i = 0; i < sigsSorted.size(); i++) {
+        sigsSorted[i].GetPoint(sig);
+        g2_mul(sigComp, sig, computedTs[i]);
+        g2_add(aggSig, aggSig, sigComp);
+        infos.push_back(*sigsSorted[i].GetAggregationInfo());
+    }
+
+    for (const BLSSignature &nonColliding : nonCollidingSigs) {
+        nonColliding.GetPoint(sig);
+        g2_add(aggSig, aggSig, sig);
+        infos.push_back(*nonColliding.GetAggregationInfo());
+    }
+    BLSSignature ret = BLSSignature::FromG2(&aggSig);
+
+    // Merge the aggregation infos, which will be combined in an
+    // identical way as above.
+    ret.SetAggregationInfo(AggregationInfo::MergeInfos(infos));
+
+    delete[] computedTs;
+    for (const uint8_t* sortKey : sortKeysSorted) {
+        delete[] sortKey;
+    }
+    return ret;
 }
 
 /*
@@ -353,10 +353,10 @@ bool BLS::Verify(const BLSSignature &aggSig) {
     for (size_t i = 0; i < messageHashes.size(); i++) {
         auto pubKeyIter = hashToPubKeys.find(messageHashes[i]);
         if (pubKeyIter != hashToPubKeys.end()) {
-            // Already one identical message, so push to std::vector
+            // Already one identical message, so push to vector
             pubKeyIter->second.push_back(pubKeys[i]);
         } else {
-            // First time seeing this message, so create a std::vector
+            // First time seeing this message, so create a vector
             std::vector<BLSPublicKey> newPubKey = {pubKeys[i]};
             hashToPubKeys.insert(make_pair(messageHashes[i], newPubKey));
         }

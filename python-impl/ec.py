@@ -87,7 +87,18 @@ class AffinePoint:
                              self.infinity, self.ec)
 
     def serialize(self):
-        return str(self.x) + str(self.y) + str(self.infinity)
+        output = bytearray(self.x.serialize())
+
+        # If the y coordinate is the bigger one of the two, set the first
+        # bit to 1.
+        if self.FE == Fq:
+            if self.y > (self.ec.q // 2):
+                output[0] |= 0x80
+        elif self.FE == Fq2:
+            if self.y[0] > (self.ec.q // 2):
+                output[0] |= 0x80
+
+        return bytes(output)
 
 
 class JacobianPoint:
@@ -163,7 +174,7 @@ def y_for_x(x, ec=default_ec, FE=Fq):
     y = u.modsqrt()
     if y == 0 or not AffinePoint(x, y, False, ec).is_on_curve():
         raise ValueError("No y for point x")
-    return sorted([y, ec.q - y])
+    return [y, ec.q - y]
 
 
 def double_point(p1, ec=default_ec, FE=Fq):
