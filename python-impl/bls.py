@@ -366,12 +366,40 @@ class BLS:
         return final_sig
 
     @staticmethod
-    def verify(message, public_key, signature):
-        message_hash = hash_to_point_Fq2(message)
-        g1 = -1 * generator_Fq()
+    def verify(signature):
+        message_hashes = signature.aggregation_info.message_hashes
+        public_keys = signature.aggregation_info.public_keys
 
-        Ps = [g1, public_key.value.to_affine()]
-        Qs = [signature.value.to_affine(), message_hash]
+        hash_to_public_keys = {}
+        for i in range(len(message_hashes)):
+            if message_hashes[i] in hash_to_public_keys:
+                hash_to_public_keys[message_hashes[i]].append(public_keys[i])
+            else:
+                hash_to_public_keys[message_hashes[i]] = [public_keys[i]]
+
+        final_message_hashes = []
+        final_public_keys = []
+        ec = public_keys[0].value.ec
+        for message_hash, mapped_keys in hash_to_public_keys.items():
+            dedup = list(set(mapped_keys))
+            public_key_sum = JacobianPoint(Fq.one(ec.q), Fq.one(ec.q),
+                                           Fq.zero(ec.q), True, ec)
+            for public_key in dedup:
+                try:
+                    exponent = signature.aggregation_info.tree[(message_hash,
+                                                                public_key)]
+                    public_key_sum += (public_key.value * exponent)
+                except KeyError:
+                    return False
+            final_message_hashes.append(message_hash)
+            final_public_keys.append(public_key_sum.to_affine())
+
+        mapped_hashes = [hash_to_point_prehashed_Fq2(mh)
+                         for mh in final_message_hashes]
+
+        g1 = -1 * generator_Fq()
+        Ps = [g1] + final_public_keys
+        Qs = [signature.value.to_affine()] + mapped_hashes
         res = ate_pairing_multi(Ps, Qs, default_ec)
         return res == Fq12.one(default_ec.q)
 

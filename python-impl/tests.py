@@ -89,10 +89,11 @@ def test_vectors():
     agg_sig = BLS.aggregate_sigs([sig1, sig2])
     assert(agg_sig.serialize() == bytes.fromhex("867d44075175669de7ebd5151c256d60b6a7ebbe06d0f680d135f26f912b7fbbe049a1b42fa910bbfa8a38e4466c4dbf02062fd347174015624b1885351104830354a89d307bc509489cd33fa0c79826672288250f27024b8ea0bcafcdcfd386"))
 
-    ok = BLS.verify(bytes([7, 8, 9]), pk1, sig1)
-    ok2 = BLS.verify(bytes([7, 8, 9, 10]), pk1, sig1)
+    ok = BLS.verify(sig1)
+    ok2 = BLS.verify(agg_sig)
+
     assert(ok)
-    assert(not ok2)
+    assert(ok2)
 
 
 def test_bls():
