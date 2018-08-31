@@ -50,12 +50,12 @@ class Fq(int):
         return (super().__gt__(other))
 
     def __str__(self):
-        s = str(super().__repr__())
-        s2 = s[0:3] + ".." + s[-3:] if len(s) > 6 else s
+        s = hex(int(self))
+        s2 = s[0:5] + ".." + s[-3:] if len(s) > 6 else s
         return "Fq(" + s2 + ")"
 
     def __repr__(self):
-        return "Fq(" + super().__repr__() + ")"
+        return "Fq(" + hex(int(self)) + ")"
 
     def serialize(self):
         return super().to_bytes(48, "big")

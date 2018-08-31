@@ -5,6 +5,7 @@ from ec import (generator_Fq, generator_Fq2, default_ec, default_ec_twist,
                 twist, untwist, rand_scalar)
 from fields import Fq2, Fq6, Fq12, Fq
 from bls import BLSPrivateKey, BLS
+import time
 
 def test_fields():
     a = Fq(17, 30)
@@ -89,15 +90,49 @@ def test_vectors():
     agg_sig = BLS.aggregate_sigs([sig1, sig2])
     assert(agg_sig.serialize() == bytes.fromhex("067d44075175669de7ebd5151c256d60b6a7ebbe06d0f680d135f26f912b7fbbe049a1b42fa910bbfa8a38e4466c4dbf02062fd347174015624b1885351104830354a89d307bc509489cd33fa0c79826672288250f27024b8ea0bcafcdcfd386"))
 
-    ok = BLS.verify(sig1)
-    ok2 = BLS.verify(agg_sig)
+    assert(BLS.verify(sig1))
+    assert(BLS.verify(agg_sig))
 
-    assert(ok)
-    assert(ok2)
     sig1.set_aggregation_info(sig2.aggregation_info)
-    ok3 = BLS.verify(sig1)
-    assert(not ok3)
+    assert(not BLS.verify(sig1))
 
+    sig3 = sk1.sign(bytes([1, 2, 3]))
+    sig4 = sk1.sign(bytes([1, 2, 3, 4]))
+    sig5 = sk2.sign(bytes([1, 2]))
+
+    agg_sig2 = BLS.aggregate_sigs([sig3, sig4, sig5])
+    assert(agg_sig2.serialize() == bytes.fromhex("0ed044dbb085e89fbd2b5823ae8406becc4d0e18a96fa9a4d116bb01ea93ac65f7a0331cfc0330961c03d0f9283e66fe101058df847878374716231e4d243bbf89ee82acc7d7bdcc091e20b097ac58823679b63bd0215556263645bcc846a0a0"));
+    assert(BLS.verify(agg_sig2))
+
+def test_vectors2():
+    m1 = bytes([1, 2, 3, 40])
+    m2 = bytes([5, 6, 70, 201])
+    m3 = bytes([9, 10, 11, 12, 13])
+    m4 = bytes([15, 63, 244, 92, 0, 1])
+
+    sk1 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
+    pk1 = sk1.get_public_key()
+
+    sk2 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
+    pk2 = sk2.get_public_key()
+
+    sig1 = sk1.sign(m1)
+    sig2 = sk2.sign(m2)
+    sig3 = sk2.sign(m1)
+    sig4 = sk1.sign(m3)
+    sig5 = sk1.sign(m1)
+    sig6 = sk1.sign(m4)
+
+    # sig_L = BLS.aggregate_sigs([sig1, sig2])
+    sig_R = BLS.aggregate_sigs([sig3, sig4, sig5])
+    print("Agg sig R: ", sig_R.serialize().hex())
+    # assert(BLS.verify(sig_L))
+    assert(BLS.verify(sig_R))
+
+    sig_final = BLS.aggregate_sigs([sig_L, sig_R, sig6])
+    print("Sig final", sig_final.serialize().hex())
+    # assert(sig_final.serialize() == bytes.fromhex("97f79f27fbd08b77666ca0f7be9c513df86e0ef41e8569a9a8dac7f368d61ec723242b4cce2576875437eb648dd9baef0906ec6424b1e5ecabec21a488b24ddf19a118b7b11848489c57a148145a383f776727e04858ee67aefaef99af31b8d9"))
+    assert(BLS.verify(sig_final))
 
 def test_bls():
     sk = BLSPrivateKey(rand_scalar())
@@ -115,7 +150,8 @@ def test_bls():
 test_fields()
 test_ec()
 test_bls()
-test_vectors()
+# test_vectors()
+test_vectors2()
 
 
 """

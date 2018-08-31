@@ -334,6 +334,8 @@ class BLS:
                     break
             if not group_collides:
                 non_colliding_sigs.append(signatures[i])
+        print("Colliding sigs", len(colliding_sigs))
+        print("Non colliding sigs", len(non_colliding_sigs))
 
         # Arrange all signatures, sorted by their aggregation info
         colliding_sigs.sort(key=lambda s: s.aggregation_info)
