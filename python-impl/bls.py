@@ -199,6 +199,7 @@ class AggregationInfo:
                 if key[0] in colliding_messages:
                     info_collides = True
                     colliding_infos.append(info)
+                    break
             if not info_collides:
                 non_colliding_infos.append(info)
 
@@ -334,8 +335,6 @@ class BLS:
                     break
             if not group_collides:
                 non_colliding_sigs.append(signatures[i])
-        print("Colliding sigs", len(colliding_sigs))
-        print("Non colliding sigs", len(non_colliding_sigs))
 
         # Arrange all signatures, sorted by their aggregation info
         colliding_sigs.sort(key=lambda s: s.aggregation_info)
@@ -359,6 +358,9 @@ class BLS:
 
         for i, signature in enumerate(colliding_sigs):
             agg_sig += signature.value * computed_Ts[i]
+
+        for signature in non_colliding_sigs:
+            agg_sig += signature.value
 
         final_sig = BLSSignature.from_g2(agg_sig)
         aggregation_infos = [sig.aggregation_info for sig in signatures]
@@ -450,11 +452,12 @@ class BLS:
     def hash_pks(num_outputs, public_keys):
         input_bytes = b''.join([pk.serialize() for pk in public_keys])
         pk_hash = hash256(input_bytes)
+        order = public_keys[0].value.ec.n
 
         computed_Ts = []
         for i in range(num_outputs):
             t = int.from_bytes(hash256(i.to_bytes(4, "big") + pk_hash), "big")
-            computed_Ts.append(t)
+            computed_Ts.append(t % order)
 
         return computed_Ts
 

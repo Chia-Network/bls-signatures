@@ -63,7 +63,6 @@ def miller_loop(T, P, Q, ec=default_ec):
     f = Fq12.one(ec.q)
     for i in range(1, len(T_bits)):
         # Compute sloped line lrr
-
         lrr = double_line_eval(R, P, ec)
         f = f * f * lrr
 
