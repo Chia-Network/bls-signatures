@@ -58,9 +58,13 @@ def add_line_eval(R, Q, P, ec=default_ec):
 
 
 def miller_loop(T, P, Q, ec=default_ec):
+    """
+    Performs a double and add algorithm for the ate pairing. This algorithm
+    is taken from Craig Costello's "Pairing for Beginners".
+    """
     T_bits = int_to_bits(T)
     R = Q
-    f = Fq12.one(ec.q)
+    f = Fq12.one(ec.q)  # f is an element of Fq12
     for i in range(1, len(T_bits)):
         # Compute sloped line lrr
         lrr = double_line_eval(R, P, ec)
@@ -77,11 +81,18 @@ def miller_loop(T, P, Q, ec=default_ec):
 
 
 def final_exponentiation(element, ec=default_ec):
+    """
+    Performs a final exponentiation to map the result of the miller
+    loop to a unique element of Fq12.
+    """
     top = pow(ec.q, ec.k) - 1
     return pow(element, top // ec.n)
 
 
 def ate_pairing(P, Q, ec=default_ec):
+    """
+    Performs one ate pairing.
+    """
     t = default_ec.x + 1
     T = abs(t - 1)
     element = miller_loop(T, P, Q, ec)

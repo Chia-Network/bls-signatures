@@ -13,6 +13,10 @@ default_ec_twist = EC(*bls12381.parameters_twist())
 
 
 class AffinePoint:
+    """
+    Elliptic curve point, can represent any curve, and use Fq or Fq2
+    coordinates.
+    """
     def __init__(self, x, y, infinity, ec=default_ec):
         if (not isinstance(x, Fq) and not isinstance(x, FieldExtBase) or
            (not isinstance(y, Fq) and not isinstance(y, FieldExtBase)) or
@@ -25,6 +29,9 @@ class AffinePoint:
         self.ec = ec
 
     def is_on_curve(self):
+        """
+        Check that y^2 = x^3 + ax + b
+        """
         if self.infinity:
             return True
         left = self.y * self.y
@@ -102,6 +109,11 @@ class AffinePoint:
 
 
 class JacobianPoint:
+    """
+    Elliptic curve point, can represent any curve, and use Fq or Fq2
+    coordinates. Uses Jacobian coordinates so that point addition
+    does not require slow inversion.
+    """
     def __init__(self, x, y, z, infinity, ec=default_ec):
         if (not isinstance(x, Fq) and not isinstance(x, FieldExtBase) or
            (not isinstance(y, Fq) and not isinstance(y, FieldExtBase)) or
@@ -166,6 +178,9 @@ class JacobianPoint:
 
 
 def y_for_x(x, ec=default_ec, FE=Fq):
+    """
+    Solves y = sqrt(x^3 + ax + b) for both valid ys
+    """
     if not isinstance(x, FE):
         x = FE(ec.q, x)
 
@@ -178,6 +193,9 @@ def y_for_x(x, ec=default_ec, FE=Fq):
 
 
 def double_point(p1, ec=default_ec, FE=Fq):
+    """
+    Basic elliptic curve point doubling
+    """
     x, y = p1.x, p1.y
     left = 3 * x * x
     left = left + ec.a
@@ -188,6 +206,9 @@ def double_point(p1, ec=default_ec, FE=Fq):
 
 
 def add_points(p1, p2, ec=default_ec, FE=Fq):
+    """
+    Basic elliptic curve point addition
+    """
     assert(p1.is_on_curve())
     assert(p2.is_on_curve())
     if p1.infinity:
@@ -208,6 +229,10 @@ def add_points(p1, p2, ec=default_ec, FE=Fq):
 
 
 def double_point_jacobian(p1, ec=default_ec, FE=Fq):
+    """
+    Jacobian elliptic curve point doubling
+    http://www.hyperelliptic.org/EFD/oldefd/jacobian.html
+    """
     X, Y, Z = p1.x, p1.y, p1.z
     if Y == FE.zero(ec.q) or p1.infinity:
         return JacobianPoint(FE.one(ec.q), FE.one(ec.q),
@@ -235,6 +260,10 @@ def double_point_jacobian(p1, ec=default_ec, FE=Fq):
 
 
 def add_points_jacobian(p1, p2, ec=default_ec, FE=Fq):
+    """
+    Jacobian elliptic curve point addition
+    http://www.hyperelliptic.org/EFD/oldefd/jacobian.html
+    """
     if p1.infinity:
         return p2
     if p2.infinity:
@@ -269,8 +298,11 @@ def add_points_jacobian(p1, p2, ec=default_ec, FE=Fq):
     return JacobianPoint(X3, Y3, Z3, False, ec)
 
 
-# Double and add
 def scalar_mult(c, p1, ec=default_ec, FE=Fq):
+    """
+    Double and add:
+    https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication
+    """
     if p1.infinity or c % ec.q == 0:
         return AffinePoint(FE.zero(ec.q), FE.zero(ec.q), ec)
     if c < 0 or c > ec.n:
@@ -289,6 +321,10 @@ def scalar_mult(c, p1, ec=default_ec, FE=Fq):
 
 
 def scalar_mult_jacobian(c, p1, ec=default_ec, FE=Fq):
+    """
+    Double and add:
+    https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication
+    """
     if p1.infinity or c % ec.q == 0:
         return JacobianPoint(FE.one(ec.q), FE.one(ec.q),
                              FE.zero(ec.q), True, ec)
@@ -331,7 +367,8 @@ def generator_Fq2(ec=default_ec_twist):
 def untwist(point, ec=default_ec):
     """
     Given a point on G2 on the twisted curve, this converts it's
-    coordinates back from Fq2 to Fq12.
+    coordinates back from Fq2 to Fq12. See Craig Costello book, look
+    up twists.
     """
     f = Fq12.one(ec.q)
     wsq = Fq12(ec.q, f.root, Fq6.zero(ec.q))
@@ -342,7 +379,8 @@ def untwist(point, ec=default_ec):
 def twist(point, ec=default_ec_twist):
     """
     Given an untwisted point, this converts it's
-    coordinates to a point on the twisted curve.
+    coordinates to a point on the twisted curve. See Craig Costello
+    book, look up twists.
     """
     f = Fq12.one(ec.q)
     wsq = Fq12(ec.q, f.root, Fq6.zero(ec.q))

@@ -48,4 +48,3 @@ void getRandomSeed(uint8_t* seed) {
     bn_rand(r, BN_POS, 256);
     bn_write_bin(seed, 32, r);
 }
-
