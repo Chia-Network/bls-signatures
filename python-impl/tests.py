@@ -137,7 +137,6 @@ def test_vectors2():
     assert(BLS.verify(sig_R))
 
     sig_final = BLS.aggregate_sigs([sig_L, sig_R, sig6])
-    print("Sig final", sig_final.serialize().hex())
     assert(sig_final.serialize() == bytes.fromhex("97f79f27fbd08b77666ca0f7be9c513df86e0ef41e8569a9a8dac7f368d61ec723242b4cce2576875437eb648dd9baef0906ec6424b1e5ecabec21a488b24ddf19a118b7b11848489c57a148145a383f776727e04858ee67aefaef99af31b8d9"))
     assert(BLS.verify(sig_final))
 
