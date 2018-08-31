@@ -7,6 +7,11 @@ from pairing import ate_pairing_multi
 
 
 class BLSPublicKey:
+    """
+    Public keys are G1 elements, which are elliptic curve points (x, y), where
+    each x, y is a 381 bit Fq element. The serialized represenentation is just
+    the x value, and thus 48 bytes. (With the 1st bit determining the valid y).
+    """
     PUBLIC_KEY_SIZE = 48
 
     def __init__(self, value):
@@ -40,6 +45,9 @@ class BLSPublicKey:
 
 
 class BLSPrivateKey:
+    """
+    Private keys are just random integers between 1 and the group order.
+    """
     PRIVATE_KEY_SIZE = 32
 
     def __init__(self, value):
@@ -86,7 +94,41 @@ class BLSPrivateKey:
         return "BLSPrivateKey(" + self.value.__repr__() + ")"
 
 
+class ExtendedPrivateKey:
+    version = 1
+
+    def __init__(self, version, depth, parent_fingerprint,
+                 child_number, chain_code, sk):
+        self.version = version
+        self.depth = depth
+        self.parent_fingerprint = parent_fingerprint
+        self.child_number = child_number
+        self.chain_code = chain_code
+        self.sk = sk
+
+    def from_seed(seed):
+        prefix = [66, 76, 83, 32, 72, 68, 32, 115, 101, 101, 100]
+        i_left = hmac256(bytes([0]) + seed, prefix)
+        i_right = hmac256(bytes([1]) + seed, prefix)
+
+        sk_int = int.from_bytes(i_left, "big") % default_ec.n
+        sk = BLSPrivateKey.from_bytes(
+            sk_int.to_bytes(BLSPrivateKey.PRIVATE_KEY_SIZE, "big"))
+        return ExtendedPrivateKey(ExtendedPrivateKey.version, 0, 0,
+                                  0, i_right, i_left, sk)
+
+
 class AggregationInfo:
+    """
+    AggregationInfo represents information of how a tree of aggregate
+    signatures was created. Different tress will result in different
+    signatures, due to exponentiations required for security.
+
+    An AggregationInfo is represented as a map from (message_hash, pk)
+    to exponents. When verifying, a verifier will take the signature,
+    along with this map, and raise each public key to the correct
+    exponent, and multiply the pks together, for identical messages.
+    """
     def __init__(self, tree, message_hashes, public_keys):
         self.tree = tree
         self.message_hashes = message_hashes
@@ -96,6 +138,10 @@ class AggregationInfo:
         return not self.tree
 
     def __lt__(self, other):
+        """
+        Compares two AggregationInfo objects, this is necessary for sorting
+        them. Comparison is done by comparing (message hash, pk, exponent)
+        """
         combined = [(self.message_hashes[i], self.public_keys[i],
                      self.tree[(self.message_hashes[i], self.public_keys[i])])
                     for i in range(len(self.public_keys))]
@@ -125,6 +171,10 @@ class AggregationInfo:
 
     @staticmethod
     def simple_merge_infos(aggregation_infos):
+        """
+        Infos are just merged together with no addition of exponents,
+        since they are disjoint
+        """
         new_tree = {}
         for info in aggregation_infos:
             new_tree.update(info.tree)
@@ -141,6 +191,10 @@ class AggregationInfo:
 
     @staticmethod
     def secure_merge_infos(colliding_infos):
+        """
+        Infos are merged together with combination of exponents
+        """
+
         # Groups are sorted by message then pk then exponent
         # Each info object (and all of it's exponents) will be
         # exponentiated by one of the Ts
@@ -199,6 +253,7 @@ class AggregationInfo:
                 if key[0] in colliding_messages:
                     info_collides = True
                     colliding_infos.append(info)
+                    break
             if not info_collides:
                 non_colliding_infos.append(info)
 
@@ -208,6 +263,12 @@ class AggregationInfo:
 
 
 class BLSSignature:
+    """
+    Signatures are G1 elements, which are elliptic curve points (x, y), where
+    each x, y is a (2*381) bit Fq2 element. The serialized represenentation is
+    just the x value, and thus 96 bytes. (With the 1st bit determining the
+    valid y).
+    """
     SIGNATURE_SIZE = 96
 
     def __init__(self, value, aggregation_info=None):
@@ -246,6 +307,11 @@ class BLSSignature:
 class BLS:
     @staticmethod
     def aggregate_sigs_simple(signatures):
+        """
+        Aggregate signatures by multiplying them together. This is NOT secure
+        against rogue public key attacks, so do not use this for signatures
+        on the same message.
+        """
         q = default_ec.q
         agg_sig = (AffinePoint(Fq2.zero(q), Fq2.zero(q), True, default_ec)
                    .to_jacobian())
@@ -257,6 +323,12 @@ class BLS:
 
     @staticmethod
     def aggregate_sigs_secure(signatures, public_keys, message_hashes):
+        """
+        Aggregate signatures using the secure method, which calculates
+        exponents based on public keys, and raises each signature to an
+        exponent before multiplying them together. This is secure against
+        rogue public key attack, but is slower than simple aggregation.
+        """
         if (len(signatures) != len(public_keys) or
                 len(public_keys) != len(message_hashes)):
             raise "Invalid number of keys"
@@ -281,6 +353,11 @@ class BLS:
 
     @staticmethod
     def aggregate_sigs(signatures):
+        """
+        Aggregates many (aggregate) signatures, using a combination of simple
+        and secure aggregation. Signatures are grouped based on which ones
+        share common messages, and these are all merged securely.
+        """
         public_keys = []  # List of lists
         message_hashes = []  # List of lists
 
@@ -358,6 +435,9 @@ class BLS:
         for i, signature in enumerate(colliding_sigs):
             agg_sig += signature.value * computed_Ts[i]
 
+        for signature in non_colliding_sigs:
+            agg_sig += signature.value
+
         final_sig = BLSSignature.from_g2(agg_sig)
         aggregation_infos = [sig.aggregation_info for sig in signatures]
         final_agg_info = AggregationInfo.merge_infos(aggregation_infos)
@@ -367,6 +447,18 @@ class BLS:
 
     @staticmethod
     def verify(signature):
+        """
+        This implementation of verify has several steps. First, it
+        reorganizes the pubkeys and messages into groups, where
+        each group corresponds to a message. Then, it checks if the
+        siganture has info on how it was aggregated. If so, we
+        exponentiate each pk based on the exponent in the AggregationInfo.
+        If not, we find public keys that share messages with others,
+        and aggregate all of these securely (with exponents.).
+        Finally, since each public key now corresponds to a unique
+        message (since we grouped them), we can verify using the
+        distinct verification procedure.
+        """
         message_hashes = signature.aggregation_info.message_hashes
         public_keys = signature.aggregation_info.public_keys
 
@@ -405,17 +497,20 @@ class BLS:
 
     @staticmethod
     def aggregate_public_keys(public_keys, secure):
+        """
+        Aggregates public keys together
+        """
         if len(public_keys) < 1:
             raise "Invalid number of keys"
         public_keys.sort()
 
         computed_Ts = BLS.hash_pks(len(public_keys), public_keys)
 
-        ec = public_keys[0].ec
+        ec = public_keys[0].value.ec
         sum_keys = JacobianPoint(Fq.one(ec.q), Fq.one(ec.q),
                                  Fq.zero(ec.q), True, ec)
         for i in range(len(public_keys)):
-            addend = public_keys[i]
+            addend = public_keys[i].value
             if secure:
                 addend *= computed_Ts[i]
             sum_keys += addend
@@ -424,6 +519,9 @@ class BLS:
 
     @staticmethod
     def aggregate_private_keys(private_keys, public_keys, secure):
+        """
+        Aggregates private keys together
+        """
         if secure and len(private_keys) != len(public_keys):
             raise "Invalid number of keys"
 
@@ -434,10 +532,10 @@ class BLS:
 
         computed_Ts = BLS.hash_pks(len(private_keys), public_keys)
 
-        n = public_keys[0].ec.n
+        n = public_keys[0].value.ec.n
         sum_keys = 0
         for i in range(len(priv_pub_keys)):
-            addend = priv_pub_keys[i][1]
+            addend = priv_pub_keys[i][1].value
             if (secure):
                 addend *= computed_Ts[i]
             sum_keys = (sum_keys + addend) % n
@@ -446,13 +544,18 @@ class BLS:
 
     @staticmethod
     def hash_pks(num_outputs, public_keys):
+        """
+        Construction from https://eprint.iacr.org/2018/483.pdf
+        Two hashes are performed for speed.
+        """
         input_bytes = b''.join([pk.serialize() for pk in public_keys])
         pk_hash = hash256(input_bytes)
+        order = public_keys[0].value.ec.n
 
         computed_Ts = []
         for i in range(num_outputs):
             t = int.from_bytes(hash256(i.to_bytes(4, "big") + pk_hash), "big")
-            computed_Ts.append(t)
+            computed_Ts.append(t % order)
 
         return computed_Ts
 

@@ -1,7 +1,8 @@
 # flake8: noqa
 from fields import Fq, Fq2
 
-# BLS number used to generate the other parameters
+# BLS parameter used to generate the other parameters
+# Spec is found here: https://github.com/zkcrypto/pairing/tree/master/src/bls12_381
 x = -0xd201000000010000
 
 # 381 bit prime

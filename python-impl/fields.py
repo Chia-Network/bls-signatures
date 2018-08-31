@@ -1,4 +1,7 @@
 class Fq(int):
+    """
+    Represents an element of a finite field mod a prime q.
+    """
     extension = 1
 
     def __new__(cls, Q, x):
@@ -50,12 +53,15 @@ class Fq(int):
         return (super().__gt__(other))
 
     def __str__(self):
-        s = str(super().__repr__())
-        s2 = s[0:3] + ".." + s[-3:] if len(s) > 6 else s
+        s = hex(int(self))
+        s2 = s[0:5] + ".." + s[-3:] if len(s) > 6 else s
         return "Fq(" + s2 + ")"
 
     def __repr__(self):
-        return "Fq(" + super().__repr__() + ")"
+        return "Fq(" + hex(int(self)) + ")"
+
+    def serialize(self):
+        return super().to_bytes(48, "big")
 
     def serialize(self):
         return super().to_bytes(48, "big")
@@ -71,6 +77,9 @@ class Fq(int):
             return (self * self) ** (other // 2) * self
 
     def __invert__(self):
+        """
+        Extended euclidian algorithm for inversion.
+        """
         x0, x1, y0, y1 = 1, 0, 0, 1
         a = int(self.Q)
         b = int(self)
@@ -154,6 +163,11 @@ class Fq(int):
 
 
 class FieldExtBase(tuple):
+    """
+    Represents an extension of a field (or extension of an extension).
+    The elements of the tuple can be other FieldExtBase or they can be
+    Fq elements. For example, Fq2 = (Fq, Fq). Fq12 = (Fq6, Fq6), etc.
+    """
     root = None
 
     def __new__(cls, Q, *args):
@@ -356,6 +370,11 @@ class Fq2(FieldExtBase):
         return Fq2(self.Q, a - b, a + b)
 
     def modsqrt(self):
+        """
+        Using algorithm 8 (complex method) for square roots in
+        https://eprint.iacr.org/2012/685.pdf
+        This is necessary for computing y value given an x value.
+        """
         a0, a1 = self
         if a1 == Fq.zero(self.Q):
             return a0.modsqrt()
