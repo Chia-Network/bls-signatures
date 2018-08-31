@@ -57,6 +57,9 @@ class Fq(int):
     def __repr__(self):
         return "Fq(" + super().__repr__() + ")"
 
+    def serialize(self):
+        return super().to_bytes(48, "big")
+
     def __pow__(self, other):
         if other == 0:
             return Fq(self.Q, 1)
@@ -192,7 +195,6 @@ class FieldExtBase(tuple):
         else:
             other_new = other
 
-            # other = cls.from_fq(self.Q, Fq(self.Q, other))
         ret = super().__new__(cls, (a + b for a, b in zip(self, other_new)))
         ret.Q = self.Q
         ret.root = self.root
@@ -257,7 +259,8 @@ class FieldExtBase(tuple):
             return (super().__eq__(other) and self.Q == other.Q)
 
     def __lt__(self, other):
-        return (super().__lt__(other))
+        # Reverse the order for comparison (3i + 1 > 2i + 7)
+        return self[::-1].__lt__(other[::-1])
 
     def __gt__(self, other):
         return (super().__gt__(other))
@@ -274,6 +277,15 @@ class FieldExtBase(tuple):
         return ("Fq" + str(self.extension) + "(" + ", ".join([a.__repr__()
                                                              for a in self])
                 + ")")
+
+    # Returns the concatenated coordinates in big endian bytes
+    def serialize(self):
+        sum_bytes = bytes([])
+        for x in self:
+            if type(x) != FieldExtBase and type(x) != Fq:
+                x = Fq.from_fq(self.Q, x)
+            sum_bytes += x.serialize()
+        return sum_bytes
 
     __truediv__ = __floordiv__
 

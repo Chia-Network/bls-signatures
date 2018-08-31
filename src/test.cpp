@@ -22,6 +22,49 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+TEST_CASE("Test vectors") {
+    SECTION("Test vectors 1") {
+        uint8_t seed1[5] = {1, 2, 3, 4, 5};
+        uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
+        uint8_t message1[3] = {7, 8, 9};
+
+        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed1, sizeof(seed1));
+        BLSPublicKey pk1 = sk1.GetPublicKey();
+        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
+
+        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, sizeof(seed2));
+        BLSPublicKey pk2 = sk2.GetPublicKey();
+        BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
+
+        uint8_t buf[BLSSignature::SIGNATURE_SIZE];
+        uint8_t buf2[BLSPrivateKey::PRIVATE_KEY_SIZE];
+
+        REQUIRE(pk1.GetFingerprint() == 0x26d53247);
+        REQUIRE(pk2.GetFingerprint() == 0x289bb56e);
+
+
+        sig1.Serialize(buf);
+        sk1.Serialize(buf2);
+
+        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+             == "0f562d96ddabc780ce2ec4b00078e13ee265d7fb24fc2358f3aeb900d7e05f0c880388fe0abc4b460ab1ea3f843c0c28042503e005f357d3124151b87ba2df18b6a5d91afb9cd09cfed16876a25e505fe3bdfb8ccf1ba18be4ca35a095d81957");
+        REQUIRE(BLSUtil::HexStr(buf2, BLSPrivateKey::PRIVATE_KEY_SIZE)
+             == "022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e");
+
+        sig2.Serialize(buf);
+        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+             == "8388b5451e0d387fbcade62af7563705635f7eedaaf5c2d97ce2e116150f159256b7fe045f03a8a0013312bd5ea153130943caa0f409b6fac4850b0102e5f5f8ffc27ba900bd624317ba19cb19c5a681a083ef8167a4930bbc17aac8ea40bbd5");
+
+        vector<BLSSignature> sigs = {sig1, sig2};
+        BLSSignature aggSig1 = BLS::AggregateSigs(sigs);
+
+        aggSig1.Serialize(buf);
+        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+             == "067d44075175669de7ebd5151c256d60b6a7ebbe06d0f680d135f26f912b7fbbe049a1b42fa910bbfa8a38e4466c4dbf02062fd347174015624b1885351104830354a89d307bc509489cd33fa0c79826672288250f27024b8ea0bcafcdcfd386");
+        REQUIRE(BLS::Verify(aggSig1));
+    }
+}
+
 TEST_CASE("Key generation") {
     SECTION("Should generate a keypair from a seed") {
         uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
