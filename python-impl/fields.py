@@ -63,9 +63,6 @@ class Fq(int):
     def serialize(self):
         return super().to_bytes(48, "big")
 
-    def serialize(self):
-        return super().to_bytes(48, "big")
-
     def __pow__(self, other):
         if other == 0:
             return Fq(self.Q, 1)
