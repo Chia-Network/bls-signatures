@@ -131,11 +131,12 @@ ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
     uint8_t* newSkBytes = BLSUtil::SecAlloc<uint8_t>(
             BLSPrivateKey::PRIVATE_KEY_SIZE);
     bn_write_bin(newSkBytes, BLSPrivateKey::PRIVATE_KEY_SIZE, *newSk);
+    BLSPrivateKey skp = BLSPrivateKey::FromBytes(newSkBytes);
 
     ExtendedPrivateKey esk(version, depth + 1,
                            sk.GetPublicKey().GetFingerprint(), i,
                            ChainCode::FromBytes(IRight),
-                           BLSPrivateKey::FromBytes(newSkBytes));
+                           skp);
 
     BLSUtil::SecFree(newSk);
     BLSUtil::SecFree(ILeft);

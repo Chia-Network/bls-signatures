@@ -118,19 +118,14 @@ def test2():
     message = bytes("this is the message", "utf-8")
     sig = sk.sign(message)
     sig_ser = sig.serialize()
-    print("Sig ser is", sig_ser)
     sig_cp = BLSSignature.from_bytes(sig_ser)
     a1 = AggregationInfo.from_msg(pk, message)
     sig_cp.set_aggregation_info(a1)
     a2 = sig_cp.get_aggregation_info()
     assert(a1 == a2)
-    print(a2)
     sig2 = sk2.sign(message)
 
     assert(sig.size() == 96)
-    print(sig, sig2)
-    print(sig2.serialize())
-    print(sorted([sig, sig2]))
     assert(sig != sig2)
     assert(sig == sig_cp)
 
@@ -144,8 +139,6 @@ def test2():
     assert(result3)
 
     sk2 = sk
-
-    print(sk)
 
 
 test1()

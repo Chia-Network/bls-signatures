@@ -1,307 +1,12 @@
-from ec import (generator_Fq, hash_to_point_Fq2, default_ec,
-                hash_to_point_prehashed_Fq2, y_for_x,
-                AffinePoint, JacobianPoint)
+from ec import (generator_Fq, default_ec,
+                AffinePoint, JacobianPoint,
+                hash_to_point_prehashed_Fq2)
+from util import hash_pks
 from fields import Fq, Fq2, Fq12
-from util import hmac256, hash256
 from pairing import ate_pairing_multi
-
-
-class BLSPublicKey:
-    """
-    Public keys are G1 elements, which are elliptic curve points (x, y), where
-    each x, y is a 381 bit Fq element. The serialized represenentation is just
-    the x value, and thus 48 bytes. (With the 1st bit determining the valid y).
-    """
-    PUBLIC_KEY_SIZE = 48
-
-    def __init__(self, value):
-        self.value = value
-
-    @staticmethod
-    def from_bytes(buffer):
-        x = int.from_bytes(buffer, "big")
-        y = y_for_x(Fq(default_ec.q, x))
-        return BLSPublicKey(AffinePoint(x, y, False, default_ec).to_jacobian())
-
-    @staticmethod
-    def from_g1(g1_el):
-        return BLSPublicKey(g1_el)
-
-    def get_fingerprint(self):
-        ser = self.serialize()
-        return int.from_bytes(hash256(ser)[:4], "big")
-
-    def serialize(self):
-        return self.value.serialize()
-
-    def __lt__(self, other):
-        return self.value.serialize() < other.value.serialize()
-
-    def __str__(self):
-        return "BLSPublicKey(" + self.value.to_affine().__str__() + ")"
-
-    def __repr__(self):
-        return "BLSPublicKey(" + self.value.to_affine().__repr__() + ")"
-
-
-class BLSPrivateKey:
-    """
-    Private keys are just random integers between 1 and the group order.
-    """
-    PRIVATE_KEY_SIZE = 32
-
-    def __init__(self, value):
-        self.value = value
-
-    @staticmethod
-    def from_bytes(buffer):
-        return BLSPrivateKey(int.from_bytes(buffer, "big"))
-
-    @staticmethod
-    def from_seed(seed):
-        # "BLS private key seed" in ascii
-        hmac_key = bytes([66, 76, 83, 32, 112, 114, 105, 118, 97, 116, 101,
-                          32, 107, 101, 121, 32, 115, 101, 101, 100])
-
-        hashed = hmac256(seed, hmac_key)
-        return BLSPrivateKey(int.from_bytes(hashed, "big") % default_ec.n)
-
-    def get_public_key(self):
-        return BLSPublicKey.from_g1((self.value * generator_Fq())
-                                    .to_jacobian())
-
-    def sign(self, m):
-        r = hash_to_point_Fq2(m).to_jacobian()
-        aggregation_info = AggregationInfo.from_msg(self.get_public_key(), m)
-        return BLSSignature.from_g2(self.value * r, aggregation_info)
-
-    def sign_prehashed(self, h):
-        r = hash_to_point_prehashed_Fq2(h).to_jacobian()
-        aggregation_info = AggregationInfo.from_msg_hash(self.get_public_key(),
-                                                         h)
-        return BLSSignature.from_g2(self.value * r, aggregation_info)
-
-    def __lt__(self, other):
-        return self.value.serialize() < other.value.serialize()
-
-    def serialize(self):
-        return self.value.to_bytes(self.PRIVATE_KEY_SIZE, "big")
-
-    def __str__(self):
-        return "BLSPrivateKey(" + self.value.__str__() + ")"
-
-    def __repr__(self):
-        return "BLSPrivateKey(" + self.value.__repr__() + ")"
-
-
-class ExtendedPrivateKey:
-    version = 1
-
-    def __init__(self, version, depth, parent_fingerprint,
-                 child_number, chain_code, sk):
-        self.version = version
-        self.depth = depth
-        self.parent_fingerprint = parent_fingerprint
-        self.child_number = child_number
-        self.chain_code = chain_code
-        self.sk = sk
-
-    def from_seed(seed):
-        prefix = [66, 76, 83, 32, 72, 68, 32, 115, 101, 101, 100]
-        i_left = hmac256(bytes([0]) + seed, prefix)
-        i_right = hmac256(bytes([1]) + seed, prefix)
-
-        sk_int = int.from_bytes(i_left, "big") % default_ec.n
-        sk = BLSPrivateKey.from_bytes(
-            sk_int.to_bytes(BLSPrivateKey.PRIVATE_KEY_SIZE, "big"))
-        return ExtendedPrivateKey(ExtendedPrivateKey.version, 0, 0,
-                                  0, i_right, i_left, sk)
-
-
-class AggregationInfo:
-    """
-    AggregationInfo represents information of how a tree of aggregate
-    signatures was created. Different tress will result in different
-    signatures, due to exponentiations required for security.
-
-    An AggregationInfo is represented as a map from (message_hash, pk)
-    to exponents. When verifying, a verifier will take the signature,
-    along with this map, and raise each public key to the correct
-    exponent, and multiply the pks together, for identical messages.
-    """
-    def __init__(self, tree, message_hashes, public_keys):
-        self.tree = tree
-        self.message_hashes = message_hashes
-        self.public_keys = public_keys
-
-    def empty(self):
-        return not self.tree
-
-    def __lt__(self, other):
-        """
-        Compares two AggregationInfo objects, this is necessary for sorting
-        them. Comparison is done by comparing (message hash, pk, exponent)
-        """
-        combined = [(self.message_hashes[i], self.public_keys[i],
-                     self.tree[(self.message_hashes[i], self.public_keys[i])])
-                    for i in range(len(self.public_keys))]
-        combined_other = [(other.message_hashes[i], other.public_keys[i],
-                           other.tree[(other.message_hashes[i],
-                                       other.public_keys[i])])
-                          for i in range(len(other.public_keys))]
-
-        for i in range(len(combined)):
-            if i >= len(combined_other):
-                return False
-            if combined[i] < combined_other[i]:
-                return True
-            if combined_other[i] < combined[i]:
-                return False
-        return True
-
-    @staticmethod
-    def from_msg_hash(public_key, message_hash):
-        tree = {}
-        tree[(message_hash, public_key)] = 1
-        return AggregationInfo(tree, [message_hash], [public_key])
-
-    @staticmethod
-    def from_msg(pk, message):
-        return AggregationInfo.from_msg_hash(pk, hash256(message))
-
-    @staticmethod
-    def simple_merge_infos(aggregation_infos):
-        """
-        Infos are just merged together with no addition of exponents,
-        since they are disjoint
-        """
-        new_tree = {}
-        for info in aggregation_infos:
-            new_tree.update(info.tree)
-        mh_pubkeys = [k for k, v in new_tree.items()]
-
-        mh_pubkeys.sort()
-
-        message_hashes = [message_hash for (message_hash, public_key)
-                          in mh_pubkeys]
-        public_keys = [public_key for (message_hash, public_key)
-                       in mh_pubkeys]
-
-        return AggregationInfo(new_tree, message_hashes, public_keys)
-
-    @staticmethod
-    def secure_merge_infos(colliding_infos):
-        """
-        Infos are merged together with combination of exponents
-        """
-
-        # Groups are sorted by message then pk then exponent
-        # Each info object (and all of it's exponents) will be
-        # exponentiated by one of the Ts
-        colliding_infos.sort()
-
-        sorted_keys = []
-        for info in colliding_infos:
-            for key, value in info.tree.items():
-                sorted_keys.append(key)
-        sorted_keys.sort()
-        sorted_pks = [public_key for (message_hash, public_key)
-                      in sorted_keys]
-        computed_Ts = BLS.hash_pks(len(colliding_infos), sorted_pks)
-
-        # Group order, exponents can be reduced mod the order
-        order = sorted_pks[0].value.ec.n
-
-        new_tree = {}
-        for i in range(len(colliding_infos)):
-            for key, value in colliding_infos[i].tree.items():
-                if key not in new_tree:
-                    # This message & pk have not been included yet
-                    new_tree[key] = (value * computed_Ts[i]) % order
-                else:
-                    # This message and pk are already included, so multiply
-                    addend = value * computed_Ts[i]
-                    new_tree[key] = (new_tree[key] + addend) % order
-        mh_pubkeys = [k for k, v in new_tree.items()]
-        mh_pubkeys.sort()
-        message_hashes = [message_hash for (message_hash, public_key)
-                          in mh_pubkeys]
-        public_keys = [public_key for (message_hash, public_key)
-                       in mh_pubkeys]
-        return AggregationInfo(new_tree, message_hashes, public_keys)
-
-    @staticmethod
-    def merge_infos(aggregation_infos):
-        messages = set()
-        colliding_messages = set()
-        for info in aggregation_infos:
-            messages_local = set()
-            for key, value in info.tree.items():
-                if key[0] in messages and key[0] not in messages_local:
-                    colliding_messages.add(key[0])
-                messages.add(key[0])
-                messages_local.add(key[0])
-
-        if len(colliding_messages) == 0:
-            return AggregationInfo.simple_merge_infos(aggregation_infos)
-
-        colliding_infos = []
-        non_colliding_infos = []
-        for info in aggregation_infos:
-            info_collides = False
-            for key, value in info.tree.items():
-                if key[0] in colliding_messages:
-                    info_collides = True
-                    colliding_infos.append(info)
-                    break
-            if not info_collides:
-                non_colliding_infos.append(info)
-
-        combined = AggregationInfo.secure_merge_infos(colliding_infos)
-        non_colliding_infos.append(combined)
-        return AggregationInfo.simple_merge_infos(non_colliding_infos)
-
-
-class BLSSignature:
-    """
-    Signatures are G1 elements, which are elliptic curve points (x, y), where
-    each x, y is a (2*381) bit Fq2 element. The serialized represenentation is
-    just the x value, and thus 96 bytes. (With the 1st bit determining the
-    valid y).
-    """
-    SIGNATURE_SIZE = 96
-
-    def __init__(self, value, aggregation_info=None):
-        self.value = value
-        self.aggregation_info = aggregation_info
-
-    @staticmethod
-    def from_bytes(buffer, aggregation_info=None):
-        x0 = int.from_bytes(buffer[:48], "big")
-        x1 = int.from_bytes(buffer[48:], "big")
-        x = Fq2(default_ec.q, Fq(default_ec.q, x0), Fq(default_ec.q, x1))
-        y = y_for_x(x)
-        return BLSSignature(AffinePoint(x, y, False, default_ec).to_jacobian(),
-                            aggregation_info)
-
-    @staticmethod
-    def from_g2(g2_el, aggregation_info=None):
-        return BLSSignature(g2_el, aggregation_info)
-
-    def set_aggregation_info(self, aggregation_info):
-        self.aggregation_info = aggregation_info
-
-    def __lt__(self, other):
-        return self.value.serialize() < other.value.serialize()
-
-    def serialize(self):
-        return self.value.serialize()
-
-    def __str__(self):
-        return "BLSSignature(" + self.value.to_affine().__str__() + ")"
-
-    def __repr__(self):
-        return "BLSSignature(" + self.value.to_affine().__repr__() + ")"
+from keys import BLSPrivateKey, BLSPublicKey
+from signature import BLSSignature
+from aggregation_info import AggregationInfo
 
 
 class BLS:
@@ -338,7 +43,7 @@ class BLS:
         # Sort by message hash + pk
         mh_pub_sigs.sort()
 
-        computed_Ts = BLS.hash_pks(len(public_keys), public_keys)
+        computed_Ts = hash_pks(len(public_keys), public_keys)
 
         # Raise each sig to a power of each t,
         # and multiply all together into agg_sig
@@ -424,7 +129,7 @@ class BLS:
         sort_keys_sorted.sort()
         sorted_public_keys = [pk for (mh, pk) in sort_keys_sorted]
 
-        computed_Ts = BLS.hash_pks(len(sorted_public_keys), sorted_public_keys)
+        computed_Ts = hash_pks(len(sorted_public_keys), sorted_public_keys)
 
         # Raise each sig to a power of each t,
         # and multiply all together into agg_sig
@@ -504,7 +209,7 @@ class BLS:
             raise "Invalid number of keys"
         public_keys.sort()
 
-        computed_Ts = BLS.hash_pks(len(public_keys), public_keys)
+        computed_Ts = hash_pks(len(public_keys), public_keys)
 
         ec = public_keys[0].value.ec
         sum_keys = JacobianPoint(Fq.one(ec.q), Fq.one(ec.q),
@@ -530,7 +235,7 @@ class BLS:
         # Sort by public keys
         priv_pub_keys.sort()
 
-        computed_Ts = BLS.hash_pks(len(private_keys), public_keys)
+        computed_Ts = hash_pks(len(private_keys), public_keys)
 
         n = public_keys[0].value.ec.n
         sum_keys = 0
@@ -541,23 +246,6 @@ class BLS:
             sum_keys = (sum_keys + addend) % n
 
         return BLSPrivateKey.from_bytes(sum_keys.to_bytes(32, "big"))
-
-    @staticmethod
-    def hash_pks(num_outputs, public_keys):
-        """
-        Construction from https://eprint.iacr.org/2018/483.pdf
-        Two hashes are performed for speed.
-        """
-        input_bytes = b''.join([pk.serialize() for pk in public_keys])
-        pk_hash = hash256(input_bytes)
-        order = public_keys[0].value.ec.n
-
-        computed_Ts = []
-        for i in range(num_outputs):
-            t = int.from_bytes(hash256(i.to_bytes(4, "big") + pk_hash), "big")
-            computed_Ts.append(t % order)
-
-        return computed_Ts
 
 
 """

@@ -116,6 +116,31 @@ TEST_CASE("Test vectors") {
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
             == "97f79f27fbd08b77666ca0f7be9c513df86e0ef41e8569a9a8dac7f368d61ec723242b4cce2576875437eb648dd9baef0906ec6424b1e5ecabec21a488b24ddf19a118b7b11848489c57a148145a383f776727e04858ee67aefaef99af31b8d9");
     }
+
+    SECTION("Test vector 3") {
+        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
+        ExtendedPrivateKey esk = ExtendedPrivateKey::FromSeed(
+                seed, sizeof(seed));
+        REQUIRE(esk.GetPublicKey().GetFingerprint() == 0xa4700b27);
+        uint8_t chainCode[32];
+        esk.GetChainCode().Serialize(chainCode);
+        REQUIRE(BLSUtil::HexStr(chainCode, 32) == "d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3");
+
+        ExtendedPrivateKey esk77 = esk.PrivateChild(77 + (1 << 31));
+        esk77.GetChainCode().Serialize(chainCode);
+        REQUIRE(BLSUtil::HexStr(chainCode, 32) == "f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b");
+        REQUIRE(esk77.GetPrivateKey().GetPublicKey().GetFingerprint() == 0xa8063dcf);
+
+        REQUIRE(esk.PrivateChild(3)
+                   .PrivateChild(17)
+                   .GetPublicKey()
+                   .GetFingerprint() == 0xff26a31f);
+        REQUIRE(esk.GetExtendedPublicKey()
+                   .PublicChild(3)
+                   .PublicChild(17)
+                   .GetPublicKey()
+                   .GetFingerprint() == 0xff26a31f);
+    }
 }
 
 TEST_CASE("Key generation") {
