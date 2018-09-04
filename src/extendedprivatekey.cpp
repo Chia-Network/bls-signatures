@@ -106,7 +106,6 @@ ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
         sk.GetPublicKey().Serialize(hmacInput);
         BLSUtil::IntToFourBytes(hmacInput + BLSPublicKey::PUBLIC_KEY_SIZE, i);
     }
-    std::cout << "Linput: " << BLSUtil::HexStr(hmacInput, inputLen) << std::endl;
     hmacInput[inputLen - 1] = 0;
 
     relic::md_hmac(ILeft, hmacInput, inputLen,
@@ -118,7 +117,6 @@ ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
     relic::md_hmac(IRight, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
-    std::cout << "Ileft " << BLSUtil::HexStr(ILeft, BLSPrivateKey::PRIVATE_KEY_SIZE) << std::endl;
     relic::bn_t* newSk = BLSUtil::SecAlloc<relic::bn_t>(1);
     bn_new(*newSk);
     bn_read_bin(*newSk, ILeft, BLSPrivateKey::PRIVATE_KEY_SIZE);
@@ -134,7 +132,6 @@ ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
             BLSPrivateKey::PRIVATE_KEY_SIZE);
     bn_write_bin(newSkBytes, BLSPrivateKey::PRIVATE_KEY_SIZE, *newSk);
     BLSPrivateKey skp = BLSPrivateKey::FromBytes(newSkBytes);
-    std::cout << "SK bytes: " << BLSUtil::HexStr(newSkBytes, 32) << std::endl;
 
     ExtendedPrivateKey esk(version, depth + 1,
                            sk.GetPublicKey().GetFingerprint(), i,
