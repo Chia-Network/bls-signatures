@@ -3,11 +3,17 @@
 import time
 from ec import (generator_Fq, generator_Fq2, default_ec, default_ec_twist,
                 y_for_x, hash_to_point_Fq, hash_to_point_Fq2,
-                twist, untwist, rand_scalar)
+                twist, untwist)
+import random
 from fields import Fq2, Fq6, Fq12, Fq
 from bls import BLS
 from keys import BLSPrivateKey, BLSPublicKey, ExtendedPrivateKey
 from aggregation_info import AggregationInfo
+
+
+def rand_scalar(ec=default_ec):
+    return random.randrange(1, ec.n)
+
 
 def test_fields():
     a = Fq(17, 30)
@@ -139,9 +145,33 @@ def test_vectors2():
     assert(BLS.verify(sig_R))
 
     sig_final = BLS.aggregate_sigs([sig_L, sig_R, sig6])
-    assert(sig_final.serialize() == bytes.fromhex("97f79f27fbd08b77666ca0f7be9c513df86e0ef41e8569a9a8dac7f368d61ec723242b4cce2576875437eb648dd9baef0906ec6424b1e5ecabec21a488b24ddf19a118b7b11848489c57a148145a383f776727e04858ee67aefaef99af31b8d9"))
+    assert(sig_final.serialize() == bytes.fromhex("0309c9e3c32334ad6a4be270a2f0d8540b7edaec8ca887d6e177507985061b49601005c60859266a4aae8cb6347beedd14f4ab5a0ba0b7c54dee02cc3af16ded333c1fafa91d5022dee0b6b1403f4313870a9b96d555ad5ef16d4283c65fa173"))
     assert(BLS.verify(sig_final))
+    quotient = sig_final.divide_by([sig2, sig5, sig6])
+    assert(BLS.verify(quotient))
+    assert(BLS.verify(sig_final))
+    assert(quotient.serialize() == bytes.fromhex("0b86b6667163abf3893230f86d47379ee1a32b830640a22745e57746947174b7d56f1c0475d7e6968e7f9ca13a5b1c71116cfeb19e4679c76633c48f54d5da03204565456e269689980028ec68060cfcb006d8832ba45f133ad32a829c2392d5"))
+    assert(quotient.divide_by([]) == quotient)
+    try:
+        quotient.divide_by([sig6])
+        assert(False)  # Should fail due to not subset
+    except:
+        pass
+    sig_final.divide_by([sig1]) # Should not throw
+    try:
+        sig_final.divide_by([sig_L]) # Should throw due to not unique
+        assert(False)  # Should fail due to not unique
+    except:
+        pass
 
+    # Divide by aggregate
+    sig7 = sk2.sign(m3)
+    sig8 = sk2.sign(m4)
+    sig_R2 = BLS.aggregate_sigs([sig7, sig8])
+    sig_final2 = BLS.aggregate_sigs([sig_final, sig_R2])
+    quotient2 = sig_final2.divide_by([sig_R2])
+    assert(BLS.verify(quotient2))
+    assert(quotient2.serialize() == bytes.fromhex("9623063bd1f6d6aead6e337a0f53c8aff79e636bec2b01c68e530521d32a3476bcd741648d105d08c87b2a4094f047401541f74aa21b0d24e22362448cda036eb85727a48e2fa0cdf6f15290efdb176dbac1d220e597f175c32c3fa42f276ea6"))
 
 def test_vectors3():
     seed = bytes([1, 50, 6, 244, 24, 199, 1, 25])
@@ -178,12 +208,12 @@ def test_bls():
     print(BLS.aggregate_sigs_simple([sig, sig2]))
 
 
-test_fields()
-test_ec()
-test_bls()
-test_vectors()
+# test_fields()
+# test_ec()
+# test_bls()
+# test_vectors()
 test_vectors2()
-test_vectors3()
+# test_vectors3()
 
 
 """

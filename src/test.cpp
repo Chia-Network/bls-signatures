@@ -107,14 +107,50 @@ TEST_CASE("Test vectors") {
 
         std::vector<BLSSignature> sigs = {aggSigL, aggSigR, sig6};
 
-        const BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig = BLS::AggregateSigs(sigs);
 
         REQUIRE(BLS::Verify(aggSig));
 
         uint8_t buf[BLSSignature::SIGNATURE_SIZE];
         aggSig.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-            == "97f79f27fbd08b77666ca0f7be9c513df86e0ef41e8569a9a8dac7f368d61ec723242b4cce2576875437eb648dd9baef0906ec6424b1e5ecabec21a488b24ddf19a118b7b11848489c57a148145a383f776727e04858ee67aefaef99af31b8d9");
+            == "0309c9e3c32334ad6a4be270a2f0d8540b7edaec8ca887d6e177507985061b49601005c60859266a4aae8cb6347beedd14f4ab5a0ba0b7c54dee02cc3af16ded333c1fafa91d5022dee0b6b1403f4313870a9b96d555ad5ef16d4283c65fa173");
+        vector<BLSSignature> signatures_to_divide = {sig2, sig5, sig6};
+        BLSSignature quotient = aggSig.DivideBy(signatures_to_divide);
+        aggSig.DivideBy(signatures_to_divide);
+
+        quotient.Serialize(buf);
+        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+            == "0b86b6667163abf3893230f86d47379ee1a32b830640a22745e57746947174b7d56f1c0475d7e6968e7f9ca13a5b1c71116cfeb19e4679c76633c48f54d5da03204565456e269689980028ec68060cfcb006d8832ba45f133ad32a829c2392d5");
+
+        REQUIRE(BLS::Verify(quotient));
+        REQUIRE(quotient.DivideBy(vector<BLSSignature>()) == quotient);
+        signatures_to_divide = {sig6};
+        REQUIRE_THROWS(quotient.DivideBy(signatures_to_divide));
+
+        // Should not throw
+        signatures_to_divide = {sig1};
+        aggSig.DivideBy(signatures_to_divide);
+
+        // Should throw due to not unique
+        signatures_to_divide = {aggSigL};
+        REQUIRE_THROWS(aggSig.DivideBy(signatures_to_divide));
+
+        BLSSignature sig7 = sk2.Sign(message3, sizeof(message3));
+        BLSSignature sig8 = sk2.Sign(message4, sizeof(message4));
+
+        // Divide by aggregate
+        std::vector<BLSSignature> sigsR2 = {sig7, sig8};
+        BLSSignature aggSigR2 = BLS::AggregateSigs(sigsR2);
+        std::vector<BLSSignature> sigsFinal2 = {aggSig, aggSigR2};
+        BLSSignature aggSig2 = BLS::AggregateSigs(sigsFinal2);
+        std::vector<BLSSignature> divisorFinal2 = {aggSigR2};
+        BLSSignature quotient2 = aggSig2.DivideBy(divisorFinal2);
+
+        REQUIRE(BLS::Verify(quotient2));
+        quotient2.Serialize(buf);
+        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+            == "9623063bd1f6d6aead6e337a0f53c8aff79e636bec2b01c68e530521d32a3476bcd741648d105d08c87b2a4094f047401541f74aa21b0d24e22362448cda036eb85727a48e2fa0cdf6f15290efdb176dbac1d220e597f175c32c3fa42f276ea6");
     }
 
     SECTION("Test vector 3") {

@@ -36,7 +36,7 @@ class BLS:
         """
         if (len(signatures) != len(public_keys) or
                 len(public_keys) != len(message_hashes)):
-            raise "Invalid number of keys"
+            raise Exception("Invalid number of keys")
         mh_pub_sigs = [(message_hashes[i], public_keys[i], signatures[i])
                        for i in range(len(signatures))]
 
@@ -68,7 +68,8 @@ class BLS:
 
         for signature in signatures:
             if signature.aggregation_info.empty():
-                raise "Each signature must have a valid aggregation info"
+                raise Exception("Each signature must have a valid aggregation "
+                                + "info")
             public_keys.append(signature.aggregation_info.public_keys)
             message_hashes.append(signature.aggregation_info.message_hashes)
 
@@ -129,7 +130,7 @@ class BLS:
         sort_keys_sorted.sort()
         sorted_public_keys = [pk for (mh, pk) in sort_keys_sorted]
 
-        computed_Ts = hash_pks(len(sorted_public_keys), sorted_public_keys)
+        computed_Ts = hash_pks(len(colliding_sigs), sorted_public_keys)
 
         # Raise each sig to a power of each t,
         # and multiply all together into agg_sig
@@ -206,7 +207,7 @@ class BLS:
         Aggregates public keys together
         """
         if len(public_keys) < 1:
-            raise "Invalid number of keys"
+            raise Exception("Invalid number of keys")
         public_keys.sort()
 
         computed_Ts = hash_pks(len(public_keys), public_keys)
@@ -228,7 +229,7 @@ class BLS:
         Aggregates private keys together
         """
         if secure and len(private_keys) != len(public_keys):
-            raise "Invalid number of keys"
+            raise Exception("Invalid number of keys")
 
         priv_pub_keys = [(public_keys[i], private_keys[i])
                          for i in range(len(private_keys))]

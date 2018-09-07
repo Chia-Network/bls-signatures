@@ -1,7 +1,7 @@
 from collections import namedtuple
 from fields import Fq, Fq2, Fq6, Fq12, FieldExtBase
 import bls12381
-import random
+from copy import deepcopy
 from util import hash256
 
 # Struct for elliptic curve parameters
@@ -21,7 +21,7 @@ class AffinePoint:
         if (not isinstance(x, Fq) and not isinstance(x, FieldExtBase) or
            (not isinstance(y, Fq) and not isinstance(y, FieldExtBase)) or
            type(x) != type(y)):
-            raise "x,y should be field elements"
+            raise Exception("x,y should be field elements")
         self.FE = type(x)
         self.x = x
         self.y = y
@@ -43,7 +43,7 @@ class AffinePoint:
         if other == 0:
             return self
         if not isinstance(other, AffinePoint):
-            raise "Incorrect object"
+            raise Exception("Incorrect object")
 
         return add_points(self, other, self.ec, self.FE)
 
@@ -107,6 +107,12 @@ class AffinePoint:
 
         return bytes(output)
 
+    def __deepcopy__(self, memo):
+        return AffinePoint(deepcopy(self.x, memo),
+                           deepcopy(self.y, memo),
+                           self.infinity,
+                           self.ec)
+
 
 class JacobianPoint:
     """
@@ -118,7 +124,7 @@ class JacobianPoint:
         if (not isinstance(x, Fq) and not isinstance(x, FieldExtBase) or
            (not isinstance(y, Fq) and not isinstance(y, FieldExtBase)) or
            (not isinstance(z, Fq) and not isinstance(z, FieldExtBase))):
-            raise "x,y should be field elements"
+            raise Exception("x,y should be field elements")
         self.FE = type(x)
         self.x = x
         self.y = y
@@ -175,6 +181,13 @@ class JacobianPoint:
 
     def serialize(self):
         return self.to_affine().serialize()
+
+    def __deepcopy__(self, memo):
+        return JacobianPoint(deepcopy(self.x, memo),
+                             deepcopy(self.y, memo),
+                             deepcopy(self.z, memo),
+                             self.infinity,
+                             self.ec)
 
 
 def y_for_x(x, ec=default_ec, FE=Fq):
@@ -342,18 +355,6 @@ def scalar_mult_jacobian(c, p1, ec=default_ec, FE=Fq):
         addend += addend
         c = c >> 1
     return result
-
-
-def order(ec=default_ec):
-    return ec.n
-
-
-def rand_scalar(ec=default_ec):
-    return random.randrange(1, ec.n)
-
-
-def rand_field_element(ec=default_ec):
-    return Fq(ec.q, random.randrange(1, ec.q))
 
 
 def generator_Fq(ec=default_ec):

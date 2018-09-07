@@ -131,7 +131,7 @@ AggregationInfo::AggregationInfo(const AggregationInfo& info) {
 
 void AggregationInfo::RemoveEntries(std::vector<uint8_t*> const &messages,
                                     std::vector<BLSPublicKey> const &pubKeys) {
-    if (messages.size() != pubKeys.size() || messages.size() < 1) {
+    if (messages.size() != pubKeys.size()) {
         throw std::string("Invalid entries");
     }
     // Erase the keys from the tree
@@ -186,6 +186,7 @@ bool operator<(AggregationInfo const&a, AggregationInfo const&b) {
         // If we run out of elements, return
         if (a.sortedMessageHashes.size() == i) {
             lessThan = true;
+            break;
         } else if (b.sortedMessageHashes.size() == i) {
             lessThan = false;
             break;
@@ -208,7 +209,7 @@ bool operator<(AggregationInfo const&a, AggregationInfo const&b) {
         }
         // If they are equal, compare the exponents
         auto aExp = a.tree.find(bufferA);
-        auto bExp = a.tree.find(bufferB);
+        auto bExp = b.tree.find(bufferB);
         int cmpRes = bn_cmp(*aExp->second, *bExp->second);
         if (cmpRes == CMP_LT) {
             lessThan = true;

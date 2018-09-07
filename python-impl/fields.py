@@ -1,3 +1,6 @@
+from copy import deepcopy
+
+
 class Fq(int):
     """
     Represents an element of a finite field mod a prime q.
@@ -143,6 +146,9 @@ class Fq(int):
             t = (t * c) % self.Q
             R = (R * b) % self.Q
 
+    def __deepcopy__(self, memo):
+        return Fq(self.Q, int(self))
+
     def getint():
         return super()
 
@@ -174,12 +180,12 @@ class FieldExtBase(tuple):
             args[1].extension
         except AttributeError:
             if len(args) != 2:
-                raise "Invalid number of arguments"
+                raise Exception("Invalid number of arguments")
             arg_extension = 1
             new_args = [Fq(Q, a) for a in args]
         if arg_extension != 1:
             if len(args) != cls.embedding:
-                raise "Invalid number of arguments"
+                raise Exception("Invalid number of arguments")
             for arg in new_args:
                 assert(arg.extension == arg_extension)
         assert all(isinstance(arg, cls.basefield
@@ -343,6 +349,13 @@ class FieldExtBase(tuple):
         elif cls == Fq12:
             r = Fq6(Q, Fq2.zero(Q), Fq2.one(Q), Fq2.zero(Q))
             ret.set_root(r)
+        return ret
+
+    def __deepcopy__(self, memo):
+        cls = type(self)
+        ret = super().__new__(cls, (deepcopy(a, memo) for a in self))
+        ret.Q = self.Q
+        ret.root = self.root
         return ret
 
 

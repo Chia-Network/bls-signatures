@@ -1,5 +1,6 @@
-from ec import default_ec, y_for_x, AffinePoint
+from ec import default_ec, y_for_x, AffinePoint, JacobianPoint
 from fields import Fq, Fq2
+from copy import deepcopy
 
 
 class BLSSignature:
@@ -28,8 +29,75 @@ class BLSSignature:
     def from_g2(g2_el, aggregation_info=None):
         return BLSSignature(g2_el, aggregation_info)
 
+    def divide_by(self, divisor_signatures):
+        """
+        Signature division (elliptic curve subtraction). This is useful if
+        you have already verified parts of the tree, since verification
+        of the resulting quotient signature will be faster (less pairings
+        have to be perfomed).
+
+        This function Divides an aggregate signature by other signatures
+        in the aggregate trees. A signature can only be divided if it is
+        part of the subset, and all message/public key pairs in the
+        aggregationInfo for the divisor signature are unique. i.e you cannot
+        divide s1 / s2, if s2 is an aggregate signature containing m1,pk1,
+        which is also present somewhere else in s1's tree. Note, s2 itself
+        does not have to be unique.
+        """
+        message_hashes_to_remove = []
+        pubkeys_to_remove = []
+        prod = JacobianPoint(Fq2.one(default_ec.q), Fq2.one(default_ec.q),
+                             Fq2.zero(default_ec.q), True, default_ec)
+        for divisor_sig in divisor_signatures:
+            pks = divisor_sig.aggregation_info.public_keys
+            message_hashes = divisor_sig.aggregation_info.message_hashes
+            if len(pks) != len(message_hashes):
+                raise Exception("Invalid aggregation info")
+
+            for i in range(len(pks)):
+                divisor = divisor_sig.aggregation_info.tree[
+                        (message_hashes[i], pks[i])]
+                try:
+                    dividend = self.aggregation_info.tree[
+                        (message_hashes[i], pks[i])]
+                except KeyError:
+                    raise Exception("Signature is not a subset")
+                if i == 0:
+                    quotient = (Fq(default_ec.n, dividend)
+                                / Fq(default_ec.n, divisor))
+                else:
+                    # Makes sure the quotient is identical for each public
+                    # key, which means message/pk pair is unique.
+                    new_quotient = (Fq(default_ec.n, dividend)
+                                    / Fq(default_ec.n, divisor))
+                    if quotient != new_quotient:
+                        raise Exception("Cannot divide by aggregate signature,"
+                                        + "msg/pk pairs are not unique")
+                message_hashes_to_remove.append(message_hashes[i])
+                pubkeys_to_remove.append(pks[i])
+            prod += (divisor_sig.value * -quotient)
+        copy = BLSSignature(deepcopy(self.value + prod),
+                            deepcopy(self.aggregation_info))
+
+        for i in range(len(message_hashes_to_remove)):
+            a = message_hashes_to_remove[i]
+            b = pubkeys_to_remove[i]
+            if (a, b) in copy.aggregation_info.tree:
+                del copy.aggregation_info.tree[(a, b)]
+        sorted_keys = list(copy.aggregation_info.tree.keys())
+        sorted_keys.sort()
+        copy.aggregation_info.message_hashes = [t[0] for t in sorted_keys]
+        copy.aggregation_info.public_keys = [t[1] for t in sorted_keys]
+        return copy
+
     def set_aggregation_info(self, aggregation_info):
         self.aggregation_info = aggregation_info
+
+    def __eq__(self, other):
+        return self.value.serialize() == other.value.serialize()
+
+    def __hash__(self):
+        return int.from_bytes(self.value.serialize(), "big")
 
     def __lt__(self, other):
         return self.value.serialize() < other.value.serialize()
@@ -59,4 +127,3 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-
