@@ -6,5 +6,4 @@ as BLS signatures and aggregation. Use for reference / educational purposes only
 For a good introduction to pairings, read [Pairings for Beginners](http://www.craigcostello.com.au/pairings/PairingsForBeginners.pdf) by Craig Costello.
 
 ### TODO
-* Signature division
 * Fast algorithm for final exponentiation

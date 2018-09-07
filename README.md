@@ -254,3 +254,8 @@ keybase team request-access chia_network
 * Remove unnecessary dependency files
 * Constant time and side channel attacks
 * Adaptor signatures / Blind signatures
+* More tests vectors (failed verifications, etc)
+
+
+### Test vectors
+Test vectors can be found in src/test.cpp  and python-impl/tests.py.

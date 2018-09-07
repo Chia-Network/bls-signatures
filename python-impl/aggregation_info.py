@@ -1,4 +1,5 @@
 from util import hash256, hash_pks
+from copy import deepcopy
 
 
 class AggregationInfo:
@@ -33,14 +34,29 @@ class AggregationInfo:
                                        other.public_keys[i])])
                           for i in range(len(other.public_keys))]
 
-        for i in range(len(combined)):
-            if i >= len(combined_other):
+        for i in range(max(len(combined), len(combined_other))):
+            if i == len(combined):
+                return True
+            if i == len(combined_other):
                 return False
             if combined[i] < combined_other[i]:
                 return True
             if combined_other[i] < combined[i]:
                 return False
         return True
+
+    def __str__(self):
+        ret = ""
+        for key, value in self.tree.items():
+            ret += ("(" + key[0].hex() + "," + key[1].serialize().hex()
+                    + "):\n" + hex(value) + "\n")
+        return ret
+
+    def __deepcopy__(self, memo):
+        new_tree = deepcopy(self.tree, memo)
+        new_mh = deepcopy(self.message_hashes, memo)
+        new_pubkeys = deepcopy(self.public_keys, memo)
+        return AggregationInfo(new_tree, new_mh, new_pubkeys)
 
     @staticmethod
     def from_msg_hash(public_key, message_hash):

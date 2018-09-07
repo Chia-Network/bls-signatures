@@ -3,6 +3,7 @@ from ec import (generator_Fq, hash_to_point_Fq2, default_ec,
                 hash_to_point_prehashed_Fq2, y_for_x,
                 AffinePoint)
 from fields import Fq
+from copy import deepcopy
 from aggregation_info import AggregationInfo
 from signature import BLSSignature
 
@@ -43,6 +44,12 @@ class BLSPublicKey:
     def serialize(self):
         return self.value.serialize()
 
+    def __eq__(self, other):
+        return self.value.serialize() == other.value.serialize()
+
+    def __hash__(self):
+        return int.from_bytes(self.value.serialize(), "big")
+
     def __lt__(self, other):
         return self.value.serialize() < other.value.serialize()
 
@@ -51,6 +58,9 @@ class BLSPublicKey:
 
     def __repr__(self):
         return "BLSPublicKey(" + self.value.to_affine().__repr__() + ")"
+
+    def __deepcopy__(self, memo):
+        return BLSPublicKey.from_g1(deepcopy(self.value, memo))
 
 
 class BLSPrivateKey:
@@ -128,7 +138,7 @@ class ExtendedPrivateKey:
 
     def private_child(self, i):
         if (self.depth >= 255):
-            raise "Cannot go further than 255 levels"
+            raise Exception("Cannot go further than 255 levels")
 
         # Hardened keys have i >= 2^31. Non-hardened have i < 2^31
         hardened = (i >= (2 ** 31))
@@ -193,11 +203,11 @@ class ExtendedPublicKey:
 
     def public_child(self, i):
         if (self.depth >= 255):
-            raise "Cannot go further than 255 levels"
+            raise Exception("Cannot go further than 255 levels")
 
         # Hardened keys have i >= 2^31. Non-hardened have i < 2^31
         if i >= (2 ** 31):
-            raise "Cannot derive hardened children from public key"
+            raise Exception("Cannot derive hardened children from public key")
 
         hmac_input = self.public_key.serialize() + i.to_bytes(4, "big")
         i_left = hmac256(hmac_input + bytes([0]), self.chain_code)
