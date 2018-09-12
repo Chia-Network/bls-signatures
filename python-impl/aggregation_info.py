@@ -21,6 +21,9 @@ class AggregationInfo:
     def empty(self):
         return not self.tree
 
+    def __eq__(self, other):
+        return not self.__lt__(other) and not other.__lt__(self)
+
     def __lt__(self, other):
         """
         Compares two AggregationInfo objects, this is necessary for sorting
@@ -43,7 +46,7 @@ class AggregationInfo:
                 return True
             if combined_other[i] < combined[i]:
                 return False
-        return True
+        return False
 
     def __str__(self):
         ret = ""

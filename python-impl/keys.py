@@ -44,6 +44,9 @@ class BLSPublicKey:
     def serialize(self):
         return self.value.serialize()
 
+    def size(self):
+        return self.PUBLIC_KEY_SIZE
+
     def __eq__(self, other):
         return self.value.serialize() == other.value.serialize()
 
@@ -101,10 +104,19 @@ class BLSPrivateKey:
         return BLSSignature.from_g2(self.value * r, aggregation_info)
 
     def __lt__(self, other):
-        return self.value.serialize() < other.value.serialize()
+        return self.value < other.value
+
+    def __eq__(self, other):
+        return self.value == other.value
+
+    def __hash__(self):
+        return self.value
 
     def serialize(self):
         return self.value.to_bytes(self.PRIVATE_KEY_SIZE, "big")
+
+    def size(self):
+        return self.PRIVATE_KEY_SIZE
 
     def __str__(self):
         return "BLSPrivateKey(" + hex(self.value) + ")"
@@ -115,6 +127,7 @@ class BLSPrivateKey:
 
 class ExtendedPrivateKey:
     version = 1
+    EXTENDED_PRIVATE_KEY_SIZE = 77
 
     def __init__(self, version, depth, parent_fingerprint,
                  child_number, chain_code, private_key):
@@ -180,13 +193,33 @@ class ExtendedPrivateKey:
     def get_public_key(self):
         return self.private_key.get_public_key()
 
+    def size(self):
+        return self.EXTENDED_PRIVATE_KEY_SIZE
+
+    def serialize(self):
+        return (self.version.to_bytes(4, "big") +
+                bytes([self.depth]) +
+                self.parent_fingerprint.to_bytes(4, "big") +
+                self.child_number.to_bytes(4, "big") +
+                self.chain_code +
+                self.private_key.serialize())
+
+    def __eq__(self, other):
+        return self.serialize() == other.serialize()
+
+    def __hash__(self):
+        return int.from_bytes(self.serialize())
+
 
 class ExtendedPublicKey:
+    EXTENDED_PUBLIC_KEY_SIZE = 93
+
     def __init__(self, version, depth, parent_fingerprint,
                  child_number, chain_code, public_key):
         self.version = version
         self.depth = depth
         self.parent_fingerprint = parent_fingerprint
+        self.child_number = child_number
         self.chain_code = chain_code
         self.public_key = public_key
 
@@ -220,11 +253,28 @@ class ExtendedPublicKey:
         new_pk = BLSPublicKey.from_g1(sk_left.get_public_key().value +
                                       self.public_key.value)
         return ExtendedPublicKey(self.version, self.depth + 1,
-                                 self.parent_fingerprint, i,
+                                 self.public_key.get_fingerprint(), i,
                                  i_right, new_pk)
 
     def get_public_key(self):
         return self.public_key
+
+    def size(self):
+        return self.EXTENDED_PUBLIC_KEY_SIZE
+
+    def serialize(self):
+        return (self.version.to_bytes(4, "big") +
+                bytes([self.depth]) +
+                self.parent_fingerprint.to_bytes(4, "big") +
+                self.child_number.to_bytes(4, "big") +
+                self.chain_code +
+                self.public_key.serialize())
+
+    def __eq__(self, other):
+        return self.serialize() == other.serialize()
+
+    def __hash__(self):
+        return int.from_bytes(self.serialize())
 
 
 """
