@@ -202,7 +202,7 @@ class BLS:
         return res == Fq12.one(default_ec.q)
 
     @staticmethod
-    def aggregate_public_keys(public_keys, secure):
+    def aggregate_pub_keys(public_keys, secure):
         """
         Aggregates public keys together
         """
@@ -224,7 +224,7 @@ class BLS:
         return BLSPublicKey.from_g1(sum_keys)
 
     @staticmethod
-    def aggregate_private_keys(private_keys, public_keys, secure):
+    def aggregate_priv_keys(private_keys, public_keys, secure):
         """
         Aggregates private keys together
         """

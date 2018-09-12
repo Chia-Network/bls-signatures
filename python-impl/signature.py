@@ -1,4 +1,5 @@
-from ec import default_ec, y_for_x, AffinePoint, JacobianPoint
+from ec import (default_ec, default_ec_twist, y_for_x, AffinePoint,
+                JacobianPoint)
 from fields import Fq, Fq2
 from copy import deepcopy
 
@@ -18,11 +19,21 @@ class BLSSignature:
 
     @staticmethod
     def from_bytes(buffer, aggregation_info=None):
+        use_big_y = buffer[0] & 0x80
+
+        buffer = bytes([buffer[0] & 0x1f]) + buffer[1:]
+
         x0 = int.from_bytes(buffer[:48], "big")
         x1 = int.from_bytes(buffer[48:], "big")
         x = Fq2(default_ec.q, Fq(default_ec.q, x0), Fq(default_ec.q, x1))
-        y = y_for_x(x)
-        return BLSSignature(AffinePoint(x, y, False, default_ec).to_jacobian(),
+        ys = y_for_x(x, default_ec_twist, Fq2)
+        y = ys[0]
+        if ((use_big_y and ys[1][1] > default_ec.q // 2) or
+                (not use_big_y and ys[1][1] < default_ec.q // 2)):
+            y = ys[1]
+
+        return BLSSignature(AffinePoint(x, y, False, default_ec_twist)
+                            .to_jacobian(),
                             aggregation_info)
 
     @staticmethod
@@ -93,6 +104,9 @@ class BLSSignature:
     def set_aggregation_info(self, aggregation_info):
         self.aggregation_info = aggregation_info
 
+    def get_aggregation_info(self):
+        return self.aggregation_info
+
     def __eq__(self, other):
         return self.value.serialize() == other.value.serialize()
 
@@ -104,6 +118,9 @@ class BLSSignature:
 
     def serialize(self):
         return self.value.serialize()
+
+    def size(self):
+        return self.SIGNATURE_SIZE
 
     def __str__(self):
         return "BLSSignature(" + self.value.to_affine().__str__() + ")"

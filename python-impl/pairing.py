@@ -1,7 +1,7 @@
 from collections import namedtuple
 import bls12381
 from fields import Fq12
-from ec import untwist, twist
+from ec import untwist
 
 
 # Struct for elliptic curve parameters
@@ -29,7 +29,6 @@ def double_line_eval(R, P, ec=default_ec):
     f(P).
     """
     R12 = untwist(R)
-    assert(twist(R12, default_ec_twist) == R)
 
     slope = (3 * pow(R12.x, 2) + ec.a) / (2 * R12.y)
     v = R12.y - slope * R12.x
