@@ -9,6 +9,12 @@ def hash256(m):
     return hashlib.sha256(m).digest()
 
 
+def hash512(m):
+    if type(m) != bytes:
+        m = m.encode("utf-8")
+    return hash256(m + b"0") + hash256(m + b"1")
+
+
 def hmac256(m, k):
     if type(m) != bytes and type(m) != bytearray:
         m = m.encode("utf-8")

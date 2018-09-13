@@ -5,7 +5,7 @@ from ec import untwist
 
 
 # Struct for elliptic curve parameters
-EC = namedtuple("EC", "q a b gx gy g2x g2y n h x k")
+EC = namedtuple("EC", "q a b gx gy g2x g2y n h x k sqrt_n3 sqrt_n3m1o2")
 
 # use secp256k1 as default
 default_ec = EC(*bls12381.parameters())

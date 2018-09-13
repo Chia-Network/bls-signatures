@@ -57,7 +57,7 @@ class Fq(int):
 
     def __str__(self):
         s = hex(int(self))
-        s2 = s[0:5] + ".." + s[-3:] if len(s) > 6 else s
+        s2 = s[0:7] + ".." + s[-5:] if len(s) > 10 else s
         return "Fq(" + s2 + ")"
 
     def __repr__(self):

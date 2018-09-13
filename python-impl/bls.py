@@ -195,7 +195,7 @@ class BLS:
         mapped_hashes = [hash_to_point_prehashed_Fq2(mh)
                          for mh in final_message_hashes]
 
-        g1 = -1 * generator_Fq()
+        g1 = Fq(default_ec.n, -1) * generator_Fq()
         Ps = [g1] + final_public_keys
         Qs = [signature.value.to_affine()] + mapped_hashes
         res = ate_pairing_multi(Ps, Qs, default_ec)

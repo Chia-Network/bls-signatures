@@ -2,10 +2,10 @@ from collections import namedtuple
 from fields import Fq, Fq2, Fq6, Fq12, FieldExtBase
 import bls12381
 from copy import deepcopy
-from util import hash256
+from util import hash256, hash512
 
 # Struct for elliptic curve parameters
-EC = namedtuple("EC", "q a b gx gy g2x g2y n h x k")
+EC = namedtuple("EC", "q a b gx gy g2x g2y n h x k sqrt_n3 sqrt_n3m1o2")
 
 # use secp256k1 as default
 default_ec = EC(*bls12381.parameters())
@@ -77,10 +77,8 @@ class AffinePoint:
         return not self.__eq__(other)
 
     def __mul__(self, c):
-        if not isinstance(c, self.FE) and not isinstance(c, int):
-            raise ValueError("Error, must be int or FE")
-        if isinstance(c, int):
-            c = Fq(self.ec.n, c)
+        if not isinstance(c, int):
+            raise ValueError("Error, must be int or Fq")
         return scalar_mult_jacobian(c, self.to_jacobian(), self.ec).to_affine()
 
     def negate(self):
@@ -93,17 +91,23 @@ class AffinePoint:
         return JacobianPoint(self.x, self.y, self.FE.one(self.ec.q),
                              self.infinity, self.ec)
 
+    # Lexicografically greater than the negation
+    def lex_gt_neg(self):
+        if self.FE == Fq:
+            if self.y > (self.ec.q // 2):
+                return True
+        elif self.FE == Fq2:
+            if self.y[1] > (self.ec.q // 2):
+                return True
+        return False
+
     def serialize(self):
         output = bytearray(self.x.serialize())
 
         # If the y coordinate is the bigger one of the two, set the first
         # bit to 1.
-        if self.FE == Fq:
-            if self.y > (self.ec.q // 2):
-                output[0] |= 0x80
-        elif self.FE == Fq2:
-            if self.y[1] > (self.ec.q // 2):
-                output[0] |= 0x80
+        if self.lex_gt_neg():
+            output[0] |= 0x80
 
         return bytes(output)
 
@@ -165,8 +169,6 @@ class JacobianPoint:
     def __mul__(self, c):
         if not isinstance(c, int):
             raise ValueError("Error, must be int or Fq")
-        if not isinstance(c, Fq):
-            c = Fq(self.ec.n, c)
         return scalar_mult_jacobian(c, self, self.ec)
 
     def __rmul__(self, c):
@@ -174,7 +176,8 @@ class JacobianPoint:
 
     def to_affine(self):
         if self.infinity:
-            return AffinePoint(0, 0, self.infinity, self.ec)
+            return AffinePoint(Fq.zero(self.ec.q), Fq.zero(self.ec.q),
+                               self.infinity, self.ec)
         new_x = self.x / pow(self.z, 2)
         new_y = self.y / pow(self.z, 3)
         return AffinePoint(new_x, new_y, self.infinity, self.ec)
@@ -318,8 +321,6 @@ def scalar_mult(c, p1, ec=default_ec, FE=Fq):
     """
     if p1.infinity or c % ec.q == 0:
         return AffinePoint(FE.zero(ec.q), FE.zero(ec.q), ec)
-    if c < 0 or c > ec.n:
-        c = c % ec.n
     result = AffinePoint(FE.zero(ec.q), FE.zero(ec.q), True, ec)
     addend = p1
     while c > 0:
@@ -343,8 +344,6 @@ def scalar_mult_jacobian(c, p1, ec=default_ec, FE=Fq):
                              FE.zero(ec.q), True, ec)
     if isinstance(c, FE):
         c = int(c)
-    if c < 0 or c > ec.n:
-        c = c % ec.n
     result = JacobianPoint(FE.one(ec.q), FE.one(ec.q),
                            FE.zero(ec.q), True, ec)
     addend = p1
@@ -398,52 +397,79 @@ def psi(P, ec=default_ec):
     return AffinePoint(t2.x[0][0], t2.y[0][0], False, ec)
 
 
+# Rust pairings hashing https://github.com/zkcrypto/pairing
+def sw_encode(t, ec=default_ec, FE=Fq):
+    if t == 0:  # Maps t=0 to the point at infinity
+        return JacobianPoint(FE.one(ec.q), FE.one(ec.q),
+                             FE.zero(ec.q), True, ec)
+    # Parity will ensure that sw_encode(t) = -sw_encode(-t)
+    parity = False
+    if FE == Fq:
+        if t > -t:
+            parity = True
+    elif FE == Fq2:
+        if t[1] > (-t)[1]:
+            parity = True
+    w = t * t + ec.b + 1
+
+    # Map w=0 to generator and its negation
+    if w == 0:
+        if FE == Fq:
+            ret = generator_Fq(ec)
+        else:
+            return generator_Fq2(ec)
+        if parity:
+            ret = ret.negate()
+        return ret
+
+    w = ~w * ec.sqrt_n3 * t
+
+    # At least 1 of x1, x2, x3 is guaranteed to be a valid x
+    x1 = -w * t + ec.sqrt_n3m1o2
+    x2 = FE.from_fq(ec.q, Fq(ec.q, -1)) - x1
+    x3 = ~(w * w) + 1
+
+    for x in [x1, x2, x3]:
+        try:
+            ys = y_for_x(x, ec, FE)
+            ret = AffinePoint(x, ys[0], False, ec)
+            if ret.lex_gt_neg() is not parity:
+                ret = ret.negate()
+            return ret
+        except:  # noqa: E722
+            # x is not a valid x coordinate
+            pass
+
+    # This should never happen
+    raise Exception("No valid x coordinate found")
+
+
+# Performs a Foque-Tibouchi hash
 def hash_to_point_Fq(m, ec=default_ec):
-    """
-    Try and add algorithm. Keep incrementing x until there
-    is a valid y value for it.
-    """
-    h = hash256(m)
-    x = Fq(ec.q, int.from_bytes(h, 'big'))
-    ys = []
-    while True:
-        try:
-            ys = y_for_x(x, ec)
-        except ValueError:
-            x = x + 1
-            continue
-            # Try again
-        return ec.h * AffinePoint(Fq(ec.q, x), ys[0], False, ec)
+    if type(m) != bytes:
+        m = m.encode("utf-8")
+    t0 = Fq(ec.q, int.from_bytes(hash512(m + b"G1_0"), "big"))
+    t1 = Fq(ec.q, int.from_bytes(hash512(m + b"G1_1"), "big"))
+
+    P = sw_encode(t0, ec, Fq) + sw_encode(t1, ec, Fq)
+
+    return P * ec.h  # Scaling by cofactor
 
 
-def hash_to_point_prehashed_Fq2(h, ec=default_ec_twist):
-    """
-    Try and add algorithm. Keep incrementing x until there
-    is a valid y value for it. After that, multiply by the
-    cofactor of G2 in order to send the point to the r-torsion.
-    """
-    x = Fq2(ec.q, Fq(ec.q, int.from_bytes(h, 'big')), Fq.zero(ec.q))
-    ys = []
-    while True:
-        try:
-            ys = y_for_x(x, ec, Fq2)
-        except ValueError:
-            x = x + 1
-            continue
-            # Try again
-        P = AffinePoint(x, ys[0], False, ec)
-        x = -ec.x
+# Performs a Foque-Tibouchi hash
+def hash_to_point_prehashed_Fq2(m, ec=default_ec_twist):
+    if type(m) != bytes:
+        m = m.encode("utf-8")
+    t0_0 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_0_c0"), "big"))
+    t0_1 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_0_c1"), "big"))
+    t1_0 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_1_c0"), "big"))
+    t1_1 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_1_c1"), "big"))
+    t0 = Fq2(ec.q, t0_0, t0_1)
+    t1 = Fq2(ec.q, t1_0, t1_1)
 
-        # This is the cofactor multiplication, done in a more
-        # efficient way. See page 11 of "Efficient hash maps
-        # to G2 on BLS curves" by Budrioni and Pintore.
-        psi2P = psi(psi(2*P, ec), ec)
-        t0 = x*P
-        t1 = x*t0
+    P = sw_encode(t0, ec, Fq2) + sw_encode(t1, ec, Fq2)
 
-        t3 = psi((x+1) * P, ec)
-        t2 = (t1 + t0) - P
-        return t2 - t3 + psi2P
+    return P * ec.h  # Scaling by cofactor
 
 
 def hash_to_point_Fq2(m, ec=default_ec_twist):

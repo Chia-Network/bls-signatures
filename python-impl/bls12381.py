@@ -23,24 +23,34 @@ gy = Fq(q, 0x08B3F481E3AAA0F1A09E30ED741D8AE4FCF5E095D5D00AF600DB18CB2C04B3EDD03
 g2x = Fq2(q, 352701069587466618187139116011060144890029952792775240219908644239793785735715026873347600343865175952761926303160, 3059144344244213709971259814753781636986470325476647558659373206291635324768958432433509563104347017837885763365758)
 g2y = Fq2(q, 1985150602287291935568054521177171638300868978215655730859378665066344726373823718423869104263333984641494340347905, 927553665492332455747201965776037880757740193453592970025027978793976877002675564980949289727957565575433344219582)
 
-# The order of all three groups (g1, g2, and gt)
+# The order of all three groups (g1, g2, and gt). Note, the elliptic curve E_twist
+# actually has more valid points than this. This is relevant when hashing onto the
+# curve, where we use a point that is not in g2, and map it into g2.
 n = 0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001
 
 # Cofactor used to generate r torsion points
 h = 0x396C8C005555E1568C00AAAB0000AAAB
+h_twist = 0x5d543a95414e7f1091d50792876a202cd91de4547085abaa68a205b2e5a7ddfa628f1cb4d9e82ef21537e293a6691ae1616ec6e786f0c70cf1c38e31c7238e5
 
 # Embedding degree
 k = 12
 
+# sqrt(-3) mod q
+sqrt_n3 = 1586958781458431025242759403266842894121773480562120986020912974854563298150952611241517463240701
+
+# (sqrt(-3) - 1) / 2 mod q
+sqrt_n3m1o2 = 793479390729215512621379701633421447060886740281060493010456487427281649075476305620758731620350
+
+
 # This is the normal elliptic curve. G1 points are on here.
 def parameters():
-    return (q, a, b, gx, gy, g2x, g2y, n, h, x, k)
+    return (q, a, b, gx, gy, g2x, g2y, n, h, x, k, sqrt_n3, sqrt_n3m1o2)
 
 # This is the sextic twist used to send elements of G2 from
 # coordinates in Fq12 to coordinates in Fq2. It's isomorphic
 # to the above elliptic curve. See Page 63 of Costello.
 def parameters_twist():
-    return (q, a_twist, b_twist, gx, gy, g2x, g2y, n, h, x, k)
+    return (q, a_twist, b_twist, gx, gy, g2x, g2y, n, h_twist, x, k, sqrt_n3, sqrt_n3m1o2)
 
 
 """
