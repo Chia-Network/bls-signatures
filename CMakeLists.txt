@@ -18,7 +18,7 @@ find_package(sodium)
 if (SODIUM_FOUND)
   message(STATUS "Found libsodium")
   message(STATUS "Sodium include dir = ${sodium_INCLUDE_DIR}")
-  set(BLSALLOC "sodium" CACHE STRING "")
+  set(BLSALLOC_SODIUM "1" CACHE STRING "")
   include_directories(${sodium_INCLUDE_DIR})
 endif()
 
