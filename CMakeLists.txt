@@ -52,7 +52,7 @@ ELSE()
 ENDIF()
 
 set(FP_METHD "INTEG;INTEG;INTEG;MONTY;LOWER;SLIDE" CACHE STRING "")
-set(COMP "-O3 -funroll-loops -fomit-frame-pointer -finline-small-functions -march=native -mtune=native" CACHE STRING "")
+set(COMP "-O3 -funroll-loops -fomit-frame-pointer -march=native -mtune=native" CACHE STRING "")
 set(FP_PMERS "off" CACHE STRING "")
 set(FPX_METHD "INTEG;INTEG;LAZYR" CACHE STRING "")
 set(EP_PLAIN "off" CACHE STRING "")

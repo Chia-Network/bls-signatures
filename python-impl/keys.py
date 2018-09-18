@@ -138,6 +138,7 @@ class ExtendedPrivateKey:
         self.chain_code = chain_code
         self.private_key = private_key
 
+    @staticmethod
     def from_seed(seed):
         prefix = bytes([66, 76, 83, 32, 72, 68, 32, 115, 101, 101, 100])
         i_left = hmac256(seed + bytes([0]), prefix)

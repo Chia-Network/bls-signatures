@@ -234,7 +234,7 @@ Discussion about this library and other Chia related development is on Keybase.
 Install Keybase, and run the following to join the Chia public channels:
 
 ```bash
-keybase team request-access chia_network
+keybase team request-access chia_network.public
 ```
 
 ### Code style
@@ -248,7 +248,6 @@ keybase team request-access chia_network
 
 ### TODO
 * Serialize aggregation info
-* New constant time hashing to g2
 * Secure allocation during signing, key derivation
 * Threshold signatures
 * Remove unnecessary dependency files

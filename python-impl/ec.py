@@ -410,6 +410,8 @@ def sw_encode(t, ec=default_ec, FE=Fq):
     elif FE == Fq2:
         if t[1] > (-t)[1]:
             parity = True
+
+    # w = t^2 + b + 1
     w = t * t + ec.b + 1
 
     # Map w=0 to generator and its negation
@@ -425,10 +427,14 @@ def sw_encode(t, ec=default_ec, FE=Fq):
     w = ~w * ec.sqrt_n3 * t
 
     # At least 1 of x1, x2, x3 is guaranteed to be a valid x
+    # x1 = -wt + sqrt(-3)
     x1 = -w * t + ec.sqrt_n3m1o2
-    x2 = FE.from_fq(ec.q, Fq(ec.q, -1)) - x1
-    x3 = ~(w * w) + 1
 
+    # x2 = -x1 - 1
+    x2 = FE.from_fq(ec.q, Fq(ec.q, -1)) - x1
+
+    # x3 = 1/w^2 + 1
+    x3 = ~(w * w) + 1
     for x in [x1, x2, x3]:
         try:
             ys = y_for_x(x, ec, FE)
@@ -445,7 +451,7 @@ def sw_encode(t, ec=default_ec, FE=Fq):
 
 
 # Performs a Foque-Tibouchi hash
-def hash_to_point_Fq(m, ec=default_ec):
+def hash_to_point_prehashed_Fq(m, ec=default_ec):
     if type(m) != bytes:
         m = m.encode("utf-8")
     t0 = Fq(ec.q, int.from_bytes(hash512(m + b"G1_0"), "big"))
@@ -456,6 +462,11 @@ def hash_to_point_Fq(m, ec=default_ec):
     return P * ec.h  # Scaling by cofactor
 
 
+def hash_to_point_Fq(m, ec=default_ec):
+    h = hash256(m)
+    return hash_to_point_prehashed_Fq(h, ec)
+
+
 # Performs a Foque-Tibouchi hash
 def hash_to_point_prehashed_Fq2(m, ec=default_ec_twist):
     if type(m) != bytes:
@@ -464,6 +475,7 @@ def hash_to_point_prehashed_Fq2(m, ec=default_ec_twist):
     t0_1 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_0_c1"), "big"))
     t1_0 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_1_c0"), "big"))
     t1_1 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_1_c1"), "big"))
+
     t0 = Fq2(ec.q, t0_0, t0_1)
     t1 = Fq2(ec.q, t1_0, t1_1)
 

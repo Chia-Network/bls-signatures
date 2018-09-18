@@ -151,18 +151,17 @@ def test_vectors():
     pk2 = sk2.get_public_key()
     sig2 = sk2.sign(bytes([7, 8, 9]))
     assert(sk1.serialize() == bytes.fromhex("022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e"))
-    print("Pk1 finger:", hex(pk1.get_fingerprint()))
     assert(pk1.get_fingerprint() == 0x26d53247)
     assert(pk2.get_fingerprint() == 0x289bb56e)
-    print("Sig 2 serialize", sig2.serialize().hex())
-    assert(sig1.serialize() == bytes.fromhex("0f562d96ddabc780ce2ec4b00078e13ee265d7fb24fc2358f3aeb900d7e05f0c880388fe0abc4b460ab1ea3f843c0c28042503e005f357d3124151b87ba2df18b6a5d91afb9cd09cfed16876a25e505fe3bdfb8ccf1ba18be4ca35a095d81957"))
-    assert(sig2.serialize() == bytes.fromhex("8388b5451e0d387fbcade62af7563705635f7eedaaf5c2d97ce2e116150f159256b7fe045f03a8a0013312bd5ea153130943caa0f409b6fac4850b0102e5f5f8ffc27ba900bd624317ba19cb19c5a681a083ef8167a4930bbc17aac8ea40bbd5"))
+    assert(sig1.serialize() == bytes.fromhex("020fcab96d75902487099488e4c8f59134ef7264c4c7bc0ef9aebad608f235090c5d97cc483eb6847808d13beb4422f70ad97470d4d1f0a3f51cb370c80956878da8541ab6bcb290a479053dae06037d57e89b445b37eb38c20232e68d08d1de"))
+    assert(sig2.serialize() == bytes.fromhex("040e2e15bd13be3e39e20569170531e581b4fece0941212e38599afe8cf7334ac945a85f7a2d4c18963def6b3cc7a0db191b90334a8036d2658da9dbafbdd8eb4ba3527197ffc42504949a6b0532bce3402b7f99191f892e0304594841e4d617"))
 
     agg_sig = BLS.aggregate_sigs([sig1, sig2])
     agg_pk = BLS.aggregate_pub_keys([pk1, pk2], True)
     agg_sk = BLS.aggregate_priv_keys([sk1, sk2], [pk1, pk2], True)
-    assert(agg_sig.serialize() == bytes.fromhex("067d44075175669de7ebd5151c256d60b6a7ebbe06d0f680d135f26f912b7fbbe049a1b42fa910bbfa8a38e4466c4dbf02062fd347174015624b1885351104830354a89d307bc509489cd33fa0c79826672288250f27024b8ea0bcafcdcfd386"))
+    assert(agg_sig.serialize() == bytes.fromhex("85b8fc474f39b31c23d16d4cce66f80345af36a791309a1820998ae2364eed03b2277221570c5e1545082dd1ec39fe871399a835a253e3b79d776195b481c1555ad2eb3fbb1a8733c7b7897b5302fa03f6d6ca9c8151432c73e2afc76dccb471"))
     assert(agg_sk.sign(bytes([7, 8, 9])).serialize() == agg_sig.serialize())
+
 
     assert(BLS.verify(sig1))
     assert(BLS.verify(agg_sig))
@@ -177,9 +176,10 @@ def test_vectors():
     sig4 = sk1.sign(bytes([1, 2, 3, 4]))
     sig5 = sk2.sign(bytes([1, 2]))
 
+
     agg_sig2 = BLS.aggregate_sigs([sig3, sig4, sig5])
-    assert(agg_sig2.serialize() == bytes.fromhex("0ed044dbb085e89fbd2b5823ae8406becc4d0e18a96fa9a4d116bb01ea93ac65f7a0331cfc0330961c03d0f9283e66fe101058df847878374716231e4d243bbf89ee82acc7d7bdcc091e20b097ac58823679b63bd0215556263645bcc846a0a0"));
     assert(BLS.verify(agg_sig2))
+    assert(agg_sig2.serialize() == bytes.fromhex("90ab621b7aba2daccc07994d10687ea9b06ce89da981d269febff58466a87677cf05c35a8a662642db0bfad61cbd35b7117fa2a4e10b94dcf49e991a453ae5b12b55dee93fcdb5411bca41375370808892d91d54afe32556aa77db47b01a2375"));
 
 
 def test_vectors2():
@@ -189,7 +189,6 @@ def test_vectors2():
     m4 = bytes([15, 63, 244, 92, 0, 1])
 
     sk1 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
-
     sk2 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
 
     sig1 = sk1.sign(m1)
@@ -205,23 +204,23 @@ def test_vectors2():
     assert(BLS.verify(sig_R))
 
     sig_final = BLS.aggregate_sigs([sig_L, sig_R, sig6])
-    assert(sig_final.serialize() == bytes.fromhex("0309c9e3c32334ad6a4be270a2f0d8540b7edaec8ca887d6e177507985061b49601005c60859266a4aae8cb6347beedd14f4ab5a0ba0b7c54dee02cc3af16ded333c1fafa91d5022dee0b6b1403f4313870a9b96d555ad5ef16d4283c65fa173"))
+    assert(sig_final.serialize() == bytes.fromhex("948affeee161fab3d8569d86b97ad9d899dd000c7feb1c3e750a429c3f66eeb7a883296399304840f2816cceaf94103712925cfe0f6e75c03ce2d68213c9368a72b19d09923dcfd9b5589fb1c72ceeb3d59b7028b8d0c19b3305dde5e9fdff8e"))
     assert(BLS.verify(sig_final))
     quotient = sig_final.divide_by([sig2, sig5, sig6])
     assert(BLS.verify(quotient))
     assert(BLS.verify(sig_final))
-    assert(quotient.serialize() == bytes.fromhex("0b86b6667163abf3893230f86d47379ee1a32b830640a22745e57746947174b7d56f1c0475d7e6968e7f9ca13a5b1c71116cfeb19e4679c76633c48f54d5da03204565456e269689980028ec68060cfcb006d8832ba45f133ad32a829c2392d5"))
+    assert(quotient.serialize() == bytes.fromhex("81044ddc441b1e8a4f33bcfbe69f72197533dc735be0c754aea132624b69c2fe29a7d58dd05d0784308dc9237bf4043400b2b38dbd18fce224f042558a01777c41bcf64415d497e3fe98440c8a23e9fa52f5b9dda57e02d5321eb7bfce35e817"))
     assert(quotient.divide_by([]) == quotient)
     try:
         quotient.divide_by([sig6])
         assert(False)  # Should fail due to not subset
-    except Exception:
+    except:
         pass
     sig_final.divide_by([sig1]) # Should not throw
     try:
         sig_final.divide_by([sig_L]) # Should throw due to not unique
         assert(False)  # Should fail due to not unique
-    except Exception:
+    except:
         pass
 
     # Divide by aggregate
@@ -231,34 +230,12 @@ def test_vectors2():
     sig_final2 = BLS.aggregate_sigs([sig_final, sig_R2])
     quotient2 = sig_final2.divide_by([sig_R2])
     assert(BLS.verify(quotient2))
-    assert(quotient2.serialize() == bytes.fromhex("9623063bd1f6d6aead6e337a0f53c8aff79e636bec2b01c68e530521d32a3476bcd741648d105d08c87b2a4094f047401541f74aa21b0d24e22362448cda036eb85727a48e2fa0cdf6f15290efdb176dbac1d220e597f175c32c3fa42f276ea6"))
+    assert(quotient2.serialize() == bytes.fromhex("06de76d808f06cb3227dab2711087e4bf8b1e7376a88a426413503afd77f3e3498cce91464762b0c8f604379b2175ed0039b885ccd5f2756b3ba0d3296b9ff0fa6c5af4fa5eb77e61d292c17ce07333826cb39abd599f3635c6e418fdf88fcd4"))
 
 
 def test_vectors3():
     seed = bytes([1, 50, 6, 244, 24, 199, 1, 25])
     esk =  ExtendedPrivateKey.from_seed(seed)
-    assert(esk.private_key.get_public_key().get_fingerprint() == 0xa4700b27)
-    assert(esk.chain_code.hex() == "d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3")
-    esk77 = esk.private_child(77 + 2**31)
-    assert(esk77.chain_code.hex() == "f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b")
-    assert(esk77.private_key.get_public_key().get_fingerprint() == 0xa8063dcf)
-
-    assert(esk.private_child(3)
-              .private_child(17)
-              .private_key
-              .get_public_key()
-              .get_fingerprint() == 0xff26a31f)
-
-    assert(esk.get_extended_public_key()
-              .public_child(3)
-              .public_child(17)
-              .get_public_key()
-              .get_fingerprint() == 0xff26a31f)
-
-
-def test_vectors3():
-    seed = bytes([1, 50, 6, 244, 24, 199, 1, 25])
-    esk = ExtendedPrivateKey.from_seed(seed)
     assert(esk.get_public_key().get_fingerprint() == 0xa4700b27)
     assert(esk.get_chain_code().serialize().hex() == "d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3")
     esk77 = esk.private_child(77 + 2**31)
@@ -275,7 +252,6 @@ def test_vectors3():
               .public_child(17)
               .get_public_key()
               .get_fingerprint() == 0xff26a31f)
-
 
 test1()
 test2()

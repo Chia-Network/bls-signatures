@@ -12,7 +12,7 @@ def hash256(m):
 def hash512(m):
     if type(m) != bytes:
         m = m.encode("utf-8")
-    return hash256(m + b"0") + hash256(m + b"1")
+    return hash256(m + bytes([0])) + hash256(m + bytes([1]))
 
 
 def hmac256(m, k):
