@@ -101,17 +101,23 @@ void ep_sw_encode(ep_t p, fp_t t) {
 
 	fp_t rhs;
 
-	// Try x1
 	fp_copy(p->x, x1);
-	ep_rhs(rhs, p);
+	int Xx1 = fp_srt(p->y, rhs) ? 1 : -1;
+	fp_copy(p->x, x2);
+	int Xx2 = fp_srt(p->y, rhs) ? 1 : -1;
+	int index = ((Xx1 - 1) * Xx2) % 3;
 
-	if (!fp_srt(p->y, rhs)) {
+	if (index == 0) {
+		fp_copy(p->x, x1);
+		fp_srt(p->y, rhs);
+	} else if (index == 1) {
 		fp_copy(p->x, x2);
-	} else if (!fp_srt(p->y, rhs)) {
+		fp_srt(p->y, rhs);
+	} else if (index == 2) {
 		fp_copy(p->x, x3);
-	} else if (!fp_srt(p->y, rhs)) {
-		THROW(ERR_CAUGHT);
+		fp_srt(p->y, rhs);
 	}
+
 	p->norm = 1;
 	fp_t nx;
 	fp_neg(nx, p->x);

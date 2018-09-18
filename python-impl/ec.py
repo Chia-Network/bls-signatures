@@ -398,6 +398,7 @@ def psi(P, ec=default_ec):
 
 
 # Rust pairings hashing https://github.com/zkcrypto/pairing
+# https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf
 def sw_encode(t, ec=default_ec, FE=Fq):
     if t == 0:  # Maps t=0 to the point at infinity
         return JacobianPoint(FE.one(ec.q), FE.one(ec.q),
@@ -435,19 +436,28 @@ def sw_encode(t, ec=default_ec, FE=Fq):
 
     # x3 = 1/w^2 + 1
     x3 = ~(w * w) + 1
-    for x in [x1, x2, x3]:
-        try:
-            ys = y_for_x(x, ec, FE)
-            ret = AffinePoint(x, ys[0], False, ec)
-            if ret.lex_gt_neg() is not parity:
-                ret = ret.negate()
-            return ret
-        except:  # noqa: E722
-            # x is not a valid x coordinate
-            pass
 
-    # This should never happen
-    raise Exception("No valid x coordinate found")
+    # Constant time algorithm for finding the correct x, from
+    # FT paper.
+    Xx1 = 1
+    Xx2 = 1
+    try:
+        y_for_x(x1, ec, FE)
+    except:  # noqa: E772
+        Xx1 = -1
+    try:
+        y_for_x(x2, ec, FE)
+    except:  # noqa: E772
+        Xx2 = -1
+
+    index = (((Xx1 - 1) * Xx2) % 3)
+
+    xs = [x1, x2, x3]
+    ys = y_for_x(xs[index], ec, FE)
+    ret = AffinePoint(xs[index], ys[0], False, ec)
+    if ret.lex_gt_neg() is not parity:
+        ret = ret.negate()
+    return ret
 
 
 # Performs a Foque-Tibouchi hash

@@ -57,8 +57,10 @@ def test_ec():
     assert(2*g == g + g)
     assert((3*g).is_on_curve())
     assert(3*g == g + g + g)
-    P = hash_to_point_Fq("")
+    P = hash_to_point_Fq(bytes([]))
     assert(P.is_on_curve())
+    print("P:", P.serialize().hex())
+    assert(P.serialize() == bytes.fromhex("12fc5ad5a2fbe9d4b6eb0bc16d530e5f263b6d59cbaf26c3f2831962924aa588ab84d46cc80d3a433ce064adb307f256"))
 
     g2 = generator_Fq2(default_ec_twist)
     assert(g2.x * (2 * g2.y) == 2*(g2.x * g2.y))
@@ -125,7 +127,7 @@ def test_vectors():
 
     agg_sig2 = BLS.aggregate_sigs([sig3, sig4, sig5])
     assert(BLS.verify(agg_sig2))
-    assert(agg_sig2.serialize() == bytes.fromhex("90ab621b7aba2daccc07994d10687ea9b06ce89da981d269febff58466a87677cf05c35a8a662642db0bfad61cbd35b7117fa2a4e10b94dcf49e991a453ae5b12b55dee93fcdb5411bca41375370808892d91d54afe32556aa77db47b01a2375"));
+    assert(agg_sig2.serialize() == bytes.fromhex("90ab621b7aba2daccc07994d10687ea9b06ce89da981d269febff58466a87677cf05c35a8a662642db0bfad61cbd35b7117fa2a4e10b94dcf49e991a453ae5b12b55dee93fcdb5411bca41375370808892d91d54afe32556aa77db47b01a2375"))
 
 
 def test_vectors2():
@@ -261,12 +263,12 @@ def test1():
     a_final = AggregationInfo.merge_infos([a1a2, a3])
     print(a_final)
     agg_sig_final.set_aggregation_info(a_final)
-    ok = BLS.verify(agg_sig_final)
+    assert(BLS.verify(agg_sig_final))
 
-    ok = BLS.verify(agg_sig_l)
+    assert(BLS.verify(agg_sig_l))
     agg_sig_final = agg_sig_final.divide_by([agg_sig_l])
 
-    ok = BLS.verify(agg_sig_final)
+    assert(BLS.verify(agg_sig_final))
 
     agg_sk = BLS.aggregate_priv_keys([sk1, sk2], [pk1, pk2], True)
     agg_sk.sign(msg)
@@ -280,9 +282,6 @@ def test1():
 
     sk_child = esk.private_child(0).private_child(5)
     pk_child = epk.public_child(0).public_child(5)
-
-    buffer1 = pk_child.serialize()
-    buffer2 = sk_child.serialize()
 
     assert(sk_child.get_extended_public_key() == pk_child)
 

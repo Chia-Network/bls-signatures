@@ -48,9 +48,39 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 		return;
 	}
 	fp2_t nt; // Negative t
-	fp_null(nt);
-	fp_new(nt);
+	fp2_t w;
+	fp2_t b;
+	fp2_t s_n3;
+	fp2_t s_n3m1o2;
+	fp2_t two_inv;
+	fp2_t x1;
+	fp2_t x2;
+	fp2_t x3;
+	fp2_t rhs;
 
+	fp2_null(nt);
+	fp2_null(w);
+	fp2_null(b);
+	fp2_null(s_n3);
+	fp2_null(s_n3m1o2);
+	fp2_null(two_inv);
+	fp2_null(x1);
+	fp2_null(x2);
+	fp2_null(x3);
+	fp2_null(rhs);
+
+	fp2_new(nt);
+	fp2_new(w);
+	fp2_new(b);
+	fp2_new(s_n3);
+	fp2_new(s_n3m1o2);
+	fp2_new(two_inv);
+	fp2_new(x1);
+	fp2_new(x2);
+	fp2_new(x3);
+	fp2_new(rhs);
+
+	// nt = -t
 	fp2_neg(nt, t);
 
 	uint8_t buf0[FP_BYTES];  // t[1]
@@ -62,13 +92,6 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	int parity = memcmp(buf0, buf1, FP_BYTES) > 0;
 
 	// w = t^2 + b + 1
-	fp2_t w;
-	fp2_t b;
-	fp2_null(w);
-	fp2_new(w);
-	fp2_null(b);
-	fp2_new(b);
-
 	fp2_mul(w, t, t);
 	ep2_curve_get_b(b);
 	fp2_add(w, w, b);
@@ -81,22 +104,13 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	}
 
 	// sqrt(-3)
-	fp2_t s_n3;
-	fp2_null(s_n3);
-	fp2_new(s_n3);
 	fp2_set_dig(s_n3, 3);
 	fp2_neg(s_n3, s_n3);
 	fp2_srt(s_n3, s_n3);
 
 	// (sqrt(-3) - 1) / 2
-	fp2_t s_n3m1o2;
-	fp2_null(s_n3m1o2);
-	fp2_new(s_n3m1o2);
 	fp2_copy(s_n3m1o2, s_n3);
 	fp_sub_dig(s_n3m1o2[0], s_n3m1o2[0], 1);
-	fp2_t two_inv;
-	fp2_null(two_inv);
-	fp2_new(two_inv);
 	fp2_set_dig(two_inv, 2);
 	fp2_inv(two_inv, two_inv);
 	fp2_mul(s_n3m1o2, s_n3m1o2, two_inv);
@@ -104,16 +118,6 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	fp2_inv(w, w);
 	fp2_mul(w, w, s_n3);
 	fp2_mul(w, w, t);
-
-	fp2_t x1;
-	fp2_t x2;
-	fp2_t x3;
-	fp2_null(x1);
-	fp2_new(x1);
-	fp2_null(x2);
-	fp2_new(x2);
-	fp2_null(x3);
-	fp2_new(x3);
 
 	// x1 = -wt + sqrt(-3)
 	fp2_neg(x1, w);
@@ -132,24 +136,31 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	fp2_zero(p->y);
 	fp2_set_dig(p->z, 1);
 
-	fp2_t rhs;
-	fp2_null(rhs);
-	fp2_new(rhs);
-
-	// Try x1
+	// if x1 has no y, try x2. if x2 has no y, try x3
 	fp2_copy(p->x, x1);
 	ep2_rhs(rhs, p);
+	int Xx1 = fp2_srt(p->y, rhs) ? 1 : -1;
+	fp2_copy(p->x, x2);
+	ep2_rhs(rhs, p);
+	int Xx2 = fp2_srt(p->y, rhs) ? 1 : -1;
 
-	if (!fp2_srt(p->y, rhs)) {
+	// This formula computes which index to use, in constant time
+	// without conditional branches. It's taken from the paper. 3 is
+	// added, because the % operator in c can be negative.
+	int index = ((((Xx1 - 1) * Xx2) % 3) + 3) % 3;
+
+	if (index == 0) {
+		fp2_copy(p->x, x1);
+		ep2_rhs(rhs, p);
+		fp2_srt(p->y, rhs);
+	} else if (index == 1) {
 		fp2_copy(p->x, x2);
 		ep2_rhs(rhs, p);
-		if (!fp2_srt(p->y, rhs)) {
-			fp2_copy(p->x, x3);
-			ep2_rhs(rhs, p);
-			if (!fp2_srt(p->y, rhs)) {
-				THROW(ERR_CAUGHT);
-			}
-		}
+		fp2_srt(p->y, rhs);
+	} else if (index == 2) {
+		fp2_copy(p->x, x3);
+		ep2_rhs(rhs, p);
+		fp2_srt(p->y, rhs);
 	}
 	p->norm = 1;
 
@@ -290,7 +301,6 @@ void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 }
 
 
-
 /*============================================================================*/
 /* Public definitions                                                         */
 /*============================================================================*/
@@ -316,13 +326,46 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash) {
 		input[MD_LEN + 6] = 0x30; // 0
 
 		bn_t t00;
-		bn_new(t00);
 		bn_t t01;
-		bn_new(t01);
 		bn_t t10;
-		bn_new(t10);
 		bn_t t11;
+		fp_t t00p;
+		fp_t t01p;
+		fp_t t10p;
+		fp_t t11p;
+		fp2_t t0p;
+		fp2_t t1p;
+		ep2_t p0;
+		ep2_t p1;
+		bn_t k;
+
+		bn_null(t00);
+		bn_null(t01);
+		bn_null(t10);
+		bn_null(t11);
+		fp_null(t00p);
+		fp_null(t01p);
+		fp_null(t10p);
+		fp_null(t11p);
+		fp2_null(t0p);
+		fp2_null(t1p);
+		ep2_null(p0);
+		ep2_null(p1);
+		bn_null(k);
+
+		bn_new(t00);
+		bn_new(t01);
+		bn_new(t10);
 		bn_new(t11);
+		fp_new(t00p);
+		fp_new(t01p);
+		fp_new(t10p);
+		fp_new(t11p);
+		fp2_new(t0p);
+		fp2_new(t1p);
+        ep2_new(p1);
+		ep2_new(p0);
+		bn_new(k);
 
 		uint8_t t00Bytes[MD_LEN * 2];
 		uint8_t t01Bytes[MD_LEN * 2];
@@ -363,41 +406,20 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash) {
 		bn_read_bin(t10, t10Bytes, MD_LEN * 2);
 		bn_read_bin(t11, t11Bytes, MD_LEN * 2);
 
-		fp_t t00p;
-		fp_null(t00p);
-		fp_new(t00p);
-		fp_t t01p;
-		fp_new(t01p);
-
-		fp_t t10p;
-		fp_new(t10p);
-		fp_t t11p;
-		fp_new(t11p);
 		fp_prime_conv(t00p, t00);
 		fp_prime_conv(t01p, t01);
 		fp_prime_conv(t10p, t10);
 		fp_prime_conv(t11p, t11);
 
-		fp2_t t0p;
-		fp2_new(t0p);
-		fp2_t t1p;
-		fp2_new(t1p);
 		fp_copy(t0p[0], t00p);
 		fp_copy(t0p[1], t01p);
 		fp_copy(t1p[0], t10p);
 		fp_copy(t1p[1], t11p);
 
-		ep2_t p0;
-		ep2_new(p0);
-		ep2_t p1;
-		ep2_new(p1);
 		ep2_sw_encode(p0, t0p);
 		ep2_sw_encode(p1, t1p);
 		ep2_add(p0, p0, p1);
 
-
-		bn_t k;
-		bn_new(k);
 		ep2_norm(p0, p0);
 
 		/* Now, multiply by cofactor to get the correct group. */
@@ -411,8 +433,8 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash) {
 		bn_free(k);
 		ep_free(p0);
 		ep_free(p1);
-		fp_free(t0p);
-		fp_free(t1p);
+		fp2_free(t0p);
+		fp2_free(t1p);
 		fp_free(t00p);
 		fp_free(t01p);
 		fp_free(t10p);

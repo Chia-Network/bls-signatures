@@ -226,8 +226,8 @@ Changes performed to relic: Added config files for Chia, and added gmp include i
 Allow passing in hash to ep2_map. Custom inversion function. Note: relic is an LGPL 2.1 dependency.
 
 Libsodium and GMP are optional dependencies: libsodium gives secure memory allocation,
-and GMP speeds up the library by ~ 3x. To install them, unzip the directories in contrib,
-and follow the instructions for each repo.
+and GMP speeds up the library by ~ 3x. To install them, either download them from github
+and follow the instructions for each repo, or use a package manager like APT or brew.
 
 ### Discussion
 Discussion about this library and other Chia related development is on Keybase.
