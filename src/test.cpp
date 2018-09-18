@@ -47,20 +47,20 @@ TEST_CASE("Test vectors") {
         sk1.Serialize(buf2);
 
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-             == "020fcab96d75902487099488e4c8f59134ef7264c4c7bc0ef9aebad608f235090c5d97cc483eb6847808d13beb4422f70ad97470d4d1f0a3f51cb370c80956878da8541ab6bcb290a479053dae06037d57e89b445b37eb38c20232e68d08d1de");
+             == "93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065");
         REQUIRE(BLSUtil::HexStr(buf2, BLSPrivateKey::PRIVATE_KEY_SIZE)
              == "022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e");
 
         sig2.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-             == "040e2e15bd13be3e39e20569170531e581b4fece0941212e38599afe8cf7334ac945a85f7a2d4c18963def6b3cc7a0db191b90334a8036d2658da9dbafbdd8eb4ba3527197ffc42504949a6b0532bce3402b7f99191f892e0304594841e4d617");
+             == "975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e");
 
         vector<BLSSignature> sigs = {sig1, sig2};
         BLSSignature aggSig1 = BLS::AggregateSigs(sigs);
 
         aggSig1.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-             == "85b8fc474f39b31c23d16d4cce66f80345af36a791309a1820998ae2364eed03b2277221570c5e1545082dd1ec39fe871399a835a253e3b79d776195b481c1555ad2eb3fbb1a8733c7b7897b5302fa03f6d6ca9c8151432c73e2afc76dccb471");
+             == "0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658");
         REQUIRE(BLS::Verify(aggSig1));
 
         uint8_t message2[3] = {1, 2, 3};
@@ -74,7 +74,7 @@ TEST_CASE("Test vectors") {
         REQUIRE(BLS::Verify(aggSig2));
         aggSig2.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-            == "90ab621b7aba2daccc07994d10687ea9b06ce89da981d269febff58466a87677cf05c35a8a662642db0bfad61cbd35b7117fa2a4e10b94dcf49e991a453ae5b12b55dee93fcdb5411bca41375370808892d91d54afe32556aa77db47b01a2375");
+            == "8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b");
     }
 
     SECTION("Test vector 2") {
@@ -114,14 +114,14 @@ TEST_CASE("Test vectors") {
         uint8_t buf[BLSSignature::SIGNATURE_SIZE];
         aggSig.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-            == "948affeee161fab3d8569d86b97ad9d899dd000c7feb1c3e750a429c3f66eeb7a883296399304840f2816cceaf94103712925cfe0f6e75c03ce2d68213c9368a72b19d09923dcfd9b5589fb1c72ceeb3d59b7028b8d0c19b3305dde5e9fdff8e");
+            == "07969958fbf82e65bd13ba0749990764cac81cf10d923af9fdd2723f1e3910c3fdb874a67f9d511bb7e4920f8c01232b12e2fb5e64a7c2d177a475dab5c3729ca1f580301ccdef809c57a8846890265d195b694fa414a2a3aa55c32837fddd80");
         vector<BLSSignature> signatures_to_divide = {sig2, sig5, sig6};
         BLSSignature quotient = aggSig.DivideBy(signatures_to_divide);
         aggSig.DivideBy(signatures_to_divide);
 
         quotient.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-            == "81044ddc441b1e8a4f33bcfbe69f72197533dc735be0c754aea132624b69c2fe29a7d58dd05d0784308dc9237bf4043400b2b38dbd18fce224f042558a01777c41bcf64415d497e3fe98440c8a23e9fa52f5b9dda57e02d5321eb7bfce35e817");
+            == "8ebc8a73a2291e689ce51769ff87e517be6089fd0627b2ce3cd2f0ee1ce134b39c4da40928954175014e9bbe623d845d0bdba8bfd2a85af9507ddf145579480132b676f027381314d983a63842fcc7bf5c8c088461e3ebb04dcf86b431d6238f");
 
         REQUIRE(BLS::Verify(quotient));
         REQUIRE(quotient.DivideBy(vector<BLSSignature>()) == quotient);
@@ -150,7 +150,7 @@ TEST_CASE("Test vectors") {
         REQUIRE(BLS::Verify(quotient2));
         quotient2.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
-            == "06de76d808f06cb3227dab2711087e4bf8b1e7376a88a426413503afd77f3e3498cce91464762b0c8f604379b2175ed0039b885ccd5f2756b3ba0d3296b9ff0fa6c5af4fa5eb77e61d292c17ce07333826cb39abd599f3635c6e418fdf88fcd4");
+            == "06af6930bd06838f2e4b00b62911fb290245cce503ccf5bfc2901459897731dd08fc4c56dbde75a11677ccfbfa61ab8b14735fddc66a02b7aeebb54ab9a41488f89f641d83d4515c4dd20dfcf28cbbccb1472c327f0780be3a90c005c58a47d3");
     }
 
     SECTION("Test vector 3") {

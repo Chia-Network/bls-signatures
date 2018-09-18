@@ -104,25 +104,30 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	}
 
 	// sqrt(-3)
-	fp2_set_dig(s_n3, 3);
-	fp2_neg(s_n3, s_n3);
-	fp2_srt(s_n3, s_n3);
+	ep2_curve_get_s3(s_n3);
+	fp2_t s_n3p;
+	fp2_null(s_n3p);
+	fp2_new(s_n3p);
+	fp2_t s_n3m1o2p;
+	fp2_null(s_n3m1o2p);
+	fp2_new(s_n3m1o2p);
+
+	fp2_zero(s_n3p);
+	fp2_zero(s_n3m1o2p);
+	fp_prime_conv(s_n3p[0], s_n3);
 
 	// (sqrt(-3) - 1) / 2
-	fp2_copy(s_n3m1o2, s_n3);
-	fp_sub_dig(s_n3m1o2[0], s_n3m1o2[0], 1);
-	fp2_set_dig(two_inv, 2);
-	fp2_inv(two_inv, two_inv);
-	fp2_mul(s_n3m1o2, s_n3m1o2, two_inv);
+	ep2_curve_get_s32(s_n3m1o2);
+	fp_prime_conv(s_n3m1o2p[0], s_n3m1o2);
 
 	fp2_inv(w, w);
-	fp2_mul(w, w, s_n3);
+	fp2_mul(w, w, s_n3p);
 	fp2_mul(w, w, t);
 
 	// x1 = -wt + sqrt(-3)
 	fp2_neg(x1, w);
 	fp2_mul(x1, x1, t);
-	fp2_add(x1, x1, s_n3m1o2);
+	fp2_add(x1, x1, s_n3m1o2p);
 
 	// x2 = -x1 - 1
 	fp2_neg(x2, x1);
@@ -138,6 +143,7 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 
 	// if x1 has no y, try x2. if x2 has no y, try x3
 	fp2_copy(p->x, x1);
+
 	ep2_rhs(rhs, p);
 	int Xx1 = fp2_srt(p->y, rhs) ? 1 : -1;
 	fp2_copy(p->x, x2);
@@ -162,6 +168,7 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 		ep2_rhs(rhs, p);
 		fp2_srt(p->y, rhs);
 	}
+
 	p->norm = 1;
 
     // Check for lexicografically greater than the negation
@@ -337,7 +344,6 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash) {
 		fp2_t t1p;
 		ep2_t p0;
 		ep2_t p1;
-		bn_t k;
 
 		bn_null(t00);
 		bn_null(t01);
@@ -351,7 +357,6 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash) {
 		fp2_null(t1p);
 		ep2_null(p0);
 		ep2_null(p1);
-		bn_null(k);
 
 		bn_new(t00);
 		bn_new(t01);
@@ -365,7 +370,6 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash) {
 		fp2_new(t1p);
         ep2_new(p1);
 		ep2_new(p0);
-		bn_new(k);
 
 		uint8_t t00Bytes[MD_LEN * 2];
 		uint8_t t01Bytes[MD_LEN * 2];
@@ -423,14 +427,12 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash) {
 		ep2_norm(p0, p0);
 
 		/* Now, multiply by cofactor to get the correct group. */
-		ep2_curve_get_cof(k);
-		ep2_mul_monty(p, p0, k);
+		ep2_mul_cof_b12(p, p0);
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);
 	}
 	FINALLY {
-		bn_free(k);
 		ep_free(p0);
 		ep_free(p1);
 		fp2_free(t0p);

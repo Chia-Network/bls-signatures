@@ -491,7 +491,16 @@ def hash_to_point_prehashed_Fq2(m, ec=default_ec_twist):
 
     P = sw_encode(t0, ec, Fq2) + sw_encode(t1, ec, Fq2)
 
-    return P * ec.h  # Scaling by cofactor
+    # This is the cofactor multiplication, done in a more
+    # efficient way. See page 11 of "Efficient hash maps
+    # to G2 on BLS curves" by Budrioni and Pintore.
+    x = -ec.x
+    psi2P = psi(psi(2*P, ec), ec)
+    t0 = x*P
+    t1 = x*t0
+    t3 = psi((x+1) * P, ec)
+    t2 = (t1 + t0) - P
+    return t2 - t3 + psi2P
 
 
 def hash_to_point_Fq2(m, ec=default_ec_twist):
