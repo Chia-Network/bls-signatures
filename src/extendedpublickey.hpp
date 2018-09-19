@@ -15,6 +15,12 @@
 #ifndef SRC_EXTENDEDPUBLICKEY_HPP_
 #define SRC_EXTENDEDPUBLICKEY_HPP_
 
+#include "relic_conf.h"
+
+#if defined GMP && ARITH == GMP
+#include <gmp.h>
+#endif
+
 #include "blspublickey.hpp"
 #include "chaincode.hpp"
 
