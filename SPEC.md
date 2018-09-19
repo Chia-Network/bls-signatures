@@ -127,7 +127,6 @@ pk <- g1 ^ sk
 
 
 #### verify
-
 * input:
     * G<sub>2</sub> element σ
     * map((bytes m, G<sub>1</sub> pk) -> Z<sub>n</sub> exponent) aggInfo
@@ -158,16 +157,18 @@ publicKeys <- [i.values for i in aggInfo]  # list of lists
 
 collidingMessages <- messages that appear in more than one messageHashes list
 
-if len(colidingMessages) == 0:
-    * sigAgg = product([sig for sig in signatures])
-    * newAggInfo = mergeInfos(aggInfo)
+if colidingMessages) is empty:
+    sigAgg <- product([sig for sig in signatures])
+    newAggInfo <- mergeInfos(aggInfo)
     return sigAgg, newAggInfo
 
 collidingSigs <- signatures that contain collidingMessages
 nonCollidingSigs <- the rest of the signatures
-collidingMessageHashes <- all messages in colliding groups
-collidingPublicKeys <- all publicKeys in
+sortKeys <- all (message, publicKey) pairs in colliding groups
 
+sort(sort_keys) # Sort first by message, then by pk
+sortedPublicKeys <- [k[1] for k in sortKeys]
+Ts <- hashPks()
 
 ```
 
