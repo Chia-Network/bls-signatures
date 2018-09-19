@@ -31,20 +31,20 @@ find_library(GMP_NAME NAMES libgmp.a gmp)
 find_library(SODIUM_NAME NAMES libsodium.a sodium)
 
 set(LIBRARIES_TO_COMBINE
-      COMMAND mkdir ${OPREFIX}$<TARGET_NAME:blstmp> || true && cd ${OPREFIX}$<TARGET_NAME:blstmp> &&  ar -x $<TARGET_FILE:blstmp>
-      COMMAND mkdir ${OPREFIX}$<TARGET_NAME:relic_s> || true && cd ${OPREFIX}$<TARGET_NAME:relic_s> &&  ar -x $<TARGET_FILE:relic_s>
+      COMMAND mkdir ${OPREFIX}$<TARGET_NAME:blstmp> || true && cd ${OPREFIX}$<TARGET_NAME:blstmp> &&  ${CMAKE_AR} -x $<TARGET_FILE:blstmp>
+      COMMAND mkdir ${OPREFIX}$<TARGET_NAME:relic_s> || true && cd ${OPREFIX}$<TARGET_NAME:relic_s> &&  ${CMAKE_AR} -x $<TARGET_FILE:relic_s>
 )
 
 if (GMP_FOUND)
-  list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}gmp || true && cd ${OPREFIX}gmp &&  ar -x ${GMP_NAME})
+  list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}gmp || true && cd ${OPREFIX}gmp &&  ${CMAKE_AR} -x ${GMP_NAME})
 endif()
 if (SODIUM_FOUND)
-  list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}sodium || true && cd ${OPREFIX}sodium &&  ar -x ${SODIUM_NAME})
+  list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}sodium || true && cd ${OPREFIX}sodium &&  ${CMAKE_AR} -x ${SODIUM_NAME})
 endif()
 
 add_custom_target(combined_custom
         ${LIBRARIES_TO_COMBINE}
-        COMMAND ar -rs ${C_LIB} ${OPREFIX}*/*.o
+        COMMAND ${CMAKE_AR} -rs ${C_LIB} ${OPREFIX}*/*${CMAKE_C_OUTPUT_EXTENSION}
         WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
         DEPENDS blstmp relic_s
         )
