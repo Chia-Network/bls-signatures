@@ -58,17 +58,6 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	fp2_t x3;
 	fp2_t rhs;
 
-	fp2_null(nt);
-	fp2_null(w);
-	fp2_null(b);
-	fp2_null(s_n3);
-	fp2_null(s_n3m1o2);
-	fp2_null(two_inv);
-	fp2_null(x1);
-	fp2_null(x2);
-	fp2_null(x3);
-	fp2_null(rhs);
-
 	fp2_new(nt);
 	fp2_new(w);
 	fp2_new(b);
@@ -344,19 +333,6 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash) {
 		fp2_t t1p;
 		ep2_t p0;
 		ep2_t p1;
-
-		bn_null(t00);
-		bn_null(t01);
-		bn_null(t10);
-		bn_null(t11);
-		fp_null(t00p);
-		fp_null(t01p);
-		fp_null(t10p);
-		fp_null(t11p);
-		fp2_null(t0p);
-		fp2_null(t1p);
-		ep2_null(p0);
-		ep2_null(p1);
 
 		bn_new(t00);
 		bn_new(t01);

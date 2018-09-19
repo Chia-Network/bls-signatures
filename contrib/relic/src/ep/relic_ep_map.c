@@ -43,12 +43,36 @@ void ep_sw_encode(ep_t p, fp_t t) {
 		return;
 	}
 	fp_t nt; // Negative t
+	fp_t w;
+	fp_t s_n3;
+	fp_t s_n3m1o2;
+	fp_t two_inv;
+	fp_t x1;
+	fp_t x2;
+	fp_t x3;
+	fp_t rhs;
+	fp_t ny;
+
+	fp_new(nt);
+	fp_new(w);
+	fp_new(s_n3);
+	fp_new(s_n3m1o2);
+	fp_new(two_inv);
+	fp_new(x1);
+	fp_new(x2);
+	fp_new(x3);
+	fp_new(rhs);
+	fp_new(ny);
+
 	fp_neg(nt, t);
 
-	int parity = (fp_cmp(t, nt) == CMP_GT);
+	uint8_t buf0[FP_BYTES];
+	uint8_t buf1[FP_BYTES];
+	fp_write_bin(buf0, FP_BYTES, t);
+	fp_write_bin(buf1, FP_BYTES, nt);
+	int parity = (memcmp(buf0, buf1, FP_BYTES) > 0);
 
 	// w = t^2 + b + 1
-	fp_t w;
 	fp_mul(w, t, t);
 	fp_add(w, w, ep_curve_get_b());
 	fp_add_dig(w, w, 1);
@@ -60,16 +84,13 @@ void ep_sw_encode(ep_t p, fp_t t) {
 	}
 
 	// sqrt(-3)
-	fp_t s_n3;
 	fp_set_dig(s_n3, 3);
 	fp_neg(s_n3, s_n3);
 	fp_srt(s_n3, s_n3);
 
 	// (sqrt(-3) - 1) / 2
-	fp_t s_n3m1o2;
 	fp_copy(s_n3m1o2, s_n3);
 	fp_sub_dig(s_n3m1o2, s_n3m1o2, 1);
-	fp_t two_inv;
 	fp_set_dig(two_inv, 2);
 	fp_inv(two_inv, two_inv);
 	fp_mul(s_n3m1o2, s_n3m1o2, two_inv);
@@ -77,10 +98,6 @@ void ep_sw_encode(ep_t p, fp_t t) {
 	fp_inv(w, w);
 	fp_mul(w, w, s_n3);
 	fp_mul(w, w, t);
-
-	fp_t x1;
-	fp_t x2;
-	fp_t x3;
 
 	// x1 = -wt + sqrt(-3)
 	fp_neg(x1, w);
@@ -99,32 +116,42 @@ void ep_sw_encode(ep_t p, fp_t t) {
 	fp_zero(p->y);
 	fp_set_dig(p->z, 1);
 
-	fp_t rhs;
-
 	fp_copy(p->x, x1);
+	ep_rhs(rhs, p->x);
 	int Xx1 = fp_srt(p->y, rhs) ? 1 : -1;
 	fp_copy(p->x, x2);
+	ep_rhs(rhs, p->x);
 	int Xx2 = fp_srt(p->y, rhs) ? 1 : -1;
-	int index = ((Xx1 - 1) * Xx2) % 3;
+	int index = ((((Xx1 - 1) * Xx2) % 3) + 3) % 3;
 
 	if (index == 0) {
 		fp_copy(p->x, x1);
-		fp_srt(p->y, rhs);
 	} else if (index == 1) {
 		fp_copy(p->x, x2);
-		fp_srt(p->y, rhs);
 	} else if (index == 2) {
 		fp_copy(p->x, x3);
-		fp_srt(p->y, rhs);
 	}
+	ep_rhs(rhs, p->x);
+	fp_srt(p->y, rhs);
 
 	p->norm = 1;
-	fp_t nx;
-	fp_neg(nx, p->x);
-	if (fp_cmp(p->x, nx) == CMP_LT && parity ||
-		fp_cmp(p->x, nx) == CMP_GT && !parity) {
+	fp_neg(ny, p->y);
+
+	fp_write_bin(buf0, FP_BYTES, p->y);
+	fp_write_bin(buf1, FP_BYTES, ny);
+	if ((memcmp(buf0, buf1, FP_BYTES) > 0) != parity) {
 		ep_neg(p, p);
 	}
+	fp_free(nt);
+	fp_free(w);
+	fp_free(s_n3);
+	fp_free(s_n3m1o2);
+	fp_free(two_inv);
+	fp_free(x1);
+	fp_free(x2);
+	fp_free(x3);
+	fp_free(rhs);
+	fp_free(ny);
 }
 
 /*============================================================================*/
@@ -143,9 +170,21 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 		input[MD_LEN + 3] = 0x30;
 
 		bn_t t0;
-		bn_new(t0);
 		bn_t t1;
+		fp_t t0p;
+		fp_t t1p;
+		ep_t p0;
+		ep_t p1;
+		bn_t k;
+
+		fp_new(t0p);
+		fp_new(t1p);
+		bn_new(t0);
 		bn_new(t1);
+		ep_new(p0);
+		ep_new(p1);
+		bn_new(k);
+
 		uint8_t t0Bytes[MD_LEN * 2];
 		uint8_t t1Bytes[MD_LEN * 2];
 
@@ -165,28 +204,12 @@ void ep_map(ep_t p, const uint8_t *msg, int len) {
 		bn_read_bin(t0, t0Bytes, MD_LEN * 2);
 		bn_read_bin(t1, t1Bytes, MD_LEN * 2);
 
-		fp_t t0p;
-		fp_new(t0p);
-		fp_t t1p;
-		fp_new(t1p);
 		fp_prime_conv(t0p, t0);
 		fp_prime_conv(t1p, t1);
 
-		fp_print(t0);
-		fp_print(t1);
-
-		ep_t p0;
-		ep_new(p0);
-		ep_t p1;
-		ep_new(p1);
 		ep_sw_encode(p0, t0p);
-		ep_print(p0);
 		ep_sw_encode(p1, t1p);
-		ep_print(p1);
 		ep_add(p0, p0, p1);
-
-		bn_t k;
-		bn_new(k);
 
 		/* Now, multiply by cofactor to get the correct group. */
 		ep_curve_get_cof(k);
