@@ -59,6 +59,10 @@ set_target_properties(combined
         IMPORTED_LOCATION ${C_LIB}
         )
 
+file(GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
+install(FILES ${includes} DESTINATION include/chiabls)
+install(FILES ${C_LIB} DESTINATION lib)
+
 add_executable(runtest test.cpp)
 add_executable(runbench test-bench.cpp)
 
