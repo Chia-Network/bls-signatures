@@ -124,14 +124,14 @@ void BLSPrivateKey::Serialize(uint8_t* buffer) const {
     bn_write_bin(buffer, BLSPrivateKey::PRIVATE_KEY_SIZE, *keydata);
 }
 
-BLSSignature BLSPrivateKey::Sign(uint8_t *msg, size_t len) const {
+BLSSignature BLSPrivateKey::Sign(const uint8_t *msg, size_t len) const {
     BLS::AssertInitialized();
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
     BLSUtil::Hash256(messageHash, msg, len);
     return SignPrehashed(messageHash);
 }
 
-BLSSignature BLSPrivateKey::SignPrehashed(uint8_t *messageHash) const {
+BLSSignature BLSPrivateKey::SignPrehashed(const uint8_t *messageHash) const {
     BLS::AssertInitialized();
     relic::g2_t sig, point;
 
