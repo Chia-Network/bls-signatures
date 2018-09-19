@@ -63,9 +63,9 @@
 #define STLIB
 
 /** Number of times each test is ran. */
-#define TESTS    100
+#define TESTS    0
 /** Number of times each benchmark is ran. */
-#define BENCH    100
+#define BENCH    0
 
 /** Number of available cores. */
 #define CORES    1
@@ -84,7 +84,7 @@
 #define ARCH	 X64
 
 /** Size of word in this architecture. */
-#define WORD     64
+#define WORD_SIZE     64
 
 /** Byte boundary to align digit vectors. */
 #define ALIGN    1
@@ -123,7 +123,7 @@
 /** GMP backend. */
 #define GMP      2
 /** Arithmetic backend. */
-#define ARITH    EASY
+#define ARITH    GMP
 
 /** Required precision in bits. */
 #define BN_PRECI 1024
@@ -202,7 +202,7 @@
 /** Prefer Pseudo-Mersenne primes over random primes. */
 /* #undef FP_PMERS */
 /** Use -1 as quadratic non-residue. */
-/* #undef FP_QNRES */
+#define FP_QNRES
 /** Width of window processing for exponentiation methods. */
 #define FP_WIDTH 4
 
@@ -220,7 +220,7 @@
 /** Integrated modular multiplication. */
 #define INTEG    3
 /** Chosen prime field multiplication method. */
-#define FP_MUL   INTEG
+#define FP_MUL   COMBA
 
 /** Schoolbook squaring. */
 #define BASIC    1
@@ -231,7 +231,7 @@
 /** Reuse multiplication for squaring. */
 #define MULTP    4
 /** Chosen prime field multiplication method. */
-#define FP_SQR   INTEG
+#define FP_SQR   COMBA
 
 /** Division-based reduction. */
 #define BASIC    1
@@ -262,10 +262,10 @@
 /** Constant-time Montgomery powering ladder. */
 #define MONTY    3
 /** Chosen multiple precision modular exponentiation method. */
-#define FP_EXP   SLIDE
+#define FP_EXP   MONTY
 
 /** Prime field arithmetic method */
-#define FP_METHD "INTEG;INTEG;INTEG;MONTY;LOWER;SLIDE"
+#define FP_METHD "INTEG;COMBA;COMBA;MONTY;LOWER;MONTY"
 
 /** Basic quadratic extension field arithmetic. */
 #define BASIC    1
@@ -588,10 +588,10 @@
 /** Lazy-reduced extension field arithmetic. */
 #define LAZYR    2
 /* Chosen extension field arithmetic method. */
-#define PP_EXT   BASIC
+#define PP_EXT   LAZYR
 
 /** Bilinear pairing method. */
-#define PP_METHD "BASIC;OATEP"
+#define PP_METHD "LAZYR;OATEP"
 
 /** Tate pairing. */
 #define TATEP    1
@@ -701,7 +701,7 @@
 /* Arduino platform. */
 #define DUINO    6
 /** Detected operation system. */
-#define OPSYS    MACOSX
+#define OPSYS    LINUX
 
 /** OpenMP multithreading support. */
 #define OPENMP   1

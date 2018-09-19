@@ -70,10 +70,10 @@
 /*
  * Size in bytes of a precomputation table line.
  */
-#if (POLY_M4 % WORD) > 0
-#define T_LINE	(POLY_M4/WORD + 1)
+#if (POLY_M4 % WORD_SIZE) > 0
+#define T_LINE	(POLY_M4/WORD_SIZE + 1)
 #else
-#define T_LINE	(POLY_M4/WORD)
+#define T_LINE	(POLY_M4/WORD_SIZE)
 #endif
 
 /*
