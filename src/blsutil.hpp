@@ -21,6 +21,12 @@
 #include <string>
 #include <cstdlib>
 
+#include "relic_conf.h"
+
+#if defined GMP && ARITH == GMP
+#include <gmp.h>
+#endif
+
 #if BLSALLOC == sodium
 namespace libsodium {
     #include "sodium/utils.h"

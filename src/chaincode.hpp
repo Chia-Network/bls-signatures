@@ -17,6 +17,12 @@
 
 #include <iostream>
 
+#include "relic_conf.h"
+
+#if defined GMP && ARITH == GMP
+#include <gmp.h>
+#endif
+
 namespace relic {
     #include "relic.h"
     #include "relic_test.h"
