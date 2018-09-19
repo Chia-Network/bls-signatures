@@ -63,8 +63,8 @@ class BLSPrivateKey {
     void Serialize(uint8_t* buffer) const;
 
     // Sign a message
-    BLSSignature Sign(uint8_t *msg, size_t len) const;
-    BLSSignature SignPrehashed(uint8_t *hash) const;
+    BLSSignature Sign(const uint8_t *msg, size_t len) const;
+    BLSSignature SignPrehashed(const uint8_t *hash) const;
 
  private:
     // Don't allow public construction, force static methods
