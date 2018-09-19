@@ -44,6 +44,7 @@
  */
 void ep2_sw_encode(ep2_t p, fp2_t t) {
 	if (fp2_is_zero(t)) {
+		// Maps t=0 to the point at infinity.
 		ep2_set_infty(p);
 		return;
 	}
@@ -85,8 +86,10 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	fp_add_dig(w[0], w[0], 1);
 
 	if (fp2_is_zero(w)) {
-		// Returns generator
 		ep2_curve_get_gen(p);
+		if (parity) {
+			ep2_neg(p, p);
+		}
 		return;
 	}
 

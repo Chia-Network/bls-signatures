@@ -42,7 +42,8 @@ Performs an ate pairing between P and Q.
 * input: Fq element
 * output: E or E' point
 
-Shallue and van de Woestijne encoding of a field element to an ec point. Used for Fouque-Tibouchi hashing: https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf
+Shallue and van de Woestijne encoding of a field element to an ec point. Used for Fouque-Tibouchi hashing: https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf. 0 maps to the point at infinity.
+
 
 #### psi
 * input: E' Point p
@@ -53,7 +54,6 @@ Shallue and van de Woestijne encoding of a field element to an ec point. Used fo
 # Described in page 11 of "Efficient hash maps to G2 on BLS curves" by Budroni and Pintore.
 return twist(qPowerFrobenius(untwist(p)))
 ```
-
 
 #### hash256
 * input: message m
@@ -74,9 +74,9 @@ return hash256(m + 0) + hash256(m + 1)
 * input: message m
 * output: G1 element
 ```python
-# Here we create two "random" Fq elements
-t0 <- hash512(m + b"G1_0") % q
-t1 <- hash512(m + b"G1_1") % q
+h <- hash256(m)
+t0 <- hash512(h + b"G1_0") % q
+t1 <- hash512(h + b"G1_1") % q
 
 p <- swEncode(t0) * swEncode(t1)
 
@@ -87,11 +87,11 @@ return p ^ h
 * input: message m
 * output: G2 element
 ```python
-# Here we create two "random" Fq elements
-t00 <- hash512(m + b"G2_0_c0") % q
-t01 <- hash512(m + b"G2_0_c1") % q
-t10 <- hash512(m + b"G2_1_c0") % q
-t11 <- hash512(m + b"G2_1_c1") % q
+h <- hash256(m)
+t00 <- hash512(h + b"G2_0_c0") % q
+t01 <- hash512(h + b"G2_0_c1") % q
+t10 <- hash512(h + b"G2_1_c0") % q
+t11 <- hash512(h + b"G2_1_c1") % q
 
 t0 <- Fq2(t00, t01)
 t1 <- Fq2(t10, t11)
@@ -100,12 +100,17 @@ p <- swEncode(t0) * swEncode(t1)
 
 # Map to the r-torsion by raising to cofactor power
 # Described in page 11 of "Efficient hash maps to G2 on BLS curves" by Budroni and Pintore.
-x = abs(x)
+x <- abs(x)
 return p ^ (x^2 + x - 1) - psi(p ^ (x + 1)) + psi(psi(p ^ 2))
 ```
 
-
-####
+#### hashPks
+* input: G1 elements pks, number of outputs m
+* output: n 256bit integers T
+```python
+pkHash <- hash256(pk.serialize() for pk in pks)
+return [(hash256(fourBytes(i) + pkHash) % n) for i in range(m)]
+```
 
 ### Methods
 #### keyGen
@@ -117,14 +122,12 @@ sk <- hmac256(s, b"BLS private key seed") mod n
 pk <- g1 ^ sk
 ```
 
-
 #### sign
 * input: bytes m, Z<sub>q</sub> element sk
 * output: G<sub>2</sub> element σ
 ```python
 σ <- hashG2(m) ^ sk
 ```
-
 
 #### verify
 * input:
@@ -141,7 +144,7 @@ for each distinct messsageHash m in aggInfo:
         pkAgg *= pk ^ aggInfo[(m, pk)]
     pks.add(pkAgg)
     ms.add(m)
-return 1 == e(-1 * g1, σ) * prod e(pks[i], ms[i])
+return 1 == e(g1 ^ (q-1), σ) * prod e(pks[i], ms[i])
 ```
 
 #### aggregate
@@ -152,8 +155,8 @@ return 1 == e(-1 * g1, σ) * prod e(pks[i], ms[i])
     * G<sub>2</sub> element σ<sub>agg</sub>
     * map((bytes m, G<sub>1</sub> pk) -> Z<sub>n</sub> exponent) newAggInfo
 ```python
-messageHashes <- [i.keys for i in aggInfo] # list of lists
-publicKeys <- [i.values for i in aggInfo]  # list of lists
+messageHashes <- [i.messageHashes for i in aggInfo] # list of lists
+publicKeys <- [i.pks for i in aggInfo]  # list of lists
 
 collidingMessages <- messages that appear in more than one messageHashes list
 
@@ -168,15 +171,46 @@ sortKeys <- all (message, publicKey) pairs in colliding groups
 
 sort(sort_keys) # Sort first by message, then by pk
 sortedPublicKeys <- [k[1] for k in sortKeys]
-Ts <- hashPks()
+Ts <- hashPks(sortedPublicKeys, len(collidingSigs))
 
+sigAgg <- product(collidingSigs[i] ^ Ts[i] for i in collidingSigs) * product(sig for sig in nonCollidingSigs)
+newAggInfo = mergeInfos(aggInfos)
+return (sigAgg, newAggInfo)
 ```
 
 #### divide
-
+* input:
+    * Divident signature: dividendSig
+    * map((bytes m, G<sub>1</sub> pk) -> Z<sub>n</sub> exponent) dividendAggInfo
+    * Divisor signatures: divisorSigs
+    * list of map((bytes m, G<sub>1</sub> pk) -> Z<sub>n</sub> exponent) divisorsAggInfo
+* output:
+    * G<sub>2</sub> element σ<sub>agg</sub>
+    * map((bytes m, G<sub>1</sub> pk) -> Z<sub>n</sub> exponent) newAggInfo
+```python
+messageHashesToRemove <- []
+pubKeysToRemove <- []
+prod <- 1 # Point at infinity
+for divisorSig, i in enumerate(divisorSigs):
+    for j in range(len(divisorsAggInfo[i].keys)):
+        divisor <- divisorsAggInfo[i][j]
+        assert(j in dividendAggInfo[i])
+        dividend <- dividendAggInfo[i][j]
+        if j == 0:
+            quotient <- divided / divisor in Fq
+        else:
+            assert((divided / divisor in Fq) == quotient)
+        messageHashesToRemove.append(divisorSig.messageHashes[j])
+        pubKeysToRemove.append(divisorSig.pubkeys[j])
+    prod <- prod * -divisorSig
+aggSig <- dividendSig * prod
+newAggInfo <- dividendAggInfo
+newAggInfo.remove((messageHashesToRemove[i], pubKeysToRemove[i] for i in range(len(messageHashesToRemove)))
+return (aggSig, newAggInfo)
+```
 
 ### Serialization
-**private key (32 bytes):** 32 bytes big endian integer.
+**private key (32 bytes):** Big endian integer.
 
 **pubkey (48 bytes):** 381 bit affine x coordinate, encoded into 48 big-endian bytes. Since we have 3 bits left over in the beginning, the first bit is set to 1 iff y coordinate is the lexicographically largest of the two valid ys. The public key fingerprint is the first 4 bytes of hash256(serialize(pubkey)).
 
@@ -184,7 +218,7 @@ Ts <- hashPks()
 
 
 ### HD keys
-HD keys will follow Bitcoin's BIP32 specification, with the following exceptions:
+HD keys will follow Bitcoin's BIP32 specification, with the following differences:
 * The HMAC key to generate a master private key used is not "Bitcoin seed" it is "BLS HD seed".
 * The master secret key is generated mod n from the master seed,
 since not all 32 byte sequences are valid BLS private keys
@@ -212,7 +246,7 @@ since not all 32 byte sequences are valid BLS private keys
 #### Aggregation
 * aggregate([sig1, sig2])
     * aggSig: 0x975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e
-* verify(aggSig2, AggregationInfo.merge(sig1.aggregation_info, sig2.aggregation_info))
+* verify(aggSig2, mergeInfos(sig1.aggInfo, sig2.aggInfo))
     * true
 * verify(sig1, AggregationInfo(pk2, [7,8,9]))
     * false
@@ -221,7 +255,7 @@ since not all 32 byte sequences are valid BLS private keys
 * sig5 = sign([1,2], sk2)
 * aggregate([sig3, sig4, sig5])
     * aggSig2: 0x8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b
-* verify(aggSig2, AggregationInfo.merge(sig3.aggregation_info, sig4.aggregation_info, sig5.aggregation_info))
+* verify(aggSig2, mergeInfos(sig3.aggInfo, sig4.aggInfo, sig5.aggInfo))
     * true
 * sig1 = sk1.sign([1,2,3,40])
 * sig2 = sk2.sign([5,6,70,201])
