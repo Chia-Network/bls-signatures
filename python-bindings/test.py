@@ -5,92 +5,93 @@ from blspy import (BLSPrivateKey, BLSPublicKey,
 
 
 def test1():
-    seed = bytes([0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
-                  19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
-                  82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22])
-    sk = BLSPrivateKey.from_seed(seed)
-    pk = sk.get_public_key()
+    pass
+    # seed = bytes([0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
+    #               19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
+    #               82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22])
+    # sk = BLSPrivateKey.from_seed(seed)
+    # pk = sk.get_public_key()
 
-    msg = bytes([100, 2, 254, 88, 90, 45, 23])
+    # msg = bytes([100, 2, 254, 88, 90, 45, 23])
 
-    sig = sk.sign(msg)
+    # sig = sk.sign(msg)
 
-    sk_bytes = sk.serialize()
-    pk_bytes = pk.serialize()
-    sig_bytes = sig.serialize()
+    # sk_bytes = sk.serialize()
+    # pk_bytes = pk.serialize()
+    # sig_bytes = sig.serialize()
 
-    sk = BLSPrivateKey.from_bytes(sk_bytes)
-    pk = BLSPublicKey.from_bytes(pk_bytes)
-    sig = BLSSignature.from_bytes(sig_bytes)
+    # sk = BLSPrivateKey.from_bytes(sk_bytes)
+    # pk = BLSPublicKey.from_bytes(pk_bytes)
+    # sig = BLSSignature.from_bytes(sig_bytes)
 
-    sig.set_aggregation_info(AggregationInfo.from_msg(pk, msg))
-    ok = BLS.verify(sig)
-    assert(ok)
+    # sig.set_aggregation_info(AggregationInfo.from_msg(pk, msg))
+    # ok = BLS.verify(sig)
+    # assert(ok)
 
-    seed = bytes([1]) + seed[1:]
-    sk1 = BLSPrivateKey.from_seed(seed)
-    seed = bytes([2]) + seed[1:]
-    sk2 = BLSPrivateKey.from_seed(seed)
+    # seed = bytes([1]) + seed[1:]
+    # sk1 = BLSPrivateKey.from_seed(seed)
+    # seed = bytes([2]) + seed[1:]
+    # sk2 = BLSPrivateKey.from_seed(seed)
 
-    pk1 = sk1.get_public_key()
-    sig1 = sk1.sign(msg)
+    # pk1 = sk1.get_public_key()
+    # sig1 = sk1.sign(msg)
 
-    pk2 = sk2.get_public_key()
-    sig2 = sk2.sign(msg)
+    # pk2 = sk2.get_public_key()
+    # sig2 = sk2.sign(msg)
 
-    agg_sig = BLS.aggregate_sigs([sig1, sig2])
-    agg_pubkey = BLS.aggregate_pub_keys([pk1, pk2], True)
+    # agg_sig = BLS.aggregate_sigs([sig1, sig2])
+    # agg_pubkey = BLS.aggregate_pub_keys([pk1, pk2], True)
 
-    agg_sig.set_aggregation_info(AggregationInfo.from_msg(agg_pubkey, msg))
-    assert(BLS.verify(agg_sig))
+    # agg_sig.set_aggregation_info(AggregationInfo.from_msg(agg_pubkey, msg))
+    # assert(BLS.verify(agg_sig))
 
-    seed = bytes([3]) + seed[1:]
-    sk3 = BLSPrivateKey.from_seed(seed)
-    pk3 = sk3.get_public_key()
-    msg2 = bytes([100, 2, 254, 88, 90, 45, 23])
+    # seed = bytes([3]) + seed[1:]
+    # sk3 = BLSPrivateKey.from_seed(seed)
+    # pk3 = sk3.get_public_key()
+    # msg2 = bytes([100, 2, 254, 88, 90, 45, 23])
 
-    sig1 = sk1.sign(msg)
-    sig2 = sk2.sign(msg)
-    sig3 = sk3.sign(msg2)
-    agg_sig_l = BLS.aggregate_sigs([sig1, sig2])
-    agg_sig_final = BLS.aggregate_sigs([agg_sig_l, sig3])
+    # sig1 = sk1.sign(msg)
+    # sig2 = sk2.sign(msg)
+    # sig3 = sk3.sign(msg2)
+    # agg_sig_l = BLS.aggregate_sigs([sig1, sig2])
+    # agg_sig_final = BLS.aggregate_sigs([agg_sig_l, sig3])
 
-    sig_bytes = agg_sig_final.serialize()
+    # sig_bytes = agg_sig_final.serialize()
 
-    agg_sig_final = BLSSignature.from_bytes(sig_bytes)
-    a1 = AggregationInfo.from_msg(pk1, msg)
-    a2 = AggregationInfo.from_msg(pk2, msg)
-    a3 = AggregationInfo.from_msg(pk3, msg2)
-    a1a2 = AggregationInfo.merge_infos([a1, a2])
-    a_final = AggregationInfo.merge_infos([a1a2, a3])
-    print(a_final)
-    agg_sig_final.set_aggregation_info(a_final)
-    ok = BLS.verify(agg_sig_final)
+    # agg_sig_final = BLSSignature.from_bytes(sig_bytes)
+    # a1 = AggregationInfo.from_msg(pk1, msg)
+    # a2 = AggregationInfo.from_msg(pk2, msg)
+    # a3 = AggregationInfo.from_msg(pk3, msg2)
+    # a1a2 = AggregationInfo.merge_infos([a1, a2])
+    # a_final = AggregationInfo.merge_infos([a1a2, a3])
+    # print(a_final)
+    # agg_sig_final.set_aggregation_info(a_final)
+    # ok = BLS.verify(agg_sig_final)
 
-    ok = BLS.verify(agg_sig_l)
-    agg_sig_final = agg_sig_final.divide_by([agg_sig_l])
+    # ok = BLS.verify(agg_sig_l)
+    # agg_sig_final = agg_sig_final.divide_by([agg_sig_l])
 
-    ok = BLS.verify(agg_sig_final)
+    # ok = BLS.verify(agg_sig_final)
 
-    agg_sk = BLS.aggregate_priv_keys([sk1, sk2], [pk1, pk2], True)
-    agg_sk.sign(msg)
+    # agg_sk = BLS.aggregate_priv_keys([sk1, sk2], [pk1, pk2], True)
+    # agg_sk.sign(msg)
 
-    seed = bytes([1, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
-                  19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
-                  82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22])
+    # seed = bytes([1, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
+    #               19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
+    #               82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22])
 
-    esk = ExtendedPrivateKey.from_seed(seed)
-    epk = esk.get_extended_public_key()
+    # esk = ExtendedPrivateKey.from_seed(seed)
+    # epk = esk.get_extended_public_key()
 
-    sk_child = esk.private_child(0).private_child(5)
-    pk_child = epk.public_child(0).public_child(5)
+    # sk_child = esk.private_child(0).private_child(5)
+    # pk_child = epk.public_child(0).public_child(5)
 
-    buffer1 = pk_child.serialize()
-    buffer2 = sk_child.serialize()
+    # buffer1 = pk_child.serialize()
+    # buffer2 = sk_child.serialize()
 
-    print(len(buffer1), buffer1)
-    print(len(buffer2), buffer2)
-    assert(sk_child.get_extended_public_key() == pk_child)
+    # print(len(buffer1), buffer1)
+    # print(len(buffer2), buffer2)
+    # assert(sk_child.get_extended_public_key() == pk_child)
 
 
 def test2():
@@ -106,10 +107,10 @@ def test2():
     assert(sk != sk2)
     assert(pk.get_fingerprint() == 0xddad59bb)
 
-    print(sk, sk2)
-    print(pk, pk2)
+    # print(sk, sk2)
+    # print(pk, pk2)
     pk2_ser = pk2.serialize()
-    print(pk2_ser)
+    # print(pk2_ser)
     pk2_copy = BLSPublicKey.from_bytes(pk2_ser)
     assert(pk2 == pk2_copy)
     assert(pk != pk2)
@@ -138,6 +139,9 @@ def test2():
     assert(result)
     assert(result2)
     assert(result3)
+    print("Signature1:", sig)
+    print("Signature2:", sig2)
+    print("Aggregate signature:", sig_agg)
 
     sk2 = sk
 
@@ -255,9 +259,9 @@ def test_vectors3():
 
 test1()
 test2()
-test_vectors()
-test_vectors2()
-test_vectors3()
+# test_vectors()
+# test_vectors2()
+# test_vectors3()
 
 """
 Copyright 2018 Chia Network Inc

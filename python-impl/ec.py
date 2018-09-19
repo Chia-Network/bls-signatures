@@ -460,7 +460,7 @@ def sw_encode(t, ec=default_ec, FE=Fq):
     return ret
 
 
-# Performs a Foque-Tibouchi hash
+# Performs a Fouque-Tibouchi hash
 def hash_to_point_prehashed_Fq(m, ec=default_ec):
     if type(m) != bytes:
         m = m.encode("utf-8")
@@ -477,7 +477,7 @@ def hash_to_point_Fq(m, ec=default_ec):
     return hash_to_point_prehashed_Fq(h, ec)
 
 
-# Performs a Foque-Tibouchi hash
+# Performs a Fouque-Tibouchi hash
 def hash_to_point_prehashed_Fq2(m, ec=default_ec_twist):
     if type(m) != bytes:
         m = m.encode("utf-8")
@@ -498,8 +498,8 @@ def hash_to_point_prehashed_Fq2(m, ec=default_ec_twist):
     psi2P = psi(psi(2*P, ec), ec)
     t0 = x*P
     t1 = x*t0
-    t3 = psi((x+1) * P, ec)
     t2 = (t1 + t0) - P
+    t3 = psi((x+1) * P, ec)
     return t2 - t3 + psi2P
 
 

@@ -40,7 +40,7 @@
  * Based on the rust implementation of pairings, zkcrypto/pairing.
  * The algorithm is Shallue–van de Woestijne encoding from
  * Section 3 of "Indifferentiable Hashing to Barreto–Naehrig Curves"
- * from Foque-Tibouchi: <https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf>
+ * from Fouque-Tibouchi: <https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf>
  */
 void ep2_sw_encode(ep2_t p, fp2_t t) {
 	if (fp2_is_zero(t)) {
@@ -50,9 +50,8 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	fp2_t nt; // Negative t
 	fp2_t w;
 	fp2_t b;
-	fp2_t s_n3;
-	fp2_t s_n3m1o2;
-	fp2_t two_inv;
+	bn_t s_n3;
+	bn_t s_n3m1o2;
 	fp2_t x1;
 	fp2_t x2;
 	fp2_t x3;
@@ -61,9 +60,8 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	fp2_new(nt);
 	fp2_new(w);
 	fp2_new(b);
-	fp2_new(s_n3);
-	fp2_new(s_n3m1o2);
-	fp2_new(two_inv);
+	bn_new(s_n3);
+	bn_new(s_n3m1o2);
 	fp2_new(x1);
 	fp2_new(x2);
 	fp2_new(x3);
@@ -176,9 +174,8 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 	fp_free(nt);
 	fp2_free(w);
 	fp2_free(b);
-	fp2_free(s_n3);
-	fp2_free(s_n3m1o2);
-	fp2_free(two_inv);
+	bn_free(s_n3);
+	bn_free(s_n3m1o2);
 	fp2_free(x1);
 	fp2_free(x2);
 	fp2_free(x3);
@@ -400,10 +397,36 @@ void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash) {
 		ep2_sw_encode(p1, t1p);
 		ep2_add(p0, p0, p1);
 
-		ep2_norm(p0, p0);
-
 		/* Now, multiply by cofactor to get the correct group. */
-		ep2_mul_cof_b12(p, p0);
+		switch (ep_param_get()) {
+			case BN_P158:
+			case BN_P254:
+			case BN_P256:
+			case BN_P382:
+			case BN_P638:
+				ep2_mul_cof_bn(p, p0);
+				break;
+			case B12_P381:
+			case B12_P455:
+			case B12_P638:
+				ep2_mul_cof_b12(p, p0);
+				break;
+			default: {
+				bn_t x;
+				bn_new(x);
+				ep2_curve_get_cof(x);
+				if (bn_bits(x) < BN_DIGIT) {
+					ep2_mul_dig(p, p0, x->dp[0]);
+					if (bn_sign(x) == BN_NEG) {
+						ep2_neg(p, p);
+					}
+				} else {
+					ep2_mul(p, p0, x);
+				}
+				bn_free(k);
+				break;
+			}
+		}
 	}
 	CATCH_ANY {
 		THROW(ERR_CAUGHT);

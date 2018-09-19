@@ -35,7 +35,7 @@
  * Based on the rust implementation of pairings, zkcrypto/pairing.
  * The algorithm is Shallue–van de Woestijne encoding from
  * Section 3 of "Indifferentiable Hashing to Barreto–Naehrig Curves"
- * from Foque-Tibouchi: <https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf>
+ * from Fouque-Tibouchi: <https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf>
  */
 void ep_sw_encode(ep_t p, fp_t t) {
 	if (fp_is_zero(t)) {

@@ -1084,7 +1084,7 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 
 /**
  * Maps a byte array to a point in a prime elliptic curve. The
- * algorithm implemented is the Foque-Tibouchi algorithm from the
+ * algorithm implemented is the Fouque-Tibouchi algorithm from the
  * paper "Indifferentiable Hashing to Barreto-Naehrig curves" for
  * the BLS12-381 curve.
  *
