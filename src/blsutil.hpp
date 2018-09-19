@@ -27,7 +27,7 @@
 #include <gmp.h>
 #endif
 
-#if BLSALLOC == sodium
+#if BLSALLOC_SODIUM
 namespace libsodium {
     #include "sodium/utils.h"
     #include "sodium/core.h"
@@ -80,7 +80,7 @@ class BLSUtil {
      */
     template<class T>
     static T* SecAlloc(size_t numTs) {
-#if BLSALLOC
+#if BLSALLOC_SODIUM
         return static_cast<T*>(libsodium::sodium_malloc
                 (sizeof(T) * numTs));
 #else
@@ -92,7 +92,7 @@ class BLSUtil {
      * Frees memory allocated using SecAlloc.
      */
     static void SecFree(void* ptr) {
-#if BLSALLOC
+#if BLSALLOC_SODIUM
         libsodium::sodium_free(ptr);
 #else
         free(ptr);
