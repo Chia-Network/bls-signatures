@@ -94,40 +94,37 @@ BLSSignature BLS::AggregateSigsSecure(
     }
 
     // Sort the public keys and signature by message + public key
-    std::map<const uint8_t*, const BLSSignature> sigsMap;
-    std::map<const uint8_t*, const BLSPublicKey> pkMap;
-    std::vector<uint8_t*> sortKeysSorted;
+    std::vector<std::vector<uint8_t>> serPubKeys(pubKeys.size());
+    std::vector<std::vector<uint8_t>> sortKeys(pubKeys.size());
+    std::vector<size_t> keysSorted(pubKeys.size());
     for (size_t i = 0; i < pubKeys.size(); i++) {
-        uint8_t* sortKey = new uint8_t[MESSAGE_HASH_LEN
-                                       + BLSPublicKey::PUBLIC_KEY_SIZE];
-        std::memcpy(sortKey, messageHashes[i], MESSAGE_HASH_LEN);
-        pubKeys[i].Serialize(sortKey + BLS::MESSAGE_HASH_LEN);
-        sigsMap.insert(std::make_pair(sortKey, sigs[i]));
-        pkMap.insert(std::make_pair(sortKey, pubKeys[i]));
-        sortKeysSorted.push_back(sortKey);
-    }
-    sort(begin(sortKeysSorted), end(sortKeysSorted), BLSUtil::BytesCompare80());
-    std::vector<BLSSignature> sigsSorted;
-    std::vector<BLSPublicKey> pubKeysSorted;
+        serPubKeys[i] = pubKeys[i].Serialize();
 
-    for (const uint8_t* k : sortKeysSorted) {
-        sigsSorted.push_back(sigsMap.at(k));
-        pubKeysSorted.push_back(pkMap.at(k));
+        std::vector<uint8_t> sortKey(MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE);
+        memcpy(sortKey.data(), messageHashes[i], MESSAGE_HASH_LEN);
+        memcpy(sortKey.data() + BLS::MESSAGE_HASH_LEN, serPubKeys[i].data(), BLSPublicKey::PUBLIC_KEY_SIZE);
+
+        sortKeys[i] = std::move(sortKey);
+        keysSorted[i] = i;
     }
 
-    relic::bn_t* computedTs = new relic::bn_t[sortKeysSorted.size()];
-    for (size_t i = 0; i < sortKeysSorted.size(); i++) {
+    std::sort(keysSorted.begin(), keysSorted.end(), [&sortKeys](size_t a, size_t b) {
+        return sortKeys[a] < sortKeys[b];
+    });
+
+    relic::bn_t* computedTs = new relic::bn_t[keysSorted.size()];
+    for (size_t i = 0; i < keysSorted.size(); i++) {
         relic::bn_new(computedTs[i]);
     }
-    HashPubKeys(computedTs, pubKeysSorted.size(), pubKeysSorted);
+    HashPubKeys(computedTs, keysSorted.size(), serPubKeys, keysSorted);
 
     // Copy each signature into sig, raise to power of each t for
     // sigComp, and multiply all together into aggSig
     relic::g2_t sig, sigComp, aggSig;
     g2_set_infty(aggSig);
 
-    for (size_t i = 0; i < sortKeysSorted.size(); i++) {
-        sigsSorted[i].GetPoint(sig);
+    for (size_t i = 0; i < keysSorted.size(); i++) {
+        sigs[keysSorted[i]].GetPoint(sig);
         g2_mul(sigComp, sig, computedTs[i]);
         g2_add(aggSig, aggSig, sigComp);
     }
