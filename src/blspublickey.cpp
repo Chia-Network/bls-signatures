@@ -51,25 +51,15 @@ BLSPublicKey::BLSPublicKey(const BLSPublicKey &pubKey) {
     CompressPoint(data, &q);
 }
 
-size_t BLSPublicKey::size() const {
-    return PUBLIC_KEY_SIZE;
-}
-
-const uint8_t* BLSPublicKey::begin() const {
-    return data;
-}
-
-const uint8_t* BLSPublicKey::end() const {
-    return data + size();
-}
-
-const uint8_t& BLSPublicKey::operator[](size_t pos) const {
-    return data[pos];
-}
-
 void BLSPublicKey::Serialize(uint8_t *buffer) const {
     BLS::AssertInitialized();
     std::memcpy(buffer, data, PUBLIC_KEY_SIZE);
+}
+
+std::vector<uint8_t> BLSPublicKey::Serialize() const {
+    std::vector<uint8_t> data(PUBLIC_KEY_SIZE);
+    Serialize(data.data());
+    return data;
 }
 
 // Comparator implementation.

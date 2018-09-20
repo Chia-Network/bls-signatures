@@ -140,25 +140,15 @@ BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs
     return copy;
 }
 
-const uint8_t& BLSSignature::operator[](size_t pos) const {
-    return data[pos];
-}
-
-const uint8_t* BLSSignature::begin() const {
-    return data;
-}
-
-const uint8_t* BLSSignature::end() const {
-    return data + size();
-}
-
-size_t BLSSignature::size() const {
-    return BLSSignature::SIGNATURE_SIZE;
-}
-
 void BLSSignature::Serialize(uint8_t* buffer) const {
     BLS::AssertInitialized();
     std::memcpy(buffer, data, BLSSignature::SIGNATURE_SIZE);
+}
+
+std::vector<uint8_t> BLSSignature::Serialize() const {
+    std::vector<uint8_t> data(SIGNATURE_SIZE);
+    Serialize(data.data());
+    return data;
 }
 
 bool operator==(BLSSignature const &a, BLSSignature const &b) {

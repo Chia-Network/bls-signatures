@@ -66,14 +66,10 @@ class BLSSignature {
     // be verified.
     void SetAggregationInfo(const AggregationInfo &newAggregationInfo);
 
-    const uint8_t& operator[](size_t pos) const;
-    const uint8_t* begin() const;
-    const uint8_t* end() const;
-    size_t size() const;
-
     // Serializes ONLY the 96 byte public key. It does not serialize
     // the aggregation info.
     void Serialize(uint8_t* buffer) const;
+    std::vector<uint8_t> Serialize() const;
 
     friend bool operator==(BLSSignature const &a, BLSSignature const &b);
     friend bool operator!=(BLSSignature const &a, BLSSignature const &b);

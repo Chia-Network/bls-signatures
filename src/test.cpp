@@ -292,12 +292,8 @@ TEST_CASE("Signatures") {
         REQUIRE(sig2 == sig3);
         REQUIRE(sig3 != sig4);
 
-        REQUIRE(pk1[0] == pk2[0]);
-        REQUIRE(pk1[15] == pk2[15]);
-        REQUIRE(sig1[16] == sig2[16]);
-        REQUIRE(sig1.begin() + sig1.size() == sig1.end());
-        REQUIRE(sk1.begin() + sk1.size() == sk1.end());
-        REQUIRE(pk1.begin() + pk1.size() == pk1.end());
+        REQUIRE(pk1.Serialize() == pk2.Serialize());
+        REQUIRE(sig1.Serialize() ==  sig2.Serialize());
     }
 
     SECTION("Should serialize and deserialize") {

@@ -105,23 +105,15 @@ BLSPrivateKey& BLSPrivateKey::operator=(const BLSPrivateKey &rhs) {
     return *this;
 }
 
-size_t BLSPrivateKey::size() const {
-    BLS::AssertInitialized();
-    return BLSPrivateKey::PRIVATE_KEY_SIZE;
-}
-
-uint8_t* BLSPrivateKey::begin() const {
-    BLS::AssertInitialized();
-    return reinterpret_cast<uint8_t*>((*keydata)->dp);
-}
-uint8_t* BLSPrivateKey::end() const {
-    BLS::AssertInitialized();
-    return reinterpret_cast<uint8_t*>((*keydata)->dp) + size();
-}
-
 void BLSPrivateKey::Serialize(uint8_t* buffer) const {
     BLS::AssertInitialized();
     bn_write_bin(buffer, BLSPrivateKey::PRIVATE_KEY_SIZE, *keydata);
+}
+
+std::vector<uint8_t> BLSPrivateKey::Serialize() const {
+    std::vector<uint8_t> data(PRIVATE_KEY_SIZE);
+    Serialize(data.data());
+    return data;
 }
 
 BLSSignature BLSPrivateKey::Sign(const uint8_t *msg, size_t len) const {
