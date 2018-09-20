@@ -301,36 +301,44 @@ AggregationInfo AggregationInfo::SimpleMergeInfos(
 AggregationInfo AggregationInfo::SecureMergeInfos(
             std::vector<AggregationInfo> const &collidingInfosArg) {
     // Sort colliding Infos
-    std::vector<AggregationInfo> collidingInfos;
-    for (const AggregationInfo &info : collidingInfosArg) {
-        collidingInfos.push_back(info);
+    std::vector<size_t> sortedCollidingInfos(collidingInfosArg.size());
+    size_t pkCount = 0;
+    for (size_t i = 0; i < sortedCollidingInfos.size(); i++) {
+        sortedCollidingInfos[i] = i;
+        pkCount += collidingInfosArg[i].tree.size();
     }
     // Groups are sorted by message then pk then exponent
     // Each info object (and all of it's exponents) will be
     // exponentiated by one of the Ts
-    std::sort(begin(collidingInfos), end(collidingInfos));
+    std::sort(sortedCollidingInfos.begin(), sortedCollidingInfos.end(), [&collidingInfosArg](size_t a, size_t b) {
+        return collidingInfosArg[a] < collidingInfosArg[b];
+    });
 
-    std::vector<uint8_t*> sortedKeys;
-    for (auto &info : collidingInfos) {
-        for (auto &mapEntry : info.tree) {
-            sortedKeys.push_back(mapEntry.first);
+    std::vector<uint8_t*> msgAndPks;
+    std::vector<std::vector<uint8_t>> serPks;
+    std::vector<size_t> sortedKeys;
+    msgAndPks.reserve(pkCount);
+    serPks.reserve(pkCount);
+    sortedKeys.reserve(pkCount);
+    for (size_t i = 0; i < sortedCollidingInfos.size(); i++) {
+        for (auto &mapEntry : collidingInfosArg[sortedCollidingInfos[i]].tree) {
+            msgAndPks.emplace_back(mapEntry.first);
+            serPks.emplace_back(mapEntry.first + BLS::MESSAGE_HASH_LEN, mapEntry.first + BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE);
+            sortedKeys.emplace_back(sortedKeys.size());
         }
     }
     // Pks are sorted by message then pk
-    std::sort(begin(sortedKeys), end(sortedKeys), BLSUtil::BytesCompare80());
-    std::vector<BLSPublicKey> sortedPks;
-    for (const uint8_t* key : sortedKeys) {
-        sortedPks.push_back(BLSPublicKey::FromBytes(
-                key + BLS::MESSAGE_HASH_LEN));
-    }
+    std::sort(sortedKeys.begin(), sortedKeys.end(), [&msgAndPks](size_t a, size_t b) {
+        return memcmp(msgAndPks[a], msgAndPks[b], BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
+    });
 
     // Calculate Ts
     // Each T is multiplied with an exponent in one of the collidingInfos
-    relic::bn_t* computedTs = new relic::bn_t[collidingInfos.size()];
-    for (size_t i = 0; i < collidingInfos.size(); i++) {
+    relic::bn_t* computedTs = new relic::bn_t[sortedCollidingInfos.size()];
+    for (size_t i = 0; i < sortedCollidingInfos.size(); i++) {
         bn_new(computedTs[i]);
     }
-    BLS::HashPubKeys(computedTs, collidingInfos.size(), sortedPks);
+    BLS::HashPubKeys(computedTs, sortedCollidingInfos.size(), serPks, sortedKeys);
 
     relic::bn_t ord;
     relic::g1_get_ord(ord);
@@ -338,8 +346,8 @@ AggregationInfo AggregationInfo::SecureMergeInfos(
     // Merge the trees, multiplying by the Ts, and then adding
     // to total
     AggregationTree newTree;
-    for (size_t i = 0; i < collidingInfos.size(); i++) {
-        const AggregationInfo info = collidingInfos[i];
+    for (size_t i = 0; i < sortedCollidingInfos.size(); i++) {
+        const AggregationInfo info = collidingInfosArg[sortedCollidingInfos[i]];
         for (auto &mapEntry : info.tree) {
             auto newMapEntry = newTree.find(mapEntry.first);
             if (newMapEntry == newTree.end()) {
