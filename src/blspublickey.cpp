@@ -22,7 +22,6 @@
 BLSPublicKey BLSPublicKey::FromBytes(const uint8_t * key) {
     BLS::AssertInitialized();
     BLSPublicKey pk = BLSPublicKey();
-    std::memcpy(pk.data, key, PUBLIC_KEY_SIZE);
     uint8_t uncompressed[PUBLIC_KEY_SIZE + 1];
     std::memcpy(uncompressed + 1, key, PUBLIC_KEY_SIZE);
     if (key[0] & 0x80) {
@@ -39,21 +38,17 @@ BLSPublicKey BLSPublicKey::FromG1(const relic::g1_t* pubKey) {
     BLS::AssertInitialized();
     BLSPublicKey pk = BLSPublicKey();
     g1_copy(pk.q, *pubKey);
-    CompressPoint(pk.data, &pk.q);
     return pk;
 }
 
 BLSPublicKey::BLSPublicKey(const BLSPublicKey &pubKey) {
     BLS::AssertInitialized();
-    relic::g1_t tmp;
-    pubKey.GetPoint(tmp);
-    g1_copy(q, tmp);
-    CompressPoint(data, &q);
+    g1_copy(q, pubKey.q);
 }
 
 void BLSPublicKey::Serialize(uint8_t *buffer) const {
     BLS::AssertInitialized();
-    std::memcpy(buffer, data, PUBLIC_KEY_SIZE);
+    CompressPoint(buffer, &q);
 }
 
 std::vector<uint8_t> BLSPublicKey::Serialize() const {
@@ -74,7 +69,9 @@ bool operator!=(BLSPublicKey const&a,  BLSPublicKey const&b) {
 
 std::ostream &operator<<(std::ostream &os, BLSPublicKey const &pk) {
     BLS::AssertInitialized();
-    return os << BLSUtil::HexStr(pk.data, BLSPublicKey::PUBLIC_KEY_SIZE);
+    uint8_t data[BLSPublicKey::PUBLIC_KEY_SIZE];
+    pk.Serialize(data);
+    return os << BLSUtil::HexStr(data, BLSPublicKey::PUBLIC_KEY_SIZE);
 }
 
 uint32_t BLSPublicKey::GetFingerprint() const {

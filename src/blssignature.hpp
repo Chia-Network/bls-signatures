@@ -47,6 +47,9 @@ class BLSSignature {
     // Initializes from native relic g2 element/
     static BLSSignature FromG2(relic::g2_t* element);
 
+    // Initializes from native relic g2 element with AggregationInfo/
+    static BLSSignature FromG2(relic::g2_t* element, const AggregationInfo &info);
+
     // Copy constructor. Deep copies contents.
     BLSSignature(const BLSSignature &signature);
 
@@ -80,11 +83,10 @@ class BLSSignature {
     // Prevent public construction, force static method
     BLSSignature() {}
 
-    static void CompressPoint(uint8_t* result, relic::g2_t* point);
+    static void CompressPoint(uint8_t* result, const relic::g2_t* point);
 
     // Signature group element
     relic::g2_t sig;
-    uint8_t data[BLSSignature::SIGNATURE_SIZE];
 
     // Optional info about how this was aggregated
     AggregationInfo aggregationInfo;

@@ -60,7 +60,6 @@ class BLSPublicKey {
 
     // Public key group element
     relic::g1_t q;
-    uint8_t data[BLSPublicKey::PUBLIC_KEY_SIZE];
 };
 
 #endif  // SRC_BLSPUBLICKEY_HPP_
