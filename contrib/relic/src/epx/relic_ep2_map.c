@@ -161,7 +161,7 @@ void ep2_sw_encode(ep2_t p, fp2_t t) {
 
 	p->norm = 1;
 
-    // Check for lexicografically greater than the negation
+	// Check for lexicografically greater than the negation
 	fp2_t ny;
 	fp2_null(ny);
 	fp2_new(ny);
@@ -295,7 +295,6 @@ void ep2_mul_cof_b12(ep2_t r, ep2_t p) {
 		bn_free(x);
 	}
 }
-
 
 /*============================================================================*/
 /* Public definitions                                                         */

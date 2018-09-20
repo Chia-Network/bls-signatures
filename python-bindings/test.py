@@ -251,9 +251,9 @@ def test_vectors3():
 
 test1()
 test2()
-# test_vectors()
-# test_vectors2()
-# test_vectors3()
+test_vectors()
+test_vectors2()
+test_vectors3()
 
 """
 Copyright 2018 Chia Network Inc

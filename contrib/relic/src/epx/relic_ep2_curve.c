@@ -367,7 +367,7 @@ ep2_t *ep2_curve_get_tab(void) {
 #endif
 
 void ep2_curve_set_twist(int type) {
-	char str[4 * FP_BYTES + 1];
+	char str[2 * FP_BYTES + 1];
 	ctx_t *ctx = core_get();
 	ep2_t g;
 	fp2_t a;
