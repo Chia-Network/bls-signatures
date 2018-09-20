@@ -73,7 +73,6 @@ class BLSSignature {
 
     friend bool operator==(BLSSignature const &a, BLSSignature const &b);
     friend bool operator!=(BLSSignature const &a, BLSSignature const &b);
-    friend bool operator<(BLSSignature const &a,  BLSSignature const &b);
     friend std::ostream &operator<<(std::ostream &os, BLSSignature const &s);
     BLSSignature& operator=(const BLSSignature& rhs);
 

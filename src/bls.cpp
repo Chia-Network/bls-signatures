@@ -369,12 +369,15 @@ bool BLS::Verify(const BLSSignature &aggSig) {
     for (const auto &kv : hashToPubKeys) {
         relic::g1_t prod;
         g1_set_infty(prod);
-        std::set<BLSPublicKey> dedupSet;
-        for (BLSPublicKey pk : kv.second) dedupSet.insert(pk);
-        std::vector<BLSPublicKey> dedup;
-        dedup.assign(begin(dedupSet), end(dedupSet));
+        std::map<std::vector<uint8_t>, size_t> dedupMap;
+        for (size_t i = 0; i < kv.second.size(); i++) {
+            const BLSPublicKey& pk = kv.second[i];
+            dedupMap.emplace(pk.Serialize(), i);
+        }
 
-        for (const BLSPublicKey &pk : dedup) {
+        for (const auto &kv2 : dedupMap) {
+            const BLSPublicKey& pk = kv.second[kv2.second];
+
             relic::bn_t exponent;
             bn_new(exponent);
             try {
@@ -437,24 +440,27 @@ BLSPublicKey BLS::AggregatePubKeys(
         throw std::string("Number of public keys must be at least 1");
     }
 
-    // Sort the public keys by public key
-    std::vector<BLSPublicKey> pubKeysSorted;
-    for (BLSPublicKey pk : pubKeys) {
-        pubKeysSorted.push_back(pk);
+    std::vector<std::vector<uint8_t>> serPubKeys(pubKeys.size());
+    for (size_t i = 0; i < pubKeys.size(); i++) {
+        serPubKeys[i] = pubKeys[i].Serialize();
     }
-    sort(begin(pubKeysSorted), end(pubKeysSorted));
+
+    // Sort the public keys by public key
+    std::vector<size_t> pubKeysSorted(pubKeys.size());
+    for (size_t i = 0; i < pubKeysSorted.size(); i++) {
+        pubKeysSorted[i] = i;
+    }
+
+    std::sort(pubKeysSorted.begin(), pubKeysSorted.end(), [&serPubKeys](size_t a, size_t b) {
+        return serPubKeys[a] < serPubKeys[b];
+    });
 
     relic::bn_t* computedTs = new relic::bn_t[pubKeysSorted.size()];
     if (secure) {
         for (size_t i = 0; i < pubKeysSorted.size(); i++) {
             bn_new(computedTs[i]);
         }
-        HashPubKeys(computedTs, pubKeysSorted.size(), pubKeysSorted);
-    }
-
-    relic::g1_t * pubKeysNative = new relic::g1_t[pubKeysSorted.size()];
-    for (size_t i = 0; i < pubKeysSorted.size(); i++) {
-        pubKeysSorted[i].GetPoint(pubKeysNative[i]);
+        HashPubKeys(computedTs, pubKeysSorted.size(), serPubKeys, pubKeysSorted);
     }
 
     // Raise each key to power of each t for
@@ -463,15 +469,19 @@ BLSPublicKey BLS::AggregatePubKeys(
     g1_set_infty(aggKey);
 
     for (size_t i = 0; i < pubKeysSorted.size(); i++) {
+        const BLSPublicKey& pk = pubKeys[pubKeysSorted[i]];
+
+        relic::g1_t pkNative;
+        pk.GetPoint(pkNative);
+
         if (secure) {
-            g1_mul(keyComp, pubKeysNative[i], computedTs[i]);
+            g1_mul(keyComp, pkNative, computedTs[i]);
         } else {
-            g1_copy(keyComp, pubKeysNative[i]);
+            g1_copy(keyComp, pkNative);
         }
         g1_add(aggKey, aggKey, keyComp);
     }
 
-    delete[] pubKeysNative;
     delete[] computedTs;
     BLSPublicKey ret = BLSPublicKey::FromG1(&aggKey);
     CheckRelicErrors();
@@ -486,19 +496,21 @@ BLSPrivateKey BLS::AggregatePrivKeys(
         throw std::string("Number of public keys must equal number of private keys");
     }
 
-    // Sort the public keys and private keys by public key
-    std::map<const BLSPublicKey, const BLSPrivateKey> privateKeysMap;
+    std::vector<std::vector<uint8_t>> serPubKeys(pubKeys.size());
     for (size_t i = 0; i < pubKeys.size(); i++) {
-        privateKeysMap.insert(std::make_pair(pubKeys[i], privateKeys[i]));
+        serPubKeys[i] = pubKeys[i].Serialize();
     }
-    std::vector<BLSPublicKey> pubKeysSorted;
-    std::vector<BLSPrivateKey> privateKeysSorted;
-    for (BLSPublicKey pk : pubKeys) {
-        pubKeysSorted.push_back(pk);
+
+    // Sort the public keys and private keys by public key
+    std::vector<size_t> keysSorted(privateKeys.size());
+    for (size_t i = 0; i < privateKeys.size(); i++) {
+        keysSorted[i] = i;
     }
-    sort(begin(pubKeysSorted), end(pubKeysSorted));
-    for (BLSPublicKey pk : pubKeysSorted) {
-        privateKeysSorted.push_back(privateKeysMap.at(pk));
+
+    if (secure) {
+        std::sort(keysSorted.begin(), keysSorted.end(), [&serPubKeys](size_t a, size_t b) {
+            return serPubKeys[a] < serPubKeys[b];
+        });
     }
 
     relic::bn_t order;
@@ -512,17 +524,17 @@ BLSPrivateKey BLS::AggregatePrivKeys(
 
     g2_get_ord(order);
 
-    relic::bn_t* computedTs = new relic::bn_t[pubKeysSorted.size()];
+    relic::bn_t* computedTs = new relic::bn_t[keysSorted.size()];
     if (secure) {
-        for (size_t i = 0; i < pubKeysSorted.size(); i++) {
+        for (size_t i = 0; i < keysSorted.size(); i++) {
             bn_new(computedTs[i]);
         }
-        HashPubKeys(computedTs, pubKeysSorted.size(), pubKeysSorted);
+        HashPubKeys(computedTs, keysSorted.size(), serPubKeys, keysSorted);
     }
 
     bn_zero(workingMemory[2]);
-    for (size_t i = 0; i < privateKeysSorted.size(); i++) {
-        *workingMemory[0] = **privateKeysSorted[i].GetValue();
+    for (size_t i = 0; i < keysSorted.size(); i++) {
+        *workingMemory[0] = **privateKeys[keysSorted[i]].GetValue();
         if (secure) {
             bn_mul_comba(workingMemory[1], workingMemory[0], computedTs[i]);
         } else {
@@ -602,6 +614,40 @@ void BLS::HashPubKeys(relic::bn_t* output, size_t numOutputs,
         bn_mod_basic(output[i], output[i], order);
     }
     delete[] pkBuffer;
+    CheckRelicErrors();
+}
+
+void BLS::HashPubKeys(relic::bn_t* output, size_t numOutputs,
+                      std::vector<std::vector<uint8_t>> const &serPubKeys,
+                      std::vector<size_t> const& sorted) {
+    relic::bn_t order;
+
+    bn_new(order);
+    g2_get_ord(order);
+
+    std::vector<uint8_t> pkBuffer;
+    pkBuffer.reserve(serPubKeys.size() * BLSPublicKey::PUBLIC_KEY_SIZE);
+
+    for (size_t i = 0; i < serPubKeys.size(); i++) {
+        const uint8_t* p = serPubKeys[sorted[i]].data();
+        pkBuffer.insert(pkBuffer.end(), p, p + BLSPublicKey::PUBLIC_KEY_SIZE);
+    }
+
+    uint8_t pkHash[32];
+    BLSUtil::Hash256(pkHash, pkBuffer.data(), pkBuffer.size());
+    for (size_t i = 0; i < numOutputs; i++) {
+        uint8_t hash[32];
+        uint8_t buffer[4 + 32];
+        memset(buffer, 0, 4);
+        // Set first 4 bytes to index, to generate different ts
+        BLSUtil::IntToFourBytes(buffer, i);
+        // Set next 32 bytes as the hash of all the public keys
+        std::memcpy(buffer + 4, pkHash, 32);
+        BLSUtil::Hash256(hash, buffer, 4 + 32);
+
+        bn_read_bin(output[i], hash, 32);
+        bn_mod_basic(output[i], output[i], order);
+    }
     CheckRelicErrors();
 }
 

@@ -72,10 +72,6 @@ bool operator!=(BLSPublicKey const&a,  BLSPublicKey const&b) {
     return !(a == b);
 }
 
-bool operator<(BLSPublicKey const&a,  BLSPublicKey const&b) {
-    return std::memcmp(a.data, b.data, BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
-}
-
 std::ostream &operator<<(std::ostream &os, BLSPublicKey const &pk) {
     BLS::AssertInitialized();
     return os << BLSUtil::HexStr(pk.data, BLSPublicKey::PUBLIC_KEY_SIZE);

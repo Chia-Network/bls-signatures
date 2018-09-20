@@ -160,10 +160,6 @@ bool operator!=(BLSSignature const &a, BLSSignature const &b) {
     return !(a == b);
 }
 
-bool operator<(BLSSignature const&a,  BLSSignature const&b) {
-    return std::memcmp(a.data, b.data, BLSSignature::SIGNATURE_SIZE) < 0;
-}
-
 std::ostream &operator<<(std::ostream &os, BLSSignature const &s) {
     BLS::AssertInitialized();
     return os << BLSUtil::HexStr(s.data, BLSSignature::SIGNATURE_SIZE);

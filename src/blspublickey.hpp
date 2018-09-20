@@ -43,7 +43,6 @@ class BLSPublicKey {
     // Comparator implementation.
     friend bool operator==(BLSPublicKey const &a,  BLSPublicKey const &b);
     friend bool operator!=(BLSPublicKey const &a,  BLSPublicKey const &b);
-    friend bool operator<(BLSPublicKey const &a,  BLSPublicKey const &b);
     friend std::ostream &operator<<(std::ostream &os, BLSPublicKey const &s);
 
     void Serialize(uint8_t *buffer) const;
