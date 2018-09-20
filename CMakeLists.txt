@@ -32,7 +32,7 @@ else()
 endif()
 
 
-set(WORD 64 CACHE INTEGER "")
+set(WORD_SIZE 64 CACHE INTEGER "")
 set(TIMER "CYCLE" CACHE STRING "")
 set(CHECK "off" CACHE STRING "")
 set(VERBS "off" CACHE STRING "")

@@ -24,7 +24,7 @@
 #endif /* USE_MODIFIED_MACROS */
 
 #define SHA_Parity(x, y, z)  ((x) ^ (y) ^ (z))
-#if WORD <= 32
+#if WORD_SIZE <= 32
 #define USE_32BIT_ONLY
 #endif
 

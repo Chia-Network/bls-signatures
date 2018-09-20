@@ -10,11 +10,11 @@ message("      EP_METHD=PROJC  	 Simple projective twisted Edwards coordinates."
 message("      EP_METHD=EXTND 	 Extended projective twisted Edwards coordinates.\n")
 
 message("      *** variable-base multiplication method ***")
-message("      ED_METHD=BASIC    	Binary method.")
-message("      ED_METHD=SLIDE    	Sliding window method.")
-message("      ED_METHD=MONTY    	Montgomery ladder method.")
-message("      ED_METHD=FIXED    	2-bit fixed window method.")
-message("      ED_METHD=LWNAF    	Left-to-right window NAF method (GLV for Koblitz curves).\n")
+message("      ED_METHD=BASIC    	  Binary method.")
+message("      ED_METHD=SLIDE    	  Sliding window method.")
+message("      ED_METHD=MONTY    	  Montgomery ladder method.")
+message("      ED_METHD=FIXED_WINDOW  2-bit fixed window method.")
+message("      ED_METHD=LWNAF    	  Left-to-right window NAF method (GLV for Koblitz curves).\n")
 
 message("      *** fixed-base multiplication method ***")
 message("      ED_METHD=BASIC    	Binary method for fixed point multiplication.")

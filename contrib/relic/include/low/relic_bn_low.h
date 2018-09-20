@@ -42,10 +42,10 @@
 
 #include "relic_conf.h"
 
-#if (BN_PRECI % WORD) > 0
-#define BN_DIGS	(BN_PRECI/WORD + 1)
+#if (BN_PRECI % WORD_SIZE) > 0
+#define BN_DIGS	(BN_PRECI/WORD_SIZE + 1)
 #else
-#define BN_DIGS	(BN_PRECI/WORD)
+#define BN_DIGS	(BN_PRECI/WORD_SIZE)
 #endif
 
 #if BN_MAGNI == DOUBLE
