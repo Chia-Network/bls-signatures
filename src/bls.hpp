@@ -79,10 +79,6 @@ class BLS {
     static void HashPubKeys(
             relic::bn_t* output,
             size_t numOutputs,
-            std::vector<BLSPublicKey> const &pubKeys);
-    static void HashPubKeys(
-            relic::bn_t* output,
-            size_t numOutputs,
             std::vector<std::vector<uint8_t>> const &serPubKeys,
             std::vector<size_t> const &sorted);
 
