@@ -4,7 +4,7 @@ NOTE: THIS LIBRARY IS A DRAFT AND NOT YET REVIEWED FOR SECURITY
 
 Implements BLS signatures with aggregation as in [Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html), using
 [relic toolkit](https://github.com/relic-toolkit/relic) for cryptographic primitives (pairings, EC, hashing).
-The [BLS12-381](https://github.com/zkcrypto/pairing/tree/master/src/bls12_381) curve is used.
+The [BLS12-381](https://github.com/zkcrypto/pairing/tree/master/src/bls12_381) curve is used. The spec is [here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md).
 
 Features:
 * Non-interactive signature aggregation on identical or distinct messages
@@ -222,19 +222,18 @@ ude -Ibls-signatures/src/  -L./bls-signatures/build/ -l bls  yourfile.cpp
 ```
 
 ### Notes on dependencies
-Changes performed to relic: Added config files for Chia, and added gmp include in relic.h.
-Allow passing in hash to ep2_map. Custom inversion function. Note: relic is an LGPL 2.1 dependency.
+Changes performed to relic: Added config files for Chia, and added gmp include in relic.h, new ep_map and ep2_map. Custom inversion function. Note: relic is an LGPL 2.1 dependency.
 
 Libsodium and GMP are optional dependencies: libsodium gives secure memory allocation,
-and GMP speeds up the library by ~ 3x. To install them, unzip the directories in contrib,
-and follow the instructions for each repo.
+and GMP speeds up the library by ~ 3x. To install them, either download them from github
+and follow the instructions for each repo, or use a package manager like APT or brew.
 
 ### Discussion
 Discussion about this library and other Chia related development is on Keybase.
 Install Keybase, and run the following to join the Chia public channels:
 
 ```bash
-keybase team request-access chia_network
+keybase team request-access chia_network.public
 ```
 
 ### Code style
@@ -248,7 +247,6 @@ keybase team request-access chia_network
 
 ### TODO
 * Serialize aggregation info
-* New constant time hashing to g2
 * Secure allocation during signing, key derivation
 * Threshold signatures
 * Remove unnecessary dependency files
@@ -257,5 +255,5 @@ keybase team request-access chia_network
 * More tests vectors (failed verifications, etc)
 
 
-### Test vectors
-Test vectors can be found in src/test.cpp  and python-impl/tests.py.
+### Specification and test vectors
+The specification and test vectors can be found [here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md). Test vectors can also be seen in the python or cpp test files.

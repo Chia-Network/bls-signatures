@@ -100,6 +100,9 @@
 #define B12_P381_Y0		"0CE5D527727D6E118CC9CDC6DA2E351AADFD9BAA8CBDD3A76D429A695160D12C923AC9CC3BACA289E193548608B82801"
 #define B12_P381_Y1		"0606C4A02EA734CC32ACD2B02BC28B99CB3E287E85A763AF267492AB572E99AB3F370D275CEC1DA1AAA9075FF05F79BE"
 #define B12_P381_R		"73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001"
+#define B12_P381_S3		"BE32CE5FBEED9CA374D38C0ED41EEFD5BB675277CDF12D11BC2FB026C41400045C03FFFFFFFDFFFD"
+#define B12_P381_S32 	"5F19672FDF76CE51BA69C6076A0F77EADDB3A93BE6F89688DE17D813620A00022E01FFFFFFFEFFFE"
+
 /** @} */
 #endif
 
@@ -195,6 +198,10 @@
 	fp_read_str(g->y[1], str, strlen(str), 16);									\
 	FETCH(str, CURVE##_R, sizeof(CURVE##_R));								\
 	bn_read_str(r, str, strlen(str), 16);									\
+	FETCH(str, CURVE##_S3, sizeof(CURVE##_S3));								\
+	bn_read_str(s3, str, strlen(str), 16);									\
+	FETCH(str, CURVE##_S32, sizeof(CURVE##_S32));								\
+	bn_read_str(s32, str, strlen(str), 16);
 
 /*============================================================================*/
 /* Public definitions                                                         */
@@ -239,6 +246,8 @@ void ep2_curve_init(void) {
 	ep2_set_infty(&(ctx->ep2_g));
 	bn_init(&(ctx->ep2_r), FP_DIGS);
 	bn_init(&(ctx->ep2_h), FP_DIGS);
+	bn_init(&(ctx->ep2_s3), FP_DIGS);
+	bn_init(&(ctx->ep2_s32), FP_DIGS);
 }
 
 void ep2_curve_clean(void) {
@@ -252,6 +261,8 @@ void ep2_curve_clean(void) {
 #endif
 	bn_clean(&(ctx->ep2_r));
 	bn_clean(&(ctx->ep2_h));
+	bn_clean(&(ctx->ep2_s3));
+	bn_clean(&(ctx->ep2_s32));
 }
 
 int ep2_curve_is_twist(void) {
@@ -334,6 +345,15 @@ void ep2_curve_get_cof(bn_t h) {
 	bn_copy(h, &(core_get()->ep2_h));
 }
 
+void ep2_curve_get_s3(bn_t s3) {
+	bn_copy(s3, &(core_get()->ep2_s3));
+}
+
+void ep2_curve_get_s32(bn_t s32) {
+	bn_copy(s32, &(core_get()->ep2_s32));
+}
+
+
 #if defined(EP_PRECO)
 
 ep2_t *ep2_curve_get_tab(void) {
@@ -353,11 +373,17 @@ void ep2_curve_set_twist(int type) {
 	fp2_t a;
 	fp2_t b;
 	bn_t r;
+	bn_t h;
+	bn_t s3;
+	bn_t s32;
 
 	ep2_null(g);
 	fp2_null(a);
 	fp2_null(b);
 	bn_null(r);
+	bn_null(h);
+	bn_null(s3);
+	bn_null(s32);
 
 	ctx->ep2_is_twist = 0;
 	if (type == EP_MTYPE || type == EP_DTYPE) {
@@ -371,6 +397,9 @@ void ep2_curve_set_twist(int type) {
 		fp2_new(a);
 		fp2_new(b);
 		bn_new(r);
+		bn_new(h);
+		bn_new(s3);
+		bn_new(s32);
 
 		switch (ep_param_get()) {
 #if FP_PRIME == 158
@@ -421,6 +450,8 @@ void ep2_curve_set_twist(int type) {
 		fp_copy(ctx->ep2_b[0], b[0]);
 		fp_copy(ctx->ep2_b[1], b[1]);
 		bn_copy(&(ctx->ep2_r), r);
+		bn_copy(&(ctx->ep2_s3), s3);
+		bn_copy(&(ctx->ep2_s32), s32);
 		bn_set_dig(&(ctx->ep2_h), 1);
 
 		/* I don't have a better place for this. */
@@ -438,6 +469,9 @@ void ep2_curve_set_twist(int type) {
 		fp2_free(a);
 		fp2_free(b);
 		bn_free(r);
+		bn_free(h);
+		bn_free(s3);
+		bn_free(s32);
 	}
 }
 

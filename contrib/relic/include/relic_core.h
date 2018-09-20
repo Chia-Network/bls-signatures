@@ -318,6 +318,10 @@ typedef struct _ctx_t {
 	bn_st ep2_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep2_h;
+	/** sqrt(-3) in the field for this curve */
+	bn_st ep2_s3;
+	/** (sqrt(-3) - 1) / 2 in the field for this curve */
+	bn_st ep2_s32;
 	/** Flag that stores if the prime curve is a twist. */
 	int ep2_is_twist;
 #ifdef EP_PRECO

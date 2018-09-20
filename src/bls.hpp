@@ -100,6 +100,9 @@ class BLS {
             std::vector<std::vector<BLSPublicKey> > const &pubKeys,
             std::vector<std::vector<uint8_t*> > const &messageHashes);
 
+    // Performs multipairing and checks that everything matches. This is an
+    // internal method, only called from Verify. It should not be used
+    // anywhere else.
     static bool VerifyNative(
             relic::g1_t* pubKeys,
             relic::g2_t* mappedHashes,

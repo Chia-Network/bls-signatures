@@ -81,11 +81,7 @@ class BLSPrivateKey:
 
     @staticmethod
     def from_seed(seed):
-        # "BLS private key seed" in ascii
-        hmac_key = bytes([66, 76, 83, 32, 112, 114, 105, 118, 97, 116, 101,
-                          32, 107, 101, 121, 32, 115, 101, 101, 100])
-
-        hashed = hmac256(seed, hmac_key)
+        hashed = hmac256(seed, b"BLS private key seed")
         return BLSPrivateKey(int.from_bytes(hashed, "big") % default_ec.n)
 
     def get_public_key(self):
@@ -138,10 +134,10 @@ class ExtendedPrivateKey:
         self.chain_code = chain_code
         self.private_key = private_key
 
+    @staticmethod
     def from_seed(seed):
-        prefix = bytes([66, 76, 83, 32, 72, 68, 32, 115, 101, 101, 100])
-        i_left = hmac256(seed + bytes([0]), prefix)
-        i_right = hmac256(seed + bytes([1]), prefix)
+        i_left = hmac256(seed + bytes([0]), b"BLS HD seed")
+        i_right = hmac256(seed + bytes([1]), b"BLS HD seed")
 
         sk_int = int.from_bytes(i_left, "big") % default_ec.n
         sk = BLSPrivateKey.from_bytes(

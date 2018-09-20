@@ -551,11 +551,6 @@ bool BLS::VerifyNative(
         relic::g1_t* pubKeys,
         relic::g2_t* mappedHashes,
         size_t len) {
-    for (size_t i = 0; len != 0 && i < len - 1; i++) {
-        if (g2_cmp(mappedHashes[i], mappedHashes[i+1]) == CMP_EQ) {
-            return false;
-        }
-    }
     relic::gt_t target, candidate;
 
     // Target = 1
