@@ -16,6 +16,7 @@
 #define SRC_CHAINCODE_HPP_
 
 #include <iostream>
+#include <vector>
 
 #include "relic_conf.h"
 
@@ -44,6 +45,7 @@ class ChainCode {
     friend std::ostream &operator<<(std::ostream &os, ChainCode const &s);
 
     void Serialize(uint8_t *buffer) const;
+    std::vector<uint8_t> Serialize() const;
 
  private:
     // Prevent direct construction, use static constructor

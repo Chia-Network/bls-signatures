@@ -142,3 +142,9 @@ void ExtendedPublicKey::Serialize(uint8_t *buffer) const {
     chainCode.Serialize(buffer + 13);
     pk.Serialize(buffer + 13 + ChainCode::CHAIN_CODE_SIZE);
 }
+
+std::vector<uint8_t> ExtendedPublicKey::Serialize() const {
+    std::vector<uint8_t> data(EXTENDED_PUBLIC_KEY_SIZE);
+    Serialize(data.data());
+    return data;
+}
