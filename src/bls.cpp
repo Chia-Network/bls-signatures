@@ -592,7 +592,7 @@ bool BLS::VerifyNative(
 
 void BLS::HashPubKeys(relic::bn_t* output, size_t numOutputs,
                       std::vector<std::vector<uint8_t>> const &serPubKeys,
-                      std::vector<size_t> const& sorted) {
+                      std::vector<size_t> const& sortedIndices) {
     relic::bn_t order;
 
     bn_new(order);
@@ -602,7 +602,7 @@ void BLS::HashPubKeys(relic::bn_t* output, size_t numOutputs,
     pkBuffer.reserve(serPubKeys.size() * BLSPublicKey::PUBLIC_KEY_SIZE);
 
     for (size_t i = 0; i < serPubKeys.size(); i++) {
-        const uint8_t* p = serPubKeys[sorted[i]].data();
+        const uint8_t* p = serPubKeys[sortedIndices[i]].data();
         pkBuffer.insert(pkBuffer.end(), p, p + BLSPublicKey::PUBLIC_KEY_SIZE);
     }
 

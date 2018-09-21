@@ -80,7 +80,7 @@ class BLS {
             relic::bn_t* output,
             size_t numOutputs,
             std::vector<std::vector<uint8_t>> const &serPubKeys,
-            std::vector<size_t> const &sorted);
+            std::vector<size_t> const &sortedIndices);
 
  private:
     // Efficiently aggregates many signatures using the simple aggregation
