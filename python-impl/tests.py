@@ -11,7 +11,8 @@ from keys import BLSPrivateKey, BLSPublicKey, ExtendedPrivateKey
 from aggregation_info import AggregationInfo
 from signature import BLSSignature
 from util import hash256
-
+from sys import setrecursionlimit
+setrecursionlimit(10**6)
 
 def rand_scalar(ec=default_ec):
     return random.randrange(1, ec.n)
@@ -49,7 +50,17 @@ def test_fields():
     assert(j2 != (a + a*c))
     assert(j != j2)
 
+    # Test frob_coeffs
+    one = Fq(default_ec.q, 1)
+    two = one + one
+    a = Fq2(default_ec.q, two, two)
+    b = Fq6(default_ec.q, a, a, a)
+    c = Fq12(default_ec.q, b, b)
+    for base in (a, b, c):
+        for expo in range(1, base.extension):
+            assert base.qi_power(expo) == pow(base, pow(default_ec.q, expo))
 
+    
 def test_ec():
     g = generator_Fq(default_ec)
 

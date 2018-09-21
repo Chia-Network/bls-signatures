@@ -84,8 +84,13 @@ def final_exponentiation(element, ec=default_ec):
     Performs a final exponentiation to map the result of the miller
     loop to a unique element of Fq12.
     """
-    top = pow(ec.q, ec.k) - 1
-    return pow(element, top // ec.n)
+    if ec.k == 12:
+        ans = pow(element, (pow(ec.q,4) - pow(ec.q,2) + 1) // ec.n)
+        ans = ans.qi_power(2) * ans
+        ans = ans.qi_power(6) / ans
+        return ans
+    else:
+        return pow(element, (pow(ec.q, ec.k) - 1) // ec.n)
 
 
 def ate_pairing(P, Q, ec=default_ec):

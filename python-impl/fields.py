@@ -1,6 +1,5 @@
 from copy import deepcopy
 
-
 class Fq(int):
     """
     Represents an element of a finite field mod a prime q.
@@ -76,6 +75,9 @@ class Fq(int):
         else:
             return (self * self) ** (other // 2) * self
 
+    def qi_power(self, i):
+        return self
+    
     def __invert__(self):
         """
         Extended euclidian algorithm for inversion.
@@ -163,7 +165,7 @@ class Fq(int):
     @classmethod
     def from_fq(cls, Q, fq):
         return fq
-
+    
 
 class FieldExtBase(tuple):
     """
@@ -358,6 +360,18 @@ class FieldExtBase(tuple):
         ret.root = self.root
         return ret
 
+    def qi_power(self, i):
+        if self.Q != bls12381_q:
+            raise NotImplementedError
+        cls = type(self)
+        i %= cls.extension
+        if i == 0: return self
+        ret = super().__new__(cls,
+                (a.qi_power(i) * frob_coeffs[cls.extension, i, j] if j else a.qi_power(i)
+                for j, a in enumerate(self)))
+        ret.Q = self.Q
+        ret.root = self.root
+        return ret
 
 class Fq2(FieldExtBase):
     # Fq2 is constructed as Fq(u) / (u2 - β) where β = -1
@@ -442,6 +456,37 @@ class Fq12(FieldExtBase):
         factor = ~(a*a - (b*b).mul_by_nonresidue())
         return Fq12(self.Q, a * factor, -b * factor)
 
+
+# Because fields aren't done with metaclasses, and we need to
+# avoid circular imports, we put a hack here for bls12381 for now.
+bls12381_q = q = 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab
+
+# Frobenius coefficients for raising elements to q**i -th powers
+# These are specific to this given q
+frob_coeffs = {
+    (2, 1, 1) : Fq(q, -1),
+    (6, 1, 1) : Fq2(q, Fq(q, 0x0), Fq(q, 0x1a0111ea397fe699ec02408663d4de85aa0d857d89759ad4897d29650fb85f9b409427eb4f49fffd8bfd00000000aaac)),
+    (6, 1, 2) : Fq2(q, Fq(q, 0x1a0111ea397fe699ec02408663d4de85aa0d857d89759ad4897d29650fb85f9b409427eb4f49fffd8bfd00000000aaad), Fq(q, 0x0)),
+    (6, 2, 1) : Fq2(q, Fq(q, 0x5f19672fdf76ce51ba69c6076a0f77eaddb3a93be6f89688de17d813620a00022e01fffffffefffe), Fq(q, 0x0)),
+    (6, 2, 2) : Fq2(q, Fq(q, 0x1a0111ea397fe699ec02408663d4de85aa0d857d89759ad4897d29650fb85f9b409427eb4f49fffd8bfd00000000aaac), Fq(q, 0x0)),
+    (6, 3, 1) : Fq2(q, Fq(q, 0x0), Fq(q, 0x1)),
+    (6, 3, 2) : Fq2(q, Fq(q, 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa), Fq(q, 0x0)),
+    (6, 4, 1) : Fq2(q, Fq(q, 0x1a0111ea397fe699ec02408663d4de85aa0d857d89759ad4897d29650fb85f9b409427eb4f49fffd8bfd00000000aaac), Fq(q, 0x0)),
+    (6, 4, 2) : Fq2(q, Fq(q, 0x5f19672fdf76ce51ba69c6076a0f77eaddb3a93be6f89688de17d813620a00022e01fffffffefffe), Fq(q, 0x0)),
+    (6, 5, 1) : Fq2(q, Fq(q, 0x0), Fq(q, 0x5f19672fdf76ce51ba69c6076a0f77eaddb3a93be6f89688de17d813620a00022e01fffffffefffe)),
+    (6, 5, 2) : Fq2(q, Fq(q, 0x5f19672fdf76ce51ba69c6076a0f77eaddb3a93be6f89688de17d813620a00022e01fffffffeffff), Fq(q, 0x0)),
+    (12, 1, 1) : Fq6(q, Fq2(q, Fq(q, 0x1904d3bf02bb0667c231beb4202c0d1f0fd603fd3cbd5f4f7b2443d784bab9c4f67ea53d63e7813d8d0775ed92235fb8), Fq(q, 0xfc3e2b36c4e03288e9e902231f9fb854a14787b6c7b36fec0c8ec971f63c5f282d5ac14d6c7ec22cf78a126ddc4af3)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 2, 1) : Fq6(q, Fq2(q, Fq(q, 0x5f19672fdf76ce51ba69c6076a0f77eaddb3a93be6f89688de17d813620a00022e01fffffffeffff), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 3, 1) : Fq6(q, Fq2(q, Fq(q, 0x135203e60180a68ee2e9c448d77a2cd91c3dedd930b1cf60ef396489f61eb45e304466cf3e67fa0af1ee7b04121bdea2), Fq(q, 0x6af0e0437ff400b6831e36d6bd17ffe48395dabc2d3435e77f76e17009241c5ee67992f72ec05f4c81084fbede3cc09)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 4, 1) : Fq6(q, Fq2(q, Fq(q, 0x5f19672fdf76ce51ba69c6076a0f77eaddb3a93be6f89688de17d813620a00022e01fffffffefffe), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 5, 1) : Fq6(q, Fq2(q, Fq(q, 0x144e4211384586c16bd3ad4afa99cc9170df3560e77982d0db45f3536814f0bd5871c1908bd478cd1ee605167ff82995), Fq(q, 0x5b2cfd9013a5fd8df47fa6b48b1e045f39816240c0b8fee8beadf4d8e9c0566c63a3e6e257f87329b18fae980078116)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 6, 1) : Fq6(q, Fq2(q, Fq(q, 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 7, 1) : Fq6(q, Fq2(q, Fq(q, 0xfc3e2b36c4e03288e9e902231f9fb854a14787b6c7b36fec0c8ec971f63c5f282d5ac14d6c7ec22cf78a126ddc4af3), Fq(q, 0x1904d3bf02bb0667c231beb4202c0d1f0fd603fd3cbd5f4f7b2443d784bab9c4f67ea53d63e7813d8d0775ed92235fb8)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 8, 1) : Fq6(q, Fq2(q, Fq(q, 0x1a0111ea397fe699ec02408663d4de85aa0d857d89759ad4897d29650fb85f9b409427eb4f49fffd8bfd00000000aaac), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 9, 1) : Fq6(q, Fq2(q, Fq(q, 0x6af0e0437ff400b6831e36d6bd17ffe48395dabc2d3435e77f76e17009241c5ee67992f72ec05f4c81084fbede3cc09), Fq(q, 0x135203e60180a68ee2e9c448d77a2cd91c3dedd930b1cf60ef396489f61eb45e304466cf3e67fa0af1ee7b04121bdea2)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 10, 1) : Fq6(q, Fq2(q, Fq(q, 0x1a0111ea397fe699ec02408663d4de85aa0d857d89759ad4897d29650fb85f9b409427eb4f49fffd8bfd00000000aaad), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+    (12, 11, 1) : Fq6(q, Fq2(q, Fq(q, 0x5b2cfd9013a5fd8df47fa6b48b1e045f39816240c0b8fee8beadf4d8e9c0566c63a3e6e257f87329b18fae980078116), Fq(q, 0x144e4211384586c16bd3ad4afa99cc9170df3560e77982d0db45f3536814f0bd5871c1908bd478cd1ee605167ff82995)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0)), Fq2(q, Fq(q, 0x0), Fq(q, 0x0))),
+}
 
 """
 Copyright 2018 Chia Network Inc

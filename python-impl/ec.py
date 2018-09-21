@@ -392,7 +392,7 @@ def twist(point, ec=default_ec_twist):
 
 def psi(P, ec=default_ec):
     ut = untwist(P, ec)
-    t = AffinePoint(pow(ut.x, ec.q), pow(ut.y, ec.q), False, ec)
+    t = AffinePoint(ut.x.qi_power(1), ut.y.qi_power(1), False, ec)
     t2 = twist(t, ec)
     return AffinePoint(t2.x[0][0], t2.y[0][0], False, ec)
 

@@ -6,6 +6,7 @@ from fields import Fq, Fq2
 x = -0xd201000000010000
 
 # 381 bit prime
+# Also see fields:bls12381_q
 q = 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab
 
 # a,b and a2, b2, define the elliptic curve and twisted curve.
@@ -40,7 +41,6 @@ sqrt_n3 = 1586958781458431025242759403266842894121773480562120986020912974854563
 
 # (sqrt(-3) - 1) / 2 mod q
 sqrt_n3m1o2 = 793479390729215512621379701633421447060886740281060493010456487427281649075476305620758731620350
-
 
 # This is the normal elliptic curve. G1 points are on here.
 def parameters():
