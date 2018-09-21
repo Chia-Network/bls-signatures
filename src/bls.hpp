@@ -61,6 +61,8 @@ class BLS {
             std::vector<uint8_t*> const &serPubKeys,
             std::vector<size_t> const &sortedIndices);
 
+    static PublicKey DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey);
+
     static void CheckRelicErrors();
 };
 } // end namespace bls

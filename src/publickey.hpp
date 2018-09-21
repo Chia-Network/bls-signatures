@@ -31,6 +31,7 @@ class PublicKey {
  friend class InsecureSignature;
  friend class Signature;
  friend class ExtendedPublicKey;
+ friend class BLS;
  public:
     static const size_t PUBLIC_KEY_SIZE = 48;
 
