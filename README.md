@@ -1,4 +1,5 @@
 ### BLS Signatures implementation
+[![Build Status](https://travis-ci.org/Chia-Network/bls-signatures.svg?branch=master)](https://travis-ci.org/Chia-Network/bls-signatures)
 
 NOTE: THIS LIBRARY IS A DRAFT AND NOT YET REVIEWED FOR SECURITY
 
