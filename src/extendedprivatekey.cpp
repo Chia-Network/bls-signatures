@@ -214,5 +214,11 @@ void ExtendedPrivateKey::Serialize(uint8_t *buffer) const {
     sk.Serialize(buffer + 13 + ChainCode::CHAIN_CODE_SIZE);
 }
 
+std::vector<uint8_t> ExtendedPrivateKey::Serialize() const {
+    std::vector<uint8_t> data(EXTENDED_PRIVATE_KEY_SIZE);
+    Serialize(data.data());
+    return data;
+}
+
 // Destructors in BLSPrivateKey and ChainCode handle cleaning of memory
 ExtendedPrivateKey::~ExtendedPrivateKey() {}

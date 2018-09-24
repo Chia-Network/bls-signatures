@@ -40,19 +40,13 @@ class BLSPublicKey {
     // Construct a public key from another public key.
     BLSPublicKey(const BLSPublicKey &pubKey);
 
-    // Simple read-only vector-like interface to the pubkey data.
-    size_t size() const;
-    const uint8_t* begin() const;
-    const uint8_t* end() const;
-    const uint8_t& operator[](size_t pos) const;
-
     // Comparator implementation.
     friend bool operator==(BLSPublicKey const &a,  BLSPublicKey const &b);
     friend bool operator!=(BLSPublicKey const &a,  BLSPublicKey const &b);
-    friend bool operator<(BLSPublicKey const &a,  BLSPublicKey const &b);
     friend std::ostream &operator<<(std::ostream &os, BLSPublicKey const &s);
 
     void Serialize(uint8_t *buffer) const;
+    std::vector<uint8_t> Serialize() const;
     void GetPoint(relic::g1_t &output) const { *output = *q; }
 
     // Returns the first 4 bytes of the serialized pk
@@ -66,7 +60,6 @@ class BLSPublicKey {
 
     // Public key group element
     relic::g1_t q;
-    uint8_t data[BLSPublicKey::PUBLIC_KEY_SIZE];
 };
 
 #endif  // SRC_BLSPUBLICKEY_HPP_

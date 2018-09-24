@@ -17,6 +17,8 @@
 
 #include "relic_conf.h"
 
+#include <vector>
+
 #if defined GMP && ARITH == GMP
 #include <gmp.h>
 #endif
@@ -78,6 +80,7 @@ class ExtendedPrivateKey {
                            const ExtendedPrivateKey& b);
 
     void Serialize(uint8_t* buffer) const;
+    std::vector<uint8_t> Serialize() const;
 
     ~ExtendedPrivateKey();
 

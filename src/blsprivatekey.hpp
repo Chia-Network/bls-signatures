@@ -52,15 +52,11 @@ class BLSPrivateKey {
     friend bool operator!=(const BLSPrivateKey& a, const BLSPrivateKey& b);
     BLSPrivateKey& operator=(const BLSPrivateKey& rhs);
 
-    // Simple read-only vector-like interface.
-    size_t size() const;
-    uint8_t* begin() const;
-    uint8_t* end() const;
-
     relic::bn_t* GetValue() const { return keydata; }
 
     // Serialize the key into bytes
     void Serialize(uint8_t* buffer) const;
+    std::vector<uint8_t> Serialize() const;
 
     // Sign a message
     BLSSignature Sign(const uint8_t *msg, size_t len) const;

@@ -79,7 +79,8 @@ class BLS {
     static void HashPubKeys(
             relic::bn_t* output,
             size_t numOutputs,
-            std::vector<BLSPublicKey> const &pubKeys);
+            std::vector<uint8_t*> const &serPubKeys,
+            std::vector<size_t> const &sortedIndices);
 
  private:
     // Efficiently aggregates many signatures using the simple aggregation

@@ -46,25 +46,18 @@ class BLSUtil {
         relic::md_map_sh256(output, message, messageLen);
     }
 
-    struct BytesCompare32 {
+    template<size_t S>
+    struct BytesCompare {
         bool operator() (const uint8_t* lhs, const uint8_t* rhs) const {
-            for (size_t i = 0; i < 32; i++) {
+            for (size_t i = 0; i < S; i++) {
                 if (lhs[i] < rhs[i]) return true;
                 if (lhs[i] > rhs[i]) return false;
             }
             return false;
         }
     };
-
-    struct BytesCompare80 {
-        bool operator() (const uint8_t* lhs, const uint8_t* rhs) const {
-            for (size_t i = 0; i < 80; i++) {
-                if (lhs[i] < rhs[i]) return true;
-                if (lhs[i] > rhs[i]) return false;
-            }
-            return false;
-        }
-    };
+    typedef struct BytesCompare<32> BytesCompare32;
+    typedef struct BytesCompare<80> BytesCompare80;
 
     static std::string HexStr(const uint8_t* data, size_t len) {
         std::stringstream s;

@@ -106,12 +106,13 @@ def test2():
     assert(sk != sk2)
     assert(pk.get_fingerprint() == 0xddad59bb)
 
+    sk2_ser = sk2.serialize()
     pk2_ser = pk2.serialize()
     pk2_copy = BLSPublicKey.from_bytes(pk2_ser)
     assert(pk2 == pk2_copy)
     assert(pk != pk2)
-    assert(pk2.size() == 48)
-    assert(sk2.size() == 32)
+    assert(len(pk2_ser) == 48)
+    assert(len(sk2_ser) == 32)
 
     message = bytes("this is the message", "utf-8")
     sig = sk.sign(message)
@@ -123,7 +124,7 @@ def test2():
     assert(a1 == a2)
     sig2 = sk2.sign(message)
 
-    assert(sig.size() == 96)
+    assert(len(sig_ser) == 96)
     assert(sig != sig2)
     assert(sig == sig_cp)
 

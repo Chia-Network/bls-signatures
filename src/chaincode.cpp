@@ -49,3 +49,9 @@ std::ostream &operator<<(std::ostream &os, ChainCode const &s) {
 void ChainCode::Serialize(uint8_t *buffer) const {
     bn_write_bin(buffer, ChainCode::CHAIN_CODE_SIZE, chainCode);
 }
+
+std::vector<uint8_t> ChainCode::Serialize() const {
+    std::vector<uint8_t> data(CHAIN_CODE_SIZE);
+    Serialize(data.data());
+    return data;
+}

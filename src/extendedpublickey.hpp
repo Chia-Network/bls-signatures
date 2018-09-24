@@ -17,6 +17,8 @@
 
 #include "relic_conf.h"
 
+#include <vector>
+
 #if defined GMP && ARITH == GMP
 #include <gmp.h>
 #endif
@@ -70,6 +72,7 @@ class ExtendedPublicKey {
                                     ExtendedPublicKey const &s);
 
     void Serialize(uint8_t *buffer) const;
+    std::vector<uint8_t> Serialize() const;
 
  private:
     // private constructor, force use of static methods

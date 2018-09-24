@@ -82,7 +82,6 @@ PYBIND11_MODULE(blspy, m) {
             uint8_t* input = reinterpret_cast<uint8_t*>(&std::string(msg)[0]);
             return k.SignPrehashed(input);
         })
-        .def("size", &BLSPrivateKey::size)
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("__repr__", [](const BLSPrivateKey &k) {
@@ -110,10 +109,8 @@ PYBIND11_MODULE(blspy, m) {
             delete[] output;
             return ret;
         })
-        .def("size", &BLSPublicKey::size)
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def(py::self < py::self)
         .def("__repr__", [](const BLSPublicKey &pk) {
             std::stringstream s;
             s << pk;
@@ -141,10 +138,8 @@ PYBIND11_MODULE(blspy, m) {
         .def("get_aggregation_info", [](const BLSSignature &sig) {
             return *sig.GetAggregationInfo();
         })
-        .def("size", &BLSSignature::size)
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def(py::self < py::self)
         .def("__repr__", [](const BLSSignature &sig) {
             std::stringstream s;
             s << sig;
