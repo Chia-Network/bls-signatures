@@ -1,14 +1,16 @@
+sudo: enabled
 language: cpp
+before_install:
+  - apt-get update
 install:
   - apt-get install libgmp3-dev
-  - apt-get install libsodium-dev
+  - apt-get install valgrind
 script:
-  - git submodule init
-  - git submodule update
   - mkdir build
   - cd build
   - cmake ../
   - cmake --build . -- -j 6
   - ./src/runtest
+  - valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all  ./src/runtest
 compiler:
-  - clang
+  - gcc
