@@ -18,7 +18,9 @@ script:
   - ./src/runtest
   - valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all  ./src/runtest
   - cd ../
-  - sudo pip3 install .
+  - virtualenv -p python3.6 bls
+  - source bls/bin/activate
+  - pip3 install .
   - python3.6 ./python-bindings/test.py
 compiler:
   - gcc
