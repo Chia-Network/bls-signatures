@@ -315,15 +315,18 @@ AggregationInfo AggregationInfo::SecureMergeInfos(
     });
 
     std::vector<uint8_t*> msgAndPks;
-    std::vector<std::vector<uint8_t>> serPks;
+    std::vector<uint8_t*> serPks;
     std::vector<size_t> sortedKeys;
     msgAndPks.reserve(pkCount);
     serPks.reserve(pkCount);
     sortedKeys.reserve(pkCount);
     for (size_t i = 0; i < sortedCollidingInfos.size(); i++) {
         for (auto &mapEntry : collidingInfosArg[sortedCollidingInfos[i]].tree) {
+            uint8_t *serPk = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
+            memcpy(serPk, mapEntry.first + BLS::MESSAGE_HASH_LEN, BLSPublicKey::PUBLIC_KEY_SIZE);
+
             msgAndPks.emplace_back(mapEntry.first);
-            serPks.emplace_back(mapEntry.first + BLS::MESSAGE_HASH_LEN, mapEntry.first + BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE);
+            serPks.emplace_back(serPk);
             sortedKeys.emplace_back(sortedKeys.size());
         }
     }
@@ -378,6 +381,10 @@ AggregationInfo AggregationInfo::SecureMergeInfos(
     std::vector<BLSPublicKey> pks;
     std::vector<uint8_t*> messageHashes;
     SortIntoVectors(messageHashes, pks, newTree);
+
+    for (auto p : serPks) {
+        delete[] p;
+    }
 
     return AggregationInfo(newTree, messageHashes, pks);
 }
