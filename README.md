@@ -195,7 +195,7 @@ skChild.Serialize(buffer2);
 ```
 
 ### Build
-Cmake and a c++ compiler are required for building.
+Cmake, a c++ compiler, and python3 (for bindings) are required for building.
 ```bash
 git submodule update --init --recursive
 mkdir build
