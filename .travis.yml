@@ -8,6 +8,8 @@ install:
   - sudo apt-get install python3.6-dev
   - sudo apt-get install libgmp3-dev
   - sudo apt-get install valgrind
+  - wget https://bootstrap.pypa.io/get-pip.py
+  - sudo python3.6 get-pip.py
 script:
   - mkdir build
   - cd build
@@ -15,5 +17,8 @@ script:
   - cmake --build . -- -j 6
   - ./src/runtest
   - valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all  ./src/runtest
+  - cd ../
+  - sudo pip3 install .
+  - python3.6 ./python-bindings/test.py
 compiler:
   - gcc
