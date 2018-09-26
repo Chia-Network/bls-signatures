@@ -12,13 +12,13 @@ Multiplicative notation is used for all groups. G1 is used for public keys, and 
 # BLS parameter, used to generate other parameters
 x = -0xd201000000010000
 
-# 381 bit prime defining the field Fq.
+# 381 bit prime defining the field Fq. q = (x - 1)2 ((x4 - x2 + 1) / 3) + x
 q = 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab
 
-# Elliptic curve, G1 elements are points on this curve, with coordinates in Fq, that have order r.
+# Elliptic curve, G1 is the r-order subgroup of points on this curve
 E: y^2 = x^3 + 4
 
-# Twist of E, G2 elements are points on this curve, with coordinates in Fq^2, that have order r.
+# Twist of E, x and y are elements of Fq^2. G2 is the r-order subgroup of points this curve
 "E'": y^2 = x^3 + 4(i+1)
 
 # Generator for G1, consisting of x and y coordinates
@@ -30,38 +30,43 @@ g2x = (0x24aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326
 g2y =
 (0xce5d527727d6e118cc9cdc6da2e351aadfd9baa8cbdd3a76d429a695160d12c923ac9cc3baca289e193548608b82801, 0x606c4a02ea734cc32acd2b02bc28b99cb3e287e85a763af267492ab572e99ab3f370d275cec1da1aaa9075ff05f79be)
 
-# Order of G1, G2, and GT.
+# Order of G1, G2, and GT. r = (x4 - x2 + 1)
 r = n = 0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001
 
-# Cofactor by which to multiply points to map them to G1. (on to the r-torsion)
+# Cofactor by which to multiply points to map them to G1. (on to the r-torsion). h = (x - 1)2 / 3
 h = 0x396C8C005555E1568C00AAAB0000AAAB
 
 # Embedding degree of curve
 k = 12
+
+# Extension towers
+Fq2: Fq(u) / (u2 - β) where β = -1.
+Fq6: Fq2(v) / (v3 - ξ) where ξ = u + 1
+Fq12: Fq6(w) / (w2 - γ) where γ = v
 ```
 
 ## Subroutines
 
 ### Pairing operation e
-Performs an ate pairing between p and q.
-* input: G<sub>1</sub> element p, G<sub>2</sub> element q
+Performs an ate pairing between p and q, up to x.
+* input: g<sub>1</sub> element p, g<sub>2</sub> element q
 * output: Fq12 element
 
 
 ### swEncode
-Shallue and van de Woestijne encoding of a field element to an ec point. Used for Fouque-Tibouchi hashing: https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf. 0 maps to the point at infinity.
+Shallue and van de Woestijne encoding of a field element to a curve point. Used for Fouque-Tibouchi hashing: https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf. 0 maps to the point at infinity.
 * input: Fq element
 * output: G<sub>1</sub> or G<sub>2</sub> element
 
 
-
 ### psi
+Endormophism used to speed up cofactor multiplications in hashG<sub>2</sub>.
 * input: G<sub>1</sub> element p
 * output: G<sub>2</sub> element p2
 ```python
 # Twist is map from E -> E'
 # Untwist is map From E' -> E
-# Described in page 11 of "Efficient hash maps to G2 on BLS curves" by Budroni and Pintore.
+# Described in page 4 of "Efficient hash maps to G2 on BLS curves" by Budroni and Pintore.
 return twist(qPowerFrobenius(untwist(p)))
 ```
 
@@ -83,7 +88,7 @@ return hash256(m + 0) + hash256(m + 1)
 ```
 
 ### hashG<sub>1</sub>
-Maps any string to a deterministic random point in G1.
+Maps any string to a deterministic random point in G<sub>1</sub>.
 * input: message m
 * output: G<sub>1</sub> element
 ```python
@@ -98,7 +103,7 @@ return p ^ h
 ```
 
 ### hashG<sub>2</sub>
-Maps any string to a deterministic random point in G2.
+Maps any string to a deterministic random point in G<sub>2</sub>.
 * input: message m
 * output: G<sub>2</sub> element
 ```python
@@ -120,7 +125,7 @@ return p ^ (x^2 + x - 1) - psi(p ^ (x + 1)) + psi(psi(p ^ 2))
 ```
 
 ### hashPks
-Map a set of public keys into a list of m values.
+Maps a set of public keys into a list of m values.
 * input: G<sub>1</sub> elements pks, number of outputs m
 * output: n 256bit integers T
 ```python
@@ -130,7 +135,7 @@ return [(hash256(fourBytes(i) + pkHash) % n) for i in range(m)]
 
 ## Methods
 ### keyGen
-Map a set of public keys
+Creates a public/private keypair, using a seed s. Private keys are 255 bit integers, and public keys are G<sub>1</sub> elements.
 * input: random seed s
 * output: field element in Z<sub>q</sub>, G<sub>1</sub> element
 ```python
@@ -181,6 +186,7 @@ publicKeys <- [i.pks for i in aggInfo]
 collidingMessages <- messages that appear in more than one messageHashes list
 
 if colidingMessages is empty:
+    # If all messages are distinct, use simple aggregation
     sigAgg <- product([sig for sig in signatures])
     newAggInfo <- mergeInfos(aggInfo)
     return sigAgg, newAggInfo
@@ -239,9 +245,9 @@ return (aggSig, newAggInfo)
 
 
 ## HD keys
-HD (Hierarchical Deterministic) allow deriving many public and private keys from one seed, and even deriving public keys from other public keys.
+HD (Hierarchical Deterministic) keys allow deriving many public and private keys from one seed, and even deriving public keys from other public keys.
 
-HD keys will follow Bitcoin's BIP32 specification, with the following differences:
+HD keys follow Bitcoin's BIP32 specification, with the following differences:
 * The HMAC key to generate a master private key used is not "Bitcoin seed" it is "BLS HD seed".
 * The master secret key is generated mod n from the master seed,
 since not all 32 byte sequences are valid BLS private keys
