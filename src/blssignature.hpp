@@ -30,7 +30,7 @@
 /**
  * An insecure BLS signature.
  * A BLSSignature is a group element of g2
- * Aggregation of these signatures is not secure on it's own
+ * Aggregation of these signatures is not secure on it's own, use BLSSignature instead
  */
 class BLSInsecureSignature {
   friend class BLSSignature;
@@ -58,6 +58,7 @@ class BLSInsecureSignature {
     // Insecurely divides signatures
     BLSInsecureSignature DivideBy(const BLSInsecureSignature& r) const;
 
+    // Exponentiate signature with n
     BLSInsecureSignature Mul(const relic::bn_t n) const;
 
     // Serializes ONLY the 96 byte public key. It does not serialize
@@ -112,10 +113,10 @@ class BLSSignature {
     // Initializes from native relic g2 element with AggregationInfo/
     static BLSSignature FromG2(const relic::g2_t* element, const AggregationInfo &info);
 
-    // Initializes from native relic g2 element/
+    // Initializes from insecure signature/
     static BLSSignature FromInsecureSig(const BLSInsecureSignature& sig);
 
-    // Initializes from native relic g2 element with AggregationInfo/
+    // Initializes from insecure signature with AggregationInfo/
     static BLSSignature FromInsecureSig(const BLSInsecureSignature& sig, const AggregationInfo &info);
 
     // Copy constructor. Deep copies contents.

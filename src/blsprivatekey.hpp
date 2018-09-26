@@ -48,8 +48,11 @@ class BLSPrivateKey {
 
     BLSPublicKey GetPublicKey() const;
 
+    // Insecurely aggregate multiple private keys into one
     BLSPrivateKey AggregateInsecure(const BLSPrivateKey& r) const;
     static BLSPrivateKey AggregatePrivKeysInsecure(std::vector<BLSPrivateKey> const &privateKeys);
+
+    // Securely aggregate multiple private keys into one by exponentiating the keys with the pubKey hashes first
     static BLSPrivateKey AggregatePrivKeys(std::vector<BLSPrivateKey> const &privateKeys,
                                            std::vector<BLSPublicKey> const &pubKeys);
 
@@ -63,6 +66,7 @@ class BLSPrivateKey {
     std::vector<uint8_t> Serialize() const;
 
     // Sign a message
+    // The secure variants will also set and return appropriate aggregation info
     BLSInsecureSignature SignInsecure(const uint8_t *msg, size_t len) const;
     BLSInsecureSignature SignInsecurePrehashed(const uint8_t *hash) const;
     BLSSignature Sign(const uint8_t *msg, size_t len) const;
