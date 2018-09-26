@@ -53,12 +53,6 @@ class BLS {
     // Cleans the BLS library
     static void Clean();
 
-    // Verifies a single or aggregate signature.
-    // Performs two pairing operations, sig must contain information on
-    // how aggregation was performed (AggregationInfo). The Aggregation
-    // Info contains all the public keys and messages required.
-    static bool Verify(const BLSSignature &sig);
-
     // Creates a combined public/private key that can be used to create
     // or verify aggregate signatures on the same message
     static BLSPublicKey AggregatePubKeys(std::vector<BLSPublicKey> const &pubKeys,
@@ -76,15 +70,6 @@ class BLS {
             std::vector<size_t> const &sortedIndices);
 
     static void CheckRelicErrors();
-
-private:
-    // Performs multipairing and checks that everything matches. This is an
-    // internal method, only called from Verify. It should not be used
-    // anywhere else.
-    static bool VerifyNative(
-            relic::g1_t* pubKeys,
-            relic::g2_t* mappedHashes,
-            size_t len);
 };
 
 #endif  // SRC_BLS_HPP_

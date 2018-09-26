@@ -58,7 +58,7 @@ void benchVerification() {
     for (size_t i = 0; i < numIters; i++) {
         uint8_t message[4];
         BLSUtil::IntToFourBytes(message, i);
-        bool ok = BLS::Verify(sigs[i]);
+        bool ok = sigs[i].Verify();
         ASSERT(ok);
     }
     endStopwatch(testName, start, numIters);
@@ -95,7 +95,7 @@ void benchAggregateSigsSecure() {
     auto start3 = startStopwatch();
     aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
             aggPubKey, message1, sizeof(message1)));
-    ASSERT(BLS::Verify(aggSig));
+    ASSERT(aggSig.Verify());
     endStopwatch("Verify agg signature, same message", start3, numIters);
 }
 
@@ -115,7 +115,7 @@ void benchBatchVerification() {
         sigs.push_back(sk.Sign(message, 1 + (i % 5)));
         // Small message, so some messages are the same
         if (message[0] < 225) {  // Simulate having ~90% cached transactions
-            BLS::Verify(sigs.back());
+            sigs.back().Verify();
             cache.push_back(sigs.back());
         }
     }
@@ -123,13 +123,13 @@ void benchBatchVerification() {
     BLSSignature aggregate = BLSSignature::AggregateSigs(sigs);
 
     auto start = startStopwatch();
-    ASSERT(BLS::Verify(aggregate));
+    ASSERT(aggregate.Verify());
     endStopwatch(testName, start, numIters);
 
 
     start = startStopwatch();
     const BLSSignature aggSmall = aggregate.DivideBy(cache);
-    ASSERT(BLS::Verify(aggSmall));
+    ASSERT(aggSmall.Verify());
     endStopwatch(testName + " with cached verifications", start, numIters);
 }
 
@@ -156,7 +156,7 @@ void benchAggregateSigsSimple() {
                  start, numIters);
 
     auto start2 = startStopwatch();
-    ASSERT(BLS::Verify(aggSig));
+    ASSERT(aggSig.Verify());
     endStopwatch("Verify aggregate signature, distinct messages",
                  start2, numIters);
 }
@@ -181,7 +181,7 @@ void benchDegenerateTree() {
                  start, numIters);
 
     start = startStopwatch();
-    ASSERT(BLS::Verify(aggSig));
+    ASSERT(aggSig.Verify());
     endStopwatch("Verify degenerate aggSig tree",
                  start, numIters);
 }

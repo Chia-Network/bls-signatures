@@ -60,6 +60,73 @@ void BLSInsecureSignature::GetPoint(relic::ep2_st* output) const {
     *output = *sig;
 }
 
+bool BLSInsecureSignature::Verify(const uint8_t* msg, size_t len, const BLSPublicKey& pubKey) const {
+    BLS::AssertInitialized();
+    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+    BLSUtil::Hash256(messageHash, msg, len);
+    return VerifyHash(messageHash, pubKey);
+}
+
+bool BLSInsecureSignature::VerifyHash(const uint8_t* hash, const BLSPublicKey& pubKey) const {
+    relic::g1_t pk, gen;
+    relic::g2_t mappedHash;
+    relic::gt_t e1, e2;
+    g1_get_gen(gen);
+    pubKey.GetPoint(pk);
+    g2_map(mappedHash, hash, BLS::MESSAGE_HASH_LEN, 0);
+    pc_map(e1, pk, mappedHash);
+    pc_map(e2, gen, *(relic::g2_t*)&sig);
+    return relic::gt_cmp(e1, e2) == CMP_EQ;
+}
+
+bool BLSInsecureSignature::VerifyAggregated(const std::vector<uint8_t*>& hashes, const std::vector<BLSPublicKey>& pubKeys) const {
+    if (hashes.size() != pubKeys.size() || hashes.empty()) {
+        throw std::string("hashes and pubKeys vectors must be of same size and non-empty");
+    }
+
+    std::vector<relic::g1_t> pubKeysNative(hashes.size() + 1);
+    std::vector<relic::g2_t> mappedHashes(hashes.size() + 1);
+
+    GetPoint(mappedHashes[0]);
+    g1_get_gen(pubKeysNative[0]);
+    relic::bn_t ordMinus1;
+    relic::bn_new(ordMinus1);
+    relic::g1_get_ord(ordMinus1);
+    relic::bn_sub_dig(ordMinus1, ordMinus1, 1);
+    relic::g1_mul(pubKeysNative[0], pubKeysNative[0], ordMinus1);
+
+    for (size_t i = 0; i < hashes.size(); i++) {
+        g2_map(mappedHashes[i + 1], hashes[i], BLS::MESSAGE_HASH_LEN, 0);
+        pubKeys[i].GetPoint(pubKeysNative[i + 1]);
+    }
+
+    return VerifyNative(pubKeysNative.data(), mappedHashes.data(), pubKeysNative.size());
+}
+
+bool BLSInsecureSignature::VerifyNative(
+        relic::g1_t* pubKeys,
+        relic::g2_t* mappedHashes,
+        size_t len) {
+    relic::gt_t target, candidate;
+
+    // Target = 1
+    relic::fp12_zero(target);
+    relic::fp_set_dig(target[0][0][0], 1);
+
+    // prod e(pubkey[i], hash[i]) * e(-1 * g1, aggSig)
+    // Performs pubKeys.size() pairings
+    pc_map_sim(candidate, pubKeys, mappedHashes, len);
+
+    // 1 =? prod e(pubkey[i], hash[i]) * e(g1, aggSig)
+    if (relic::gt_cmp(target, candidate) != CMP_EQ ||
+        relic::core_get()->code != STS_OK) {
+        relic::core_get()->code = STS_OK;
+        return false;
+    }
+    BLS::CheckRelicErrors();
+    return true;
+}
+
 BLSInsecureSignature BLSInsecureSignature::Aggregate(const BLSInsecureSignature& r) const {
     BLSInsecureSignature result(*this);
     g2_add(result.sig, *(relic::g2_t*)&result.sig, *(relic::g2_t*)&r.sig);
@@ -171,10 +238,6 @@ BLSSignature::BLSSignature(const BLSSignature &_signature)
       aggregationInfo(_signature.aggregationInfo) {
 }
 
-void BLSSignature::GetPoint(relic::ep2_st* output) const {
-    sig.GetPoint(output);
-}
-
 const AggregationInfo* BLSSignature::GetAggregationInfo() const {
     return &aggregationInfo;
 }
@@ -206,6 +269,93 @@ std::ostream &operator<<(std::ostream &os, BLSSignature const &s) {
     uint8_t data[BLSInsecureSignature::SIGNATURE_SIZE];
     s.Serialize(data);
     return os << BLSUtil::HexStr(data, BLSInsecureSignature::SIGNATURE_SIZE);
+}
+
+/*
+ * This implementation of verify has several steps. First, it
+ * reorganizes the pubkeys and messages into groups, where
+ * each group corresponds to a message. Then, it checks if the
+ * siganture has info on how it was aggregated. If so, we
+ * exponentiate each pk based on the exponent in the AggregationInfo.
+ * If not, we find public keys that share messages with others,
+ * and aggregate all of these securely (with exponents.).
+ * Finally, since each public key now corresponds to a unique
+ * message (since we grouped them), we can verify using the
+ * distinct verification procedure.
+ */
+bool BLSSignature::Verify() const {
+    if (GetAggregationInfo()->Empty()) {
+        return false;
+    }
+    std::vector<BLSPublicKey> pubKeys = GetAggregationInfo()
+            ->GetPubKeys();
+    std::vector<uint8_t*> messageHashes = GetAggregationInfo()
+            ->GetMessageHashes();
+    if (pubKeys.size() != messageHashes.size()) {
+        return false;
+    }
+    // Group all of the messages that are idential, with the
+    // pubkeys and signatures, the std::maps's key is the message hash
+    std::map<uint8_t*, std::vector<BLSPublicKey>,
+            BLSUtil::BytesCompare32> hashToPubKeys;
+
+    for (size_t i = 0; i < messageHashes.size(); i++) {
+        auto pubKeyIter = hashToPubKeys.find(messageHashes[i]);
+        if (pubKeyIter != hashToPubKeys.end()) {
+            // Already one identical message, so push to vector
+            pubKeyIter->second.push_back(pubKeys[i]);
+        } else {
+            // First time seeing this message, so create a vector
+            std::vector<BLSPublicKey> newPubKey = {pubKeys[i]};
+            hashToPubKeys.insert(make_pair(messageHashes[i], newPubKey));
+        }
+    }
+
+    // Aggregate pubkeys of identical messages
+    std::vector<BLSPublicKey> finalPubKeys;
+    std::vector<uint8_t*> finalMessageHashes;
+    std::vector<uint8_t*> collidingKeys;
+
+    for (const auto &kv : hashToPubKeys) {
+        relic::g1_t prod;
+        g1_set_infty(prod);
+        std::map<uint8_t*, size_t, BLSUtil::BytesCompare<BLSPublicKey::PUBLIC_KEY_SIZE>> dedupMap;
+        for (size_t i = 0; i < kv.second.size(); i++) {
+            const BLSPublicKey& pk = kv.second[i];
+            uint8_t *k = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
+            pk.Serialize(k);
+            dedupMap.emplace(k, i);
+        }
+
+        for (const auto &kv2 : dedupMap) {
+            const BLSPublicKey& pk = kv.second[kv2.second];
+
+            relic::bn_t exponent;
+            bn_new(exponent);
+            try {
+                GetAggregationInfo()->GetExponent(&exponent, kv.first, pk);
+            } catch (std::out_of_range) {
+                for (auto &p : dedupMap) {
+                    delete[] p.first;
+                }
+                return false;
+            }
+            relic::g1_t tmp;
+            pk.GetPoint(tmp);
+
+            g1_mul(tmp, tmp, exponent);
+            g1_add(prod, prod, tmp);
+        }
+        finalPubKeys.push_back(BLSPublicKey::FromG1(&prod));
+        finalMessageHashes.push_back(kv.first);
+
+        for (auto &p : dedupMap) {
+            delete[] p.first;
+        }
+    }
+
+    // Now we have all distinct messages, so we can verify
+    return sig.VerifyAggregated(finalMessageHashes, finalPubKeys);
 }
 
 BLSSignature BLSSignature::AggregateSigs(

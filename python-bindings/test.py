@@ -67,10 +67,10 @@ def test1():
     agg_sig_final.set_aggregation_info(a_final)
     ok = BLS.verify(agg_sig_final)
 
-    ok = BLS.verify(agg_sig_l)
+    ok = agg_sig_l.verify()
     agg_sig_final = agg_sig_final.divide_by([agg_sig_l])
 
-    ok = BLS.verify(agg_sig_final)
+    ok = agg_sig_final.verify()
 
     agg_sk = BLS.aggregate_priv_keys([sk1, sk2], [pk1, pk2], True)
     agg_sk.sign(msg)
@@ -130,9 +130,9 @@ def test2():
 
     sig_agg = BLSSignature.aggregate_sigs([sig, sig2])
 
-    result = BLS.verify(sig_cp)
-    result2 = BLS.verify(sig2)
-    result3 = BLS.verify(sig_agg)
+    result = sig_cp.verify()
+    result2 = sig2.verify()
+    result3 = sig_agg.verify()
     assert(result)
     assert(result2)
     assert(result3)
@@ -160,14 +160,14 @@ def test_vectors():
     assert(agg_sk.sign(bytes([7, 8, 9])).serialize() == agg_sig.serialize())
 
 
-    assert(BLS.verify(sig1))
-    assert(BLS.verify(agg_sig))
+    assert(sig1.verify())
+    assert(agg_sig.verify())
 
     agg_sig.set_aggregation_info(AggregationInfo.from_msg(agg_pk, bytes([7, 8, 9])))
-    assert(BLS.verify(agg_sig))
+    assert(agg_sig.verify())
 
     sig1.set_aggregation_info(sig2.get_aggregation_info())
-    assert(not BLS.verify(sig1))
+    assert(not sig1.verify())
 
     sig3 = sk1.sign(bytes([1, 2, 3]))
     sig4 = sk1.sign(bytes([1, 2, 3, 4]))
@@ -175,7 +175,7 @@ def test_vectors():
 
 
     agg_sig2 = BLSSignature.aggregate_sigs([sig3, sig4, sig5])
-    assert(BLS.verify(agg_sig2))
+    assert(agg_sig2.verify())
     assert(agg_sig2.serialize() == bytes.fromhex("8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b"))
 
 
@@ -197,15 +197,15 @@ def test_vectors2():
 
     sig_L = BLSSignature.aggregate_sigs([sig1, sig2])
     sig_R = BLSSignature.aggregate_sigs([sig3, sig4, sig5])
-    assert(BLS.verify(sig_L))
-    assert(BLS.verify(sig_R))
+    assert(sig_L.verify())
+    assert(sig_R.verify())
 
     sig_final = BLSSignature.aggregate_sigs([sig_L, sig_R, sig6])
     assert(sig_final.serialize() == bytes.fromhex("07969958fbf82e65bd13ba0749990764cac81cf10d923af9fdd2723f1e3910c3fdb874a67f9d511bb7e4920f8c01232b12e2fb5e64a7c2d177a475dab5c3729ca1f580301ccdef809c57a8846890265d195b694fa414a2a3aa55c32837fddd80"))
-    assert(BLS.verify(sig_final))
+    assert(sig_final.verify())
     quotient = sig_final.divide_by([sig2, sig5, sig6])
-    assert(BLS.verify(quotient))
-    assert(BLS.verify(sig_final))
+    assert(quotient.verify())
+    assert(sig_final.verify())
     assert(quotient.serialize() == bytes.fromhex("8ebc8a73a2291e689ce51769ff87e517be6089fd0627b2ce3cd2f0ee1ce134b39c4da40928954175014e9bbe623d845d0bdba8bfd2a85af9507ddf145579480132b676f027381314d983a63842fcc7bf5c8c088461e3ebb04dcf86b431d6238f"))
     assert(quotient.divide_by([]) == quotient)
     try:
@@ -226,7 +226,7 @@ def test_vectors2():
     sig_R2 = BLSSignature.aggregate_sigs([sig7, sig8])
     sig_final2 = BLSSignature.aggregate_sigs([sig_final, sig_R2])
     quotient2 = sig_final2.divide_by([sig_R2])
-    assert(BLS.verify(quotient2))
+    assert(quotient2.verify())
     assert(quotient2.serialize() == bytes.fromhex("06af6930bd06838f2e4b00b62911fb290245cce503ccf5bfc2901459897731dd08fc4c56dbde75a11677ccfbfa61ab8b14735fddc66a02b7aeebb54ab9a41488f89f641d83d4515c4dd20dfcf28cbbccb1472c327f0780be3a90c005c58a47d3"))
 
 

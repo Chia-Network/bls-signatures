@@ -49,6 +49,11 @@ class BLSInsecureSignature {
     // Gets the native relic point for this signature.
     void GetPoint(relic::g2_t output) const;
 
+    // The following verification methods are all insecure in regard to the rogue public key attack
+    bool Verify(const uint8_t *msg, size_t len, const BLSPublicKey& pubKey) const;
+    bool VerifyHash(const uint8_t *hash, const BLSPublicKey& pubKey) const;
+    bool VerifyAggregated(const std::vector<uint8_t*>& hashes, const std::vector<BLSPublicKey>& pubKeys) const;
+
     // Insecurely aggregates signatures
     BLSInsecureSignature Aggregate(const BLSInsecureSignature& r) const;
     static BLSInsecureSignature Aggregate(const std::vector<BLSInsecureSignature>& sigs);
@@ -74,6 +79,14 @@ private:
     BLSInsecureSignature();
 
     static void CompressPoint(uint8_t* result, const relic::g2_t* point);
+
+    // Performs multipairing and checks that everything matches. This is an
+    // internal method, only called from VerifyAggregated. It should not be used
+    // anywhere else.
+    static bool VerifyNative(
+            relic::g1_t* pubKeys,
+            relic::g2_t* mappedHashes,
+            size_t len);
 
     // Signature group element
     relic::g2_t sig;
@@ -111,9 +124,11 @@ class BLSSignature {
     // Copy constructor. Deep copies contents.
     BLSSignature(const BLSSignature &signature);
 
-    // Gets the native relic point for this signature.
-    // TODO remove in next commits
-    void GetPoint(relic::g2_t output) const;
+    // Verifies a single or aggregate signature.
+    // Performs two pairing operations, sig must contain information on
+    // how aggregation was performed (AggregationInfo). The Aggregation
+    // Info contains all the public keys and messages required.
+    bool Verify() const;
 
     // Securely aggregates many signatures on messages, some of
     // which may be identical. The signature can then be verified
