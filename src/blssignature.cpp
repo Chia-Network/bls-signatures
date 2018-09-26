@@ -291,13 +291,10 @@ BLSSignature BLSSignature::AggregateSigsSecure(
 
     // Copy each signature into sig, raise to power of each t for
     // sigComp, and multiply all together into aggSig
-    relic::g2_t sig, sigComp, aggSig;
-    g2_set_infty(aggSig);
+    BLSInsecureSignature sig, sigComp, aggSig;
 
     for (size_t i = 0; i < keysSorted.size(); i++) {
-        sigs[keysSorted[i]].GetPoint(sig);
-        g2_mul(sigComp, sig, computedTs[i]);
-        g2_add(aggSig, aggSig, sigComp);
+        aggSig = aggSig.Aggregate(sigs[keysSorted[i]].sig.Mul(computedTs[i]));
     }
     delete[] computedTs;
 
@@ -308,7 +305,7 @@ BLSSignature BLSSignature::AggregateSigsSecure(
         delete[] p;
     }
 
-    BLSSignature ret = BLSSignature::FromG2(&aggSig);
+    BLSSignature ret = BLSSignature::FromInsecureSig(aggSig);
     BLS::CheckRelicErrors();
     return ret;
 }
@@ -434,25 +431,21 @@ BLSSignature BLSSignature::AggregateSigsInternal(
 
     // Copy each signature into sig, raise to power of each t for
     // sigComp, and multiply all together into aggSig
-    relic::g2_t sig, sigComp, aggSig;
-    g2_set_infty(aggSig);
+    BLSInsecureSignature sig, sigComp, aggSig;
     std::vector<AggregationInfo> infos;
 
     // Also accumulates aggregation info for each signature
     for (size_t i = 0; i < sigsSorted.size(); i++) {
         const BLSSignature& s = collidingSigs[sigsSorted[i]];
-        s.GetPoint(sig);
-        g2_mul(sigComp, sig, computedTs[i]);
-        g2_add(aggSig, aggSig, sigComp);
+        aggSig = aggSig.Aggregate(s.sig.Mul(computedTs[i]));
         infos.push_back(*s.GetAggregationInfo());
     }
 
     for (const BLSSignature &nonColliding : nonCollidingSigs) {
-        nonColliding.GetPoint(sig);
-        g2_add(aggSig, aggSig, sig);
+        aggSig = aggSig.Aggregate(nonColliding.sig);
         infos.push_back(*nonColliding.GetAggregationInfo());
     }
-    BLSSignature ret = BLSSignature::FromG2(&aggSig);
+    BLSSignature ret = BLSSignature::FromInsecureSig(aggSig);
 
     // Merge the aggregation infos, which will be combined in an
     // identical way as above.
@@ -477,15 +470,14 @@ BLSSignature BLSSignature::AggregateSigsSimple(std::vector<BLSSignature> const &
     if (sigs.size() == 1) {
         return sigs[0];
     }
-    relic::g2_t aggSig, tempSig;
-    g2_set_infty(aggSig);
+
+    BLSInsecureSignature aggSig;
 
     // Multiplies the signatures together (relic uses additive group operation)
     for (const BLSSignature &sig : sigs) {
-        sig.GetPoint(tempSig);
-        g2_add(aggSig, aggSig, tempSig);
+        aggSig = aggSig.Aggregate(sig.sig);
     }
-    BLSSignature ret = BLSSignature::FromG2(&aggSig);
+    BLSSignature ret = BLSSignature::FromInsecureSig(aggSig);
     BLS::CheckRelicErrors();
     return ret;
 }
