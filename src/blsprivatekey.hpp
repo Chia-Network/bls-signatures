@@ -42,6 +42,7 @@ class BLSPrivateKey {
     // Construct a private key from another private key. Allocates memory in
     // secure heap, and copies keydata.
     BLSPrivateKey(const BLSPrivateKey& k);
+    BLSPrivateKey(BLSPrivateKey&& k);
 
     ~BLSPrivateKey();
 
@@ -67,7 +68,7 @@ class BLSPrivateKey {
     BLSPrivateKey() {}
 
     // The actual byte data
-    relic::bn_t *keydata;
+    relic::bn_t *keydata{nullptr};
 
     // Allocate memory for private key
     void AllocateKeyData();

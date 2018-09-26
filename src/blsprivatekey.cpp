@@ -41,7 +41,7 @@ BLSPrivateKey BLSPrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
     bn_read_bin(*skBn, hash, BLSPrivateKey::PRIVATE_KEY_SIZE);
     bn_mod_basic(*skBn, *skBn, order);
 
-    BLSPrivateKey k = BLSPrivateKey();
+    BLSPrivateKey k;
     k.AllocateKeyData();
     bn_copy(*k.keydata, *skBn);
 
@@ -53,7 +53,7 @@ BLSPrivateKey BLSPrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
 // Construct a private key from a bytearray.
 BLSPrivateKey BLSPrivateKey::FromBytes(const uint8_t* bytes) {
     BLS::AssertInitialized();
-    BLSPrivateKey k = BLSPrivateKey();
+    BLSPrivateKey k;
     k.AllocateKeyData();
     bn_read_bin(*k.keydata, bytes, BLSPrivateKey::PRIVATE_KEY_SIZE);
     relic::bn_t ord;
@@ -70,6 +70,11 @@ BLSPrivateKey::BLSPrivateKey(const BLSPrivateKey &privateKey) {
     BLS::AssertInitialized();
     AllocateKeyData();
     bn_copy(*keydata, *privateKey.GetValue());
+}
+
+BLSPrivateKey::BLSPrivateKey(BLSPrivateKey&& k) {
+    BLS::AssertInitialized();
+    std::swap(keydata, k.keydata);
 }
 
 BLSPrivateKey::~BLSPrivateKey() {
@@ -142,4 +147,5 @@ void BLSPrivateKey::AllocateKeyData() {
     BLS::AssertInitialized();
     keydata = BLSUtil::SecAlloc<relic::bn_t>(1);
     bn_new(*keydata);  // Freed in destructor
+    relic::bn_zero(*keydata);
 }
