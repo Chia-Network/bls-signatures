@@ -28,6 +28,9 @@
 
 /** An encapsulated public key. */
 class BLSPublicKey {
+ friend class BLSInsecureSignature;
+ friend class BLSSignature;
+ friend class ExtendedPublicKey;
  public:
     static const size_t PUBLIC_KEY_SIZE = 48;
 
@@ -53,7 +56,6 @@ class BLSPublicKey {
 
     void Serialize(uint8_t *buffer) const;
     std::vector<uint8_t> Serialize() const;
-    void GetPoint(relic::g1_t &output) const { *output = *q; }
 
     // Returns the first 4 bytes of the serialized pk
     uint32_t GetFingerprint() const;

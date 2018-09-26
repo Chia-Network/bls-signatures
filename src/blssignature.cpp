@@ -56,10 +56,6 @@ BLSInsecureSignature::BLSInsecureSignature(const BLSInsecureSignature &signature
     g2_copy(sig, *(relic::g2_t*)&signature.sig);
 }
 
-void BLSInsecureSignature::GetPoint(relic::ep2_st* output) const {
-    *output = *sig;
-}
-
 bool BLSInsecureSignature::Verify(const uint8_t* msg, size_t len, const BLSPublicKey& pubKey) const {
     BLS::AssertInitialized();
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
@@ -68,13 +64,12 @@ bool BLSInsecureSignature::Verify(const uint8_t* msg, size_t len, const BLSPubli
 }
 
 bool BLSInsecureSignature::VerifyHash(const uint8_t* hash, const BLSPublicKey& pubKey) const {
-    relic::g1_t pk, gen;
+    relic::g1_t gen;
     relic::g2_t mappedHash;
     relic::gt_t e1, e2;
     g1_get_gen(gen);
-    pubKey.GetPoint(pk);
     g2_map(mappedHash, hash, BLS::MESSAGE_HASH_LEN, 0);
-    pc_map(e1, pk, mappedHash);
+    pc_map(e1, *(relic::g1_t*)&pubKey.q, mappedHash);
     pc_map(e2, gen, *(relic::g2_t*)&sig);
     return relic::gt_cmp(e1, e2) == CMP_EQ;
 }
@@ -87,8 +82,8 @@ bool BLSInsecureSignature::VerifyAggregated(const std::vector<uint8_t*>& hashes,
     std::vector<relic::g1_t> pubKeysNative(hashes.size() + 1);
     std::vector<relic::g2_t> mappedHashes(hashes.size() + 1);
 
-    GetPoint(mappedHashes[0]);
-    g1_get_gen(pubKeysNative[0]);
+    relic::g2_copy(mappedHashes[0], *(relic::g2_t*)&sig);
+    relic::g1_get_gen(pubKeysNative[0]);
     relic::bn_t ordMinus1;
     relic::bn_new(ordMinus1);
     relic::g1_get_ord(ordMinus1);
@@ -97,7 +92,7 @@ bool BLSInsecureSignature::VerifyAggregated(const std::vector<uint8_t*>& hashes,
 
     for (size_t i = 0; i < hashes.size(); i++) {
         g2_map(mappedHashes[i + 1], hashes[i], BLS::MESSAGE_HASH_LEN, 0);
-        pubKeys[i].GetPoint(pubKeysNative[i + 1]);
+        g1_copy(pubKeysNative[i + 1], pubKeys[i].q);
     }
 
     return VerifyNative(pubKeysNative.data(), mappedHashes.data(), pubKeysNative.size());
@@ -317,8 +312,7 @@ bool BLSSignature::Verify() const {
     std::vector<uint8_t*> collidingKeys;
 
     for (const auto &kv : hashToPubKeys) {
-        relic::g1_t prod;
-        g1_set_infty(prod);
+        BLSPublicKey prod;
         std::map<uint8_t*, size_t, BLSUtil::BytesCompare<BLSPublicKey::PUBLIC_KEY_SIZE>> dedupMap;
         for (size_t i = 0; i < kv.second.size(); i++) {
             const BLSPublicKey& pk = kv.second[i];
@@ -340,13 +334,9 @@ bool BLSSignature::Verify() const {
                 }
                 return false;
             }
-            relic::g1_t tmp;
-            pk.GetPoint(tmp);
-
-            g1_mul(tmp, tmp, exponent);
-            g1_add(prod, prod, tmp);
+            prod = prod.AggregateInsecure(pk.Mul(exponent));
         }
-        finalPubKeys.push_back(BLSPublicKey::FromG1(&prod));
+        finalPubKeys.push_back(prod);
         finalMessageHashes.push_back(kv.first);
 
         for (auto &p : dedupMap) {

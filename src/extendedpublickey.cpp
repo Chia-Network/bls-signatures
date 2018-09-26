@@ -71,24 +71,13 @@ ExtendedPublicKey ExtendedPublicKey::PublicChild(uint32_t i) const {
     relic::md_hmac(IRight, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
-    relic::bn_t leftSk;
-    bn_new(leftSk);
-    bn_read_bin(leftSk, ILeft, BLSPrivateKey::PRIVATE_KEY_SIZE);
-
-    relic::bn_t order;
-    bn_new(order);
-    g2_get_ord(order);
-
-    bn_mod_basic(leftSk, leftSk, order);
-    relic::g1_t newPk, oldPk;
-    g1_mul_gen(newPk, leftSk);
-    pk.GetPoint(oldPk);
-    g1_add(newPk, newPk, oldPk);
+    BLSPrivateKey leftSk = BLSPrivateKey::FromBytes(ILeft, true);
+    BLSPublicKey newPk = pk.AggregateInsecure(leftSk.GetPublicKey());
 
     ExtendedPublicKey epk(version, depth + 1,
                           GetPublicKey().GetFingerprint(), i,
                           ChainCode::FromBytes(IRight),
-                          BLSPublicKey::FromG1(&newPk));
+                          newPk);
 
     return epk;
 }

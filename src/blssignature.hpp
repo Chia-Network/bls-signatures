@@ -46,9 +46,6 @@ class BLSInsecureSignature {
     // Copy constructor. Deep copies contents.
     BLSInsecureSignature(const BLSInsecureSignature &signature);
 
-    // Gets the native relic point for this signature.
-    void GetPoint(relic::g2_t output) const;
-
     // The following verification methods are all insecure in regard to the rogue public key attack
     bool Verify(const uint8_t *msg, size_t len, const BLSPublicKey& pubKey) const;
     bool VerifyHash(const uint8_t *hash, const BLSPublicKey& pubKey) const;

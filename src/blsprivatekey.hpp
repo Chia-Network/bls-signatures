@@ -58,8 +58,6 @@ class BLSPrivateKey {
     friend bool operator!=(const BLSPrivateKey& a, const BLSPrivateKey& b);
     BLSPrivateKey& operator=(const BLSPrivateKey& rhs);
 
-    relic::bn_t* GetValue() const { return keydata; }
-
     // Serialize the key into bytes
     void Serialize(uint8_t* buffer) const;
     std::vector<uint8_t> Serialize() const;

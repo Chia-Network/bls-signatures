@@ -75,7 +75,7 @@ BLSPrivateKey BLSPrivateKey::FromBytes(const uint8_t* bytes, bool modOrder) {
 BLSPrivateKey::BLSPrivateKey(const BLSPrivateKey &privateKey) {
     BLS::AssertInitialized();
     AllocateKeyData();
-    bn_copy(*keydata, *privateKey.GetValue());
+    bn_copy(*keydata, *privateKey.keydata);
 }
 
 BLSPrivateKey::BLSPrivateKey(BLSPrivateKey&& k) {
@@ -167,7 +167,7 @@ BLSPrivateKey BLSPrivateKey::AggregatePrivKeys(std::vector<BLSPrivateKey> const&
     BLS::HashPubKeys(computedTs.data(), keysSorted.size(), serPubKeys, keysSorted);
 
     for (size_t i = 0; i < keysSorted.size(); i++) {
-        bn_mul_comba(*tmp.keydata, *privateKeys[keysSorted[i]].GetValue(), computedTs[i]);
+        bn_mul_comba(*tmp.keydata, *privateKeys[keysSorted[i]].keydata, computedTs[i]);
         bn_add(*aggKey.keydata, *aggKey.keydata, *tmp.keydata);
         bn_mod_basic(*aggKey.keydata, *aggKey.keydata, order);
     }
@@ -205,7 +205,7 @@ BLSPrivateKey& BLSPrivateKey::operator=(const BLSPrivateKey &rhs) {
     BLS::AssertInitialized();
     BLSUtil::SecFree(keydata);
     AllocateKeyData();
-    bn_copy(*keydata, *rhs.GetValue());
+    bn_copy(*keydata, *rhs.keydata);
     return *this;
 }
 
