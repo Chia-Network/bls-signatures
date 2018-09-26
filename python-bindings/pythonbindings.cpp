@@ -133,6 +133,7 @@ PYBIND11_MODULE(blspy, m) {
             delete[] output;
             return ret;
         })
+        .def("aggregate_sigs", &BLSSignature::AggregateSigs)
         .def("divide_by", &BLSSignature::DivideBy)
         .def("set_aggregation_info", &BLSSignature::SetAggregationInfo)
         .def("get_aggregation_info", [](const BLSSignature &sig) {
@@ -260,7 +261,6 @@ PYBIND11_MODULE(blspy, m) {
         .def("init", &BLS::Init)
         .def("assert_initialized", &BLS::AssertInitialized)
         .def("clean", &BLS::Clean)
-        .def("aggregate_sigs", &BLS::AggregateSigs)
         .def("verify", &BLS::Verify)
         .def("aggregate_pub_keys", &BLS::AggregatePubKeys)
         .def("aggregate_priv_keys", &BLS::AggregatePrivKeys);
