@@ -56,6 +56,8 @@ class BLSInsecureSignature {
     // Insecurely divides signatures
     BLSInsecureSignature DivideBy(const BLSInsecureSignature& r) const;
 
+    BLSInsecureSignature Mul(const relic::bn_t n) const;
+
     // Serializes ONLY the 96 byte public key. It does not serialize
     // the aggregation info.
     void Serialize(uint8_t* buffer) const;

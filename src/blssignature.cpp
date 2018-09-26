@@ -80,6 +80,12 @@ BLSInsecureSignature BLSInsecureSignature::DivideBy(const BLSInsecureSignature& 
     return result;
 }
 
+BLSInsecureSignature BLSInsecureSignature::Mul(const relic::bn_t n) const {
+    BLSInsecureSignature result(*this);
+    g2_mul(result.sig, result.sig, n);
+    return result;
+}
+
 void BLSInsecureSignature::Serialize(uint8_t* buffer) const {
     BLS::AssertInitialized();
     CompressPoint(buffer, &sig);
@@ -206,8 +212,7 @@ BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs
     std::vector<uint8_t*> messageHashesToRemove;
     std::vector<BLSPublicKey> pubKeysToRemove;
 
-    relic::g2_t prod;
-    relic::g2_set_infty(prod);
+    BLSInsecureSignature prod;
     for (const BLSSignature &divisorSig : divisorSigs) {
         std::vector<BLSPublicKey> pks = divisorSig.GetAggregationInfo()
                 ->GetPubKeys();
@@ -251,16 +256,13 @@ BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs
             messageHashesToRemove.push_back(messageHashes[i]);
             pubKeysToRemove.push_back(pks[i]);
         }
-        bn_neg(quotient, quotient);
-        relic::g2_t newSig;
-        divisorSig.GetPoint(newSig);
-        g2_mul(newSig, newSig, quotient);
-        g2_add(prod, prod, newSig);
+        BLSInsecureSignature newSig = divisorSig.sig.Mul(quotient);
+        prod = prod.DivideBy(newSig);
     }
 
-    g2_add(prod, *(relic::g2_t*)&sig, prod);
+    prod = sig.Aggregate(prod);
 
-    BLSSignature result = BLSSignature::FromG2(&prod, aggregationInfo);
+    BLSSignature result = BLSSignature::FromInsecureSig(prod, aggregationInfo);
     result.aggregationInfo.RemoveEntries(messageHashesToRemove, pubKeysToRemove);
 
     return result;
