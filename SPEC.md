@@ -2,50 +2,62 @@
 
 This document describes an instantiation of the BLS Signature Scheme as it will be used in the Chia blockchain. It still a draft and subject to change.
 
-The curve used is BLS12-381 as described [here](https://github.com/ebfull/pairing/tree/master/src/bls12_381). This spec is based off of zkcrypto/pairing spec, described in that link. The aggregation used is based on [Boneh, Drijvers, Neven](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html).
+The curve used is BLS12-381 as described [here](https://github.com/ebfull/pairing/tree/master/src/bls12_381). This spec is based off of zkcrypto/pairing spec, described in that link. The aggregation used is based on [Boneh, Drijvers, Neven](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html), with additional aggregation of aggregates, and signature division.
 
 Multiplicative notation is used for all groups. G1 is used for public keys, and G2 is used for signatures. There are several other small differences with the rust pairing spec.
 
-### Parameters
+## Parameters
+
+```python
+# BLS parameter, used to generate other parameters
 x = -0xd201000000010000
 
+# 381 bit prime defining the field Fq.
 q = 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab
 
+# Elliptic curve, G1 elements are points on this curve, with coordinates in Fq, that have order r.
 E: y^2 = x^3 + 4        (G1 is over this curve)
 
-E': y^2 = x^3 + 4(i+1)   (G2 is over this curve)
+# Twist of E, G2 elements are points on this curve, with coordinates in Fq^2, that have order r.
+"E'": y^2 = x^3 + 4(i+1)   (G2 is over this curve)
 
-gx = (0x17F1D3A73197D7942695638C4FA9AC0FC3688C4F9774B905A14E3A3F171BAC586C55E83FF97A1AEFFB3AF00ADB22C6BB)
+# Generator for G1, consisting of x and y coordinates
+g = (0x17F1D3A73197D7942695638C4FA9AC0FC3688C4F9774B905A14E3A3F171BAC586C55E83FF97A1AEFFB3AF00ADB22C6BB)
 
 gy = (0x08B3F481E3AAA0F1A09E30ED741D8AE4FCF5E095D5D00AF600DB18CB2C04B3EDD03CC744A2888AE40CAA232946C5E7E1)
 
+# Generator for G2, consisting of x and y coordinates
 g2x = (0x24aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8, 0x13e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e)
 
 g2y =
 (0xce5d527727d6e118cc9cdc6da2e351aadfd9baa8cbdd3a76d429a695160d12c923ac9cc3baca289e193548608b82801, 0x606c4a02ea734cc32acd2b02bc28b99cb3e287e85a763af267492ab572e99ab3f370d275cec1da1aaa9075ff05f79be)
 
+# Order of G1, G2, and GT.
 r = n = 0x73eda753299d7d483339d80809a1d80553bda402fffe5bfeffffffff00000001
 
+# Cofactor by which to multiply points to map them to G1. (on to the r-torsion)
 h = 0x396C8C005555E1568C00AAAB0000AAAB
 
+# Embedding degree of curve
 k = 12
+```
 
-### Subroutines
+## Subroutines
 
-#### pairing operation e
+### Pairing operation e
+Performs an ate pairing between p and q.
 * input: G<sub>1</sub> element p, G<sub>2</sub> element q
 * output: Fq12 element
 
-Performs an ate pairing between p and q.
 
-#### swEncode
+### swEncode
+Shallue and van de Woestijne encoding of a field element to an ec point. Used for Fouque-Tibouchi hashing: https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf. 0 maps to the point at infinity.
 * input: Fq element
 * output: G<sub>1</sub> or G<sub>2</sub> element
 
-Shallue and van de Woestijne encoding of a field element to an ec point. Used for Fouque-Tibouchi hashing: https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf. 0 maps to the point at infinity.
 
 
-#### psi
+### psi
 * input: G<sub>1</sub> element p
 * output: G<sub>2</sub> element p2
 ```python
@@ -55,14 +67,16 @@ Shallue and van de Woestijne encoding of a field element to an ec point. Used fo
 return twist(qPowerFrobenius(untwist(p)))
 ```
 
-#### hash256
+### hash256
+Hash function with 256 bit outputs.
 * input: message m
 * output: 256 bit bytearray
 ```python
 return SHA256(m)
 ```
 
-#### hash512
+### hash512
+Hash function with 512 bit outputs.
 * input: message m
 * output: 512 bit bytearray
 ```python
@@ -70,7 +84,8 @@ return SHA256(m)
 return hash256(m + 0) + hash256(m + 1)
 ```
 
-#### hashG<sub>1</sub>
+### hashG<sub>1</sub>
+Maps any string to a deterministic random point in G1.
 * input: message m
 * output: G<sub>1</sub> element
 ```python
@@ -83,7 +98,9 @@ p <- swEncode(t0) * swEncode(t1)
 # Map to the r-torsion by raising to cofactor power
 return p ^ h
 ```
-#### hashG<sub>2</sub>
+
+### hashG<sub>2</sub>
+Maps any string to a deterministic random point in G2.
 * input: message m
 * output: G<sub>2</sub> element
 ```python
@@ -104,16 +121,18 @@ x <- abs(x)
 return p ^ (x^2 + x - 1) - psi(p ^ (x + 1)) + psi(psi(p ^ 2))
 ```
 
-#### hashPks
+### hashPks
+Map a set of public keys into a list of m values.
 * input: G<sub>1</sub> elements pks, number of outputs m
 * output: n 256bit integers T
 ```python
-pkHash <- hash256(pk.serialize() for pk in pks)
+pkHash <- hash256(pk.serialize() for pk in sorted pks)
 return [(hash256(fourBytes(i) + pkHash) % n) for i in range(m)]
 ```
 
-### Methods
-#### keyGen
+## Methods
+### keyGen
+Map a set of public keys
 * input: random seed s
 * output: field element in Z<sub>q</sub>, G<sub>1</sub> element
 ```python
@@ -122,14 +141,16 @@ sk <- hmac256(s, b"BLS private key seed") mod n
 pk <- g1 ^ sk
 ```
 
-#### sign
+### sign
+Signs a message m with private key sk.
 * input: bytes m, Z<sub>q</sub> element sk
 * output: G<sub>2</sub> element σ
 ```python
 σ <- hashG2(m) ^ sk
 ```
 
-#### verify
+### verify
+Verifies that a signature is valid, for a collection of public keys, messages, and exponents (aggInfo).
 * input:
     * G<sub>2</sub> element σ
     * map((bytes m, G<sub>1</sub> pk) -> Z<sub>n</sub> exponent) aggInfo
@@ -147,7 +168,8 @@ for each distinct messsageHash m in aggInfo:
 return 1 == e(g1 ^ (q-1), σ) * prod e(pks[i], ms[i])
 ```
 
-#### aggregate
+### aggregate
+Aggregates multiple aggregate signatures into one signature. This also takes in an aggregationInfo object for each signature, and aggregates these into one. Simple or secure aggregation is used, depending on whether messages are all distinct or not.
 * input:
     * list of G<sub>2</sub> elements: signatures
     * list of map((bytes m, G<sub>1</sub> pk) -> Z<sub>n</sub> exponent) aggInfo
@@ -178,7 +200,8 @@ newAggInfo = mergeInfos(aggInfos)
 return (sigAgg, newAggInfo)
 ```
 
-#### divide
+### divide
+Divides one signature by a list of other signatures. This removes them from the dividend signature, so that verifying the resulting signature, does not verify any of the divisor signatures. This is useful for optimizing the verification speed of an aggregate signature.
 * input:
     * Divident signature: dividendSig
     * map((bytes m, G<sub>1</sub> pk) -> Z<sub>n</sub> exponent) dividendAggInfo
@@ -209,7 +232,7 @@ newAggInfo.remove((messageHashesToRemove[i], pubKeysToRemove[i] for i in range(l
 return (aggSig, newAggInfo)
 ```
 
-### Serialization
+## Serialization
 **private key (32 bytes):** Big endian integer.
 
 **pubkey (48 bytes):** 381 bit affine x coordinate, encoded into 48 big-endian bytes. Since we have 3 bits left over in the beginning, the first bit is set to 1 iff y coordinate is the lexicographically largest of the two valid ys. The public key fingerprint is the first 4 bytes of hash256(serialize(pubkey)).
@@ -217,7 +240,9 @@ return (aggSig, newAggInfo)
 **signature (96 bytes):** Two 381 bit integers (affine x coordinate), encoded into two 48 big-endian byte arrays. Since we have 3 bits left over in the beginning, the first bit is set to 1 iff the y coordinate is the lexicographically largest of the two valid ys. (The term with the i is compared first, i.e 3i + 1 > 2i + 7).
 
 
-### HD keys
+## HD keys
+HD (Hierarchical Deterministic) allow deriving many public and private keys from one seed, and even deriving public keys from other public keys.
+
 HD keys will follow Bitcoin's BIP32 specification, with the following differences:
 * The HMAC key to generate a master private key used is not "Bitcoin seed" it is "BLS HD seed".
 * The master secret key is generated mod n from the master seed,
@@ -227,8 +252,8 @@ since not all 32 byte sequences are valid BLS private keys
 * ID of a key is hash256(pk) instead of HASH160(pk)
 * Serialization of extended public key is 93 bytes, since BLS public keys are longer
 
-### Test vectors
-#### Signatures
+## Test vectors
+### Signatures
 * keygen([1,2,3,4,5])
     * sk1: 0x022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e
     * pk1 fingerprint: 0x26d53247
@@ -243,7 +268,7 @@ since not all 32 byte sequences are valid BLS private keys
 * verify(sig2, AggregationInfo(pk2, [7,8,9]))
     * true
 
-#### Aggregation
+### Aggregation
 * aggregate([sig1, sig2])
     * aggSig: 0x975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e
 * verify(aggSig2, mergeInfos(sig1.aggInfo, sig2.aggInfo))
@@ -274,7 +299,7 @@ since not all 32 byte sequences are valid BLS private keys
 * verify(sigFinal)
     * true
 
-#### Signature division
+### Signature division
 * divide(sigFinal, [sig2, sig5, sig6])
     * quotient: 0x8ebc8a73a2291e689ce51769ff87e517be6089fd0627b2ce3cd2f0ee1ce134b39c4da40928954175014e9bbe623d845d0bdba8bfd2a85af9507ddf145579480132b676f027381314d983a63842fcc7bf5c8c088461e3ebb04dcf86b431d6238f
 * verify(quotient)
@@ -293,7 +318,7 @@ since not all 32 byte sequences are valid BLS private keys
 * verify(quotient2)
     * true
 
-#### HD keys
+### HD keys
 * esk = ExtendedPrivateKey([1, 50, 6, 244, 24, 199, 1, 25])
 * esk.publicKeyFigerprint
     * 0xa4700b27

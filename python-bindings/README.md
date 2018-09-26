@@ -3,7 +3,7 @@ Install
 ```bash
 pip3 install blspy
 ```
-Cmake, a c++ compiler, and a recent version of pip3 are required.
+Cmake, a c++ compiler, and a recent version of pip3 (v18) are required.
 GMP(speed) and libsodium(secure memory alloc) are optional dependencies.
 
 To install from source, run the following, in the project root directory:
