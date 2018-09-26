@@ -117,10 +117,10 @@ void ep_sw_encode(ep_t p, fp_t t) {
 	fp_set_dig(p->z, 1);
 
 	fp_copy(p->x, x1);
-	ep_rhs(rhs, p->x);
+	ep_rhs(rhs, p);
 	int Xx1 = fp_srt(p->y, rhs) ? 1 : -1;
 	fp_copy(p->x, x2);
-	ep_rhs(rhs, p->x);
+	ep_rhs(rhs, p);
 	int Xx2 = fp_srt(p->y, rhs) ? 1 : -1;
 	int index = ((((Xx1 - 1) * Xx2) % 3) + 3) % 3;
 
@@ -131,7 +131,7 @@ void ep_sw_encode(ep_t p, fp_t t) {
 	} else if (index == 2) {
 		fp_copy(p->x, x3);
 	}
-	ep_rhs(rhs, p->x);
+	ep_rhs(rhs, p);
 	fp_srt(p->y, rhs);
 
 	p->norm = 1;

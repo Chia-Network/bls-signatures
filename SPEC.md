@@ -16,19 +16,17 @@ x = -0xd201000000010000
 q = 0x1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab
 
 # Elliptic curve, G1 elements are points on this curve, with coordinates in Fq, that have order r.
-E: y^2 = x^3 + 4        (G1 is over this curve)
+E: y^2 = x^3 + 4
 
 # Twist of E, G2 elements are points on this curve, with coordinates in Fq^2, that have order r.
-"E'": y^2 = x^3 + 4(i+1)   (G2 is over this curve)
+"E'": y^2 = x^3 + 4(i+1)
 
 # Generator for G1, consisting of x and y coordinates
-g = (0x17F1D3A73197D7942695638C4FA9AC0FC3688C4F9774B905A14E3A3F171BAC586C55E83FF97A1AEFFB3AF00ADB22C6BB)
-
+gx = (0x17F1D3A73197D7942695638C4FA9AC0FC3688C4F9774B905A14E3A3F171BAC586C55E83FF97A1AEFFB3AF00ADB22C6BB)
 gy = (0x08B3F481E3AAA0F1A09E30ED741D8AE4FCF5E095D5D00AF600DB18CB2C04B3EDD03CC744A2888AE40CAA232946C5E7E1)
 
 # Generator for G2, consisting of x and y coordinates
 g2x = (0x24aa2b2f08f0a91260805272dc51051c6e47ad4fa403b02b4510b647ae3d1770bac0326a805bbefd48056c8c121bdb8, 0x13e02b6052719f607dacd3a088274f65596bd0d09920b61ab5da61bbdc7f5049334cf11213945d57e5ac7d055d042b7e)
-
 g2y =
 (0xce5d527727d6e118cc9cdc6da2e351aadfd9baa8cbdd3a76d429a695160d12c923ac9cc3baca289e193548608b82801, 0x606c4a02ea734cc32acd2b02bc28b99cb3e287e85a763af267492ab572e99ab3f370d275cec1da1aaa9075ff05f79be)
 
