@@ -48,6 +48,11 @@ class BLSPrivateKey {
 
     BLSPublicKey GetPublicKey() const;
 
+    BLSPrivateKey AggregateInsecure(const BLSPrivateKey& r) const;
+    static BLSPrivateKey AggregatePrivKeysInsecure(std::vector<BLSPrivateKey> const &privateKeys);
+    static BLSPrivateKey AggregatePrivKeys(std::vector<BLSPrivateKey> const &privateKeys,
+                                           std::vector<BLSPublicKey> const &pubKeys);
+
     // Compare to different private key
     friend bool operator==(const BLSPrivateKey& a, const BLSPrivateKey& b);
     friend bool operator!=(const BLSPrivateKey& a, const BLSPrivateKey& b);

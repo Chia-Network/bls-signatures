@@ -13,6 +13,8 @@
 // limitations under the License.
 
 #include <string>
+#include <cstring>
+#include <algorithm>
 
 #include "bls.hpp"
 #include "blsutil.hpp"
@@ -89,6 +91,99 @@ BLSPublicKey BLSPrivateKey::GetPublicKey() const {
 
     const BLSPublicKey ret = BLSPublicKey::FromG1(q);
     BLSUtil::SecFree(*q);
+    return ret;
+}
+
+BLSPrivateKey BLSPrivateKey::AggregateInsecure(const BLSPrivateKey& r) const {
+    relic::bn_t order;
+    bn_new(order);
+    g1_get_ord(order);
+
+    BLSPrivateKey ret(*this);
+    relic::bn_add(*ret.keydata, *ret.keydata, *r.keydata);
+    relic::bn_mod_basic(*ret.keydata, *ret.keydata, order);
+    return ret;
+}
+
+BLSPrivateKey BLSPrivateKey::AggregatePrivKeysInsecure(std::vector<BLSPrivateKey> const& privateKeys) {
+    if (privateKeys.empty()) {
+        throw std::string("Number of private keys must be at least 1");
+    }
+
+    relic::bn_t order;
+    bn_new(order);
+    g1_get_ord(order);
+
+    BLSPrivateKey ret(privateKeys[0]);
+    for (size_t i = 1; i < privateKeys.size(); i++) {
+        relic::bn_add(*ret.keydata, *ret.keydata, *privateKeys[i].keydata);
+        relic::bn_mod_basic(*ret.keydata, *ret.keydata, order);
+    }
+    return ret;
+}
+
+BLSPrivateKey BLSPrivateKey::AggregatePrivKeys(std::vector<BLSPrivateKey> const& privateKeys,
+                                               std::vector<BLSPublicKey> const &pubKeys) {
+    if (pubKeys.size() != privateKeys.size()) {
+        throw std::string("Number of public keys must equal number of private keys");
+    }
+    if (privateKeys.empty()) {
+        throw std::string("Number of keys must be at least 1");
+    }
+
+    std::vector<uint8_t*> serPubKeys(pubKeys.size());
+    for (size_t i = 0; i < pubKeys.size(); i++) {
+        serPubKeys[i] = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
+        pubKeys[i].Serialize(serPubKeys[i]);
+    }
+
+    // Sort the public keys and private keys by public key
+    std::vector<size_t> keysSorted(privateKeys.size());
+    for (size_t i = 0; i < privateKeys.size(); i++) {
+        keysSorted[i] = i;
+    }
+
+    std::sort(keysSorted.begin(), keysSorted.end(), [&serPubKeys](size_t a, size_t b) {
+        return memcmp(serPubKeys[a], serPubKeys[b], BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
+    });
+
+    relic::bn_t order;
+    bn_new(order);
+    g2_get_ord(order);
+
+    // Use secure allocation to store temporary sk variables
+    BLSPrivateKey tmp, aggKey;
+    tmp.AllocateKeyData();
+    aggKey.AllocateKeyData();
+
+    std::vector<relic::bn_t> computedTs(keysSorted.size());
+    for (size_t i = 0; i < keysSorted.size(); i++) {
+        bn_new(computedTs[i]);
+    }
+    BLS::HashPubKeys(computedTs.data(), keysSorted.size(), serPubKeys, keysSorted);
+
+    for (size_t i = 0; i < keysSorted.size(); i++) {
+        bn_mul_comba(*tmp.keydata, *privateKeys[keysSorted[i]].GetValue(), computedTs[i]);
+        bn_add(*aggKey.keydata, *aggKey.keydata, *tmp.keydata);
+        bn_mod_basic(*aggKey.keydata, *aggKey.keydata, order);
+    }
+    for (auto& p : computedTs) {
+        bn_free(p);
+    }
+    for (auto p : serPubKeys) {
+        delete[] p;
+    }
+
+    uint8_t* privateKeyBytes =
+            BLSUtil::SecAlloc<uint8_t>(BLSPrivateKey::PRIVATE_KEY_SIZE);
+    bn_write_bin(privateKeyBytes,
+                 BLSPrivateKey::PRIVATE_KEY_SIZE,
+                 *aggKey.keydata);
+
+    BLSPrivateKey ret = BLSPrivateKey::FromBytes(privateKeyBytes);
+
+    BLSUtil::SecFree(privateKeyBytes);
+    BLS::CheckRelicErrors();
     return ret;
 }
 

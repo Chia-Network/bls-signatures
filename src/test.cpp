@@ -717,8 +717,8 @@ TEST_CASE("Signatures") {
 
         std::vector<BLSPrivateKey> const privateKeys = {sk1, sk2};
         std::vector<BLSPublicKey> const pubKeys = {pk1, pk2};
-        const BLSPrivateKey aggSk = BLS::AggregatePrivKeys(
-                privateKeys, pubKeys, true);
+        const BLSPrivateKey aggSk = BLSPrivateKey::AggregatePrivKeys(
+                privateKeys, pubKeys);
 
         BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
         BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
@@ -1204,8 +1204,8 @@ TEST_CASE("AggregationInfo") {
 
         // Create an aggregate private key, that can generate
         // aggregate signatures
-        const BLSPrivateKey aggSk = BLS::AggregatePrivKeys(
-                privateKeysList, pubKeysList, true);
+        const BLSPrivateKey aggSk = BLSPrivateKey::AggregatePrivKeys(
+                privateKeysList, pubKeysList);
 
         BLSSignature aggSig3 = aggSk.Sign(msg, sizeof(msg));
     }

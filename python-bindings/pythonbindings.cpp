@@ -74,6 +74,7 @@ PYBIND11_MODULE(blspy, m) {
         .def("get_public_key", [](const BLSPrivateKey &k) {
             return k.GetPublicKey();
         })
+        .def("aggregate_priv_keys", &BLSPrivateKey::AggregatePrivKeys)
         .def("sign", [](const BLSPrivateKey &k, const py::bytes &msg) {
             uint8_t* input = reinterpret_cast<uint8_t*>(&std::string(msg)[0]);
             return k.Sign(input, len(msg));
@@ -262,8 +263,7 @@ PYBIND11_MODULE(blspy, m) {
         })
         .def("init", &BLS::Init)
         .def("assert_initialized", &BLS::AssertInitialized)
-        .def("clean", &BLS::Clean)
-        .def("aggregate_priv_keys", &BLS::AggregatePrivKeys);
+        .def("clean", &BLS::Clean);
 
     py::class_<BLSUtil>(m, "BLSUtil")
         .def("hash256", [](const py::bytes &message) {
