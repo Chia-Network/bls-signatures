@@ -99,7 +99,7 @@ private:
  */
 class BLSSignature {
  public:
-    static const size_t SIGNATURE_SIZE = 96;
+    static const size_t SIGNATURE_SIZE = BLSInsecureSignature::SIGNATURE_SIZE;
 
     // Initializes from serialized byte array/
     static BLSSignature FromBytes(const uint8_t *data);
