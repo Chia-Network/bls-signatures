@@ -53,7 +53,7 @@ BLSPrivateKey BLSPrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
 }
 
 // Construct a private key from a bytearray.
-BLSPrivateKey BLSPrivateKey::FromBytes(const uint8_t* bytes) {
+BLSPrivateKey BLSPrivateKey::FromBytes(const uint8_t* bytes, bool modOrder) {
     BLS::AssertInitialized();
     BLSPrivateKey k;
     k.AllocateKeyData();
@@ -61,8 +61,12 @@ BLSPrivateKey BLSPrivateKey::FromBytes(const uint8_t* bytes) {
     relic::bn_t ord;
     bn_new(ord);
     g1_get_ord(ord);
-    if (bn_cmp(*k.keydata, ord) > 0) {
-        throw std::string("Key data too large, must be smaller than group order");
+    if (modOrder) {
+        bn_mod_basic(*k.keydata, *k.keydata, ord);
+    } else {
+        if (bn_cmp(*k.keydata, ord) > 0) {
+            throw std::string("Key data too large, must be smaller than group order");
+        }
     }
     return k;
 }

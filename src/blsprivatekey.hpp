@@ -37,7 +37,7 @@ class BLSPrivateKey {
             const uint8_t* seed, size_t seedLen);
 
     // Construct a private key from a bytearray.
-    static BLSPrivateKey FromBytes(const uint8_t* bytes);
+    static BLSPrivateKey FromBytes(const uint8_t* bytes, bool modOrder = false);
 
     // Construct a private key from another private key. Allocates memory in
     // secure heap, and copies keydata.
