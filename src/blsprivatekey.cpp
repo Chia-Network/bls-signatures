@@ -109,7 +109,7 @@ BLSPrivateKey BLSPrivateKey::AggregateInsecure(const BLSPrivateKey& r) const {
     return ret;
 }
 
-BLSPrivateKey BLSPrivateKey::AggregatePrivKeysInsecure(std::vector<BLSPrivateKey> const& privateKeys) {
+BLSPrivateKey BLSPrivateKey::AggregateInsecure(std::vector<BLSPrivateKey> const& privateKeys) {
     if (privateKeys.empty()) {
         throw std::string("Number of private keys must be at least 1");
     }
@@ -126,8 +126,8 @@ BLSPrivateKey BLSPrivateKey::AggregatePrivKeysInsecure(std::vector<BLSPrivateKey
     return ret;
 }
 
-BLSPrivateKey BLSPrivateKey::AggregatePrivKeys(std::vector<BLSPrivateKey> const& privateKeys,
-                                               std::vector<BLSPublicKey> const &pubKeys) {
+BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& privateKeys,
+                                       std::vector<BLSPublicKey> const& pubKeys) {
     if (pubKeys.size() != privateKeys.size()) {
         throw std::string("Number of public keys must equal number of private keys");
     }

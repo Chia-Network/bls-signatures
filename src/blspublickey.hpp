@@ -45,10 +45,10 @@ class BLSPublicKey {
 
     // Insecurely aggregate multiple public keys into one
     BLSPublicKey AggregateInsecure(const BLSPublicKey& r) const;
-    static BLSPublicKey AggregatePubKeysInsecure(std::vector<BLSPublicKey> const &pubKeys);
+    static BLSPublicKey AggregateInsecure(std::vector<BLSPublicKey> const& pubKeys);
 
     // Securely aggregate multiple public keys into one by exponentiating the keys with the pubKey hashes first
-    static BLSPublicKey AggregatePubKeys(std::vector<BLSPublicKey> const &pubKeys);
+    static BLSPublicKey Aggregate(std::vector<BLSPublicKey> const& pubKeys);
 
     // Exponentiate public key with n
     BLSPublicKey Mul(const relic::bn_t n) const;

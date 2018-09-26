@@ -74,7 +74,7 @@ PYBIND11_MODULE(blspy, m) {
         .def("get_public_key", [](const BLSPrivateKey &k) {
             return k.GetPublicKey();
         })
-        .def("aggregate_priv_keys", &BLSPrivateKey::AggregatePrivKeys)
+        .def("aggregate", &BLSPrivateKey::Aggregate)
         .def("sign", [](const BLSPrivateKey &k, const py::bytes &msg) {
             uint8_t* input = reinterpret_cast<uint8_t*>(&std::string(msg)[0]);
             return k.Sign(input, len(msg));
@@ -102,7 +102,7 @@ PYBIND11_MODULE(blspy, m) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
             return BLSPublicKey::FromBytes(input);
         })
-        .def("aggregate_pub_keys", &BLSPublicKey::AggregatePubKeys)
+        .def("aggregate", &BLSPublicKey::Aggregate)
         .def("get_fingerprint", &BLSPublicKey::GetFingerprint)
         .def("serialize", [](const BLSPublicKey &pk) {
             uint8_t* output = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
@@ -136,7 +136,7 @@ PYBIND11_MODULE(blspy, m) {
             return ret;
         })
         .def("verify", &BLSSignature::Verify)
-        .def("aggregate_sigs", &BLSSignature::AggregateSigs)
+        .def("aggregate", &BLSSignature::AggregateSigs)
         .def("divide_by", &BLSSignature::DivideBy)
         .def("set_aggregation_info", &BLSSignature::SetAggregationInfo)
         .def("get_aggregation_info", [](const BLSSignature &sig) {

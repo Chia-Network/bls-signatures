@@ -50,11 +50,11 @@ class BLSPrivateKey {
 
     // Insecurely aggregate multiple private keys into one
     BLSPrivateKey AggregateInsecure(const BLSPrivateKey& r) const;
-    static BLSPrivateKey AggregatePrivKeysInsecure(std::vector<BLSPrivateKey> const &privateKeys);
+    static BLSPrivateKey AggregateInsecure(std::vector<BLSPrivateKey> const& privateKeys);
 
     // Securely aggregate multiple private keys into one by exponentiating the keys with the pubKey hashes first
-    static BLSPrivateKey AggregatePrivKeys(std::vector<BLSPrivateKey> const &privateKeys,
-                                           std::vector<BLSPublicKey> const &pubKeys);
+    static BLSPrivateKey Aggregate(std::vector<BLSPrivateKey> const& privateKeys,
+                                   std::vector<BLSPublicKey> const& pubKeys);
 
     // Compare to different private key
     friend bool operator==(const BLSPrivateKey& a, const BLSPrivateKey& b);

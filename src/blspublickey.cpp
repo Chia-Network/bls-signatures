@@ -58,7 +58,7 @@ BLSPublicKey BLSPublicKey::AggregateInsecure(const BLSPublicKey& r) const {
     return ret;
 }
 
-BLSPublicKey BLSPublicKey::AggregatePubKeysInsecure(std::vector<BLSPublicKey> const& pubKeys) {
+BLSPublicKey BLSPublicKey::AggregateInsecure(std::vector<BLSPublicKey> const& pubKeys) {
     if (pubKeys.empty()) {
         throw std::string("Number of public keys must be at least 1");
     }
@@ -70,7 +70,7 @@ BLSPublicKey BLSPublicKey::AggregatePubKeysInsecure(std::vector<BLSPublicKey> co
     return ret;
 }
 
-BLSPublicKey BLSPublicKey::AggregatePubKeys(std::vector<BLSPublicKey> const& pubKeys) {
+BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
     if (pubKeys.size() < 1) {
         throw std::string("Number of public keys must be at least 1");
     }
