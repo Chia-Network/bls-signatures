@@ -451,7 +451,7 @@ TEST_CASE("Signatures") {
         std::vector<BLSPublicKey> const pubKeys = {pk1, pk2, pk3};
         BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
-        const BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
+        const BLSPublicKey aggPubKey = BLSPublicKey::AggregatePubKeys(pubKeys);
         aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
                 aggPubKey, message1, sizeof(message1)));
         REQUIRE(aggSig.Verify());
@@ -577,7 +577,7 @@ TEST_CASE("Signatures") {
         }
 
         BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
-        const BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pks, true);
+        const BLSPublicKey aggPubKey = BLSPublicKey::AggregatePubKeys(pks);
         aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
                 aggPubKey, message1, sizeof(message1)));
         REQUIRE(aggSig.Verify());
@@ -731,7 +731,7 @@ TEST_CASE("Signatures") {
         BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
         ASSERT(aggSig == aggSig2);
 
-        const BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
+        const BLSPublicKey aggPubKey = BLSPublicKey::AggregatePubKeys(pubKeys);
         REQUIRE(aggSig.Verify());
         REQUIRE(aggSig2.Verify());
     }
@@ -1150,7 +1150,7 @@ TEST_CASE("AggregationInfo") {
         // The signature can be verified the same as a single signature,
         // using this public key.
         std::vector<BLSPublicKey> pubKeys = {pk1, pk2};
-        BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
+        BLSPublicKey aggPubKey = BLSPublicKey::AggregatePubKeys(pubKeys);
         // Generate one more key
         seed[0] = 3;
         BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed, sizeof(seed));

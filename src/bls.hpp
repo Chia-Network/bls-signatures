@@ -55,8 +55,6 @@ class BLS {
 
     // Creates a combined public/private key that can be used to create
     // or verify aggregate signatures on the same message
-    static BLSPublicKey AggregatePubKeys(std::vector<BLSPublicKey> const &pubKeys,
-            bool secure);
     static BLSPrivateKey AggregatePrivKeys(
             std::vector<BLSPrivateKey> const &privateKeys,
             std::vector<BLSPublicKey> const &pubKeys,

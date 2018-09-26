@@ -39,7 +39,7 @@ def test1():
     sig2 = sk2.sign(msg)
 
     agg_sig = BLSSignature.aggregate_sigs([sig1, sig2])
-    agg_pubkey = BLS.aggregate_pub_keys([pk1, pk2], True)
+    agg_pubkey = BLSPublicKey.aggregate_pub_keys([pk1, pk2])
 
     agg_sig.set_aggregation_info(AggregationInfo.from_msg(agg_pubkey, msg))
     assert(BLS.verify(agg_sig))
@@ -154,7 +154,7 @@ def test_vectors():
     assert(sig2.serialize() == bytes.fromhex("975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e"))
 
     agg_sig = BLSSignature.aggregate_sigs([sig1, sig2])
-    agg_pk = BLS.aggregate_pub_keys([pk1, pk2], True)
+    agg_pk = BLSPublicKey.aggregate_pub_keys([pk1, pk2])
     agg_sk = BLS.aggregate_priv_keys([sk1, sk2], [pk1, pk2], True)
     assert(agg_sig.serialize() == bytes.fromhex("0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658"))
     assert(agg_sk.sign(bytes([7, 8, 9])).serialize() == agg_sig.serialize())

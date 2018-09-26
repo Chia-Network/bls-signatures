@@ -89,7 +89,7 @@ void benchAggregateSigsSecure() {
                  start, numIters);
 
     auto start2 = startStopwatch();
-    const BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pks, true);
+    const BLSPublicKey aggPubKey = BLSPublicKey::AggregatePubKeys(pks);
     endStopwatch("Generate aggregate pk, same message", start2, numIters);
 
     auto start3 = startStopwatch();

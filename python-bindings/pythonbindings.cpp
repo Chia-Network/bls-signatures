@@ -101,6 +101,7 @@ PYBIND11_MODULE(blspy, m) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
             return BLSPublicKey::FromBytes(input);
         })
+        .def("aggregate_pub_keys", &BLSPublicKey::AggregatePubKeys)
         .def("get_fingerprint", &BLSPublicKey::GetFingerprint)
         .def("serialize", [](const BLSPublicKey &pk) {
             uint8_t* output = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
@@ -262,7 +263,6 @@ PYBIND11_MODULE(blspy, m) {
         .def("init", &BLS::Init)
         .def("assert_initialized", &BLS::AssertInitialized)
         .def("clean", &BLS::Clean)
-        .def("aggregate_pub_keys", &BLS::AggregatePubKeys)
         .def("aggregate_priv_keys", &BLS::AggregatePrivKeys);
 
     py::class_<BLSUtil>(m, "BLSUtil")

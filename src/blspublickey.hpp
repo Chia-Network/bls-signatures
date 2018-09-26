@@ -40,6 +40,12 @@ class BLSPublicKey {
     // Construct a public key from another public key.
     BLSPublicKey(const BLSPublicKey &pubKey);
 
+    BLSPublicKey AggregateInsecure(const BLSPublicKey& r) const;
+    static BLSPublicKey AggregatePubKeysInsecure(std::vector<BLSPublicKey> const &pubKeys);
+    static BLSPublicKey AggregatePubKeys(std::vector<BLSPublicKey> const &pubKeys);
+
+    BLSPublicKey Mul(const relic::bn_t n) const;
+
     // Comparator implementation.
     friend bool operator==(BLSPublicKey const &a,  BLSPublicKey const &b);
     friend bool operator!=(BLSPublicKey const &a,  BLSPublicKey const &b);
@@ -54,7 +60,7 @@ class BLSPublicKey {
 
  private:
     // Don't allow public construction, force static methods
-    BLSPublicKey() {}
+    BLSPublicKey();
 
     static void CompressPoint(uint8_t* result, const relic::g1_t* point);
 
