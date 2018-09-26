@@ -63,6 +63,8 @@ class BLSPrivateKey {
     std::vector<uint8_t> Serialize() const;
 
     // Sign a message
+    BLSInsecureSignature SignInsecure(const uint8_t *msg, size_t len) const;
+    BLSInsecureSignature SignInsecurePrehashed(const uint8_t *hash) const;
     BLSSignature Sign(const uint8_t *msg, size_t len) const;
     BLSSignature SignPrehashed(const uint8_t *hash) const;
 

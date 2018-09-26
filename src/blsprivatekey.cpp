@@ -220,6 +220,23 @@ std::vector<uint8_t> BLSPrivateKey::Serialize() const {
     return data;
 }
 
+BLSInsecureSignature BLSPrivateKey::SignInsecure(const uint8_t *msg, size_t len) const {
+    BLS::AssertInitialized();
+    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+    BLSUtil::Hash256(messageHash, msg, len);
+    return SignInsecurePrehashed(messageHash);
+}
+
+BLSInsecureSignature BLSPrivateKey::SignInsecurePrehashed(const uint8_t *messageHash) const {
+    BLS::AssertInitialized();
+    relic::g2_t sig, point;
+
+    g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN, 0);
+    g2_mul(sig, point, *keydata);
+
+    return BLSInsecureSignature::FromG2(&sig);
+}
+
 BLSSignature BLSPrivateKey::Sign(const uint8_t *msg, size_t len) const {
     BLS::AssertInitialized();
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
@@ -229,12 +246,9 @@ BLSSignature BLSPrivateKey::Sign(const uint8_t *msg, size_t len) const {
 
 BLSSignature BLSPrivateKey::SignPrehashed(const uint8_t *messageHash) const {
     BLS::AssertInitialized();
-    relic::g2_t sig, point;
 
-    g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN, 0);
-    g2_mul(sig, point, *keydata);
-
-    BLSSignature ret = BLSSignature::FromG2(&sig);
+    BLSInsecureSignature insecureSig = SignInsecurePrehashed(messageHash);
+    BLSSignature ret = BLSSignature::FromInsecureSig(insecureSig);
 
     ret.SetAggregationInfo(AggregationInfo::FromMsgHash(GetPublicKey(),
             messageHash));
