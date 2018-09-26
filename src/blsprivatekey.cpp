@@ -160,23 +160,24 @@ BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& private
     tmp.AllocateKeyData();
     aggKey.AllocateKeyData();
 
-    std::vector<relic::bn_t> computedTs(keysSorted.size());
+    relic::bn_t *computedTs = new relic::bn_t[keysSorted.size()];
     for (size_t i = 0; i < keysSorted.size(); i++) {
         bn_new(computedTs[i]);
     }
-    BLS::HashPubKeys(computedTs.data(), keysSorted.size(), serPubKeys, keysSorted);
+    BLS::HashPubKeys(computedTs, keysSorted.size(), serPubKeys, keysSorted);
 
     for (size_t i = 0; i < keysSorted.size(); i++) {
         bn_mul_comba(*tmp.keydata, *privateKeys[keysSorted[i]].keydata, computedTs[i]);
         bn_add(*aggKey.keydata, *aggKey.keydata, *tmp.keydata);
         bn_mod_basic(*aggKey.keydata, *aggKey.keydata, order);
     }
-    for (auto& p : computedTs) {
+    for (size_t i = 0; i < keysSorted.size(); i++) {
         bn_free(p);
     }
     for (auto p : serPubKeys) {
         delete[] p;
     }
+    delete[] computedTs;
 
     uint8_t* privateKeyBytes =
             BLSUtil::SecAlloc<uint8_t>(BLSPrivateKey::PRIVATE_KEY_SIZE);

@@ -24,7 +24,7 @@ def test1():
     sig = BLSSignature.from_bytes(sig_bytes)
 
     sig.set_aggregation_info(AggregationInfo.from_msg(pk, msg))
-    ok = BLS.verify(sig)
+    ok = sig.verify()
     assert(ok)
 
     seed = bytes([1]) + seed[1:]
@@ -42,7 +42,7 @@ def test1():
     agg_pubkey = BLSPublicKey.aggregate([pk1, pk2])
 
     agg_sig.set_aggregation_info(AggregationInfo.from_msg(agg_pubkey, msg))
-    assert(BLS.verify(agg_sig))
+    assert(agg_sig.verify())
 
     seed = bytes([3]) + seed[1:]
     sk3 = BLSPrivateKey.from_seed(seed)
@@ -65,7 +65,7 @@ def test1():
     a_final = AggregationInfo.merge_infos([a1a2, a3])
     print(a_final)
     agg_sig_final.set_aggregation_info(a_final)
-    ok = BLS.verify(agg_sig_final)
+    ok = agg_sig_final.verify()
 
     ok = agg_sig_l.verify()
     agg_sig_final = agg_sig_final.divide_by([agg_sig_l])

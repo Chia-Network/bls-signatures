@@ -80,8 +80,8 @@ bool BLSInsecureSignature::VerifyInsecureAggregated(const std::vector<uint8_t*>&
         throw std::string("hashes and pubKeys vectors must be of same size and non-empty");
     }
 
-    std::vector<relic::g1_t> pubKeysNative(hashes.size() + 1);
-    std::vector<relic::g2_t> mappedHashes(hashes.size() + 1);
+    relic::g1_t *pubKeysNative = new relic::g1_t[hashes.size() + 1];
+    relic::g2_t *mappedHashes = new relic::g2_t[hashes.size() + 1];
 
     relic::g2_copy(mappedHashes[0], *(relic::g2_t*)&sig);
     relic::g1_get_gen(pubKeysNative[0]);
@@ -96,7 +96,12 @@ bool BLSInsecureSignature::VerifyInsecureAggregated(const std::vector<uint8_t*>&
         g1_copy(pubKeysNative[i + 1], pubKeys[i].q);
     }
 
-    return VerifyNative(pubKeysNative.data(), mappedHashes.data(), pubKeysNative.size());
+    bool result = VerifyNative(pubKeysNative, mappedHashes, hashes.size() + 1);
+
+    delete[] pubKeysNative;
+    delete[] mappedHashes;
+
+    return result;
 }
 
 bool BLSInsecureSignature::VerifyNative(

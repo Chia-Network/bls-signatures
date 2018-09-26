@@ -91,11 +91,11 @@ BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
         return memcmp(serPubKeys[a], serPubKeys[b], BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
     });
 
-    std::vector<relic::bn_t> computedTs(pubKeysSorted.size());
+    relic::bn_t *computedTs = new relic::bn_t[pubKeysSorted.size()];
     for (size_t i = 0; i < pubKeysSorted.size(); i++) {
         bn_new(computedTs[i]);
     }
-    BLS::HashPubKeys(computedTs.data(), pubKeysSorted.size(), serPubKeys, pubKeysSorted);
+    BLS::HashPubKeys(computedTs, pubKeysSorted.size(), serPubKeys, pubKeysSorted);
 
     // Raise each key to power of each t for
     // keyComp, and multiply all together into aggKey
@@ -106,12 +106,13 @@ BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
         aggKey = aggKey.AggregateInsecure(pk.Mul(computedTs[i]));
     }
 
-    for (auto& p : computedTs) {
-        bn_free(p);
+    for (size_t i = 0; i < pubKeysSorted.size(); i++) {
+        bn_free(computedTs[i]);
     }
     for (auto p : serPubKeys) {
         delete[] p;
     }
+    delete[] computedTs;
 
     BLS::CheckRelicErrors();
     return aggKey;
