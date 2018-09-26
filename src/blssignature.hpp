@@ -28,6 +28,56 @@
 #include "aggregationinfo.hpp"
 
 /**
+ * An insecure BLS signature.
+ * A BLSSignature is a group element of g2
+ * Aggregation of these signatures is not secure on it's own
+ */
+class BLSInsecureSignature {
+  friend class BLSSignature;
+  public:
+    static const size_t SIGNATURE_SIZE = 96;
+
+    // Initializes from serialized byte array/
+    static BLSInsecureSignature FromBytes(const uint8_t *data);
+
+    // Initializes from native relic g2 element/
+    static BLSInsecureSignature FromG2(const relic::g2_t* element);
+
+    // Copy constructor. Deep copies contents.
+    BLSInsecureSignature(const BLSInsecureSignature &signature);
+
+    // Gets the native relic point for this signature.
+    void GetPoint(relic::g2_t output) const;
+
+    // Insecurely aggregates signatures
+    BLSInsecureSignature Aggregate(const BLSInsecureSignature& r) const;
+    static BLSInsecureSignature Aggregate(const std::vector<BLSInsecureSignature>& sigs);
+
+    // Insecurely divides signatures
+    BLSInsecureSignature DivideBy(const BLSInsecureSignature& r) const;
+
+    // Serializes ONLY the 96 byte public key. It does not serialize
+    // the aggregation info.
+    void Serialize(uint8_t* buffer) const;
+    std::vector<uint8_t> Serialize() const;
+
+    friend bool operator==(BLSInsecureSignature const &a, BLSInsecureSignature const &b);
+    friend bool operator!=(BLSInsecureSignature const &a, BLSInsecureSignature const &b);
+    friend std::ostream &operator<<(std::ostream &os, BLSInsecureSignature const &s);
+    BLSInsecureSignature& operator=(const BLSInsecureSignature& rhs);
+
+
+private:
+    // Prevent public construction, force static method
+    BLSInsecureSignature();
+
+    static void CompressPoint(uint8_t* result, const relic::g2_t* point);
+
+    // Signature group element
+    relic::g2_t sig;
+};
+
+/**
  * An encapsulated signature.
  * A BLSSignature is composed of two things:
  *     1. 96 byte group element of g2
@@ -45,21 +95,28 @@ class BLSSignature {
     static BLSSignature FromBytes(const uint8_t *data, const AggregationInfo &info);
 
     // Initializes from native relic g2 element/
-    static BLSSignature FromG2(relic::g2_t* element);
+    static BLSSignature FromG2(const relic::g2_t* element);
 
     // Initializes from native relic g2 element with AggregationInfo/
-    static BLSSignature FromG2(relic::g2_t* element, const AggregationInfo &info);
+    static BLSSignature FromG2(const relic::g2_t* element, const AggregationInfo &info);
+
+    // Initializes from native relic g2 element/
+    static BLSSignature FromInsecureSig(const BLSInsecureSignature& sig);
+
+    // Initializes from native relic g2 element with AggregationInfo/
+    static BLSSignature FromInsecureSig(const BLSInsecureSignature& sig, const AggregationInfo &info);
 
     // Copy constructor. Deep copies contents.
     BLSSignature(const BLSSignature &signature);
+
+    // Gets the native relic point for this signature.
+    // TODO remove in next commits
+    void GetPoint(relic::g2_t output) const;
 
     // Divides the aggregate signature (this) by a list of signatures.
     // These divisors can be single or aggregate signatures, but all
     // msg/pk pairs in these signatures must be distinct and unique.
     BLSSignature DivideBy(std::vector<BLSSignature> const &divisorSigs) const;
-
-    // Gets the native relic point for this signature.
-    void GetPoint(relic::g2_t output) const;
 
     // Gets the aggregation info on this signature.
     const AggregationInfo* GetAggregationInfo() const;
@@ -77,16 +134,13 @@ class BLSSignature {
     friend bool operator==(BLSSignature const &a, BLSSignature const &b);
     friend bool operator!=(BLSSignature const &a, BLSSignature const &b);
     friend std::ostream &operator<<(std::ostream &os, BLSSignature const &s);
-    BLSSignature& operator=(const BLSSignature& rhs);
 
  private:
     // Prevent public construction, force static method
     BLSSignature() {}
 
-    static void CompressPoint(uint8_t* result, const relic::g2_t* point);
-
-    // Signature group element
-    relic::g2_t sig;
+    // internal signature
+    BLSInsecureSignature sig;
 
     // Optional info about how this was aggregated
     AggregationInfo aggregationInfo;

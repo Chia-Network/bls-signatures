@@ -21,9 +21,9 @@ using std::string;
 using relic::bn_t;
 using relic::fp_t;
 
-BLSSignature BLSSignature::FromBytes(const uint8_t *data) {
+BLSInsecureSignature BLSInsecureSignature::FromBytes(const uint8_t *data) {
     BLS::AssertInitialized();
-    BLSSignature sigObj = BLSSignature();
+    BLSInsecureSignature sigObj = BLSInsecureSignature();
     uint8_t uncompressed[SIGNATURE_SIZE + 1];
     std::memcpy(uncompressed + 1, data, SIGNATURE_SIZE);
     if (data[0] & 0x80) {
@@ -36,35 +36,134 @@ BLSSignature BLSSignature::FromBytes(const uint8_t *data) {
     return sigObj;
 }
 
-BLSSignature BLSSignature::FromBytes(const uint8_t *data,
-                                     const AggregationInfo &info) {
+BLSInsecureSignature BLSInsecureSignature::FromG2(const relic::g2_t* element) {
+    BLS::AssertInitialized();
+    BLSInsecureSignature sigObj = BLSInsecureSignature();
+    relic::g2_copy(sigObj.sig, *(relic::g2_t*)element);
+    return sigObj;
+}
+
+BLSInsecureSignature::BLSInsecureSignature() {
+    BLS::AssertInitialized();
+    g2_set_infty(sig);
+}
+
+BLSInsecureSignature::BLSInsecureSignature(const BLSInsecureSignature &signature) {
+    BLS::AssertInitialized();
+    g2_copy(sig, *(relic::g2_t*)&signature.sig);
+}
+
+void BLSInsecureSignature::GetPoint(relic::ep2_st* output) const {
+    *output = *sig;
+}
+
+BLSInsecureSignature BLSInsecureSignature::Aggregate(const BLSInsecureSignature& r) const {
+    BLSInsecureSignature result(*this);
+    g2_add(result.sig, *(relic::g2_t*)&result.sig, *(relic::g2_t*)&r.sig);
+    return result;
+}
+
+BLSInsecureSignature BLSInsecureSignature::Aggregate(const std::vector<BLSInsecureSignature>& sigs) {
+    if (sigs.empty()) {
+        throw std::string("sigs must not be empty");
+    }
+    BLSInsecureSignature result = sigs[0];
+    for (size_t i = 1; i < sigs.size(); i++) {
+        g2_add(result.sig, result.sig, *(relic::g2_t*)&sigs[i].sig);
+    }
+    return result;
+}
+
+BLSInsecureSignature BLSInsecureSignature::DivideBy(const BLSInsecureSignature& r) const {
+    BLSInsecureSignature result(*this);
+    g2_sub(result.sig, *(relic::g2_t*)&result.sig, *(relic::g2_t*)&r.sig);
+    return result;
+}
+
+void BLSInsecureSignature::Serialize(uint8_t* buffer) const {
+    BLS::AssertInitialized();
+    CompressPoint(buffer, &sig);
+}
+
+std::vector<uint8_t> BLSInsecureSignature::Serialize() const {
+    std::vector<uint8_t> data(SIGNATURE_SIZE);
+    Serialize(data.data());
+    return data;
+}
+
+bool operator==(BLSInsecureSignature const &a, BLSInsecureSignature const &b) {
+    BLS::AssertInitialized();
+    return g2_cmp(*(relic::g2_t*)&a.sig, *(relic::g2_t*)b.sig) == CMP_EQ;
+}
+
+bool operator!=(BLSInsecureSignature const &a, BLSInsecureSignature const &b) {
+    return !(a == b);
+}
+
+std::ostream &operator<<(std::ostream &os, BLSInsecureSignature const &s) {
+    BLS::AssertInitialized();
+    uint8_t data[BLSInsecureSignature::SIGNATURE_SIZE];
+    s.Serialize(data);
+    return os << BLSUtil::HexStr(data, BLSInsecureSignature::SIGNATURE_SIZE);
+}
+
+BLSInsecureSignature& BLSInsecureSignature::operator=(const BLSInsecureSignature &rhs) {
+    BLS::AssertInitialized();
+    relic::g2_copy(sig, *(relic::g2_t*)&rhs.sig);
+    return *this;
+}
+
+void BLSInsecureSignature::CompressPoint(uint8_t* result, const relic::g2_t* point) {
+    uint8_t buffer[BLSInsecureSignature::SIGNATURE_SIZE + 1];
+    g2_write_bin(buffer, BLSInsecureSignature::SIGNATURE_SIZE + 1, *(relic::g2_t*)point, 1);
+
+    if (buffer[0] == 0x03) {
+        buffer[1] |= 0x80;
+    }
+    std::memcpy(result, buffer + 1, SIGNATURE_SIZE);
+}
+
+///
+
+BLSSignature BLSSignature::FromBytes(const uint8_t* data) {
+    BLSSignature result;
+    result.sig = BLSInsecureSignature::FromBytes(data);
+    return result;
+}
+
+BLSSignature BLSSignature::FromBytes(const uint8_t *data, const AggregationInfo &info) {
     BLSSignature ret = FromBytes(data);
     ret.SetAggregationInfo(info);
     return ret;
 }
 
-BLSSignature BLSSignature::FromG2(relic::g2_t* element) {
-    BLS::AssertInitialized();
-    BLSSignature sigObj = BLSSignature();
-    relic::g2_copy(sigObj.sig, *element);
-    return sigObj;
+BLSSignature BLSSignature::FromG2(const relic::g2_t* element) {
+    BLSSignature result;
+    result.sig = BLSInsecureSignature::FromG2(element);
+    return result;
 }
 
-BLSSignature BLSSignature::FromG2(relic::g2_t* element, const AggregationInfo& info) {
+BLSSignature BLSSignature::FromG2(const relic::g2_t* element, const AggregationInfo& info) {
     BLSSignature ret = FromG2(element);
     ret.SetAggregationInfo(info);
     return ret;
 }
 
-BLSSignature::BLSSignature(const BLSSignature &signature) {
-    BLS::AssertInitialized();
-    g2_copy(sig, *(relic::g2_t*)&signature.sig);
-    aggregationInfo = signature.aggregationInfo;
+BLSSignature BLSSignature::FromInsecureSig(const BLSInsecureSignature& sig) {
+    return FromG2(&sig.sig);
 }
 
-void BLSSignature::GetPoint(relic::g2_t output) const {
-    BLS::AssertInitialized();
-    *output = *sig;
+BLSSignature BLSSignature::FromInsecureSig(const BLSInsecureSignature& sig, const AggregationInfo& info) {
+    return FromG2(&sig.sig, info);
+}
+
+BLSSignature::BLSSignature(const BLSSignature &_signature)
+    : sig(_signature.sig),
+      aggregationInfo(_signature.aggregationInfo) {
+}
+
+void BLSSignature::GetPoint(relic::ep2_st* output) const {
+    sig.GetPoint(output);
 }
 
 const AggregationInfo* BLSSignature::GetAggregationInfo() const {
@@ -74,6 +173,30 @@ const AggregationInfo* BLSSignature::GetAggregationInfo() const {
 void BLSSignature::SetAggregationInfo(
         const AggregationInfo &newAggregationInfo) {
     aggregationInfo = newAggregationInfo;
+}
+
+void BLSSignature::Serialize(uint8_t* buffer) const {
+    sig.Serialize(buffer);
+}
+
+std::vector<uint8_t> BLSSignature::Serialize() const {
+    return sig.Serialize();
+}
+
+bool operator==(BLSSignature const &a, BLSSignature const &b) {
+    BLS::AssertInitialized();
+    return a.sig == b.sig;
+}
+
+bool operator!=(BLSSignature const &a, BLSSignature const &b) {
+    return !(a == b);
+}
+
+std::ostream &operator<<(std::ostream &os, BLSSignature const &s) {
+    BLS::AssertInitialized();
+    uint8_t data[BLSInsecureSignature::SIGNATURE_SIZE];
+    s.Serialize(data);
+    return os << BLSUtil::HexStr(data, BLSInsecureSignature::SIGNATURE_SIZE);
 }
 
 BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs) const {
@@ -143,46 +266,3 @@ BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs
     return result;
 }
 
-void BLSSignature::Serialize(uint8_t* buffer) const {
-    BLS::AssertInitialized();
-    CompressPoint(buffer, &sig);
-}
-
-std::vector<uint8_t> BLSSignature::Serialize() const {
-    std::vector<uint8_t> data(SIGNATURE_SIZE);
-    Serialize(data.data());
-    return data;
-}
-
-bool operator==(BLSSignature const &a, BLSSignature const &b) {
-    BLS::AssertInitialized();
-    return g2_cmp(*(relic::g2_t*)&a.sig, *(relic::g2_t*)b.sig) == CMP_EQ;
-}
-
-bool operator!=(BLSSignature const &a, BLSSignature const &b) {
-    return !(a == b);
-}
-
-std::ostream &operator<<(std::ostream &os, BLSSignature const &s) {
-    BLS::AssertInitialized();
-    uint8_t data[BLSSignature::SIGNATURE_SIZE];
-    s.Serialize(data);
-    return os << BLSUtil::HexStr(data, BLSSignature::SIGNATURE_SIZE);
-}
-
-BLSSignature& BLSSignature::operator=(const BLSSignature &rhs) {
-    BLS::AssertInitialized();
-    relic::g2_copy(sig, *(relic::g2_t*)&rhs.sig);
-    aggregationInfo = rhs.aggregationInfo;
-    return *this;
-}
-
-void BLSSignature::CompressPoint(uint8_t* result, const relic::g2_t* point) {
-    uint8_t buffer[BLSSignature::SIGNATURE_SIZE + 1];
-    g2_write_bin(buffer, BLSSignature::SIGNATURE_SIZE + 1, *(relic::g2_t*)point, 1);
-
-    if (buffer[0] == 0x03) {
-        buffer[1] |= 0x80;
-    }
-    std::memcpy(result, buffer + 1, SIGNATURE_SIZE);
-}
