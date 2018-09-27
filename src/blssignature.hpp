@@ -52,7 +52,6 @@ class BLSInsecureSignature {
     bool VerifyInsecureAggregated(const std::vector<uint8_t*>& hashes, const std::vector<BLSPublicKey>& pubKeys) const;
 
     // Insecurely aggregates signatures
-    BLSInsecureSignature Aggregate(const BLSInsecureSignature& r) const;
     static BLSInsecureSignature Aggregate(const std::vector<BLSInsecureSignature>& sigs);
 
     // Insecurely divides signatures

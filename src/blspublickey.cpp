@@ -52,12 +52,6 @@ BLSPublicKey::BLSPublicKey(const BLSPublicKey &pubKey) {
     g1_copy(q, pubKey.q);
 }
 
-BLSPublicKey BLSPublicKey::AggregateInsecure(const BLSPublicKey& r) const {
-    BLSPublicKey ret;
-    g1_add(ret.q, q, r.q);
-    return ret;
-}
-
 BLSPublicKey BLSPublicKey::AggregateInsecure(std::vector<BLSPublicKey> const& pubKeys) {
     if (pubKeys.empty()) {
         throw std::string("Number of public keys must be at least 1");
@@ -97,14 +91,14 @@ BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
     }
     BLS::HashPubKeys(computedTs, pubKeysSorted.size(), serPubKeys, pubKeysSorted);
 
-    // Raise each key to power of each t for
-    // keyComp, and multiply all together into aggKey
-    BLSPublicKey aggKey;
-
+    // Raise all keys to power of the corresponding t's and aggregate the results into aggKey
+    std::vector<BLSPublicKey> expKeys;
+    expKeys.reserve(pubKeysSorted.size());
     for (size_t i = 0; i < pubKeysSorted.size(); i++) {
         const BLSPublicKey& pk = pubKeys[pubKeysSorted[i]];
-        aggKey = aggKey.AggregateInsecure(pk.Mul(computedTs[i]));
+        expKeys.emplace_back(pk.Mul(computedTs[i]));
     }
+    BLSPublicKey aggKey = BLSPublicKey::AggregateInsecure(expKeys);
 
     for (size_t i = 0; i < pubKeysSorted.size(); i++) {
         bn_free(computedTs[i]);

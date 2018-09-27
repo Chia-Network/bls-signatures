@@ -118,7 +118,7 @@ ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
     BLSPrivateKey newSk = BLSPrivateKey::FromBytes(ILeft, true);
-    newSk = newSk.AggregateInsecure(sk);
+    newSk = BLSPrivateKey::AggregateInsecure({sk, newSk});
 
     ExtendedPrivateKey esk(version, depth + 1,
                            sk.GetPublicKey().GetFingerprint(), i,

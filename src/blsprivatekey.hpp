@@ -49,7 +49,6 @@ class BLSPrivateKey {
     BLSPublicKey GetPublicKey() const;
 
     // Insecurely aggregate multiple private keys into one
-    BLSPrivateKey AggregateInsecure(const BLSPrivateKey& r) const;
     static BLSPrivateKey AggregateInsecure(std::vector<BLSPrivateKey> const& privateKeys);
 
     // Securely aggregate multiple private keys into one by exponentiating the keys with the pubKey hashes first

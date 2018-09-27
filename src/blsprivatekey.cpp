@@ -98,17 +98,6 @@ BLSPublicKey BLSPrivateKey::GetPublicKey() const {
     return ret;
 }
 
-BLSPrivateKey BLSPrivateKey::AggregateInsecure(const BLSPrivateKey& r) const {
-    relic::bn_t order;
-    bn_new(order);
-    g1_get_ord(order);
-
-    BLSPrivateKey ret(*this);
-    relic::bn_add(*ret.keydata, *ret.keydata, *r.keydata);
-    relic::bn_mod_basic(*ret.keydata, *ret.keydata, order);
-    return ret;
-}
-
 BLSPrivateKey BLSPrivateKey::AggregateInsecure(std::vector<BLSPrivateKey> const& privateKeys) {
     if (privateKeys.empty()) {
         throw std::string("Number of private keys must be at least 1");

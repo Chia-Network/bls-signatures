@@ -128,12 +128,6 @@ bool BLSInsecureSignature::VerifyNative(
     return true;
 }
 
-BLSInsecureSignature BLSInsecureSignature::Aggregate(const BLSInsecureSignature& r) const {
-    BLSInsecureSignature result(*this);
-    g2_add(result.sig, *(relic::g2_t*)&result.sig, *(relic::g2_t*)&r.sig);
-    return result;
-}
-
 BLSInsecureSignature BLSInsecureSignature::Aggregate(const std::vector<BLSInsecureSignature>& sigs) {
     if (sigs.empty()) {
         throw std::string("sigs must not be empty");
@@ -340,7 +334,7 @@ bool BLSSignature::Verify() const {
                 }
                 return false;
             }
-            prod = prod.AggregateInsecure(pk.Mul(exponent));
+            prod = BLSPublicKey::AggregateInsecure({prod, pk.Mul(exponent)});
         }
         finalPubKeys.push_back(prod);
         finalMessageHashes.push_back(kv.first);
@@ -435,15 +429,16 @@ BLSSignature BLSSignature::AggregateSigsSecure(
     }
     BLS::HashPubKeys(computedTs, keysSorted.size(), serPubKeys, keysSorted);
 
-    // Copy each signature into sig, raise to power of each t for
-    // sigComp, and multiply all together into aggSig
-    BLSInsecureSignature sig, sigComp, aggSig;
-
+    // Raise all signatures to power of the corresponding t's and aggregate the results into aggSig
+    std::vector<BLSInsecureSignature> expSigs;
+    expSigs.reserve(keysSorted.size());
     for (size_t i = 0; i < keysSorted.size(); i++) {
-        aggSig = aggSig.Aggregate(sigs[keysSorted[i]].sig.Mul(computedTs[i]));
+        auto& s = sigs[keysSorted[i]].sig;
+        expSigs.emplace_back(s.Mul(computedTs[i]));
     }
-    delete[] computedTs;
+    BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(expSigs);
 
+    delete[] computedTs;
     for (auto p : serPubKeys) {
         delete[] p;
     }
@@ -575,22 +570,26 @@ BLSSignature BLSSignature::AggregateSigsInternal(
     }
     BLS::HashPubKeys(computedTs, sigsSorted.size(), serPubKeys, sortKeysSorted);
 
-    // Copy each signature into sig, raise to power of each t for
-    // sigComp, and multiply all together into aggSig
-    BLSInsecureSignature sig, sigComp, aggSig;
-    std::vector<AggregationInfo> infos;
-
+    // Raise all signatures to power of the corresponding t's and aggregate the results into aggSig
     // Also accumulates aggregation info for each signature
+    std::vector<AggregationInfo> infos;
+    std::vector<BLSInsecureSignature> expSigs;
+    infos.reserve(sigsSorted.size());
+    expSigs.reserve(sigsSorted.size());
     for (size_t i = 0; i < sigsSorted.size(); i++) {
-        const BLSSignature& s = collidingSigs[sigsSorted[i]];
-        aggSig = aggSig.Aggregate(s.sig.Mul(computedTs[i]));
-        infos.push_back(*s.GetAggregationInfo());
+        auto& s = collidingSigs[sigsSorted[i]];
+        expSigs.emplace_back(s.sig.Mul(computedTs[i]));
+        infos.emplace_back(*s.GetAggregationInfo());
     }
 
+    // Also collect all non-colliding signatures for aggregation
+    // These don't need exponentiation
     for (const BLSSignature &nonColliding : nonCollidingSigs) {
-        aggSig = aggSig.Aggregate(nonColliding.sig);
-        infos.push_back(*nonColliding.GetAggregationInfo());
+        expSigs.emplace_back(nonColliding.sig);
+        infos.emplace_back(*nonColliding.GetAggregationInfo());
     }
+
+    BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(expSigs);
     BLSSignature ret = BLSSignature::FromInsecureSig(aggSig);
 
     // Merge the aggregation infos, which will be combined in an
@@ -617,12 +616,13 @@ BLSSignature BLSSignature::AggregateSigsSimple(std::vector<BLSSignature> const &
         return sigs[0];
     }
 
-    BLSInsecureSignature aggSig;
-
     // Multiplies the signatures together (relic uses additive group operation)
+    std::vector<BLSInsecureSignature> sigs2;
+    sigs2.reserve(sigs.size());
     for (const BLSSignature &sig : sigs) {
-        aggSig = aggSig.Aggregate(sig.sig);
+        sigs2.emplace_back(sig.sig);
     }
+    BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs2);
     BLSSignature ret = BLSSignature::FromInsecureSig(aggSig);
     BLS::CheckRelicErrors();
     return ret;
@@ -683,7 +683,7 @@ BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs
         prod = prod.DivideBy(newSig);
     }
 
-    prod = sig.Aggregate(prod);
+    prod = BLSInsecureSignature::Aggregate({prod, sig});
 
     BLSSignature result = BLSSignature::FromInsecureSig(prod, aggregationInfo);
     result.aggregationInfo.RemoveEntries(messageHashesToRemove, pubKeysToRemove);

@@ -72,7 +72,7 @@ ExtendedPublicKey ExtendedPublicKey::PublicChild(uint32_t i) const {
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
     BLSPrivateKey leftSk = BLSPrivateKey::FromBytes(ILeft, true);
-    BLSPublicKey newPk = pk.AggregateInsecure(leftSk.GetPublicKey());
+    BLSPublicKey newPk = BLSPublicKey::AggregateInsecure({pk, leftSk.GetPublicKey()});
 
     ExtendedPublicKey epk(version, depth + 1,
                           GetPublicKey().GetFingerprint(), i,
