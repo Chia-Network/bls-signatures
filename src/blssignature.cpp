@@ -139,9 +139,14 @@ BLSInsecureSignature BLSInsecureSignature::Aggregate(const std::vector<BLSInsecu
     return result;
 }
 
-BLSInsecureSignature BLSInsecureSignature::DivideBy(const BLSInsecureSignature& r) const {
+BLSInsecureSignature BLSInsecureSignature::DivideBy(const std::vector<BLSInsecureSignature>& sigs) const {
+    if (sigs.empty()) {
+        return *this;
+    }
+
+    BLSInsecureSignature tmpAgg = Aggregate(sigs);
     BLSInsecureSignature result(*this);
-    g2_sub(result.sig, *(relic::g2_t*)&result.sig, *(relic::g2_t*)&r.sig);
+    relic::g2_sub(result.sig, result.sig, tmpAgg.sig);
     return result;
 }
 
@@ -635,7 +640,8 @@ BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs
     std::vector<uint8_t*> messageHashesToRemove;
     std::vector<BLSPublicKey> pubKeysToRemove;
 
-    BLSInsecureSignature prod;
+    std::vector<BLSInsecureSignature> expSigs;
+    expSigs.reserve(divisorSigs.size());
     for (const BLSSignature &divisorSig : divisorSigs) {
         std::vector<BLSPublicKey> pks = divisorSig.GetAggregationInfo()
                 ->GetPubKeys();
@@ -679,12 +685,10 @@ BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs
             messageHashesToRemove.push_back(messageHashes[i]);
             pubKeysToRemove.push_back(pks[i]);
         }
-        BLSInsecureSignature newSig = divisorSig.sig.Mul(quotient);
-        prod = prod.DivideBy(newSig);
+        expSigs.emplace_back(divisorSig.sig.Mul(quotient));
     }
 
-    prod = BLSInsecureSignature::Aggregate({prod, sig});
-
+    BLSInsecureSignature prod = sig.DivideBy(expSigs);
     BLSSignature result = BLSSignature::FromInsecureSig(prod, aggregationInfo);
     result.aggregationInfo.RemoveEntries(messageHashesToRemove, pubKeysToRemove);
 

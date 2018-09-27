@@ -55,7 +55,7 @@ class BLSInsecureSignature {
     static BLSInsecureSignature Aggregate(const std::vector<BLSInsecureSignature>& sigs);
 
     // Insecurely divides signatures
-    BLSInsecureSignature DivideBy(const BLSInsecureSignature& r) const;
+    BLSInsecureSignature DivideBy(const std::vector<BLSInsecureSignature>& sigs) const;
 
     // Exponentiate signature with n
     BLSInsecureSignature Mul(const relic::bn_t n) const;
