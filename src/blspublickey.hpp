@@ -49,9 +49,6 @@ class BLSPublicKey {
     // Securely aggregate multiple public keys into one by exponentiating the keys with the pubKey hashes first
     static BLSPublicKey Aggregate(std::vector<BLSPublicKey> const& pubKeys);
 
-    // Exponentiate public key with n
-    BLSPublicKey Mul(const relic::bn_t n) const;
-
     // Comparator implementation.
     friend bool operator==(BLSPublicKey const &a,  BLSPublicKey const &b);
     friend bool operator!=(BLSPublicKey const &a,  BLSPublicKey const &b);
@@ -67,8 +64,12 @@ class BLSPublicKey {
     // Don't allow public construction, force static methods
     BLSPublicKey();
 
+    // Exponentiate public key with n
+    BLSPublicKey Exp(const relic::bn_t n) const;
+
     static void CompressPoint(uint8_t* result, const relic::g1_t* point);
 
+ private:
     // Public key group element
     relic::g1_t q;
 };

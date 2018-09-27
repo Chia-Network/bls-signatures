@@ -96,7 +96,7 @@ BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
     expKeys.reserve(pubKeysSorted.size());
     for (size_t i = 0; i < pubKeysSorted.size(); i++) {
         const BLSPublicKey& pk = pubKeys[pubKeysSorted[i]];
-        expKeys.emplace_back(pk.Mul(computedTs[i]));
+        expKeys.emplace_back(pk.Exp(computedTs[i]));
     }
     BLSPublicKey aggKey = BLSPublicKey::AggregateInsecure(expKeys);
 
@@ -112,7 +112,7 @@ BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
     return aggKey;
 }
 
-BLSPublicKey BLSPublicKey::Mul(const relic::bn_st* n) const {
+BLSPublicKey BLSPublicKey::Exp(relic::bn_t const n) const {
     BLSPublicKey ret;
     g1_mul(ret.q, q, n);
     return ret;

@@ -150,7 +150,7 @@ BLSInsecureSignature BLSInsecureSignature::DivideBy(const std::vector<BLSInsecur
     return result;
 }
 
-BLSInsecureSignature BLSInsecureSignature::Mul(const relic::bn_t n) const {
+BLSInsecureSignature BLSInsecureSignature::Exp(const relic::bn_t n) const {
     BLSInsecureSignature result(*this);
     g2_mul(result.sig, result.sig, n);
     return result;
@@ -339,7 +339,7 @@ bool BLSSignature::Verify() const {
                 }
                 return false;
             }
-            prod = BLSPublicKey::AggregateInsecure({prod, pk.Mul(exponent)});
+            prod = BLSPublicKey::AggregateInsecure({prod, pk.Exp(exponent)});
         }
         finalPubKeys.push_back(prod);
         finalMessageHashes.push_back(kv.first);
@@ -439,7 +439,7 @@ BLSSignature BLSSignature::AggregateSigsSecure(
     expSigs.reserve(keysSorted.size());
     for (size_t i = 0; i < keysSorted.size(); i++) {
         auto& s = sigs[keysSorted[i]].sig;
-        expSigs.emplace_back(s.Mul(computedTs[i]));
+        expSigs.emplace_back(s.Exp(computedTs[i]));
     }
     BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(expSigs);
 
@@ -583,7 +583,7 @@ BLSSignature BLSSignature::AggregateSigsInternal(
     expSigs.reserve(sigsSorted.size());
     for (size_t i = 0; i < sigsSorted.size(); i++) {
         auto& s = collidingSigs[sigsSorted[i]];
-        expSigs.emplace_back(s.sig.Mul(computedTs[i]));
+        expSigs.emplace_back(s.sig.Exp(computedTs[i]));
         infos.emplace_back(*s.GetAggregationInfo());
     }
 
@@ -685,7 +685,7 @@ BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs
             messageHashesToRemove.push_back(messageHashes[i]);
             pubKeysToRemove.push_back(pks[i]);
         }
-        expSigs.emplace_back(divisorSig.sig.Mul(quotient));
+        expSigs.emplace_back(divisorSig.sig.Exp(quotient));
     }
 
     BLSInsecureSignature prod = sig.DivideBy(expSigs);

@@ -33,8 +33,8 @@
  * Aggregation of these signatures is not secure on it's own, use BLSSignature instead
  */
 class BLSInsecureSignature {
-  friend class BLSSignature;
-  public:
+ friend class BLSSignature;
+ public:
     static const size_t SIGNATURE_SIZE = 96;
 
     // Initializes from serialized byte array/
@@ -57,9 +57,6 @@ class BLSInsecureSignature {
     // Insecurely divides signatures
     BLSInsecureSignature DivideBy(const std::vector<BLSInsecureSignature>& sigs) const;
 
-    // Exponentiate signature with n
-    BLSInsecureSignature Mul(const relic::bn_t n) const;
-
     // Serializes ONLY the 96 byte public key. It does not serialize
     // the aggregation info.
     void Serialize(uint8_t* buffer) const;
@@ -70,10 +67,12 @@ class BLSInsecureSignature {
     friend std::ostream &operator<<(std::ostream &os, BLSInsecureSignature const &s);
     BLSInsecureSignature& operator=(const BLSInsecureSignature& rhs);
 
-
-private:
+ private:
     // Prevent public construction, force static method
     BLSInsecureSignature();
+
+    // Exponentiate signature with n
+    BLSInsecureSignature Exp(const relic::bn_t n) const;
 
     static void CompressPoint(uint8_t* result, const relic::g2_t* point);
 
@@ -85,6 +84,7 @@ private:
             relic::g2_t* mappedHashes,
             size_t len);
 
+ private:
     // Signature group element
     relic::g2_t sig;
 };
@@ -178,6 +178,7 @@ class BLSSignature {
     static BLSSignature AggregateSigsSimple(
             std::vector<BLSSignature> const &sigs);
 
+ private:
     // internal signature
     BLSInsecureSignature sig;
 

@@ -55,9 +55,6 @@ class BLSPrivateKey {
     static BLSPrivateKey Aggregate(std::vector<BLSPrivateKey> const& privateKeys,
                                    std::vector<BLSPublicKey> const& pubKeys);
 
-    // Exponentiate private key with n
-    BLSPrivateKey Mul(const relic::bn_t n) const;
-
     // Compare to different private key
     friend bool operator==(const BLSPrivateKey& a, const BLSPrivateKey& b);
     friend bool operator!=(const BLSPrivateKey& a, const BLSPrivateKey& b);
@@ -78,11 +75,15 @@ class BLSPrivateKey {
     // Don't allow public construction, force static methods
     BLSPrivateKey() {}
 
-    // The actual byte data
-    relic::bn_t *keydata{nullptr};
+    // Exponentiate private key with n
+    BLSPrivateKey Mul(const relic::bn_t n) const;
 
     // Allocate memory for private key
     void AllocateKeyData();
+
+ private:
+    // The actual byte data
+    relic::bn_t *keydata{nullptr};
 };
 
 #endif  // SRC_BLSPRIVATEKEY_HPP_
