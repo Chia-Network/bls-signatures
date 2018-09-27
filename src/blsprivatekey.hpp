@@ -55,6 +55,9 @@ class BLSPrivateKey {
     static BLSPrivateKey Aggregate(std::vector<BLSPrivateKey> const& privateKeys,
                                    std::vector<BLSPublicKey> const& pubKeys);
 
+    // Exponentiate private key with n
+    BLSPrivateKey Mul(const relic::bn_t n) const;
+
     // Compare to different private key
     friend bool operator==(const BLSPrivateKey& a, const BLSPrivateKey& b);
     friend bool operator!=(const BLSPrivateKey& a, const BLSPrivateKey& b);

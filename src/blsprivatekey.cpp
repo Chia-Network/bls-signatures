@@ -140,14 +140,6 @@ BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& private
         return memcmp(serPubKeys[a], serPubKeys[b], BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
     });
 
-    relic::bn_t order;
-    bn_new(order);
-    g2_get_ord(order);
-
-    // Use secure allocation to store temporary sk variables
-    BLSPrivateKey tmp, aggKey;
-    tmp.AllocateKeyData();
-    aggKey.AllocateKeyData();
 
     relic::bn_t *computedTs = new relic::bn_t[keysSorted.size()];
     for (size_t i = 0; i < keysSorted.size(); i++) {
@@ -155,11 +147,15 @@ BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& private
     }
     BLS::HashPubKeys(computedTs, keysSorted.size(), serPubKeys, keysSorted);
 
+    // Raise all keys to power of the corresponding t's and aggregate the results into aggKey
+    std::vector<BLSPrivateKey> expKeys;
+    expKeys.reserve(keysSorted.size());
     for (size_t i = 0; i < keysSorted.size(); i++) {
-        bn_mul_comba(*tmp.keydata, *privateKeys[keysSorted[i]].keydata, computedTs[i]);
-        bn_add(*aggKey.keydata, *aggKey.keydata, *tmp.keydata);
-        bn_mod_basic(*aggKey.keydata, *aggKey.keydata, order);
+        auto& k = privateKeys[keysSorted[i]];
+        expKeys.emplace_back(k.Mul(computedTs[i]));
     }
+    BLSPrivateKey aggKey = BLSPrivateKey::AggregateInsecure(expKeys);
+
     for (size_t i = 0; i < keysSorted.size(); i++) {
         bn_free(p);
     }
@@ -168,16 +164,19 @@ BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& private
     }
     delete[] computedTs;
 
-    uint8_t* privateKeyBytes =
-            BLSUtil::SecAlloc<uint8_t>(BLSPrivateKey::PRIVATE_KEY_SIZE);
-    bn_write_bin(privateKeyBytes,
-                 BLSPrivateKey::PRIVATE_KEY_SIZE,
-                 *aggKey.keydata);
-
-    BLSPrivateKey ret = BLSPrivateKey::FromBytes(privateKeyBytes);
-
-    BLSUtil::SecFree(privateKeyBytes);
     BLS::CheckRelicErrors();
+    return aggKey;
+}
+
+BLSPrivateKey BLSPrivateKey::Mul(const relic::bn_t n) const {
+    relic::bn_t order;
+    bn_new(order);
+    g2_get_ord(order);
+
+    BLSPrivateKey ret;
+    ret.AllocateKeyData();
+    bn_mul_comba(*ret.keydata, *keydata, n);
+    bn_mod_basic(*ret.keydata, *ret.keydata, order);
     return ret;
 }
 
