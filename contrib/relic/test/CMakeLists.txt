@@ -47,7 +47,7 @@ endif(WITH_EP)
 
 if (WITH_EPX)
 	ADD_MODULE(epx)
-endif(WITH_EPX)
+endif(WITH_EPX)	
 
 if (WITH_EB)
 	ADD_MODULE(eb)
@@ -67,7 +67,7 @@ endif(WITH_PC)
 
 if (WITH_PP)
 	ADD_MODULE(pp)
-endif(WITH_PP)
+endif(WITH_PP)	
 
 if (WITH_MD)
 	ADD_MODULE(md)
