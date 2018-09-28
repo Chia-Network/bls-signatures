@@ -222,7 +222,7 @@ ude -Ibls-signatures/src/  -L./bls-signatures/build/ -l bls  yourfile.cpp
 ```
 
 ### Notes on dependencies
-Changes performed to relic: Added config files for Chia, and added gmp include in relic.h, new ep_map and ep2_map. Custom inversion function. Note: relic is an LGPL 2.1 dependency.
+Changes performed to relic: Added config files for Chia, and added gmp include in relic.h, new ep_map and ep2_map, new ep_pck and ep2_pck. Custom inversion function. Note: relic is used with the Apache 2.0 license.
 
 Libsodium and GMP are optional dependencies: libsodium gives secure memory allocation,
 and GMP speeds up the library by ~ 3x. To install them, either download them from github
