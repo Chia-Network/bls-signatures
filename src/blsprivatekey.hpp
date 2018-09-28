@@ -75,7 +75,7 @@ class BLSPrivateKey {
     // Don't allow public construction, force static methods
     BLSPrivateKey() {}
 
-    // Exponentiate private key with n
+    // Multiply private key with n
     BLSPrivateKey Mul(const relic::bn_t n) const;
 
     // Allocate memory for private key
