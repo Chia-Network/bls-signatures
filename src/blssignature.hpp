@@ -47,9 +47,9 @@ class BLSInsecureSignature {
     BLSInsecureSignature(const BLSInsecureSignature &signature);
 
     // The following verification methods are all insecure in regard to the rogue public key attack
-    bool VerifyInsecure(const uint8_t* msg, size_t len, const BLSPublicKey& pubKey) const;
-    bool VerifyInsecureHash(const uint8_t* hash, const BLSPublicKey& pubKey) const;
-    bool VerifyInsecureAggregated(const std::vector<uint8_t*>& hashes, const std::vector<BLSPublicKey>& pubKeys) const;
+    bool Verify(const uint8_t* msg, size_t len, const BLSPublicKey& pubKey) const;
+    bool VerifyHash(const uint8_t* hash, const BLSPublicKey& pubKey) const;
+    bool VerifyAggregated(const std::vector<uint8_t*>& hashes, const std::vector<BLSPublicKey>& pubKeys) const;
 
     // Insecurely aggregates signatures
     static BLSInsecureSignature Aggregate(const std::vector<BLSInsecureSignature>& sigs);
@@ -77,7 +77,7 @@ class BLSInsecureSignature {
     static void CompressPoint(uint8_t* result, const relic::g2_t* point);
 
     // Performs multipairing and checks that everything matches. This is an
-    // internal method, only called from VerifyInsecureAggregated. It should not be used
+    // internal method, only called from VerifyAggregated. It should not be used
     // anywhere else.
     static bool VerifyNative(
             relic::g1_t* pubKeys,
