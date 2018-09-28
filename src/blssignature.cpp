@@ -64,10 +64,10 @@ bool BLSInsecureSignature::Verify(const uint8_t* msg, size_t len, const BLSPubli
 }
 
 bool BLSInsecureSignature::VerifyHash(const uint8_t* hash, const BLSPublicKey& pubKey) const {
-    return VerifyAggregated({(uint8_t*)hash}, {pubKey});
+    return VerifyAggregated({hash}, {pubKey});
 }
 
-bool BLSInsecureSignature::VerifyAggregated(const std::vector<uint8_t*>& hashes,
+bool BLSInsecureSignature::VerifyAggregated(const std::vector<const uint8_t*>& hashes,
                                             const std::vector<BLSPublicKey>& pubKeys) const {
     if (hashes.size() != pubKeys.size() || hashes.empty()) {
         throw std::string("hashes and pubKeys vectors must be of same size and non-empty");
@@ -306,8 +306,8 @@ bool BLSSignature::Verify() const {
 
     // Aggregate pubkeys of identical messages
     std::vector<BLSPublicKey> finalPubKeys;
-    std::vector<uint8_t*> finalMessageHashes;
-    std::vector<uint8_t*> collidingKeys;
+    std::vector<const uint8_t*> finalMessageHashes;
+    std::vector<const uint8_t*> collidingKeys;
 
     for (const auto &kv : hashToPubKeys) {
         BLSPublicKey prod;

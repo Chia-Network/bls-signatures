@@ -422,7 +422,7 @@ TEST_CASE("Signatures") {
         REQUIRE(!aggSig.Verify(message2, sizeof(message2), aggPk));
 
         // diff message verification should succeed
-        std::vector<uint8_t*> hashes = {hash1, hash2};
+        std::vector<const uint8_t*> hashes = {hash1, hash2};
         REQUIRE(aggSig.VerifyAggregated(hashes, pks));
     }
 
@@ -492,7 +492,7 @@ TEST_CASE("Signatures") {
         std::vector<BLSPrivateKey> sks;
         std::vector<BLSPublicKey> pks;
         std::vector<BLSInsecureSignature> sigs;
-        std::vector<uint8_t*> hashes;
+        std::vector<const uint8_t*> hashes;
 
         for (int i = 0; i < 80; i++) {
             uint8_t* message = new uint8_t[8];

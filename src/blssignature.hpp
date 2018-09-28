@@ -49,7 +49,7 @@ class BLSInsecureSignature {
     // The following verification methods are all insecure in regard to the rogue public key attack
     bool Verify(const uint8_t* msg, size_t len, const BLSPublicKey& pubKey) const;
     bool VerifyHash(const uint8_t* hash, const BLSPublicKey& pubKey) const;
-    bool VerifyAggregated(const std::vector<uint8_t*>& hashes, const std::vector<BLSPublicKey>& pubKeys) const;
+    bool VerifyAggregated(const std::vector<const uint8_t*>& hashes, const std::vector<BLSPublicKey>& pubKeys) const;
 
     // Insecurely aggregates signatures
     static BLSInsecureSignature Aggregate(const std::vector<BLSInsecureSignature>& sigs);
