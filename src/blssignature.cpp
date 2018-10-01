@@ -56,19 +56,8 @@ BLSInsecureSignature::BLSInsecureSignature(const BLSInsecureSignature &signature
     g2_copy(sig, *(relic::g2_t*)&signature.sig);
 }
 
-bool BLSInsecureSignature::Verify(const uint8_t* msg, size_t len, const BLSPublicKey& pubKey) const {
-    BLS::AssertInitialized();
-    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-    BLSUtil::Hash256(messageHash, msg, len);
-    return VerifyHash(messageHash, pubKey);
-}
-
-bool BLSInsecureSignature::VerifyHash(const uint8_t* hash, const BLSPublicKey& pubKey) const {
-    return VerifyAggregated({hash}, {pubKey});
-}
-
-bool BLSInsecureSignature::VerifyAggregated(const std::vector<const uint8_t*>& hashes,
-                                            const std::vector<BLSPublicKey>& pubKeys) const {
+bool BLSInsecureSignature::Verify(const std::vector<const uint8_t*>& hashes,
+                                  const std::vector<BLSPublicKey>& pubKeys) const {
     if (hashes.size() != pubKeys.size() || hashes.empty()) {
         throw std::string("hashes and pubKeys vectors must be of same size and non-empty");
     }
@@ -343,7 +332,7 @@ bool BLSSignature::Verify() const {
     }
 
     // Now we have all distinct messages, so we can verify
-    return sig.VerifyAggregated(finalMessageHashes, finalPubKeys);
+    return sig.Verify(finalMessageHashes, finalPubKeys);
 }
 
 BLSSignature BLSSignature::AggregateSigs(
