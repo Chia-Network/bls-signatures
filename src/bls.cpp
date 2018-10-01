@@ -74,12 +74,18 @@ BLSSignature BLS::AggregateSigsSimple(std::vector<BLSSignature> const &sigs) {
     relic::g2_t aggSig, tempSig;
     g2_set_infty(aggSig);
 
+    std::vector<AggregationInfo> infos;
+
     // Multiplies the signatures together (relic uses additive group operation)
     for (const BLSSignature &sig : sigs) {
         sig.GetPoint(tempSig);
         g2_add(aggSig, aggSig, tempSig);
+
+        infos.push_back(*sig.GetAggregationInfo());
     }
     BLSSignature ret = BLSSignature::FromG2(&aggSig);
+    ret.SetAggregationInfo(AggregationInfo::MergeInfos(infos));
+
     CheckRelicErrors();
     return ret;
 }
@@ -226,13 +232,7 @@ BLSSignature BLS::AggregateSigsInternal(
         // that every group is a valid aggregate signature. If an invalid
         // or insecure signature is given, and invalid signature will
         // be created. We don't verify for performance reasons.
-        BLSSignature ret = AggregateSigsSimple(sigs);
-        std::vector<AggregationInfo> infos;
-        for (const BLSSignature &sig : sigs) {
-            infos.push_back(*sig.GetAggregationInfo());
-        }
-        ret.SetAggregationInfo(AggregationInfo::MergeInfos(infos));
-        return ret;
+        return AggregateSigsSimple(sigs);
     }
 
     // There are groups that share messages, therefore we need

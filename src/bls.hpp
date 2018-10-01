@@ -75,6 +75,11 @@ class BLS {
             std::vector<BLSPublicKey> const &pubKeys,
             bool secure);
 
+    // Efficiently aggregates many signatures using the simple aggregation
+    // method. Performs only n g2 operations.
+    static BLSSignature AggregateSigsSimple(
+            std::vector<BLSSignature> const &sigs);
+
     // Used for secure aggregation
     static void HashPubKeys(
             relic::bn_t* output,
@@ -83,11 +88,6 @@ class BLS {
             std::vector<size_t> const &sortedIndices);
 
  private:
-    // Efficiently aggregates many signatures using the simple aggregation
-    // method. Performs only n g2 operations.
-    static BLSSignature AggregateSigsSimple(
-            std::vector<BLSSignature> const &sigs);
-
     // Aggregates many signatures using the secure aggregation method.
     // Performs ~ n * 256 g2 operations.
     static BLSSignature AggregateSigsSecure(
