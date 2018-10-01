@@ -14,6 +14,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <algorithm>
 
 #include "blspublickey.hpp"
 #include "blsutil.hpp"
@@ -41,9 +42,80 @@ BLSPublicKey BLSPublicKey::FromG1(const relic::g1_t* pubKey) {
     return pk;
 }
 
+BLSPublicKey::BLSPublicKey() {
+    BLS::AssertInitialized();
+    g1_set_infty(q);
+}
+
 BLSPublicKey::BLSPublicKey(const BLSPublicKey &pubKey) {
     BLS::AssertInitialized();
     g1_copy(q, pubKey.q);
+}
+
+BLSPublicKey BLSPublicKey::AggregateInsecure(std::vector<BLSPublicKey> const& pubKeys) {
+    if (pubKeys.empty()) {
+        throw std::string("Number of public keys must be at least 1");
+    }
+
+    BLSPublicKey ret = pubKeys[0];
+    for (size_t i = 1; i < pubKeys.size(); i++) {
+        g1_add(ret.q, ret.q, pubKeys[i].q);
+    }
+    return ret;
+}
+
+BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
+    if (pubKeys.size() < 1) {
+        throw std::string("Number of public keys must be at least 1");
+    }
+
+    std::vector<uint8_t*> serPubKeys(pubKeys.size());
+    for (size_t i = 0; i < pubKeys.size(); i++) {
+        serPubKeys[i] = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
+        pubKeys[i].Serialize(serPubKeys[i]);
+    }
+
+    // Sort the public keys by public key
+    std::vector<size_t> pubKeysSorted(pubKeys.size());
+    for (size_t i = 0; i < pubKeysSorted.size(); i++) {
+        pubKeysSorted[i] = i;
+    }
+
+    std::sort(pubKeysSorted.begin(), pubKeysSorted.end(), [&serPubKeys](size_t a, size_t b) {
+        return memcmp(serPubKeys[a], serPubKeys[b], BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
+    });
+
+    relic::bn_t *computedTs = new relic::bn_t[pubKeysSorted.size()];
+    for (size_t i = 0; i < pubKeysSorted.size(); i++) {
+        bn_new(computedTs[i]);
+    }
+    BLS::HashPubKeys(computedTs, pubKeysSorted.size(), serPubKeys, pubKeysSorted);
+
+    // Raise all keys to power of the corresponding t's and aggregate the results into aggKey
+    std::vector<BLSPublicKey> expKeys;
+    expKeys.reserve(pubKeysSorted.size());
+    for (size_t i = 0; i < pubKeysSorted.size(); i++) {
+        const BLSPublicKey& pk = pubKeys[pubKeysSorted[i]];
+        expKeys.emplace_back(pk.Exp(computedTs[i]));
+    }
+    BLSPublicKey aggKey = BLSPublicKey::AggregateInsecure(expKeys);
+
+    for (size_t i = 0; i < pubKeysSorted.size(); i++) {
+        bn_free(computedTs[i]);
+    }
+    for (auto p : serPubKeys) {
+        delete[] p;
+    }
+    delete[] computedTs;
+
+    BLS::CheckRelicErrors();
+    return aggKey;
+}
+
+BLSPublicKey BLSPublicKey::Exp(relic::bn_t const n) const {
+    BLSPublicKey ret;
+    g1_mul(ret.q, q, n);
+    return ret;
 }
 
 void BLSPublicKey::Serialize(uint8_t *buffer) const {

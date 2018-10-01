@@ -28,6 +28,9 @@
 
 /** An encapsulated public key. */
 class BLSPublicKey {
+ friend class BLSInsecureSignature;
+ friend class BLSSignature;
+ friend class ExtendedPublicKey;
  public:
     static const size_t PUBLIC_KEY_SIZE = 48;
 
@@ -40,6 +43,12 @@ class BLSPublicKey {
     // Construct a public key from another public key.
     BLSPublicKey(const BLSPublicKey &pubKey);
 
+    // Insecurely aggregate multiple public keys into one
+    static BLSPublicKey AggregateInsecure(std::vector<BLSPublicKey> const& pubKeys);
+
+    // Securely aggregate multiple public keys into one by exponentiating the keys with the pubKey hashes first
+    static BLSPublicKey Aggregate(std::vector<BLSPublicKey> const& pubKeys);
+
     // Comparator implementation.
     friend bool operator==(BLSPublicKey const &a,  BLSPublicKey const &b);
     friend bool operator!=(BLSPublicKey const &a,  BLSPublicKey const &b);
@@ -47,17 +56,20 @@ class BLSPublicKey {
 
     void Serialize(uint8_t *buffer) const;
     std::vector<uint8_t> Serialize() const;
-    void GetPoint(relic::g1_t &output) const { *output = *q; }
 
     // Returns the first 4 bytes of the serialized pk
     uint32_t GetFingerprint() const;
 
  private:
     // Don't allow public construction, force static methods
-    BLSPublicKey() {}
+    BLSPublicKey();
+
+    // Exponentiate public key with n
+    BLSPublicKey Exp(const relic::bn_t n) const;
 
     static void CompressPoint(uint8_t* result, const relic::g1_t* point);
 
+ private:
     // Public key group element
     relic::g1_t q;
 };

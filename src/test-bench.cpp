@@ -58,7 +58,7 @@ void benchVerification() {
     for (size_t i = 0; i < numIters; i++) {
         uint8_t message[4];
         BLSUtil::IntToFourBytes(message, i);
-        bool ok = BLS::Verify(sigs[i]);
+        bool ok = sigs[i].Verify();
         ASSERT(ok);
     }
     endStopwatch(testName, start, numIters);
@@ -84,18 +84,18 @@ void benchAggregateSigsSecure() {
     }
 
     auto start = startStopwatch();
-    BLSSignature aggSig = BLS::AggregateSigs(sigs);
+    BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
     endStopwatch("Generate aggregate signature, same message",
                  start, numIters);
 
     auto start2 = startStopwatch();
-    const BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pks, true);
+    const BLSPublicKey aggPubKey = BLSPublicKey::Aggregate(pks);
     endStopwatch("Generate aggregate pk, same message", start2, numIters);
 
     auto start3 = startStopwatch();
     aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
             aggPubKey, message1, sizeof(message1)));
-    ASSERT(BLS::Verify(aggSig));
+    ASSERT(aggSig.Verify());
     endStopwatch("Verify agg signature, same message", start3, numIters);
 }
 
@@ -115,21 +115,21 @@ void benchBatchVerification() {
         sigs.push_back(sk.Sign(message, 1 + (i % 5)));
         // Small message, so some messages are the same
         if (message[0] < 225) {  // Simulate having ~90% cached transactions
-            BLS::Verify(sigs.back());
+            sigs.back().Verify();
             cache.push_back(sigs.back());
         }
     }
 
-    BLSSignature aggregate = BLS::AggregateSigs(sigs);
+    BLSSignature aggregate = BLSSignature::AggregateSigs(sigs);
 
     auto start = startStopwatch();
-    ASSERT(BLS::Verify(aggregate));
+    ASSERT(aggregate.Verify());
     endStopwatch(testName, start, numIters);
 
 
     start = startStopwatch();
     const BLSSignature aggSmall = aggregate.DivideBy(cache);
-    ASSERT(BLS::Verify(aggSmall));
+    ASSERT(aggSmall.Verify());
     endStopwatch(testName + " with cached verifications", start, numIters);
 }
 
@@ -151,12 +151,12 @@ void benchAggregateSigsSimple() {
     }
 
     auto start = startStopwatch();
-    BLSSignature aggSig = BLS::AggregateSigs(sigs);
+    BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
     endStopwatch("Generate aggregate signature, distinct messages",
                  start, numIters);
 
     auto start2 = startStopwatch();
-    ASSERT(BLS::Verify(aggSig));
+    ASSERT(aggSig.Verify());
     endStopwatch("Verify aggregate signature, distinct messages",
                  start2, numIters);
 }
@@ -175,13 +175,13 @@ void benchDegenerateTree() {
         BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
         BLSSignature sig = sk.Sign(message1, sizeof(message1));
         std::vector<BLSSignature> sigs = {aggSig, sig};
-        aggSig = BLS::AggregateSigs(sigs);
+        aggSig = BLSSignature::AggregateSigs(sigs);
     }
     endStopwatch("Generate degenerate aggSig tree",
                  start, numIters);
 
     start = startStopwatch();
-    ASSERT(BLS::Verify(aggSig));
+    ASSERT(aggSig.Verify());
     endStopwatch("Verify degenerate aggSig tree",
                  start, numIters);
 }

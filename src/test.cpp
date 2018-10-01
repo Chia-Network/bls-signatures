@@ -56,12 +56,12 @@ TEST_CASE("Test vectors") {
              == "975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e");
 
         vector<BLSSignature> sigs = {sig1, sig2};
-        BLSSignature aggSig1 = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig1 = BLSSignature::AggregateSigs(sigs);
 
         aggSig1.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
              == "0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658");
-        REQUIRE(BLS::Verify(aggSig1));
+        REQUIRE(aggSig1.Verify());
 
         uint8_t message2[3] = {1, 2, 3};
         uint8_t message3[4] = {1, 2, 3, 4};
@@ -70,8 +70,8 @@ TEST_CASE("Test vectors") {
         BLSSignature sig4 = sk1.Sign(message3, sizeof(message3));
         BLSSignature sig5 = sk2.Sign(message4, sizeof(message4));
         vector<BLSSignature> sigs2 = {sig3, sig4, sig5};
-        BLSSignature aggSig2 = BLS::AggregateSigs(sigs2);
-        REQUIRE(BLS::Verify(aggSig2));
+        BLSSignature aggSig2 = BLSSignature::AggregateSigs(sigs2);
+        REQUIRE(aggSig2.Verify());
         aggSig2.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
             == "8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b");
@@ -100,16 +100,16 @@ TEST_CASE("Test vectors") {
         BLSSignature sig6 = sk1.Sign(message4, sizeof(message4));
 
         std::vector<BLSSignature> const sigsL = {sig1, sig2};
-        const BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
+        const BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
 
         std::vector<BLSSignature> const sigsR = {sig3, sig4, sig5};
-        const BLSSignature aggSigR = BLS::AggregateSigs(sigsR);
+        const BLSSignature aggSigR = BLSSignature::AggregateSigs(sigsR);
 
         std::vector<BLSSignature> sigs = {aggSigL, aggSigR, sig6};
 
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
-        REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(aggSig.Verify());
 
         uint8_t buf[BLSSignature::SIGNATURE_SIZE];
         aggSig.Serialize(buf);
@@ -123,7 +123,7 @@ TEST_CASE("Test vectors") {
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
             == "8ebc8a73a2291e689ce51769ff87e517be6089fd0627b2ce3cd2f0ee1ce134b39c4da40928954175014e9bbe623d845d0bdba8bfd2a85af9507ddf145579480132b676f027381314d983a63842fcc7bf5c8c088461e3ebb04dcf86b431d6238f");
 
-        REQUIRE(BLS::Verify(quotient));
+        REQUIRE(quotient.Verify());
         REQUIRE(quotient.DivideBy(vector<BLSSignature>()) == quotient);
         signatures_to_divide = {sig6};
         REQUIRE_THROWS(quotient.DivideBy(signatures_to_divide));
@@ -141,13 +141,13 @@ TEST_CASE("Test vectors") {
 
         // Divide by aggregate
         std::vector<BLSSignature> sigsR2 = {sig7, sig8};
-        BLSSignature aggSigR2 = BLS::AggregateSigs(sigsR2);
+        BLSSignature aggSigR2 = BLSSignature::AggregateSigs(sigsR2);
         std::vector<BLSSignature> sigsFinal2 = {aggSig, aggSigR2};
-        BLSSignature aggSig2 = BLS::AggregateSigs(sigsFinal2);
+        BLSSignature aggSig2 = BLSSignature::AggregateSigs(sigsFinal2);
         std::vector<BLSSignature> divisorFinal2 = {aggSigR2};
         BLSSignature quotient2 = aggSig2.DivideBy(divisorFinal2);
 
-        REQUIRE(BLS::Verify(quotient2));
+        REQUIRE(quotient2.Verify());
         quotient2.Serialize(buf);
         REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
             == "06af6930bd06838f2e4b00b62911fb290245cce503ccf5bfc2901459897731dd08fc4c56dbde75a11677ccfbfa61ab8b14735fddc66a02b7aeebb54ab9a41488f89f641d83d4515c4dd20dfcf28cbbccb1472c327f0780be3a90c005c58a47d3");
@@ -225,7 +225,7 @@ TEST_CASE("Signatures") {
 
         sig1.SetAggregationInfo(
                 AggregationInfo::FromMsg(pk1, message1, sizeof(message1)));
-        REQUIRE(BLS::Verify(sig1));
+        REQUIRE(sig1.Verify());
 
         uint8_t hash[32];
         BLSUtil::Hash256(hash, message1, 7);
@@ -233,7 +233,7 @@ TEST_CASE("Signatures") {
         sig2.SetAggregationInfo(
                 AggregationInfo::FromMsg(pk1, message1, sizeof(message1)));
         REQUIRE(sig1 == sig2);
-        REQUIRE(BLS::Verify(sig2));
+        REQUIRE(sig2.Verify());
 
         // Hashing to g1
         uint8_t mapMsg[0] = {};
@@ -261,7 +261,7 @@ TEST_CASE("Signatures") {
         BLSSignature sig1 = sk4.Sign(message1, sizeof(message1));
         BLSSignature sig2 = BLSSignature(sig1);
 
-        REQUIRE(BLS::Verify(sig2));
+        REQUIRE(sig2.Verify());
     }
 
     SECTION("Should use operators") {
@@ -326,8 +326,11 @@ TEST_CASE("Signatures") {
         sig2.SetAggregationInfo(AggregationInfo::FromMsg(
                 pk2, message1, sizeof(message1)));
 
-        REQUIRE(BLS::Verify(sig2));
+        REQUIRE(sig2.Verify());
         BLSUtil::SecFree(skData);
+
+        BLSInsecureSignature sig3 = BLSInsecureSignature::FromBytes(sigData);
+        REQUIRE(BLSSignature::FromInsecureSig(sig3) == sig2);
     }
 
     SECTION("Should throw on a bad private key") {
@@ -359,11 +362,74 @@ TEST_CASE("Signatures") {
         sig2.SetAggregationInfo(AggregationInfo::FromMsg(
                 pk1, message1, sizeof(message1)));
 
-        REQUIRE(BLS::Verify(sig2) == false);
-
+        REQUIRE(sig2.Verify() == false);
     }
 
-    SECTION("Should aggregate and verify aggregate") {
+    SECTION("Should insecurely aggregate and verify aggregate same message") {
+        uint8_t message[7] = {100, 2, 254, 88, 90, 45, 23};
+        uint8_t hash[BLS::MESSAGE_HASH_LEN];
+
+        uint8_t seed[32];
+        getRandomSeed(seed);
+        uint8_t seed2[32];
+        getRandomSeed(seed2);
+
+        BLSUtil::Hash256(hash, message, sizeof(message));
+
+        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
+        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
+
+        BLSInsecureSignature sig1 = sk1.SignInsecure(message, sizeof(message));
+        BLSInsecureSignature sig2 = sk2.SignInsecure(message, sizeof(message));
+        REQUIRE(sig1 != sig2);
+        REQUIRE(sig1.Verify({hash}, {sk1.GetPublicKey()}));
+        REQUIRE(sig2.Verify({hash}, {sk2.GetPublicKey()}));
+
+        std::vector<BLSInsecureSignature> const sigs = {sig1, sig2};
+        std::vector<BLSPublicKey> const pks = {sk1.GetPublicKey(), sk2.GetPublicKey()};
+        BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs);
+        BLSPublicKey aggPk = BLSPublicKey::AggregateInsecure(pks);
+        REQUIRE(aggSig.Verify({hash}, {aggPk}));
+    }
+
+    SECTION("Should insecurely aggregate and verify aggregate diff messages") {
+        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
+        uint8_t message2[8] = {100, 2, 254, 88, 90, 45, 24, 1};
+
+        uint8_t seed[32];
+        getRandomSeed(seed);
+        uint8_t seed2[32];
+        getRandomSeed(seed2);
+
+        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
+        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
+
+        uint8_t hash1[BLS::MESSAGE_HASH_LEN];
+        uint8_t hash2[BLS::MESSAGE_HASH_LEN];
+        BLSUtil::Hash256(hash1, message1, sizeof(message1));
+        BLSUtil::Hash256(hash2, message2, sizeof(message2));
+
+        BLSInsecureSignature sig1 = sk1.SignInsecurePrehashed(hash1);
+        BLSInsecureSignature sig2 = sk2.SignInsecurePrehashed(hash2);
+        REQUIRE(sig1 != sig2);
+        REQUIRE(sig1.Verify({hash1}, {sk1.GetPublicKey()}));
+        REQUIRE(sig2.Verify({hash2}, {sk2.GetPublicKey()}));
+
+        std::vector<BLSInsecureSignature> const sigs = {sig1, sig2};
+        std::vector<BLSPublicKey> const pks = {sk1.GetPublicKey(), sk2.GetPublicKey()};
+        BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs);
+
+        // same message verification should fail
+        BLSPublicKey aggPk = BLSPublicKey::AggregateInsecure(pks);
+        REQUIRE(!aggSig.Verify({hash1}, {aggPk}));
+        REQUIRE(!aggSig.Verify({hash2}, {aggPk}));
+
+        // diff message verification should succeed
+        std::vector<const uint8_t*> hashes = {hash1, hash2};
+        REQUIRE(aggSig.Verify(hashes, pks));
+    }
+
+    SECTION("Should securely aggregate and verify aggregate") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
         uint8_t message2[7] = {192, 29, 2, 0, 0, 45, 23};
 
@@ -382,22 +448,22 @@ TEST_CASE("Signatures") {
         BLSSignature sig2 = sk2.Sign(message2, sizeof(message2));
 
         std::vector<BLSSignature> const sigs = {sig1, sig2};
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
         BLSSignature sig3 = sk1.Sign(message1, sizeof(message1));
         BLSSignature sig4 = sk2.Sign(message2, sizeof(message2));
 
         std::vector<BLSSignature> const sigs2 = {sig3, sig4};
-        BLSSignature aggSig2 = BLS::AggregateSigs(sigs2);
+        BLSSignature aggSig2 = BLSSignature::AggregateSigs(sigs2);
         REQUIRE(sig1 == sig3);
         REQUIRE(sig2 == sig4);
         REQUIRE(aggSig == aggSig2);
         REQUIRE(sig1 != sig2);
 
-        REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(aggSig.Verify());
     }
 
-    SECTION("Should aggregate many signatures, diff message") {
+    SECTION("Should securely aggregate many signatures, diff message") {
         std::vector<BLSPrivateKey> sks;
         std::vector<BLSSignature> sigs;
 
@@ -420,12 +486,54 @@ TEST_CASE("Signatures") {
             delete[] message;
         }
 
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
-        REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(aggSig.Verify());
     }
 
-    SECTION("Should aggregate same message") {
+    SECTION("Should insecurely aggregate many signatures, diff message") {
+        std::vector<BLSPrivateKey> sks;
+        std::vector<BLSPublicKey> pks;
+        std::vector<BLSInsecureSignature> sigs;
+        std::vector<const uint8_t*> hashes;
+
+        for (int i = 0; i < 80; i++) {
+            uint8_t* message = new uint8_t[8];
+            uint8_t* hash = new uint8_t[BLS::MESSAGE_HASH_LEN];
+            message[0] = 0;
+            message[1] = 100;
+            message[2] = 2;
+            message[3] = 59;
+            message[4] = 255;
+            message[5] = 92;
+            message[6] = 5;
+            message[7] = i;
+            BLSUtil::Hash256(hash, message, 8);
+            hashes.push_back(hash);
+            uint8_t seed[32];
+            getRandomSeed(seed);
+            const BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
+            const BLSPublicKey pk = sk.GetPublicKey();
+            sks.push_back(sk);
+            pks.push_back(pk);
+            sigs.push_back(sk.SignInsecurePrehashed(hash));
+            delete[] message;
+        }
+
+        BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs);
+
+        REQUIRE(aggSig.Verify(hashes, pks));
+        std::swap(pks[0], pks[1]);
+        REQUIRE(!aggSig.Verify(hashes, pks));
+        std::swap(hashes[0], hashes[1]);
+        REQUIRE(aggSig.Verify(hashes, pks));
+
+        for (auto& p : hashes) {
+            delete[] p;
+        }
+    }
+
+    SECTION("Should securely aggregate same message") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
         uint8_t seed[32];
         getRandomSeed(seed);
@@ -449,15 +557,15 @@ TEST_CASE("Signatures") {
 
         std::vector<BLSSignature> const sigs = {sig1, sig2, sig3};
         std::vector<BLSPublicKey> const pubKeys = {pk1, pk2, pk3};
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
-        const BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
+        const BLSPublicKey aggPubKey = BLSPublicKey::Aggregate(pubKeys);
         aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
                 aggPubKey, message1, sizeof(message1)));
-        REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(aggSig.Verify());
     }
 
-    SECTION("Should divide signatures") {
+    SECTION("Should securely divide signatures") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
         uint8_t seed[32];
         getRandomSeed(seed);
@@ -480,24 +588,24 @@ TEST_CASE("Signatures") {
         BLSSignature sig3 = sk3.Sign(message1, sizeof(message1));
 
         std::vector<BLSSignature> sigs = {sig1, sig2, sig3};
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
-        REQUIRE(BLS::Verify(sig2));
-        REQUIRE(BLS::Verify(sig3));
+        REQUIRE(sig2.Verify());
+        REQUIRE(sig3.Verify());
         std::vector<BLSSignature> divisorSigs = {sig2, sig3};
 
-        REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(aggSig.Verify());
 
         REQUIRE(aggSig.GetAggregationInfo()->GetPubKeys().size() == 3);
         const BLSSignature aggSig2 = aggSig.DivideBy(divisorSigs);
         REQUIRE(aggSig.GetAggregationInfo()->GetPubKeys().size() == 3);
         REQUIRE(aggSig2.GetAggregationInfo()->GetPubKeys().size() == 1);
 
-        REQUIRE(BLS::Verify(aggSig));
-        REQUIRE(BLS::Verify(aggSig2));
+        REQUIRE(aggSig.Verify());
+        REQUIRE(aggSig2.Verify());
     }
 
-    SECTION("Should divide aggregate signatures") {
+    SECTION("Should securely divide aggregate signatures") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
         uint8_t message2[7] = {92, 20, 5, 89, 91, 15, 105};
         uint8_t message3[7] = {200, 10, 10, 159, 4, 15, 24};
@@ -532,34 +640,59 @@ TEST_CASE("Signatures") {
         std::vector<BLSSignature> sigsL = {sig1, sig2};
         std::vector<BLSSignature> sigsC = {sig3, sig4};
         std::vector<BLSSignature> sigsR = {sig5, sig6};
-        BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
-        BLSSignature aggSigC = BLS::AggregateSigs(sigsC);
-        BLSSignature aggSigR = BLS::AggregateSigs(sigsR);
+        BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
+        BLSSignature aggSigC = BLSSignature::AggregateSigs(sigsC);
+        BLSSignature aggSigR = BLSSignature::AggregateSigs(sigsR);
 
         std::vector<BLSSignature> sigsL2 = {aggSigL, aggSigC};
-        BLSSignature aggSigL2 = BLS::AggregateSigs(sigsL2);
+        BLSSignature aggSigL2 = BLSSignature::AggregateSigs(sigsL2);
 
         std::vector<BLSSignature> sigsFinal = {aggSigL2, aggSigR};
-        BLSSignature aggSigFinal = BLS::AggregateSigs(sigsFinal);
+        BLSSignature aggSigFinal = BLSSignature::AggregateSigs(sigsFinal);
 
-        REQUIRE(BLS::Verify(aggSigFinal));
+        REQUIRE(aggSigFinal.Verify());
         REQUIRE(aggSigFinal.GetAggregationInfo()->GetPubKeys().size() == 6);
         std::vector<BLSSignature> divisorSigs = {aggSigL, sig6};
         aggSigFinal = aggSigFinal.DivideBy(divisorSigs);
         REQUIRE(aggSigFinal.GetAggregationInfo()->GetPubKeys().size() == 3);
-        REQUIRE(BLS::Verify(aggSigFinal));
+        REQUIRE(aggSigFinal.Verify());
 
         // Throws when the m/pk pair is not unique within the aggregate (sig1
         // is in both aggSigL2 and sig1.
         std::vector<BLSSignature> sigsFinal2 = {aggSigL2, aggSigR, sig1};
-        BLSSignature aggSigFinal2 = BLS::AggregateSigs(sigsFinal2);
+        BLSSignature aggSigFinal2 = BLSSignature::AggregateSigs(sigsFinal2);
         std::vector<BLSSignature> divisorSigs2 = {aggSigL};
         std::vector<BLSSignature> divisorSigs3 = {sig6};
         aggSigFinal2 = aggSigFinal2.DivideBy(divisorSigs3);
         REQUIRE_THROWS(aggSigFinal2.DivideBy(divisorSigs));
     }
 
-    SECTION("Should aggregate many sigs, same message") {
+    SECTION("Should insecurely aggregate many sigs, same message") {
+        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
+        uint8_t hash1[BLS::MESSAGE_HASH_LEN];
+
+        std::vector<BLSPrivateKey> sks;
+        std::vector<BLSPublicKey> pks;
+        std::vector<BLSInsecureSignature> sigs;
+
+        BLSUtil::Hash256(hash1, message1, sizeof(message1));
+
+        for (int i = 0; i < 70; i++) {
+            uint8_t seed[32];
+            getRandomSeed(seed);
+            BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
+            const BLSPublicKey pk = sk.GetPublicKey();
+            sks.push_back(sk);
+            pks.push_back(pk);
+            sigs.push_back(sk.SignInsecure(message1, sizeof(message1)));
+        }
+
+        BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs);
+        const BLSPublicKey aggPubKey = BLSPublicKey::AggregateInsecure(pks);
+        REQUIRE(aggSig.Verify({hash1}, {aggPubKey}));
+    }
+
+    SECTION("Should securely aggregate many sigs, same message") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
 
         std::vector<BLSPrivateKey> sks;
@@ -576,11 +709,11 @@ TEST_CASE("Signatures") {
             sigs.push_back(sk.Sign(message1, sizeof(message1)));
         }
 
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
-        const BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pks, true);
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        const BLSPublicKey aggPubKey = BLSPublicKey::Aggregate(pks);
         aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
                 aggPubKey, message1, sizeof(message1)));
-        REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(aggSig.Verify());
     }
 
     SECTION("Should have at least one sig, with AggregationInfo") {
@@ -593,11 +726,11 @@ TEST_CASE("Signatures") {
         BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
 
         std::vector<BLSSignature> const sigs = {};
-        REQUIRE_THROWS(BLS::AggregateSigs(sigs));
+        REQUIRE_THROWS(BLSSignature::AggregateSigs(sigs));
 
         sig1.SetAggregationInfo(AggregationInfo());
         std::vector<BLSSignature> const sigs2 = {sig1};
-        REQUIRE_THROWS(BLS::AggregateSigs(sigs2));
+        REQUIRE_THROWS(BLSSignature::AggregateSigs(sigs2));
     }
 
     SECTION("Should perform batch verification") {
@@ -647,8 +780,8 @@ TEST_CASE("Signatures") {
                  sizeof(message2)};
 
         // Verifier generates a batch signature for efficiency
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
-        REQUIRE(BLS::Verify(aggSig));
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        REQUIRE(aggSig.Verify());
     }
 
     SECTION("Should perform batch verification with cache optimization") {
@@ -688,18 +821,18 @@ TEST_CASE("Signatures") {
         std::vector<BLSSignature> const sigs =
                 {sig1, sig2, sig3, sig4, sig5, sig6, sig7};
 
-        REQUIRE(BLS::Verify(sig1));
-        REQUIRE(BLS::Verify(sig3));
-        REQUIRE(BLS::Verify(sig4));
-        REQUIRE(BLS::Verify(sig7));
+        REQUIRE(sig1.Verify());
+        REQUIRE(sig3.Verify());
+        REQUIRE(sig4.Verify());
+        REQUIRE(sig7.Verify());
         std::vector<BLSSignature> cache = {sig1, sig3, sig4, sig7};
 
         // Verifier generates a batch signature for efficiency
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
         const BLSSignature aggSig2 = aggSig.DivideBy(cache);
-        REQUIRE(BLS::Verify(aggSig));
-        REQUIRE(BLS::Verify(aggSig2));
+        REQUIRE(aggSig.Verify());
+        REQUIRE(aggSig2.Verify());
     }
 
     SECTION("Should aggregate same message with agg sk") {
@@ -717,8 +850,8 @@ TEST_CASE("Signatures") {
 
         std::vector<BLSPrivateKey> const privateKeys = {sk1, sk2};
         std::vector<BLSPublicKey> const pubKeys = {pk1, pk2};
-        const BLSPrivateKey aggSk = BLS::AggregatePrivKeys(
-                privateKeys, pubKeys, true);
+        const BLSPrivateKey aggSk = BLSPrivateKey::Aggregate(
+                privateKeys, pubKeys);
 
         BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
         BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
@@ -728,12 +861,12 @@ TEST_CASE("Signatures") {
         std::vector<BLSSignature> const sigs = {sig1, sig2};
         std::vector<uint8_t*> const messages = {message1, message1};
         std::vector<size_t> const messageLens = {sizeof(message1), sizeof(message1)};
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
         ASSERT(aggSig == aggSig2);
 
-        const BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
-        REQUIRE(BLS::Verify(aggSig));
-        REQUIRE(BLS::Verify(aggSig2));
+        const BLSPublicKey aggPubKey = BLSPublicKey::Aggregate(pubKeys);
+        REQUIRE(aggSig.Verify());
+        REQUIRE(aggSig2.Verify());
     }
 }
 
@@ -787,7 +920,7 @@ TEST_CASE("HD keys") {
 
         BLSSignature sig = sk3.Sign(seed, sizeof(seed));
 
-        REQUIRE(BLS::Verify(sig));
+        REQUIRE(sig.Verify());
     }
 
     SECTION("Should prevent hardened pk derivation") {
@@ -1006,18 +1139,18 @@ TEST_CASE("AggregationInfo") {
 
         std::vector<BLSSignature> const sigsL = {sig1, sig2};
         std::vector<BLSPublicKey> const pksL = {pk1, pk2};
-        const BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
+        const BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
 
         std::vector<BLSSignature> const sigsR = {sig3, sig4, sig6};
-        const BLSSignature aggSigR = BLS::AggregateSigs(sigsR);
+        const BLSSignature aggSigR = BLSSignature::AggregateSigs(sigsR);
 
         std::vector<BLSPublicKey> pk1Vec = {pk1};
 
         std::vector<BLSSignature> sigs = {aggSigL, aggSigR, sig5};
 
-        const BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        const BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
-        REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(aggSig.Verify());
     }
 
     SECTION("Should aggregate with multiple levels, degenerate") {
@@ -1034,14 +1167,14 @@ TEST_CASE("AggregationInfo") {
             BLSPublicKey pk = sk.GetPublicKey();
             BLSSignature sig = sk.Sign(message1, sizeof(message1));
             std::vector<BLSSignature> sigs = {aggSig, sig};
-            aggSig = BLS::AggregateSigs(sigs);
+            aggSig = BLSSignature::AggregateSigs(sigs);
         }
-        REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(aggSig.Verify());
         uint8_t sigSerialized[BLSSignature::SIGNATURE_SIZE];
         aggSig.Serialize(sigSerialized);
 
         const BLSSignature aggSig2 = BLSSignature::FromBytes(sigSerialized);
-        REQUIRE(BLS::Verify(aggSig2) == false);
+        REQUIRE(aggSig2.Verify() == false);
     }
 
     SECTION("Should aggregate with multiple levels, different messages") {
@@ -1071,21 +1204,21 @@ TEST_CASE("AggregationInfo") {
         std::vector<uint8_t*> const messagesL = {message1, message2};
         std::vector<size_t> const messageLensL = {sizeof(message1),
                                              sizeof(message2)};
-        const BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
+        const BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
 
         std::vector<BLSSignature> const sigsR = {sig3, sig4};
         std::vector<BLSPublicKey> const pksR = {pk2, pk1};
         std::vector<uint8_t*> const messagesR = {message3, message4};
         std::vector<size_t> const messageLensR = {sizeof(message3),
                                              sizeof(message4)};
-        const BLSSignature aggSigR = BLS::AggregateSigs(sigsR);
+        const BLSSignature aggSigR = BLSSignature::AggregateSigs(sigsR);
 
         std::vector<BLSSignature> sigs = {aggSigL, aggSigR};
         std::vector<std::vector<BLSPublicKey> > pks = {pksL, pksR};
         std::vector<std::vector<uint8_t*> > messages = {messagesL, messagesR};
         std::vector<std::vector<size_t> > messageLens = {messageLensL, messageLensR};
 
-        const BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        const BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
         std::vector<BLSPublicKey> allPks = {pk1, pk2, pk2, pk1};
         std::vector<uint8_t*> allMessages = {message1, message2,
@@ -1093,7 +1226,7 @@ TEST_CASE("AggregationInfo") {
         std::vector<size_t> allMessageLens = {sizeof(message1), sizeof(message2),
                                          sizeof(message3), sizeof(message4)};
 
-        REQUIRE(BLS::Verify(aggSig));
+        REQUIRE(aggSig.Verify());
     }
     SECTION("README") {
         // Example seed, used to generate private key. Always use
@@ -1127,7 +1260,7 @@ TEST_CASE("AggregationInfo") {
         // Add information required for verification, to sig object
         sig.SetAggregationInfo(AggregationInfo::FromMsg(pk, msg, sizeof(msg)));
 
-        bool ok = BLS::Verify(sig);
+        bool ok = sig.Verify();
         // Generate some more private keys
         seed[0] = 1;
         BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
@@ -1144,13 +1277,13 @@ TEST_CASE("AggregationInfo") {
 
         // Aggregate signatures together
         std::vector<BLSSignature> sigs = {sig1, sig2};
-        BLSSignature aggSig = BLS::AggregateSigs(sigs);
+        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
 
         // For same message, public keys can be aggregated into one.
         // The signature can be verified the same as a single signature,
         // using this public key.
         std::vector<BLSPublicKey> pubKeys = {pk1, pk2};
-        BLSPublicKey aggPubKey = BLS::AggregatePubKeys(pubKeys, true);
+        BLSPublicKey aggPubKey = BLSPublicKey::Aggregate(pubKeys);
         // Generate one more key
         seed[0] = 3;
         BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
@@ -1166,11 +1299,11 @@ TEST_CASE("AggregationInfo") {
         // Aggregation below can also be done by the verifier, to
         // make batch verification more efficient
         std::vector<BLSSignature> sigsL = {sig1, sig2};
-        BLSSignature aggSigL = BLS::AggregateSigs(sigsL);
+        BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
 
         // Arbitrary trees of aggregates
         std::vector<BLSSignature> sigsFinal = {aggSigL, sig3};
-        BLSSignature aggSigFinal = BLS::AggregateSigs(sigsFinal);
+        BLSSignature aggSigFinal = BLSSignature::AggregateSigs(sigsFinal);
 
         // Serialize the final signature
         aggSigFinal.Serialize(sigBytes);
@@ -1188,24 +1321,24 @@ TEST_CASE("AggregationInfo") {
 
         // Verify final signature using the aggregation info
         aggSigFinal.SetAggregationInfo(aFinal);
-        ok = BLS::Verify(aggSigFinal);
+        ok = aggSigFinal.Verify();
 
         // If you previously verified a signature, you can also divide
         // the aggregate signature by the signature you already verified.
-        ok = BLS::Verify(aggSigL);
+        ok = aggSigL.Verify();
         std::vector<BLSSignature> cache = {aggSigL};
         aggSigFinal = aggSigFinal.DivideBy(cache);
 
         // Final verification is now more efficient
-        ok = BLS::Verify(aggSigFinal);
+        ok = aggSigFinal.Verify();
 
         std::vector<BLSPrivateKey> privateKeysList = {sk1, sk2};
         std::vector<BLSPublicKey> pubKeysList = {pk1, pk2};
 
         // Create an aggregate private key, that can generate
         // aggregate signatures
-        const BLSPrivateKey aggSk = BLS::AggregatePrivKeys(
-                privateKeysList, pubKeysList, true);
+        const BLSPrivateKey aggSk = BLSPrivateKey::Aggregate(
+                privateKeysList, pubKeysList);
 
         BLSSignature aggSig3 = aggSk.Sign(msg, sizeof(msg));
     }

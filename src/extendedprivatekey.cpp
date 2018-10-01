@@ -117,31 +117,16 @@ ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
     relic::md_hmac(IRight, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
-    relic::bn_t* newSk = BLSUtil::SecAlloc<relic::bn_t>(1);
-    bn_new(*newSk);
-    bn_read_bin(*newSk, ILeft, BLSPrivateKey::PRIVATE_KEY_SIZE);
-
-    relic::bn_t order;
-    bn_new(order);
-    g2_get_ord(order);
-
-    bn_add(*newSk, *newSk, *sk.GetValue());
-    bn_mod_basic(*newSk, *newSk, order);
-
-    uint8_t* newSkBytes = BLSUtil::SecAlloc<uint8_t>(
-            BLSPrivateKey::PRIVATE_KEY_SIZE);
-    bn_write_bin(newSkBytes, BLSPrivateKey::PRIVATE_KEY_SIZE, *newSk);
-    BLSPrivateKey skp = BLSPrivateKey::FromBytes(newSkBytes);
+    BLSPrivateKey newSk = BLSPrivateKey::FromBytes(ILeft, true);
+    newSk = BLSPrivateKey::AggregateInsecure({sk, newSk});
 
     ExtendedPrivateKey esk(version, depth + 1,
                            sk.GetPublicKey().GetFingerprint(), i,
                            ChainCode::FromBytes(IRight),
-                           skp);
+                           newSk);
 
-    BLSUtil::SecFree(newSk);
     BLSUtil::SecFree(ILeft);
     BLSUtil::SecFree(hmacInput);
-    BLSUtil::SecFree(newSkBytes);
 
     return esk;
 }
