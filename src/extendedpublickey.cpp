@@ -15,22 +15,23 @@
 #include <string>
 #include "extendedpublickey.hpp"
 #include "extendedprivatekey.hpp"
-#include "blsutil.hpp"
+#include "util.hpp"
 #include "bls.hpp"
+namespace bls {
 
 ExtendedPublicKey ExtendedPublicKey::FromBytes(
         const uint8_t* serialized) {
     BLS::AssertInitialized();
-    uint32_t version = BLSUtil::FourBytesToInt(serialized);
+    uint32_t version = Util::FourBytesToInt(serialized);
     uint32_t depth = serialized[4];
-    uint32_t parentFingerprint = BLSUtil::FourBytesToInt(serialized + 5);
-    uint32_t childNumber = BLSUtil::FourBytesToInt(serialized + 9);
+    uint32_t parentFingerprint = Util::FourBytesToInt(serialized + 5);
+    uint32_t childNumber = Util::FourBytesToInt(serialized + 9);
     const uint8_t* ccPointer = serialized + 13;
     const uint8_t* pkPointer = ccPointer + ChainCode::CHAIN_CODE_SIZE;
 
     ExtendedPublicKey epk(version, depth, parentFingerprint, childNumber,
                           ChainCode::FromBytes(ccPointer),
-                          BLSPublicKey::FromBytes(pkPointer));
+                          PublicKey::FromBytes(pkPointer));
     return epk;
 }
 
@@ -44,7 +45,7 @@ ExtendedPublicKey ExtendedPublicKey::PublicChild(uint32_t i) const {
     if (depth >= 255) {
         throw std::string("Cannot go further than 255 levels");
     }
-    uint8_t ILeft[BLSPrivateKey::PRIVATE_KEY_SIZE];
+    uint8_t ILeft[PrivateKey::PRIVATE_KEY_SIZE];
     uint8_t IRight[ChainCode::CHAIN_CODE_SIZE];
 
     // Chain code is used as hmac key
@@ -52,15 +53,15 @@ ExtendedPublicKey ExtendedPublicKey::PublicChild(uint32_t i) const {
     chainCode.Serialize(hmacKey);
 
     // Public key serialization, i serialization, and one 0 or 1 byte
-    size_t inputLen = BLSPublicKey::PUBLIC_KEY_SIZE + 4 + 1;
+    size_t inputLen = PublicKey::PUBLIC_KEY_SIZE + 4 + 1;
 
     // Hmac input includes sk or pk, int i, and byte with 0 or 1
-    uint8_t hmacInput[BLSPublicKey::PUBLIC_KEY_SIZE + 4 + 1];
+    uint8_t hmacInput[PublicKey::PUBLIC_KEY_SIZE + 4 + 1];
 
     // Fill the input with the required data
     pk.Serialize(hmacInput);
     hmacInput[inputLen - 1] = 0;
-    BLSUtil::IntToFourBytes(hmacInput + BLSPublicKey::PUBLIC_KEY_SIZE, i);
+    Util::IntToFourBytes(hmacInput + PublicKey::PUBLIC_KEY_SIZE, i);
 
     relic::md_hmac(ILeft, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
@@ -71,8 +72,8 @@ ExtendedPublicKey ExtendedPublicKey::PublicChild(uint32_t i) const {
     relic::md_hmac(IRight, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
-    BLSPrivateKey leftSk = BLSPrivateKey::FromBytes(ILeft, true);
-    BLSPublicKey newPk = BLSPublicKey::AggregateInsecure({pk, leftSk.GetPublicKey()});
+    PrivateKey leftSk = PrivateKey::FromBytes(ILeft, true);
+    PublicKey newPk = PublicKey::AggregateInsecure({pk, leftSk.GetPublicKey()});
 
     ExtendedPublicKey epk(version, depth + 1,
                           GetPublicKey().GetFingerprint(), i,
@@ -102,7 +103,7 @@ ChainCode ExtendedPublicKey::GetChainCode() const {
     return chainCode;
 }
 
-BLSPublicKey ExtendedPublicKey::GetPublicKey() const {
+PublicKey ExtendedPublicKey::GetPublicKey() const {
     return pk;
 }
 
@@ -124,10 +125,10 @@ std::ostream &operator<<(std::ostream &os, ExtendedPublicKey const &a) {
 
 void ExtendedPublicKey::Serialize(uint8_t *buffer) const {
     BLS::AssertInitialized();
-    BLSUtil::IntToFourBytes(buffer, version);
+    Util::IntToFourBytes(buffer, version);
     buffer[4] = depth;
-    BLSUtil::IntToFourBytes(buffer + 5, parentFingerprint);
-    BLSUtil::IntToFourBytes(buffer + 9, childNumber);
+    Util::IntToFourBytes(buffer + 5, parentFingerprint);
+    Util::IntToFourBytes(buffer + 9, childNumber);
     chainCode.Serialize(buffer + 13);
     pk.Serialize(buffer + 13 + ChainCode::CHAIN_CODE_SIZE);
 }
@@ -137,3 +138,4 @@ std::vector<uint8_t> ExtendedPublicKey::Serialize() const {
     Serialize(data.data());
     return data;
 }
+} // end namespace bls

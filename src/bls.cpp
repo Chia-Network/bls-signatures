@@ -18,6 +18,7 @@
 #include <algorithm>
 
 #include "bls.hpp"
+namespace bls {
 
 const char BLS::GROUP_ORDER[] =
         "73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001";
@@ -72,23 +73,23 @@ void BLS::HashPubKeys(relic::bn_t* output, size_t numOutputs,
     bn_new(order);
     g2_get_ord(order);
 
-    uint8_t *pkBuffer = new uint8_t[serPubKeys.size() * BLSPublicKey::PUBLIC_KEY_SIZE];
+    uint8_t *pkBuffer = new uint8_t[serPubKeys.size() * PublicKey::PUBLIC_KEY_SIZE];
 
     for (size_t i = 0; i < serPubKeys.size(); i++) {
-        memcpy(pkBuffer + i * BLSPublicKey::PUBLIC_KEY_SIZE, serPubKeys[sortedIndices[i]], BLSPublicKey::PUBLIC_KEY_SIZE);
+        memcpy(pkBuffer + i * PublicKey::PUBLIC_KEY_SIZE, serPubKeys[sortedIndices[i]], PublicKey::PUBLIC_KEY_SIZE);
     }
 
     uint8_t pkHash[32];
-    BLSUtil::Hash256(pkHash, pkBuffer, serPubKeys.size() * BLSPublicKey::PUBLIC_KEY_SIZE);
+    Util::Hash256(pkHash, pkBuffer, serPubKeys.size() * PublicKey::PUBLIC_KEY_SIZE);
     for (size_t i = 0; i < numOutputs; i++) {
         uint8_t hash[32];
         uint8_t buffer[4 + 32];
         memset(buffer, 0, 4);
         // Set first 4 bytes to index, to generate different ts
-        BLSUtil::IntToFourBytes(buffer, i);
+        Util::IntToFourBytes(buffer, i);
         // Set next 32 bytes as the hash of all the public keys
         std::memcpy(buffer + 4, pkHash, 32);
-        BLSUtil::Hash256(hash, buffer, 4 + 32);
+        Util::Hash256(hash, buffer, 4 + 32);
 
         bn_read_bin(output[i], hash, 32);
         bn_mod_basic(output[i], output[i], order);
@@ -107,3 +108,4 @@ void BLS::CheckRelicErrors() {
         throw std::string("Relic library error");
     }
 }
+} // end namespace bls

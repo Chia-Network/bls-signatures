@@ -1,6 +1,6 @@
 # flake8: noqa: E501
-from blspy import (BLSPrivateKey, BLSPublicKey,
-                   BLSSignature, AggregationInfo,
+from blspy import (PrivateKey, PublicKey,
+                   Signature, AggregationInfo,
                    ExtendedPrivateKey, BLS)
 
 
@@ -8,7 +8,7 @@ def test1():
     seed = bytes([0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
                   19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
                   82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22])
-    sk = BLSPrivateKey.from_seed(seed)
+    sk = PrivateKey.from_seed(seed)
     pk = sk.get_public_key()
 
     msg = bytes([100, 2, 254, 88, 90, 45, 23])
@@ -19,18 +19,18 @@ def test1():
     pk_bytes = pk.serialize()
     sig_bytes = sig.serialize()
 
-    sk = BLSPrivateKey.from_bytes(sk_bytes)
-    pk = BLSPublicKey.from_bytes(pk_bytes)
-    sig = BLSSignature.from_bytes(sig_bytes)
+    sk = PrivateKey.from_bytes(sk_bytes)
+    pk = PublicKey.from_bytes(pk_bytes)
+    sig = Signature.from_bytes(sig_bytes)
 
     sig.set_aggregation_info(AggregationInfo.from_msg(pk, msg))
     ok = sig.verify()
     assert(ok)
 
     seed = bytes([1]) + seed[1:]
-    sk1 = BLSPrivateKey.from_seed(seed)
+    sk1 = PrivateKey.from_seed(seed)
     seed = bytes([2]) + seed[1:]
-    sk2 = BLSPrivateKey.from_seed(seed)
+    sk2 = PrivateKey.from_seed(seed)
 
     pk1 = sk1.get_public_key()
     sig1 = sk1.sign(msg)
@@ -38,26 +38,26 @@ def test1():
     pk2 = sk2.get_public_key()
     sig2 = sk2.sign(msg)
 
-    agg_sig = BLSSignature.aggregate([sig1, sig2])
-    agg_pubkey = BLSPublicKey.aggregate([pk1, pk2])
+    agg_sig = Signature.aggregate([sig1, sig2])
+    agg_pubkey = PublicKey.aggregate([pk1, pk2])
 
     agg_sig.set_aggregation_info(AggregationInfo.from_msg(agg_pubkey, msg))
     assert(agg_sig.verify())
 
     seed = bytes([3]) + seed[1:]
-    sk3 = BLSPrivateKey.from_seed(seed)
+    sk3 = PrivateKey.from_seed(seed)
     pk3 = sk3.get_public_key()
     msg2 = bytes([100, 2, 254, 88, 90, 45, 23])
 
     sig1 = sk1.sign(msg)
     sig2 = sk2.sign(msg)
     sig3 = sk3.sign(msg2)
-    agg_sig_l = BLSSignature.aggregate([sig1, sig2])
-    agg_sig_final = BLSSignature.aggregate([agg_sig_l, sig3])
+    agg_sig_l = Signature.aggregate([sig1, sig2])
+    agg_sig_final = Signature.aggregate([agg_sig_l, sig3])
 
     sig_bytes = agg_sig_final.serialize()
 
-    agg_sig_final = BLSSignature.from_bytes(sig_bytes)
+    agg_sig_final = Signature.from_bytes(sig_bytes)
     a1 = AggregationInfo.from_msg(pk1, msg)
     a2 = AggregationInfo.from_msg(pk2, msg)
     a3 = AggregationInfo.from_msg(pk3, msg2)
@@ -72,7 +72,7 @@ def test1():
 
     ok = agg_sig_final.verify()
 
-    agg_sk = BLSPrivateKey.aggregate([sk1, sk2], [pk1, pk2])
+    agg_sk = PrivateKey.aggregate([sk1, sk2], [pk1, pk2])
     agg_sk.sign(msg)
 
     seed = bytes([1, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
@@ -97,9 +97,9 @@ def test2():
     seed = bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     seed2 = bytes([1, 20, 102, 229, 1, 157])
 
-    sk = BLSPrivateKey.from_seed(seed)
-    sk_cp = BLSPrivateKey.from_seed(seed)
-    sk2 = BLSPrivateKey.from_seed(seed2)
+    sk = PrivateKey.from_seed(seed)
+    sk_cp = PrivateKey.from_seed(seed)
+    sk2 = PrivateKey.from_seed(seed2)
     pk = sk.get_public_key()
     pk2 = sk2.get_public_key()
     assert(sk == sk_cp)
@@ -108,7 +108,7 @@ def test2():
 
     sk2_ser = sk2.serialize()
     pk2_ser = pk2.serialize()
-    pk2_copy = BLSPublicKey.from_bytes(pk2_ser)
+    pk2_copy = PublicKey.from_bytes(pk2_ser)
     assert(pk2 == pk2_copy)
     assert(pk != pk2)
     assert(len(pk2_ser) == 48)
@@ -117,7 +117,7 @@ def test2():
     message = bytes("this is the message", "utf-8")
     sig = sk.sign(message)
     sig_ser = sig.serialize()
-    sig_cp = BLSSignature.from_bytes(sig_ser)
+    sig_cp = Signature.from_bytes(sig_ser)
     a1 = AggregationInfo.from_msg(pk, message)
     sig_cp.set_aggregation_info(a1)
     a2 = sig_cp.get_aggregation_info()
@@ -128,7 +128,7 @@ def test2():
     assert(sig != sig2)
     assert(sig == sig_cp)
 
-    sig_agg = BLSSignature.aggregate([sig, sig2])
+    sig_agg = Signature.aggregate([sig, sig2])
 
     result = sig_cp.verify()
     result2 = sig2.verify()
@@ -140,11 +140,11 @@ def test2():
 
 
 def test_vectors():
-    sk1 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
+    sk1 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
     pk1 = sk1.get_public_key()
     sig1 = sk1.sign(bytes([7, 8, 9]))
 
-    sk2 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
+    sk2 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
     pk2 = sk2.get_public_key()
     sig2 = sk2.sign(bytes([7, 8, 9]))
     assert(sk1.serialize() == bytes.fromhex("022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e"))
@@ -153,9 +153,9 @@ def test_vectors():
     assert(sig1.serialize() == bytes.fromhex("93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065"))
     assert(sig2.serialize() == bytes.fromhex("975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e"))
 
-    agg_sig = BLSSignature.aggregate([sig1, sig2])
-    agg_pk = BLSPublicKey.aggregate([pk1, pk2])
-    agg_sk = BLSPrivateKey.aggregate([sk1, sk2], [pk1, pk2])
+    agg_sig = Signature.aggregate([sig1, sig2])
+    agg_pk = PublicKey.aggregate([pk1, pk2])
+    agg_sk = PrivateKey.aggregate([sk1, sk2], [pk1, pk2])
     assert(agg_sig.serialize() == bytes.fromhex("0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658"))
     assert(agg_sk.sign(bytes([7, 8, 9])).serialize() == agg_sig.serialize())
 
@@ -174,7 +174,7 @@ def test_vectors():
     sig5 = sk2.sign(bytes([1, 2]))
 
 
-    agg_sig2 = BLSSignature.aggregate([sig3, sig4, sig5])
+    agg_sig2 = Signature.aggregate([sig3, sig4, sig5])
     assert(agg_sig2.verify())
     assert(agg_sig2.serialize() == bytes.fromhex("8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b"))
 
@@ -185,8 +185,8 @@ def test_vectors2():
     m3 = bytes([9, 10, 11, 12, 13])
     m4 = bytes([15, 63, 244, 92, 0, 1])
 
-    sk1 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
-    sk2 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
+    sk1 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
+    sk2 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
 
     sig1 = sk1.sign(m1)
     sig2 = sk2.sign(m2)
@@ -195,12 +195,12 @@ def test_vectors2():
     sig5 = sk1.sign(m1)
     sig6 = sk1.sign(m4)
 
-    sig_L = BLSSignature.aggregate([sig1, sig2])
-    sig_R = BLSSignature.aggregate([sig3, sig4, sig5])
+    sig_L = Signature.aggregate([sig1, sig2])
+    sig_R = Signature.aggregate([sig3, sig4, sig5])
     assert(sig_L.verify())
     assert(sig_R.verify())
 
-    sig_final = BLSSignature.aggregate([sig_L, sig_R, sig6])
+    sig_final = Signature.aggregate([sig_L, sig_R, sig6])
     assert(sig_final.serialize() == bytes.fromhex("07969958fbf82e65bd13ba0749990764cac81cf10d923af9fdd2723f1e3910c3fdb874a67f9d511bb7e4920f8c01232b12e2fb5e64a7c2d177a475dab5c3729ca1f580301ccdef809c57a8846890265d195b694fa414a2a3aa55c32837fddd80"))
     assert(sig_final.verify())
     quotient = sig_final.divide_by([sig2, sig5, sig6])
@@ -223,8 +223,8 @@ def test_vectors2():
     # Divide by aggregate
     sig7 = sk2.sign(m3)
     sig8 = sk2.sign(m4)
-    sig_R2 = BLSSignature.aggregate([sig7, sig8])
-    sig_final2 = BLSSignature.aggregate([sig_final, sig_R2])
+    sig_R2 = Signature.aggregate([sig7, sig8])
+    sig_final2 = Signature.aggregate([sig_final, sig_R2])
     quotient2 = sig_final2.divide_by([sig_R2])
     assert(quotient2.verify())
     assert(quotient2.serialize() == bytes.fromhex("06af6930bd06838f2e4b00b62911fb290245cce503ccf5bfc2901459897731dd08fc4c56dbde75a11677ccfbfa61ab8b14735fddc66a02b7aeebb54ab9a41488f89f641d83d4515c4dd20dfcf28cbbccb1472c327f0780be3a90c005c58a47d3"))

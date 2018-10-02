@@ -23,13 +23,14 @@
 #include <gmp.h>
 #endif
 
-#include "blspublickey.hpp"
+#include "publickey.hpp"
 #include "chaincode.hpp"
 
 namespace relic {
     #include "relic.h"
     #include "relic_test.h"
 }
+namespace bls {
 
 /*
 Defines a BIP-32 style node, which is composed of a private key and a
@@ -61,7 +62,7 @@ class ExtendedPublicKey {
     uint32_t GetChildNumber() const;
 
     ChainCode GetChainCode() const;
-    BLSPublicKey GetPublicKey() const;
+    PublicKey GetPublicKey() const;
 
     // Comparator implementation.
     friend bool operator==(ExtendedPublicKey const &a,
@@ -78,7 +79,7 @@ class ExtendedPublicKey {
     // private constructor, force use of static methods
     explicit ExtendedPublicKey(const uint32_t v, const uint8_t d,
                                const uint32_t pfp, const uint32_t cn,
-                               const ChainCode code, const BLSPublicKey key)
+                               const ChainCode code, const PublicKey key)
          : version(v),
           depth(d),
           parentFingerprint(pfp),
@@ -92,7 +93,8 @@ class ExtendedPublicKey {
     const uint32_t childNumber;
 
     const ChainCode chainCode;
-    const BLSPublicKey pk;
+    const PublicKey pk;
 };
+} // end namespace bls
 
 #endif  // SRC_EXTENDEDPUBLICKEY_HPP_

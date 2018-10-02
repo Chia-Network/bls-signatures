@@ -7,9 +7,9 @@ from ec import (generator_Fq, generator_Fq2, default_ec, default_ec_twist,
 import random
 from fields import Fq2, Fq6, Fq12, Fq
 from bls import BLS
-from keys import BLSPrivateKey, BLSPublicKey, ExtendedPrivateKey
+from keys import PrivateKey, PublicKey, ExtendedPrivateKey
 from aggregation_info import AggregationInfo
-from signature import BLSSignature
+from signature import Signature
 from util import hash256
 from sys import setrecursionlimit
 setrecursionlimit(10**6)
@@ -101,11 +101,11 @@ def test_ec():
 
 
 def test_vectors():
-    sk1 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
+    sk1 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
     pk1 = sk1.get_public_key()
     sig1 = sk1.sign(bytes([7, 8, 9]))
 
-    sk2 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
+    sk2 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
     pk2 = sk2.get_public_key()
     sig2 = sk2.sign(bytes([7, 8, 9]))
     assert(sk1.serialize() == bytes.fromhex("022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e"))
@@ -146,8 +146,8 @@ def test_vectors2():
     m3 = bytes([9, 10, 11, 12, 13])
     m4 = bytes([15, 63, 244, 92, 0, 1])
 
-    sk1 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
-    sk2 = BLSPrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
+    sk1 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
+    sk2 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
 
     sig1 = sk1.sign(m1)
     sig2 = sk2.sign(m2)
@@ -217,7 +217,7 @@ def test1():
     seed = bytes([0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
                   19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
                   82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22])
-    sk = BLSPrivateKey.from_seed(seed)
+    sk = PrivateKey.from_seed(seed)
     pk = sk.get_public_key()
 
     msg = bytes([100, 2, 254, 88, 90, 45, 23])
@@ -228,17 +228,17 @@ def test1():
     pk_bytes = pk.serialize()
     sig_bytes = sig.serialize()
 
-    sk = BLSPrivateKey.from_bytes(sk_bytes)
-    pk = BLSPublicKey.from_bytes(pk_bytes)
-    sig = BLSSignature.from_bytes(sig_bytes)
+    sk = PrivateKey.from_bytes(sk_bytes)
+    pk = PublicKey.from_bytes(pk_bytes)
+    sig = Signature.from_bytes(sig_bytes)
 
     sig.set_aggregation_info(AggregationInfo.from_msg(pk, msg))
     assert(BLS.verify(sig))
 
     seed = bytes([1]) + seed[1:]
-    sk1 = BLSPrivateKey.from_seed(seed)
+    sk1 = PrivateKey.from_seed(seed)
     seed = bytes([2]) + seed[1:]
-    sk2 = BLSPrivateKey.from_seed(seed)
+    sk2 = PrivateKey.from_seed(seed)
 
     pk1 = sk1.get_public_key()
     sig1 = sk1.sign(msg)
@@ -253,7 +253,7 @@ def test1():
     assert(BLS.verify(agg_sig))
 
     seed = bytes([3]) + seed[1:]
-    sk3 = BLSPrivateKey.from_seed(seed)
+    sk3 = PrivateKey.from_seed(seed)
     pk3 = sk3.get_public_key()
     msg2 = bytes([100, 2, 254, 88, 90, 45, 23])
 
@@ -265,7 +265,7 @@ def test1():
 
     sig_bytes = agg_sig_final.serialize()
 
-    agg_sig_final = BLSSignature.from_bytes(sig_bytes)
+    agg_sig_final = Signature.from_bytes(sig_bytes)
     a1 = AggregationInfo.from_msg(pk1, msg)
     a2 = AggregationInfo.from_msg(pk2, msg)
     a3 = AggregationInfo.from_msg(pk3, msg2)
@@ -300,9 +300,9 @@ def test2():
     seed = bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
     seed2 = bytes([1, 20, 102, 229, 1, 157])
 
-    sk = BLSPrivateKey.from_seed(seed)
-    sk_cp = BLSPrivateKey.from_seed(seed)
-    sk2 = BLSPrivateKey.from_seed(seed2)
+    sk = PrivateKey.from_seed(seed)
+    sk_cp = PrivateKey.from_seed(seed)
+    sk2 = PrivateKey.from_seed(seed2)
     pk = sk.get_public_key()
     pk2 = sk2.get_public_key()
     assert(sk == sk_cp)
@@ -310,7 +310,7 @@ def test2():
     assert(pk.get_fingerprint() == 0xddad59bb)
 
     pk2_ser = pk2.serialize()
-    pk2_copy = BLSPublicKey.from_bytes(pk2_ser)
+    pk2_copy = PublicKey.from_bytes(pk2_ser)
     assert(pk2 == pk2_copy)
     assert(pk != pk2)
     assert(pk2.size() == 48)
@@ -319,7 +319,7 @@ def test2():
     message = bytes("this is the message", "utf-8")
     sig = sk.sign(message)
     sig_ser = sig.serialize()
-    sig_cp = BLSSignature.from_bytes(sig_ser)
+    sig_cp = Signature.from_bytes(sig_ser)
     a1 = AggregationInfo.from_msg(pk, message)
     sig_cp.set_aggregation_info(a1)
     a2 = sig_cp.get_aggregation_info()

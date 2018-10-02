@@ -22,22 +22,24 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+using namespace bls;
+
 TEST_CASE("Test vectors") {
     SECTION("Test vectors 1") {
         uint8_t seed1[5] = {1, 2, 3, 4, 5};
         uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
         uint8_t message1[3] = {7, 8, 9};
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed1, sizeof(seed1));
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
+        PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
+        PublicKey pk1 = sk1.GetPublicKey();
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
 
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, sizeof(seed2));
-        BLSPublicKey pk2 = sk2.GetPublicKey();
-        BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
+        PublicKey pk2 = sk2.GetPublicKey();
+        Signature sig2 = sk2.Sign(message1, sizeof(message1));
 
-        uint8_t buf[BLSSignature::SIGNATURE_SIZE];
-        uint8_t buf2[BLSPrivateKey::PRIVATE_KEY_SIZE];
+        uint8_t buf[Signature::SIGNATURE_SIZE];
+        uint8_t buf2[PrivateKey::PRIVATE_KEY_SIZE];
 
         REQUIRE(pk1.GetFingerprint() == 0x26d53247);
         REQUIRE(pk2.GetFingerprint() == 0x289bb56e);
@@ -46,34 +48,34 @@ TEST_CASE("Test vectors") {
         sig1.Serialize(buf);
         sk1.Serialize(buf2);
 
-        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
              == "93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065");
-        REQUIRE(BLSUtil::HexStr(buf2, BLSPrivateKey::PRIVATE_KEY_SIZE)
+        REQUIRE(Util::HexStr(buf2, PrivateKey::PRIVATE_KEY_SIZE)
              == "022fb42c08c12de3a6af053880199806532e79515f94e83461612101f9412f9e");
 
         sig2.Serialize(buf);
-        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
              == "975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e");
 
-        vector<BLSSignature> sigs = {sig1, sig2};
-        BLSSignature aggSig1 = BLSSignature::AggregateSigs(sigs);
+        vector<Signature> sigs = {sig1, sig2};
+        Signature aggSig1 = Signature::AggregateSigs(sigs);
 
         aggSig1.Serialize(buf);
-        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
              == "0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658");
         REQUIRE(aggSig1.Verify());
 
         uint8_t message2[3] = {1, 2, 3};
         uint8_t message3[4] = {1, 2, 3, 4};
         uint8_t message4[2] = {1, 2};
-        BLSSignature sig3 = sk1.Sign(message2, sizeof(message2));
-        BLSSignature sig4 = sk1.Sign(message3, sizeof(message3));
-        BLSSignature sig5 = sk2.Sign(message4, sizeof(message4));
-        vector<BLSSignature> sigs2 = {sig3, sig4, sig5};
-        BLSSignature aggSig2 = BLSSignature::AggregateSigs(sigs2);
+        Signature sig3 = sk1.Sign(message2, sizeof(message2));
+        Signature sig4 = sk1.Sign(message3, sizeof(message3));
+        Signature sig5 = sk2.Sign(message4, sizeof(message4));
+        vector<Signature> sigs2 = {sig3, sig4, sig5};
+        Signature aggSig2 = Signature::AggregateSigs(sigs2);
         REQUIRE(aggSig2.Verify());
         aggSig2.Serialize(buf);
-        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
             == "8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b");
     }
 
@@ -86,45 +88,45 @@ TEST_CASE("Test vectors") {
         uint8_t seed1[5] = {1, 2, 3, 4, 5};
         uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed1, sizeof(seed1));
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, sizeof(seed2));
+        PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
 
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PublicKey pk1 = sk1.GetPublicKey();
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message2, sizeof(message2));
-        BLSSignature sig3 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig4 = sk1.Sign(message3, sizeof(message3));
-        BLSSignature sig5 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig6 = sk1.Sign(message4, sizeof(message4));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message2, sizeof(message2));
+        Signature sig3 = sk2.Sign(message1, sizeof(message1));
+        Signature sig4 = sk1.Sign(message3, sizeof(message3));
+        Signature sig5 = sk1.Sign(message1, sizeof(message1));
+        Signature sig6 = sk1.Sign(message4, sizeof(message4));
 
-        std::vector<BLSSignature> const sigsL = {sig1, sig2};
-        const BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
+        std::vector<Signature> const sigsL = {sig1, sig2};
+        const Signature aggSigL = Signature::AggregateSigs(sigsL);
 
-        std::vector<BLSSignature> const sigsR = {sig3, sig4, sig5};
-        const BLSSignature aggSigR = BLSSignature::AggregateSigs(sigsR);
+        std::vector<Signature> const sigsR = {sig3, sig4, sig5};
+        const Signature aggSigR = Signature::AggregateSigs(sigsR);
 
-        std::vector<BLSSignature> sigs = {aggSigL, aggSigR, sig6};
+        std::vector<Signature> sigs = {aggSigL, aggSigR, sig6};
 
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        Signature aggSig = Signature::AggregateSigs(sigs);
 
         REQUIRE(aggSig.Verify());
 
-        uint8_t buf[BLSSignature::SIGNATURE_SIZE];
+        uint8_t buf[Signature::SIGNATURE_SIZE];
         aggSig.Serialize(buf);
-        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
             == "07969958fbf82e65bd13ba0749990764cac81cf10d923af9fdd2723f1e3910c3fdb874a67f9d511bb7e4920f8c01232b12e2fb5e64a7c2d177a475dab5c3729ca1f580301ccdef809c57a8846890265d195b694fa414a2a3aa55c32837fddd80");
-        vector<BLSSignature> signatures_to_divide = {sig2, sig5, sig6};
-        BLSSignature quotient = aggSig.DivideBy(signatures_to_divide);
+        vector<Signature> signatures_to_divide = {sig2, sig5, sig6};
+        Signature quotient = aggSig.DivideBy(signatures_to_divide);
         aggSig.DivideBy(signatures_to_divide);
 
         quotient.Serialize(buf);
-        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
             == "8ebc8a73a2291e689ce51769ff87e517be6089fd0627b2ce3cd2f0ee1ce134b39c4da40928954175014e9bbe623d845d0bdba8bfd2a85af9507ddf145579480132b676f027381314d983a63842fcc7bf5c8c088461e3ebb04dcf86b431d6238f");
 
         REQUIRE(quotient.Verify());
-        REQUIRE(quotient.DivideBy(vector<BLSSignature>()) == quotient);
+        REQUIRE(quotient.DivideBy(vector<Signature>()) == quotient);
         signatures_to_divide = {sig6};
         REQUIRE_THROWS(quotient.DivideBy(signatures_to_divide));
 
@@ -136,20 +138,20 @@ TEST_CASE("Test vectors") {
         signatures_to_divide = {aggSigL};
         REQUIRE_THROWS(aggSig.DivideBy(signatures_to_divide));
 
-        BLSSignature sig7 = sk2.Sign(message3, sizeof(message3));
-        BLSSignature sig8 = sk2.Sign(message4, sizeof(message4));
+        Signature sig7 = sk2.Sign(message3, sizeof(message3));
+        Signature sig8 = sk2.Sign(message4, sizeof(message4));
 
         // Divide by aggregate
-        std::vector<BLSSignature> sigsR2 = {sig7, sig8};
-        BLSSignature aggSigR2 = BLSSignature::AggregateSigs(sigsR2);
-        std::vector<BLSSignature> sigsFinal2 = {aggSig, aggSigR2};
-        BLSSignature aggSig2 = BLSSignature::AggregateSigs(sigsFinal2);
-        std::vector<BLSSignature> divisorFinal2 = {aggSigR2};
-        BLSSignature quotient2 = aggSig2.DivideBy(divisorFinal2);
+        std::vector<Signature> sigsR2 = {sig7, sig8};
+        Signature aggSigR2 = Signature::AggregateSigs(sigsR2);
+        std::vector<Signature> sigsFinal2 = {aggSig, aggSigR2};
+        Signature aggSig2 = Signature::AggregateSigs(sigsFinal2);
+        std::vector<Signature> divisorFinal2 = {aggSigR2};
+        Signature quotient2 = aggSig2.DivideBy(divisorFinal2);
 
         REQUIRE(quotient2.Verify());
         quotient2.Serialize(buf);
-        REQUIRE(BLSUtil::HexStr(buf, BLSSignature::SIGNATURE_SIZE)
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
             == "06af6930bd06838f2e4b00b62911fb290245cce503ccf5bfc2901459897731dd08fc4c56dbde75a11677ccfbfa61ab8b14735fddc66a02b7aeebb54ab9a41488f89f641d83d4515c4dd20dfcf28cbbccb1472c327f0780be3a90c005c58a47d3");
     }
 
@@ -160,11 +162,11 @@ TEST_CASE("Test vectors") {
         REQUIRE(esk.GetPublicKey().GetFingerprint() == 0xa4700b27);
         uint8_t chainCode[32];
         esk.GetChainCode().Serialize(chainCode);
-        REQUIRE(BLSUtil::HexStr(chainCode, 32) == "d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3");
+        REQUIRE(Util::HexStr(chainCode, 32) == "d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3");
 
         ExtendedPrivateKey esk77 = esk.PrivateChild(77 + (1 << 31));
         esk77.GetChainCode().Serialize(chainCode);
-        REQUIRE(BLSUtil::HexStr(chainCode, 32) == "f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b");
+        REQUIRE(Util::HexStr(chainCode, 32) == "f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b");
         REQUIRE(esk77.GetPrivateKey().GetPublicKey().GetFingerprint() == 0xa8063dcf);
 
         REQUIRE(esk.PrivateChild(3)
@@ -184,8 +186,8 @@ TEST_CASE("Key generation") {
         uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
 
-        BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, sizeof(seed));
-        BLSPublicKey pk = sk.GetPublicKey();
+        PrivateKey sk = PrivateKey::FromSeed(seed, sizeof(seed));
+        PublicKey pk = sk.GetPublicKey();
         REQUIRE(relic::core_get()->code == STS_OK);
         REQUIRE(pk.GetFingerprint() == 0xddad59bb);
     }
@@ -196,12 +198,12 @@ TEST_CASE("Util tests") {
         uint32_t x = 1024;
         uint8_t expected[4] = {0x00, 0x00, 0x04, 0x00};
         uint8_t result[4];
-        BLSUtil::IntToFourBytes(result, x);
+        Util::IntToFourBytes(result, x);
         REQUIRE(result[0] == expected[0]);
         REQUIRE(result[1] == expected[1]);
         REQUIRE(result[2] == expected[2]);
         REQUIRE(result[3] == expected[3]);
-        uint32_t again = BLSUtil::FourBytesToInt(result);
+        uint32_t again = Util::FourBytesToInt(result);
         REQUIRE(again == x);
     }
 
@@ -219,17 +221,17 @@ TEST_CASE("Signatures") {
         uint8_t message1[7] = {1, 65, 254, 88, 90, 45, 22};
 
         uint8_t seed[6] = {28, 20, 102, 229, 1, 157};
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, sizeof(seed));
+        PublicKey pk1 = sk1.GetPublicKey();
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
 
         sig1.SetAggregationInfo(
                 AggregationInfo::FromMsg(pk1, message1, sizeof(message1)));
         REQUIRE(sig1.Verify());
 
         uint8_t hash[32];
-        BLSUtil::Hash256(hash, message1, 7);
-        BLSSignature sig2 = sk1.SignPrehashed(hash);
+        Util::Hash256(hash, message1, 7);
+        Signature sig2 = sk1.SignPrehashed(hash);
         sig2.SetAggregationInfo(
                 AggregationInfo::FromMsg(pk1, message1, sizeof(message1)));
         REQUIRE(sig1 == sig2);
@@ -241,7 +243,7 @@ TEST_CASE("Signatures") {
         uint8_t buf[49];
         relic::ep_map(result, mapMsg, 0);
         relic::g1_write_bin(buf, 49, result, 1);
-        REQUIRE(BLSUtil::HexStr(buf + 1, 48) == "12fc5ad5a2fbe9d4b6eb0bc16d530e5f263b6d59cbaf26c3f2831962924aa588ab84d46cc80d3a433ce064adb307f256");
+        REQUIRE(Util::HexStr(buf + 1, 48) == "12fc5ad5a2fbe9d4b6eb0bc16d530e5f263b6d59cbaf26c3f2831962924aa588ab84d46cc80d3a433ce064adb307f256");
     }
 
     SECTION("Should use copy constructor") {
@@ -249,17 +251,17 @@ TEST_CASE("Signatures") {
 
         uint8_t seed[32];
         getRandomSeed(seed);
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSPrivateKey sk2 = BLSPrivateKey(sk1);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
+        PrivateKey sk2 = PrivateKey(sk1);
 
-        uint8_t skBytes[BLSPrivateKey::PRIVATE_KEY_SIZE];
+        uint8_t skBytes[PrivateKey::PRIVATE_KEY_SIZE];
         sk2.Serialize(skBytes);
-        BLSPrivateKey sk4 = BLSPrivateKey::FromBytes(skBytes);
+        PrivateKey sk4 = PrivateKey::FromBytes(skBytes);
 
-        BLSPublicKey pk2 = BLSPublicKey(pk1);
-        BLSSignature sig1 = sk4.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = BLSSignature(sig1);
+        PublicKey pk2 = PublicKey(pk1);
+        Signature sig1 = sk4.Sign(message1, sizeof(message1));
+        Signature sig2 = Signature(sig1);
 
         REQUIRE(sig2.Verify());
     }
@@ -271,17 +273,17 @@ TEST_CASE("Signatures") {
         uint8_t seed3[32];
         getRandomSeed(seed3);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPrivateKey sk2 = BLSPrivateKey(sk1);
-        BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed3, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSPublicKey pk2 = sk2.GetPublicKey();
-        BLSPublicKey pk3 = BLSPublicKey(pk2);
-        BLSPublicKey pk4 = sk3.GetPublicKey();
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig3 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig4 = sk3.Sign(message1, sizeof(message1));
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PrivateKey sk2 = PrivateKey(sk1);
+        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
+        PublicKey pk2 = sk2.GetPublicKey();
+        PublicKey pk3 = PublicKey(pk2);
+        PublicKey pk4 = sk3.GetPublicKey();
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk1.Sign(message1, sizeof(message1));
+        Signature sig3 = sk2.Sign(message1, sizeof(message1));
+        Signature sig4 = sk3.Sign(message1, sizeof(message1));
 
         REQUIRE(sk1 == sk2);
         REQUIRE(sk1 != sk3);
@@ -301,49 +303,49 @@ TEST_CASE("Signatures") {
 
         uint8_t seed[32];
         getRandomSeed(seed);
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
 
-        uint8_t* skData = BLSUtil::SecAlloc<uint8_t>(
-                BLSSignature::SIGNATURE_SIZE);
+        uint8_t* skData = Util::SecAlloc<uint8_t>(
+                Signature::SIGNATURE_SIZE);
         sk1.Serialize(skData);
-        BLSPrivateKey sk2 = BLSPrivateKey::FromBytes(skData);
+        PrivateKey sk2 = PrivateKey::FromBytes(skData);
         REQUIRE(sk1 == sk2);
 
-        uint8_t pkData[BLSPublicKey::PUBLIC_KEY_SIZE];
+        uint8_t pkData[PublicKey::PUBLIC_KEY_SIZE];
         pk1.Serialize(pkData);
 
-        BLSPublicKey pk2 = BLSPublicKey::FromBytes(pkData);
+        PublicKey pk2 = PublicKey::FromBytes(pkData);
         REQUIRE(pk1 == pk2);
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
 
-        uint8_t sigData[BLSSignature::SIGNATURE_SIZE];
+        uint8_t sigData[Signature::SIGNATURE_SIZE];
         sig1.Serialize(sigData);
 
-        BLSSignature sig2 = BLSSignature::FromBytes(sigData);
+        Signature sig2 = Signature::FromBytes(sigData);
         REQUIRE(sig1 == sig2);
         sig2.SetAggregationInfo(AggregationInfo::FromMsg(
                 pk2, message1, sizeof(message1)));
 
         REQUIRE(sig2.Verify());
-        BLSUtil::SecFree(skData);
+        Util::SecFree(skData);
 
-        BLSInsecureSignature sig3 = BLSInsecureSignature::FromBytes(sigData);
-        REQUIRE(BLSSignature::FromInsecureSig(sig3) == sig2);
+        InsecureSignature sig3 = InsecureSignature::FromBytes(sigData);
+        REQUIRE(Signature::FromInsecureSig(sig3) == sig2);
     }
 
     SECTION("Should throw on a bad private key") {
         uint8_t seed[32];
         getRandomSeed(seed);
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        uint8_t* skData = BLSUtil::SecAlloc<uint8_t>(
-                BLSSignature::SIGNATURE_SIZE);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        uint8_t* skData = Util::SecAlloc<uint8_t>(
+                Signature::SIGNATURE_SIZE);
         sk1.Serialize(skData);
         skData[0] = 255;
-        REQUIRE_THROWS(BLSPrivateKey::FromBytes(skData));
+        REQUIRE_THROWS(PrivateKey::FromBytes(skData));
 
-        BLSUtil::SecFree(skData);
+        Util::SecFree(skData);
     }
 
     SECTION("Should not validate a bad sig") {
@@ -352,13 +354,13 @@ TEST_CASE("Signatures") {
         getRandomSeed(seed);
         uint8_t seed2[32];
         getRandomSeed(seed2);
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
 
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PublicKey pk1 = sk1.GetPublicKey();
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message1, sizeof(message1));
         sig2.SetAggregationInfo(AggregationInfo::FromMsg(
                 pk1, message1, sizeof(message1)));
 
@@ -374,21 +376,21 @@ TEST_CASE("Signatures") {
         uint8_t seed2[32];
         getRandomSeed(seed2);
 
-        BLSUtil::Hash256(hash, message, sizeof(message));
+        Util::Hash256(hash, message, sizeof(message));
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
 
-        BLSInsecureSignature sig1 = sk1.SignInsecure(message, sizeof(message));
-        BLSInsecureSignature sig2 = sk2.SignInsecure(message, sizeof(message));
+        InsecureSignature sig1 = sk1.SignInsecure(message, sizeof(message));
+        InsecureSignature sig2 = sk2.SignInsecure(message, sizeof(message));
         REQUIRE(sig1 != sig2);
         REQUIRE(sig1.Verify({hash}, {sk1.GetPublicKey()}));
         REQUIRE(sig2.Verify({hash}, {sk2.GetPublicKey()}));
 
-        std::vector<BLSInsecureSignature> const sigs = {sig1, sig2};
-        std::vector<BLSPublicKey> const pks = {sk1.GetPublicKey(), sk2.GetPublicKey()};
-        BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs);
-        BLSPublicKey aggPk = BLSPublicKey::AggregateInsecure(pks);
+        std::vector<InsecureSignature> const sigs = {sig1, sig2};
+        std::vector<PublicKey> const pks = {sk1.GetPublicKey(), sk2.GetPublicKey()};
+        InsecureSignature aggSig = InsecureSignature::Aggregate(sigs);
+        PublicKey aggPk = PublicKey::AggregateInsecure(pks);
         REQUIRE(aggSig.Verify({hash}, {aggPk}));
     }
 
@@ -401,26 +403,26 @@ TEST_CASE("Signatures") {
         uint8_t seed2[32];
         getRandomSeed(seed2);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
 
         uint8_t hash1[BLS::MESSAGE_HASH_LEN];
         uint8_t hash2[BLS::MESSAGE_HASH_LEN];
-        BLSUtil::Hash256(hash1, message1, sizeof(message1));
-        BLSUtil::Hash256(hash2, message2, sizeof(message2));
+        Util::Hash256(hash1, message1, sizeof(message1));
+        Util::Hash256(hash2, message2, sizeof(message2));
 
-        BLSInsecureSignature sig1 = sk1.SignInsecurePrehashed(hash1);
-        BLSInsecureSignature sig2 = sk2.SignInsecurePrehashed(hash2);
+        InsecureSignature sig1 = sk1.SignInsecurePrehashed(hash1);
+        InsecureSignature sig2 = sk2.SignInsecurePrehashed(hash2);
         REQUIRE(sig1 != sig2);
         REQUIRE(sig1.Verify({hash1}, {sk1.GetPublicKey()}));
         REQUIRE(sig2.Verify({hash2}, {sk2.GetPublicKey()}));
 
-        std::vector<BLSInsecureSignature> const sigs = {sig1, sig2};
-        std::vector<BLSPublicKey> const pks = {sk1.GetPublicKey(), sk2.GetPublicKey()};
-        BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs);
+        std::vector<InsecureSignature> const sigs = {sig1, sig2};
+        std::vector<PublicKey> const pks = {sk1.GetPublicKey(), sk2.GetPublicKey()};
+        InsecureSignature aggSig = InsecureSignature::Aggregate(sigs);
 
         // same message verification should fail
-        BLSPublicKey aggPk = BLSPublicKey::AggregateInsecure(pks);
+        PublicKey aggPk = PublicKey::AggregateInsecure(pks);
         REQUIRE(!aggSig.Verify({hash1}, {aggPk}));
         REQUIRE(!aggSig.Verify({hash2}, {aggPk}));
 
@@ -438,23 +440,23 @@ TEST_CASE("Signatures") {
         uint8_t seed2[32];
         getRandomSeed(seed2);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
 
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PublicKey pk1 = sk1.GetPublicKey();
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message2, sizeof(message2));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message2, sizeof(message2));
 
-        std::vector<BLSSignature> const sigs = {sig1, sig2};
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        std::vector<Signature> const sigs = {sig1, sig2};
+        Signature aggSig = Signature::AggregateSigs(sigs);
 
-        BLSSignature sig3 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig4 = sk2.Sign(message2, sizeof(message2));
+        Signature sig3 = sk1.Sign(message1, sizeof(message1));
+        Signature sig4 = sk2.Sign(message2, sizeof(message2));
 
-        std::vector<BLSSignature> const sigs2 = {sig3, sig4};
-        BLSSignature aggSig2 = BLSSignature::AggregateSigs(sigs2);
+        std::vector<Signature> const sigs2 = {sig3, sig4};
+        Signature aggSig2 = Signature::AggregateSigs(sigs2);
         REQUIRE(sig1 == sig3);
         REQUIRE(sig2 == sig4);
         REQUIRE(aggSig == aggSig2);
@@ -464,8 +466,8 @@ TEST_CASE("Signatures") {
     }
 
     SECTION("Should securely aggregate many signatures, diff message") {
-        std::vector<BLSPrivateKey> sks;
-        std::vector<BLSSignature> sigs;
+        std::vector<PrivateKey> sks;
+        std::vector<Signature> sigs;
 
         for (int i = 0; i < 80; i++) {
             uint8_t* message = new uint8_t[8];
@@ -479,22 +481,22 @@ TEST_CASE("Signatures") {
             message[7] = i;
             uint8_t seed[32];
             getRandomSeed(seed);
-            const BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
-            const BLSPublicKey pk = sk.GetPublicKey();
+            const PrivateKey sk = PrivateKey::FromSeed(seed, 32);
+            const PublicKey pk = sk.GetPublicKey();
             sks.push_back(sk);
             sigs.push_back(sk.Sign(message, sizeof(message)));
             delete[] message;
         }
 
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        Signature aggSig = Signature::AggregateSigs(sigs);
 
         REQUIRE(aggSig.Verify());
     }
 
     SECTION("Should insecurely aggregate many signatures, diff message") {
-        std::vector<BLSPrivateKey> sks;
-        std::vector<BLSPublicKey> pks;
-        std::vector<BLSInsecureSignature> sigs;
+        std::vector<PrivateKey> sks;
+        std::vector<PublicKey> pks;
+        std::vector<InsecureSignature> sigs;
         std::vector<const uint8_t*> hashes;
 
         for (int i = 0; i < 80; i++) {
@@ -508,19 +510,19 @@ TEST_CASE("Signatures") {
             message[5] = 92;
             message[6] = 5;
             message[7] = i;
-            BLSUtil::Hash256(hash, message, 8);
+            Util::Hash256(hash, message, 8);
             hashes.push_back(hash);
             uint8_t seed[32];
             getRandomSeed(seed);
-            const BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
-            const BLSPublicKey pk = sk.GetPublicKey();
+            const PrivateKey sk = PrivateKey::FromSeed(seed, 32);
+            const PublicKey pk = sk.GetPublicKey();
             sks.push_back(sk);
             pks.push_back(pk);
             sigs.push_back(sk.SignInsecurePrehashed(hash));
             delete[] message;
         }
 
-        BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs);
+        InsecureSignature aggSig = InsecureSignature::Aggregate(sigs);
 
         REQUIRE(aggSig.Verify(hashes, pks));
         std::swap(pks[0], pks[1]);
@@ -542,24 +544,24 @@ TEST_CASE("Signatures") {
         uint8_t seed3[32];
         getRandomSeed(seed3);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
 
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed3, 32);
-        BLSPublicKey pk3 = sk3.GetPublicKey();
+        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
+        PublicKey pk3 = sk3.GetPublicKey();
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig3 = sk3.Sign(message1, sizeof(message1));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message1, sizeof(message1));
+        Signature sig3 = sk3.Sign(message1, sizeof(message1));
 
-        std::vector<BLSSignature> const sigs = {sig1, sig2, sig3};
-        std::vector<BLSPublicKey> const pubKeys = {pk1, pk2, pk3};
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        std::vector<Signature> const sigs = {sig1, sig2, sig3};
+        std::vector<PublicKey> const pubKeys = {pk1, pk2, pk3};
+        Signature aggSig = Signature::AggregateSigs(sigs);
 
-        const BLSPublicKey aggPubKey = BLSPublicKey::Aggregate(pubKeys);
+        const PublicKey aggPubKey = PublicKey::Aggregate(pubKeys);
         aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
                 aggPubKey, message1, sizeof(message1)));
         REQUIRE(aggSig.Verify());
@@ -574,30 +576,30 @@ TEST_CASE("Signatures") {
         uint8_t seed3[32];
         getRandomSeed(seed3);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
 
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed3, 32);
-        BLSPublicKey pk3 = sk3.GetPublicKey();
+        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
+        PublicKey pk3 = sk3.GetPublicKey();
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig3 = sk3.Sign(message1, sizeof(message1));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message1, sizeof(message1));
+        Signature sig3 = sk3.Sign(message1, sizeof(message1));
 
-        std::vector<BLSSignature> sigs = {sig1, sig2, sig3};
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        std::vector<Signature> sigs = {sig1, sig2, sig3};
+        Signature aggSig = Signature::AggregateSigs(sigs);
 
         REQUIRE(sig2.Verify());
         REQUIRE(sig3.Verify());
-        std::vector<BLSSignature> divisorSigs = {sig2, sig3};
+        std::vector<Signature> divisorSigs = {sig2, sig3};
 
         REQUIRE(aggSig.Verify());
 
         REQUIRE(aggSig.GetAggregationInfo()->GetPubKeys().size() == 3);
-        const BLSSignature aggSig2 = aggSig.DivideBy(divisorSigs);
+        const Signature aggSig2 = aggSig.DivideBy(divisorSigs);
         REQUIRE(aggSig.GetAggregationInfo()->GetPubKeys().size() == 3);
         REQUIRE(aggSig2.GetAggregationInfo()->GetPubKeys().size() == 1);
 
@@ -618,51 +620,51 @@ TEST_CASE("Signatures") {
         uint8_t seed4[32];
         getRandomSeed(seed4);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
 
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed3, 32);
-        BLSPublicKey pk3 = sk3.GetPublicKey();
+        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
+        PublicKey pk3 = sk3.GetPublicKey();
 
-        BLSPrivateKey sk4 = BLSPrivateKey::FromSeed(seed4, 32);
-        BLSPublicKey pk4 = sk4.GetPublicKey();
+        PrivateKey sk4 = PrivateKey::FromSeed(seed4, 32);
+        PublicKey pk4 = sk4.GetPublicKey();
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig3 = sk3.Sign(message1, sizeof(message1));
-        BLSSignature sig4 = sk4.Sign(message2, sizeof(message2));
-        BLSSignature sig5 = sk4.Sign(message1, sizeof(message1));
-        BLSSignature sig6 = sk2.Sign(message3, sizeof(message3));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message1, sizeof(message1));
+        Signature sig3 = sk3.Sign(message1, sizeof(message1));
+        Signature sig4 = sk4.Sign(message2, sizeof(message2));
+        Signature sig5 = sk4.Sign(message1, sizeof(message1));
+        Signature sig6 = sk2.Sign(message3, sizeof(message3));
 
-        std::vector<BLSSignature> sigsL = {sig1, sig2};
-        std::vector<BLSSignature> sigsC = {sig3, sig4};
-        std::vector<BLSSignature> sigsR = {sig5, sig6};
-        BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
-        BLSSignature aggSigC = BLSSignature::AggregateSigs(sigsC);
-        BLSSignature aggSigR = BLSSignature::AggregateSigs(sigsR);
+        std::vector<Signature> sigsL = {sig1, sig2};
+        std::vector<Signature> sigsC = {sig3, sig4};
+        std::vector<Signature> sigsR = {sig5, sig6};
+        Signature aggSigL = Signature::AggregateSigs(sigsL);
+        Signature aggSigC = Signature::AggregateSigs(sigsC);
+        Signature aggSigR = Signature::AggregateSigs(sigsR);
 
-        std::vector<BLSSignature> sigsL2 = {aggSigL, aggSigC};
-        BLSSignature aggSigL2 = BLSSignature::AggregateSigs(sigsL2);
+        std::vector<Signature> sigsL2 = {aggSigL, aggSigC};
+        Signature aggSigL2 = Signature::AggregateSigs(sigsL2);
 
-        std::vector<BLSSignature> sigsFinal = {aggSigL2, aggSigR};
-        BLSSignature aggSigFinal = BLSSignature::AggregateSigs(sigsFinal);
+        std::vector<Signature> sigsFinal = {aggSigL2, aggSigR};
+        Signature aggSigFinal = Signature::AggregateSigs(sigsFinal);
 
         REQUIRE(aggSigFinal.Verify());
         REQUIRE(aggSigFinal.GetAggregationInfo()->GetPubKeys().size() == 6);
-        std::vector<BLSSignature> divisorSigs = {aggSigL, sig6};
+        std::vector<Signature> divisorSigs = {aggSigL, sig6};
         aggSigFinal = aggSigFinal.DivideBy(divisorSigs);
         REQUIRE(aggSigFinal.GetAggregationInfo()->GetPubKeys().size() == 3);
         REQUIRE(aggSigFinal.Verify());
 
         // Throws when the m/pk pair is not unique within the aggregate (sig1
         // is in both aggSigL2 and sig1.
-        std::vector<BLSSignature> sigsFinal2 = {aggSigL2, aggSigR, sig1};
-        BLSSignature aggSigFinal2 = BLSSignature::AggregateSigs(sigsFinal2);
-        std::vector<BLSSignature> divisorSigs2 = {aggSigL};
-        std::vector<BLSSignature> divisorSigs3 = {sig6};
+        std::vector<Signature> sigsFinal2 = {aggSigL2, aggSigR, sig1};
+        Signature aggSigFinal2 = Signature::AggregateSigs(sigsFinal2);
+        std::vector<Signature> divisorSigs2 = {aggSigL};
+        std::vector<Signature> divisorSigs3 = {sig6};
         aggSigFinal2 = aggSigFinal2.DivideBy(divisorSigs3);
         REQUIRE_THROWS(aggSigFinal2.DivideBy(divisorSigs));
     }
@@ -671,46 +673,46 @@ TEST_CASE("Signatures") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
         uint8_t hash1[BLS::MESSAGE_HASH_LEN];
 
-        std::vector<BLSPrivateKey> sks;
-        std::vector<BLSPublicKey> pks;
-        std::vector<BLSInsecureSignature> sigs;
+        std::vector<PrivateKey> sks;
+        std::vector<PublicKey> pks;
+        std::vector<InsecureSignature> sigs;
 
-        BLSUtil::Hash256(hash1, message1, sizeof(message1));
+        Util::Hash256(hash1, message1, sizeof(message1));
 
         for (int i = 0; i < 70; i++) {
             uint8_t seed[32];
             getRandomSeed(seed);
-            BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
-            const BLSPublicKey pk = sk.GetPublicKey();
+            PrivateKey sk = PrivateKey::FromSeed(seed, 32);
+            const PublicKey pk = sk.GetPublicKey();
             sks.push_back(sk);
             pks.push_back(pk);
             sigs.push_back(sk.SignInsecure(message1, sizeof(message1)));
         }
 
-        BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs);
-        const BLSPublicKey aggPubKey = BLSPublicKey::AggregateInsecure(pks);
+        InsecureSignature aggSig = InsecureSignature::Aggregate(sigs);
+        const PublicKey aggPubKey = PublicKey::AggregateInsecure(pks);
         REQUIRE(aggSig.Verify({hash1}, {aggPubKey}));
     }
 
     SECTION("Should securely aggregate many sigs, same message") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
 
-        std::vector<BLSPrivateKey> sks;
-        std::vector<BLSPublicKey> pks;
-        std::vector<BLSSignature> sigs;
+        std::vector<PrivateKey> sks;
+        std::vector<PublicKey> pks;
+        std::vector<Signature> sigs;
 
         for (int i = 0; i < 70; i++) {
             uint8_t seed[32];
             getRandomSeed(seed);
-            BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
-            const BLSPublicKey pk = sk.GetPublicKey();
+            PrivateKey sk = PrivateKey::FromSeed(seed, 32);
+            const PublicKey pk = sk.GetPublicKey();
             sks.push_back(sk);
             pks.push_back(pk);
             sigs.push_back(sk.Sign(message1, sizeof(message1)));
         }
 
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
-        const BLSPublicKey aggPubKey = BLSPublicKey::Aggregate(pks);
+        Signature aggSig = Signature::AggregateSigs(sigs);
+        const PublicKey aggPubKey = PublicKey::Aggregate(pks);
         aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
                 aggPubKey, message1, sizeof(message1)));
         REQUIRE(aggSig.Verify());
@@ -720,17 +722,17 @@ TEST_CASE("Signatures") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
         uint8_t seed[32];
         getRandomSeed(seed);
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
 
-        std::vector<BLSSignature> const sigs = {};
-        REQUIRE_THROWS(BLSSignature::AggregateSigs(sigs));
+        std::vector<Signature> const sigs = {};
+        REQUIRE_THROWS(Signature::AggregateSigs(sigs));
 
         sig1.SetAggregationInfo(AggregationInfo());
-        std::vector<BLSSignature> const sigs2 = {sig1};
-        REQUIRE_THROWS(BLSSignature::AggregateSigs(sigs2));
+        std::vector<Signature> const sigs2 = {sig1};
+        REQUIRE_THROWS(Signature::AggregateSigs(sigs2));
     }
 
     SECTION("Should perform batch verification") {
@@ -746,30 +748,30 @@ TEST_CASE("Signatures") {
         uint8_t seed4[32];
         getRandomSeed(seed4);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
 
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed3, 32);
-        BLSPublicKey pk3 = sk3.GetPublicKey();
+        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
+        PublicKey pk3 = sk3.GetPublicKey();
 
-        BLSPrivateKey sk4 = BLSPrivateKey::FromSeed(seed4, 32);
-        BLSPublicKey pk4 = sk4.GetPublicKey();
+        PrivateKey sk4 = PrivateKey::FromSeed(seed4, 32);
+        PublicKey pk4 = sk4.GetPublicKey();
 
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig3 = sk3.Sign(message2, sizeof(message2));
-        BLSSignature sig4 = sk4.Sign(message3, sizeof(message3));
-        BLSSignature sig5 = sk3.Sign(message1, sizeof(message1));
-        BLSSignature sig6 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig7 = sk4.Sign(message2, sizeof(message2));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message1, sizeof(message1));
+        Signature sig3 = sk3.Sign(message2, sizeof(message2));
+        Signature sig4 = sk4.Sign(message3, sizeof(message3));
+        Signature sig5 = sk3.Sign(message1, sizeof(message1));
+        Signature sig6 = sk2.Sign(message1, sizeof(message1));
+        Signature sig7 = sk4.Sign(message2, sizeof(message2));
 
-        std::vector<BLSSignature> const sigs =
+        std::vector<Signature> const sigs =
                 {sig1, sig2, sig3, sig4, sig5, sig6, sig7};
-        std::vector<BLSPublicKey> const pubKeys =
+        std::vector<PublicKey> const pubKeys =
                 {pk1, pk2, pk3, pk4, pk3, pk2, pk4};
         std::vector<uint8_t*> const messages =
                 {message1, message1, message2, message3, message1,
@@ -780,7 +782,7 @@ TEST_CASE("Signatures") {
                  sizeof(message2)};
 
         // Verifier generates a batch signature for efficiency
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        Signature aggSig = Signature::AggregateSigs(sigs);
         REQUIRE(aggSig.Verify());
     }
 
@@ -797,40 +799,40 @@ TEST_CASE("Signatures") {
         uint8_t seed4[32];
         getRandomSeed(seed4);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
 
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed3, 32);
-        BLSPublicKey pk3 = sk3.GetPublicKey();
+        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
+        PublicKey pk3 = sk3.GetPublicKey();
 
-        BLSPrivateKey sk4 = BLSPrivateKey::FromSeed(seed4, 32);
-        BLSPublicKey pk4 = sk4.GetPublicKey();
+        PrivateKey sk4 = PrivateKey::FromSeed(seed4, 32);
+        PublicKey pk4 = sk4.GetPublicKey();
 
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig3 = sk3.Sign(message2, sizeof(message2));
-        BLSSignature sig4 = sk4.Sign(message3, sizeof(message3));
-        BLSSignature sig5 = sk3.Sign(message1, sizeof(message1));
-        BLSSignature sig6 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig7 = sk4.Sign(message2, sizeof(message2));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message1, sizeof(message1));
+        Signature sig3 = sk3.Sign(message2, sizeof(message2));
+        Signature sig4 = sk4.Sign(message3, sizeof(message3));
+        Signature sig5 = sk3.Sign(message1, sizeof(message1));
+        Signature sig6 = sk2.Sign(message1, sizeof(message1));
+        Signature sig7 = sk4.Sign(message2, sizeof(message2));
 
-        std::vector<BLSSignature> const sigs =
+        std::vector<Signature> const sigs =
                 {sig1, sig2, sig3, sig4, sig5, sig6, sig7};
 
         REQUIRE(sig1.Verify());
         REQUIRE(sig3.Verify());
         REQUIRE(sig4.Verify());
         REQUIRE(sig7.Verify());
-        std::vector<BLSSignature> cache = {sig1, sig3, sig4, sig7};
+        std::vector<Signature> cache = {sig1, sig3, sig4, sig7};
 
         // Verifier generates a batch signature for efficiency
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        Signature aggSig = Signature::AggregateSigs(sigs);
 
-        const BLSSignature aggSig2 = aggSig.DivideBy(cache);
+        const Signature aggSig2 = aggSig.DivideBy(cache);
         REQUIRE(aggSig.Verify());
         REQUIRE(aggSig2.Verify());
     }
@@ -842,29 +844,29 @@ TEST_CASE("Signatures") {
         uint8_t seed2[32];
         getRandomSeed(seed2);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
 
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        std::vector<BLSPrivateKey> const privateKeys = {sk1, sk2};
-        std::vector<BLSPublicKey> const pubKeys = {pk1, pk2};
-        const BLSPrivateKey aggSk = BLSPrivateKey::Aggregate(
+        std::vector<PrivateKey> const privateKeys = {sk1, sk2};
+        std::vector<PublicKey> const pubKeys = {pk1, pk2};
+        const PrivateKey aggSk = PrivateKey::Aggregate(
                 privateKeys, pubKeys);
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message1, sizeof(message1));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message1, sizeof(message1));
 
-        BLSSignature aggSig2 = aggSk.Sign(message1, sizeof(message1));
+        Signature aggSig2 = aggSk.Sign(message1, sizeof(message1));
 
-        std::vector<BLSSignature> const sigs = {sig1, sig2};
+        std::vector<Signature> const sigs = {sig1, sig2};
         std::vector<uint8_t*> const messages = {message1, message1};
         std::vector<size_t> const messageLens = {sizeof(message1), sizeof(message1)};
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        Signature aggSig = Signature::AggregateSigs(sigs);
         ASSERT(aggSig == aggSig2);
 
-        const BLSPublicKey aggPubKey = BLSPublicKey::Aggregate(pubKeys);
+        const PublicKey aggPubKey = PublicKey::Aggregate(pubKeys);
         REQUIRE(aggSig.Verify());
         REQUIRE(aggSig2.Verify());
     }
@@ -900,25 +902,25 @@ TEST_CASE("HD keys") {
                 seed, sizeof(seed));
         ExtendedPublicKey epk = esk.GetExtendedPublicKey();
 
-        BLSPublicKey pk1 = esk.PrivateChild(238757).GetPublicKey();
-        BLSPublicKey pk2 = epk.PublicChild(238757).GetPublicKey();
+        PublicKey pk1 = esk.PrivateChild(238757).GetPublicKey();
+        PublicKey pk2 = epk.PublicChild(238757).GetPublicKey();
 
         REQUIRE(pk1 == pk2);
 
-        BLSPrivateKey sk3 = esk.PrivateChild(0)
+        PrivateKey sk3 = esk.PrivateChild(0)
                               .PrivateChild(3)
                               .PrivateChild(8)
                               .PrivateChild(1)
                               .GetPrivateKey();
 
-        BLSPublicKey pk4 = epk.PublicChild(0)
+        PublicKey pk4 = epk.PublicChild(0)
                               .PublicChild(3)
                               .PublicChild(8)
                               .PublicChild(1)
                               .GetPublicKey();
         REQUIRE(sk3.GetPublicKey() == pk4);
 
-        BLSSignature sig = sk3.Sign(seed, sizeof(seed));
+        Signature sig = sk3.Sign(seed, sizeof(seed));
 
         REQUIRE(sig.Verify());
     }
@@ -955,7 +957,7 @@ TEST_CASE("HD keys") {
         cout << epk.GetPublicKey() << endl;
         cout << epk.GetChainCode() << endl;
 
-        BLSSignature sig1 = esk.GetPrivateKey()
+        Signature sig1 = esk.GetPrivateKey()
                                .Sign(seed, sizeof(seed));
         cout << sig1 << endl;
     }
@@ -966,8 +968,8 @@ TEST_CASE("HD keys") {
                 seed, sizeof(seed));
         ExtendedPublicKey epk = esk.GetExtendedPublicKey();
 
-        BLSPublicKey pk1 = esk.PrivateChild(238757).GetPublicKey();
-        BLSPublicKey pk2 = epk.PublicChild(238757).GetPublicKey();
+        PublicKey pk1 = esk.PrivateChild(238757).GetPublicKey();
+        PublicKey pk2 = epk.PublicChild(238757).GetPublicKey();
 
         REQUIRE(pk1 == pk2);
 
@@ -1006,33 +1008,33 @@ TEST_CASE("AggregationInfo") {
         uint8_t messageHash4[32];
         uint8_t messageHash5[32];
         uint8_t messageHash6[32];
-        BLSUtil::Hash256(messageHash1, message1, 7);
-        BLSUtil::Hash256(messageHash2, message2, 8);
-        BLSUtil::Hash256(messageHash3, message3, 8);
-        BLSUtil::Hash256(messageHash4, message4, 8);
-        BLSUtil::Hash256(messageHash5, message5, 8);
-        BLSUtil::Hash256(messageHash6, message6, 8);
+        Util::Hash256(messageHash1, message1, 7);
+        Util::Hash256(messageHash2, message2, 8);
+        Util::Hash256(messageHash3, message3, 8);
+        Util::Hash256(messageHash4, message4, 8);
+        Util::Hash256(messageHash5, message5, 8);
+        Util::Hash256(messageHash6, message6, 8);
 
         uint8_t seed[32];
         getRandomSeed(seed);
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
         getRandomSeed(seed);
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed, 32);
+        PrivateKey sk2 = PrivateKey::FromSeed(seed, 32);
         getRandomSeed(seed);
-        BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed, 32);
+        PrivateKey sk3 = PrivateKey::FromSeed(seed, 32);
         getRandomSeed(seed);
-        BLSPrivateKey sk4 = BLSPrivateKey::FromSeed(seed, 32);
+        PrivateKey sk4 = PrivateKey::FromSeed(seed, 32);
         getRandomSeed(seed);
-        BLSPrivateKey sk5 = BLSPrivateKey::FromSeed(seed, 32);
+        PrivateKey sk5 = PrivateKey::FromSeed(seed, 32);
         getRandomSeed(seed);
-        BLSPrivateKey sk6 = BLSPrivateKey::FromSeed(seed, 32);
+        PrivateKey sk6 = PrivateKey::FromSeed(seed, 32);
 
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSPublicKey pk2 = sk2.GetPublicKey();
-        BLSPublicKey pk3 = sk3.GetPublicKey();
-        BLSPublicKey pk4 = sk4.GetPublicKey();
-        BLSPublicKey pk5 = sk5.GetPublicKey();
-        BLSPublicKey pk6 = sk6.GetPublicKey();
+        PublicKey pk1 = sk1.GetPublicKey();
+        PublicKey pk2 = sk2.GetPublicKey();
+        PublicKey pk3 = sk3.GetPublicKey();
+        PublicKey pk4 = sk4.GetPublicKey();
+        PublicKey pk5 = sk5.GetPublicKey();
+        PublicKey pk6 = sk6.GetPublicKey();
 
         AggregationInfo a1 = AggregationInfo::FromMsgHash(pk1, messageHash1);
         AggregationInfo a2 = AggregationInfo::FromMsgHash(pk2, messageHash2);
@@ -1124,31 +1126,31 @@ TEST_CASE("AggregationInfo") {
         uint8_t seed2[32];
         getRandomSeed(seed2);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
 
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PublicKey pk1 = sk1.GetPublicKey();
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message2, sizeof(message2));
-        BLSSignature sig3 = sk2.Sign(message1, sizeof(message1));
-        BLSSignature sig4 = sk1.Sign(message3, sizeof(message3));
-        BLSSignature sig5 = sk1.Sign(message4, sizeof(message4));
-        BLSSignature sig6 = sk1.Sign(message1, sizeof(message1));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message2, sizeof(message2));
+        Signature sig3 = sk2.Sign(message1, sizeof(message1));
+        Signature sig4 = sk1.Sign(message3, sizeof(message3));
+        Signature sig5 = sk1.Sign(message4, sizeof(message4));
+        Signature sig6 = sk1.Sign(message1, sizeof(message1));
 
-        std::vector<BLSSignature> const sigsL = {sig1, sig2};
-        std::vector<BLSPublicKey> const pksL = {pk1, pk2};
-        const BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
+        std::vector<Signature> const sigsL = {sig1, sig2};
+        std::vector<PublicKey> const pksL = {pk1, pk2};
+        const Signature aggSigL = Signature::AggregateSigs(sigsL);
 
-        std::vector<BLSSignature> const sigsR = {sig3, sig4, sig6};
-        const BLSSignature aggSigR = BLSSignature::AggregateSigs(sigsR);
+        std::vector<Signature> const sigsR = {sig3, sig4, sig6};
+        const Signature aggSigR = Signature::AggregateSigs(sigsR);
 
-        std::vector<BLSPublicKey> pk1Vec = {pk1};
+        std::vector<PublicKey> pk1Vec = {pk1};
 
-        std::vector<BLSSignature> sigs = {aggSigL, aggSigR, sig5};
+        std::vector<Signature> sigs = {aggSigL, aggSigR, sig5};
 
-        const BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        const Signature aggSig = Signature::AggregateSigs(sigs);
 
         REQUIRE(aggSig.Verify());
     }
@@ -1157,23 +1159,23 @@ TEST_CASE("AggregationInfo") {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
         uint8_t seed[32];
         getRandomSeed(seed);
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSSignature aggSig = sk1.Sign(message1, sizeof(message1));
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
+        Signature aggSig = sk1.Sign(message1, sizeof(message1));
 
         for (size_t i = 0; i < 10; i++) {
             getRandomSeed(seed);
-            BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, 32);
-            BLSPublicKey pk = sk.GetPublicKey();
-            BLSSignature sig = sk.Sign(message1, sizeof(message1));
-            std::vector<BLSSignature> sigs = {aggSig, sig};
-            aggSig = BLSSignature::AggregateSigs(sigs);
+            PrivateKey sk = PrivateKey::FromSeed(seed, 32);
+            PublicKey pk = sk.GetPublicKey();
+            Signature sig = sk.Sign(message1, sizeof(message1));
+            std::vector<Signature> sigs = {aggSig, sig};
+            aggSig = Signature::AggregateSigs(sigs);
         }
         REQUIRE(aggSig.Verify());
-        uint8_t sigSerialized[BLSSignature::SIGNATURE_SIZE];
+        uint8_t sigSerialized[Signature::SIGNATURE_SIZE];
         aggSig.Serialize(sigSerialized);
 
-        const BLSSignature aggSig2 = BLSSignature::FromBytes(sigSerialized);
+        const Signature aggSig2 = Signature::FromBytes(sigSerialized);
         REQUIRE(aggSig2.Verify() == false);
     }
 
@@ -1188,39 +1190,39 @@ TEST_CASE("AggregationInfo") {
         uint8_t seed2[32];
         getRandomSeed(seed2);
 
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, 32);
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed2, 32);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
 
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSPublicKey pk2 = sk2.GetPublicKey();
+        PublicKey pk1 = sk1.GetPublicKey();
+        PublicKey pk2 = sk2.GetPublicKey();
 
-        BLSSignature sig1 = sk1.Sign(message1, sizeof(message1));
-        BLSSignature sig2 = sk2.Sign(message2, sizeof(message2));
-        BLSSignature sig3 = sk2.Sign(message3, sizeof(message4));
-        BLSSignature sig4 = sk1.Sign(message4, sizeof(message4));
+        Signature sig1 = sk1.Sign(message1, sizeof(message1));
+        Signature sig2 = sk2.Sign(message2, sizeof(message2));
+        Signature sig3 = sk2.Sign(message3, sizeof(message4));
+        Signature sig4 = sk1.Sign(message4, sizeof(message4));
 
-        std::vector<BLSSignature> const sigsL = {sig1, sig2};
-        std::vector<BLSPublicKey> const pksL = {pk1, pk2};
+        std::vector<Signature> const sigsL = {sig1, sig2};
+        std::vector<PublicKey> const pksL = {pk1, pk2};
         std::vector<uint8_t*> const messagesL = {message1, message2};
         std::vector<size_t> const messageLensL = {sizeof(message1),
                                              sizeof(message2)};
-        const BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
+        const Signature aggSigL = Signature::AggregateSigs(sigsL);
 
-        std::vector<BLSSignature> const sigsR = {sig3, sig4};
-        std::vector<BLSPublicKey> const pksR = {pk2, pk1};
+        std::vector<Signature> const sigsR = {sig3, sig4};
+        std::vector<PublicKey> const pksR = {pk2, pk1};
         std::vector<uint8_t*> const messagesR = {message3, message4};
         std::vector<size_t> const messageLensR = {sizeof(message3),
                                              sizeof(message4)};
-        const BLSSignature aggSigR = BLSSignature::AggregateSigs(sigsR);
+        const Signature aggSigR = Signature::AggregateSigs(sigsR);
 
-        std::vector<BLSSignature> sigs = {aggSigL, aggSigR};
-        std::vector<std::vector<BLSPublicKey> > pks = {pksL, pksR};
+        std::vector<Signature> sigs = {aggSigL, aggSigR};
+        std::vector<std::vector<PublicKey> > pks = {pksL, pksR};
         std::vector<std::vector<uint8_t*> > messages = {messagesL, messagesR};
         std::vector<std::vector<size_t> > messageLens = {messageLensL, messageLensR};
 
-        const BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        const Signature aggSig = Signature::AggregateSigs(sigs);
 
-        std::vector<BLSPublicKey> allPks = {pk1, pk2, pk2, pk1};
+        std::vector<PublicKey> allPks = {pk1, pk2, pk2, pk1};
         std::vector<uint8_t*> allMessages = {message1, message2,
                                               message3, message4};
         std::vector<size_t> allMessageLens = {sizeof(message1), sizeof(message2),
@@ -1235,80 +1237,80 @@ TEST_CASE("AggregationInfo") {
                         19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
                         82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22};
 
-        BLSPrivateKey sk = BLSPrivateKey::FromSeed(seed, sizeof(seed));
-        BLSPublicKey pk = sk.GetPublicKey();
+        PrivateKey sk = PrivateKey::FromSeed(seed, sizeof(seed));
+        PublicKey pk = sk.GetPublicKey();
 
         uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
 
-        BLSSignature sig = sk.Sign(msg, sizeof(msg));
+        Signature sig = sk.Sign(msg, sizeof(msg));
 
-        uint8_t skBytes[BLSPrivateKey::PRIVATE_KEY_SIZE];  // 32 byte array
-        uint8_t pkBytes[BLSPublicKey::PUBLIC_KEY_SIZE];    // 48 byte array
-        uint8_t sigBytes[BLSSignature::SIGNATURE_SIZE];    // 96 byte array
+        uint8_t skBytes[PrivateKey::PRIVATE_KEY_SIZE];  // 32 byte array
+        uint8_t pkBytes[PublicKey::PUBLIC_KEY_SIZE];    // 48 byte array
+        uint8_t sigBytes[Signature::SIGNATURE_SIZE];    // 96 byte array
 
         sk.Serialize(skBytes);   // 32 bytes
         pk.Serialize(pkBytes);   // 48 bytes
         sig.Serialize(sigBytes); // 96 bytes
         // Takes array of 32 bytes
-        sk = BLSPrivateKey::FromBytes(skBytes);
+        sk = PrivateKey::FromBytes(skBytes);
 
         // Takes array of 48 bytes
-        pk = BLSPublicKey::FromBytes(pkBytes);
+        pk = PublicKey::FromBytes(pkBytes);
 
         // Takes array of 96 bytes
-        sig = BLSSignature::FromBytes(sigBytes);
+        sig = Signature::FromBytes(sigBytes);
         // Add information required for verification, to sig object
         sig.SetAggregationInfo(AggregationInfo::FromMsg(pk, msg, sizeof(msg)));
 
         bool ok = sig.Verify();
         // Generate some more private keys
         seed[0] = 1;
-        BLSPrivateKey sk1 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, sizeof(seed));
         seed[0] = 2;
-        BLSPrivateKey sk2 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
+        PrivateKey sk2 = PrivateKey::FromSeed(seed, sizeof(seed));
 
         // Generate first sig
-        BLSPublicKey pk1 = sk1.GetPublicKey();
-        BLSSignature sig1 = sk1.Sign(msg, sizeof(msg));
+        PublicKey pk1 = sk1.GetPublicKey();
+        Signature sig1 = sk1.Sign(msg, sizeof(msg));
 
         // Generate second sig
-        BLSPublicKey pk2 = sk2.GetPublicKey();
-        BLSSignature sig2 = sk2.Sign(msg, sizeof(msg));
+        PublicKey pk2 = sk2.GetPublicKey();
+        Signature sig2 = sk2.Sign(msg, sizeof(msg));
 
         // Aggregate signatures together
-        std::vector<BLSSignature> sigs = {sig1, sig2};
-        BLSSignature aggSig = BLSSignature::AggregateSigs(sigs);
+        std::vector<Signature> sigs = {sig1, sig2};
+        Signature aggSig = Signature::AggregateSigs(sigs);
 
         // For same message, public keys can be aggregated into one.
         // The signature can be verified the same as a single signature,
         // using this public key.
-        std::vector<BLSPublicKey> pubKeys = {pk1, pk2};
-        BLSPublicKey aggPubKey = BLSPublicKey::Aggregate(pubKeys);
+        std::vector<PublicKey> pubKeys = {pk1, pk2};
+        PublicKey aggPubKey = PublicKey::Aggregate(pubKeys);
         // Generate one more key
         seed[0] = 3;
-        BLSPrivateKey sk3 = BLSPrivateKey::FromSeed(seed, sizeof(seed));
-        BLSPublicKey pk3 = sk3.GetPublicKey();
+        PrivateKey sk3 = PrivateKey::FromSeed(seed, sizeof(seed));
+        PublicKey pk3 = sk3.GetPublicKey();
         uint8_t msg2[] = {100, 2, 254, 88, 90, 45, 23};
 
         // Generate the signatures, assuming we have 3 private keys
         sig1 = sk1.Sign(msg, sizeof(msg));
         sig2 = sk2.Sign(msg, sizeof(msg));
-        BLSSignature sig3 = sk3.Sign(msg2, sizeof(msg2));
+        Signature sig3 = sk3.Sign(msg2, sizeof(msg2));
 
         // They can be noninteractively combined by anyone
         // Aggregation below can also be done by the verifier, to
         // make batch verification more efficient
-        std::vector<BLSSignature> sigsL = {sig1, sig2};
-        BLSSignature aggSigL = BLSSignature::AggregateSigs(sigsL);
+        std::vector<Signature> sigsL = {sig1, sig2};
+        Signature aggSigL = Signature::AggregateSigs(sigsL);
 
         // Arbitrary trees of aggregates
-        std::vector<BLSSignature> sigsFinal = {aggSigL, sig3};
-        BLSSignature aggSigFinal = BLSSignature::AggregateSigs(sigsFinal);
+        std::vector<Signature> sigsFinal = {aggSigL, sig3};
+        Signature aggSigFinal = Signature::AggregateSigs(sigsFinal);
 
         // Serialize the final signature
         aggSigFinal.Serialize(sigBytes);
         // Deserialize aggregate signature
-        aggSigFinal = BLSSignature::FromBytes(sigBytes);
+        aggSigFinal = Signature::FromBytes(sigBytes);
 
         // Create aggregation information (or deserialize it)
         AggregationInfo a1 = AggregationInfo::FromMsg(pk1, msg, sizeof(msg));
@@ -1326,21 +1328,21 @@ TEST_CASE("AggregationInfo") {
         // If you previously verified a signature, you can also divide
         // the aggregate signature by the signature you already verified.
         ok = aggSigL.Verify();
-        std::vector<BLSSignature> cache = {aggSigL};
+        std::vector<Signature> cache = {aggSigL};
         aggSigFinal = aggSigFinal.DivideBy(cache);
 
         // Final verification is now more efficient
         ok = aggSigFinal.Verify();
 
-        std::vector<BLSPrivateKey> privateKeysList = {sk1, sk2};
-        std::vector<BLSPublicKey> pubKeysList = {pk1, pk2};
+        std::vector<PrivateKey> privateKeysList = {sk1, sk2};
+        std::vector<PublicKey> pubKeysList = {pk1, pk2};
 
         // Create an aggregate private key, that can generate
         // aggregate signatures
-        const BLSPrivateKey aggSk = BLSPrivateKey::Aggregate(
+        const PrivateKey aggSk = PrivateKey::Aggregate(
                 privateKeysList, pubKeysList);
 
-        BLSSignature aggSig3 = aggSk.Sign(msg, sizeof(msg));
+        Signature aggSig3 = aggSk.Sign(msg, sizeof(msg));
     }
 }
 

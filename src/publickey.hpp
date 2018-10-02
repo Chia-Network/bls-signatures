@@ -24,35 +24,35 @@
 #include <gmp.h>
 #endif
 
-#include "blsutil.hpp"
-
+#include "util.hpp"
+namespace bls {
 /** An encapsulated public key. */
-class BLSPublicKey {
- friend class BLSInsecureSignature;
- friend class BLSSignature;
+class PublicKey {
+ friend class InsecureSignature;
+ friend class Signature;
  friend class ExtendedPublicKey;
  public:
     static const size_t PUBLIC_KEY_SIZE = 48;
 
     // Construct a public key from a byte vector.
-    static BLSPublicKey FromBytes(const uint8_t* key);
+    static PublicKey FromBytes(const uint8_t* key);
 
     // Construct a public key from a native g1 element.
-    static BLSPublicKey FromG1(const relic::g1_t* key);
+    static PublicKey FromG1(const relic::g1_t* key);
 
     // Construct a public key from another public key.
-    BLSPublicKey(const BLSPublicKey &pubKey);
+    PublicKey(const PublicKey &pubKey);
 
     // Insecurely aggregate multiple public keys into one
-    static BLSPublicKey AggregateInsecure(std::vector<BLSPublicKey> const& pubKeys);
+    static PublicKey AggregateInsecure(std::vector<PublicKey> const& pubKeys);
 
     // Securely aggregate multiple public keys into one by exponentiating the keys with the pubKey hashes first
-    static BLSPublicKey Aggregate(std::vector<BLSPublicKey> const& pubKeys);
+    static PublicKey Aggregate(std::vector<PublicKey> const& pubKeys);
 
     // Comparator implementation.
-    friend bool operator==(BLSPublicKey const &a,  BLSPublicKey const &b);
-    friend bool operator!=(BLSPublicKey const &a,  BLSPublicKey const &b);
-    friend std::ostream &operator<<(std::ostream &os, BLSPublicKey const &s);
+    friend bool operator==(PublicKey const &a,  PublicKey const &b);
+    friend bool operator!=(PublicKey const &a,  PublicKey const &b);
+    friend std::ostream &operator<<(std::ostream &os, PublicKey const &s);
 
     void Serialize(uint8_t *buffer) const;
     std::vector<uint8_t> Serialize() const;
@@ -62,10 +62,10 @@ class BLSPublicKey {
 
  private:
     // Don't allow public construction, force static methods
-    BLSPublicKey();
+    PublicKey();
 
     // Exponentiate public key with n
-    BLSPublicKey Exp(const relic::bn_t n) const;
+    PublicKey Exp(const relic::bn_t n) const;
 
     static void CompressPoint(uint8_t* result, const relic::g1_t* point);
 
@@ -74,4 +74,5 @@ class BLSPublicKey {
     relic::g1_t q;
 };
 
+} // end namespace bls
 #endif  // SRC_BLSPUBLICKEY_HPP_

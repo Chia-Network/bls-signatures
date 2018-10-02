@@ -25,9 +25,9 @@
 #include <gmp.h>
 #endif
 
-#include "blspublickey.hpp"
-#include "blsprivatekey.hpp"
-#include "blssignature.hpp"
+#include "publickey.hpp"
+#include "privatekey.hpp"
+#include "signature.hpp"
 #include "extendedprivatekey.hpp"
 #include "aggregationinfo.hpp"
 
@@ -35,6 +35,7 @@ namespace relic {
     #include "relic.h"
     #include "relic_test.h"
 }
+namespace bls {
 
 /*
  * Principal class for verification and signature aggregation.
@@ -62,5 +63,6 @@ class BLS {
 
     static void CheckRelicErrors();
 };
+} // end namespace bls
 
 #endif  // SRC_BLS_HPP_

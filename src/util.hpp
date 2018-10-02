@@ -38,8 +38,9 @@ namespace relic {
     #include "relic.h"
     #include "relic_test.h"
 }
+namespace bls {
 
-class BLSUtil {
+class Util {
  public:
     static void Hash256(uint8_t* output, const uint8_t* message,
                         size_t messageLen) {
@@ -114,5 +115,5 @@ class BLSUtil {
         return sum;
     }
 };
-
+} // end namespace bls
 #endif  // SRC_BLSUTIL_HPP_

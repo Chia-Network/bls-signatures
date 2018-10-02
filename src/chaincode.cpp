@@ -14,6 +14,7 @@
 
 #include "chaincode.hpp"
 #include "bls.hpp"
+namespace bls {
 
 ChainCode ChainCode::FromBytes(const uint8_t* bytes) {
     BLS::AssertInitialized();
@@ -43,7 +44,7 @@ bool operator!=(ChainCode const &a,  ChainCode const &b) {
 std::ostream &operator<<(std::ostream &os, ChainCode const &s) {
     uint8_t buffer[ChainCode::CHAIN_CODE_SIZE];
     s.Serialize(buffer);
-    return os << BLSUtil::HexStr(buffer, ChainCode::CHAIN_CODE_SIZE);
+    return os << Util::HexStr(buffer, ChainCode::CHAIN_CODE_SIZE);
 }
 
 void ChainCode::Serialize(uint8_t *buffer) const {
@@ -55,3 +56,4 @@ std::vector<uint8_t> ChainCode::Serialize() const {
     Serialize(data.data());
     return data;
 }
+} // end namespace bls
