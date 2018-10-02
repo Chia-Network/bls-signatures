@@ -39,7 +39,7 @@ namespace relic {
     #include "relic_test.h"
 }
 
-class BLSUtil {
+class Util {
  public:
     static void Hash256(uint8_t* output, const uint8_t* message,
                         size_t messageLen) {

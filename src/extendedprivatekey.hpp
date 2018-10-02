@@ -68,9 +68,9 @@ class ExtendedPrivateKey {
     uint32_t GetChildNumber() const;
 
     ChainCode GetChainCode() const;
-    BLSPrivateKey GetPrivateKey() const;
+    PrivateKey GetPrivateKey() const;
 
-    BLSPublicKey GetPublicKey() const;
+    PublicKey GetPublicKey() const;
     ExtendedPublicKey GetExtendedPublicKey() const;
 
     // Compare to different private key
@@ -88,7 +88,7 @@ class ExtendedPrivateKey {
     // Private constructor, force use of static methods
     explicit ExtendedPrivateKey(const uint32_t v, const uint8_t d,
                                 const uint32_t pfp, const uint32_t cn,
-                                const ChainCode code, const BLSPrivateKey key)
+                                const ChainCode code, const PrivateKey key)
          : version(v),
           depth(d),
           parentFingerprint(pfp),
@@ -102,7 +102,7 @@ class ExtendedPrivateKey {
     const uint32_t childNumber;
 
     const ChainCode chainCode;
-    const BLSPrivateKey sk;
+    const PrivateKey sk;
 };
 
 #endif  // SRC_EXTENDEDPRIVATEKEY_HPP_

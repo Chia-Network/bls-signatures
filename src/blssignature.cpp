@@ -24,9 +24,9 @@ using std::string;
 using relic::bn_t;
 using relic::fp_t;
 
-BLSInsecureSignature BLSInsecureSignature::FromBytes(const uint8_t *data) {
+InsecureSignature InsecureSignature::FromBytes(const uint8_t *data) {
     BLS::AssertInitialized();
-    BLSInsecureSignature sigObj = BLSInsecureSignature();
+    InsecureSignature sigObj = InsecureSignature();
     uint8_t uncompressed[SIGNATURE_SIZE + 1];
     std::memcpy(uncompressed + 1, data, SIGNATURE_SIZE);
     if (data[0] & 0x80) {
@@ -39,25 +39,25 @@ BLSInsecureSignature BLSInsecureSignature::FromBytes(const uint8_t *data) {
     return sigObj;
 }
 
-BLSInsecureSignature BLSInsecureSignature::FromG2(const relic::g2_t* element) {
+InsecureSignature InsecureSignature::FromG2(const relic::g2_t* element) {
     BLS::AssertInitialized();
-    BLSInsecureSignature sigObj = BLSInsecureSignature();
+    InsecureSignature sigObj = InsecureSignature();
     relic::g2_copy(sigObj.sig, *(relic::g2_t*)element);
     return sigObj;
 }
 
-BLSInsecureSignature::BLSInsecureSignature() {
+InsecureSignature::InsecureSignature() {
     BLS::AssertInitialized();
     g2_set_infty(sig);
 }
 
-BLSInsecureSignature::BLSInsecureSignature(const BLSInsecureSignature &signature) {
+InsecureSignature::InsecureSignature(const InsecureSignature &signature) {
     BLS::AssertInitialized();
     g2_copy(sig, *(relic::g2_t*)&signature.sig);
 }
 
-bool BLSInsecureSignature::Verify(const std::vector<const uint8_t*>& hashes,
-                                  const std::vector<BLSPublicKey>& pubKeys) const {
+bool InsecureSignature::Verify(const std::vector<const uint8_t*>& hashes,
+                                  const std::vector<PublicKey>& pubKeys) const {
     if (hashes.size() != pubKeys.size() || hashes.empty()) {
         throw std::string("hashes and pubKeys vectors must be of same size and non-empty");
     }
@@ -86,7 +86,7 @@ bool BLSInsecureSignature::Verify(const std::vector<const uint8_t*>& hashes,
     return result;
 }
 
-bool BLSInsecureSignature::VerifyNative(
+bool InsecureSignature::VerifyNative(
         relic::g1_t* pubKeys,
         relic::g2_t* mappedHashes,
         size_t len) {
@@ -110,70 +110,70 @@ bool BLSInsecureSignature::VerifyNative(
     return true;
 }
 
-BLSInsecureSignature BLSInsecureSignature::Aggregate(const std::vector<BLSInsecureSignature>& sigs) {
+InsecureSignature InsecureSignature::Aggregate(const std::vector<InsecureSignature>& sigs) {
     if (sigs.empty()) {
         throw std::string("sigs must not be empty");
     }
-    BLSInsecureSignature result = sigs[0];
+    InsecureSignature result = sigs[0];
     for (size_t i = 1; i < sigs.size(); i++) {
         g2_add(result.sig, result.sig, *(relic::g2_t*)&sigs[i].sig);
     }
     return result;
 }
 
-BLSInsecureSignature BLSInsecureSignature::DivideBy(const std::vector<BLSInsecureSignature>& sigs) const {
+InsecureSignature InsecureSignature::DivideBy(const std::vector<InsecureSignature>& sigs) const {
     if (sigs.empty()) {
         return *this;
     }
 
-    BLSInsecureSignature tmpAgg = Aggregate(sigs);
-    BLSInsecureSignature result(*this);
+    InsecureSignature tmpAgg = Aggregate(sigs);
+    InsecureSignature result(*this);
     relic::g2_sub(result.sig, result.sig, tmpAgg.sig);
     return result;
 }
 
-BLSInsecureSignature BLSInsecureSignature::Exp(const relic::bn_t n) const {
-    BLSInsecureSignature result(*this);
+InsecureSignature InsecureSignature::Exp(const relic::bn_t n) const {
+    InsecureSignature result(*this);
     g2_mul(result.sig, result.sig, n);
     return result;
 }
 
-void BLSInsecureSignature::Serialize(uint8_t* buffer) const {
+void InsecureSignature::Serialize(uint8_t* buffer) const {
     BLS::AssertInitialized();
     CompressPoint(buffer, &sig);
 }
 
-std::vector<uint8_t> BLSInsecureSignature::Serialize() const {
+std::vector<uint8_t> InsecureSignature::Serialize() const {
     std::vector<uint8_t> data(SIGNATURE_SIZE);
     Serialize(data.data());
     return data;
 }
 
-bool operator==(BLSInsecureSignature const &a, BLSInsecureSignature const &b) {
+bool operator==(InsecureSignature const &a, InsecureSignature const &b) {
     BLS::AssertInitialized();
     return g2_cmp(*(relic::g2_t*)&a.sig, *(relic::g2_t*)b.sig) == CMP_EQ;
 }
 
-bool operator!=(BLSInsecureSignature const &a, BLSInsecureSignature const &b) {
+bool operator!=(InsecureSignature const &a, InsecureSignature const &b) {
     return !(a == b);
 }
 
-std::ostream &operator<<(std::ostream &os, BLSInsecureSignature const &s) {
+std::ostream &operator<<(std::ostream &os, InsecureSignature const &s) {
     BLS::AssertInitialized();
-    uint8_t data[BLSInsecureSignature::SIGNATURE_SIZE];
+    uint8_t data[InsecureSignature::SIGNATURE_SIZE];
     s.Serialize(data);
-    return os << BLSUtil::HexStr(data, BLSInsecureSignature::SIGNATURE_SIZE);
+    return os << Util::HexStr(data, InsecureSignature::SIGNATURE_SIZE);
 }
 
-BLSInsecureSignature& BLSInsecureSignature::operator=(const BLSInsecureSignature &rhs) {
+InsecureSignature& InsecureSignature::operator=(const InsecureSignature &rhs) {
     BLS::AssertInitialized();
     relic::g2_copy(sig, *(relic::g2_t*)&rhs.sig);
     return *this;
 }
 
-void BLSInsecureSignature::CompressPoint(uint8_t* result, const relic::g2_t* point) {
-    uint8_t buffer[BLSInsecureSignature::SIGNATURE_SIZE + 1];
-    g2_write_bin(buffer, BLSInsecureSignature::SIGNATURE_SIZE + 1, *(relic::g2_t*)point, 1);
+void InsecureSignature::CompressPoint(uint8_t* result, const relic::g2_t* point) {
+    uint8_t buffer[InsecureSignature::SIGNATURE_SIZE + 1];
+    g2_write_bin(buffer, InsecureSignature::SIGNATURE_SIZE + 1, *(relic::g2_t*)point, 1);
 
     if (buffer[0] == 0x03) {
         buffer[1] |= 0x80;
@@ -183,74 +183,74 @@ void BLSInsecureSignature::CompressPoint(uint8_t* result, const relic::g2_t* poi
 
 ///
 
-BLSSignature BLSSignature::FromBytes(const uint8_t* data) {
-    BLSSignature result;
-    result.sig = BLSInsecureSignature::FromBytes(data);
+Signature Signature::FromBytes(const uint8_t* data) {
+    Signature result;
+    result.sig = InsecureSignature::FromBytes(data);
     return result;
 }
 
-BLSSignature BLSSignature::FromBytes(const uint8_t *data, const AggregationInfo &info) {
-    BLSSignature ret = FromBytes(data);
+Signature Signature::FromBytes(const uint8_t *data, const AggregationInfo &info) {
+    Signature ret = FromBytes(data);
     ret.SetAggregationInfo(info);
     return ret;
 }
 
-BLSSignature BLSSignature::FromG2(const relic::g2_t* element) {
-    BLSSignature result;
-    result.sig = BLSInsecureSignature::FromG2(element);
+Signature Signature::FromG2(const relic::g2_t* element) {
+    Signature result;
+    result.sig = InsecureSignature::FromG2(element);
     return result;
 }
 
-BLSSignature BLSSignature::FromG2(const relic::g2_t* element, const AggregationInfo& info) {
-    BLSSignature ret = FromG2(element);
+Signature Signature::FromG2(const relic::g2_t* element, const AggregationInfo& info) {
+    Signature ret = FromG2(element);
     ret.SetAggregationInfo(info);
     return ret;
 }
 
-BLSSignature BLSSignature::FromInsecureSig(const BLSInsecureSignature& sig) {
+Signature Signature::FromInsecureSig(const InsecureSignature& sig) {
     return FromG2(&sig.sig);
 }
 
-BLSSignature BLSSignature::FromInsecureSig(const BLSInsecureSignature& sig, const AggregationInfo& info) {
+Signature Signature::FromInsecureSig(const InsecureSignature& sig, const AggregationInfo& info) {
     return FromG2(&sig.sig, info);
 }
 
-BLSSignature::BLSSignature(const BLSSignature &_signature)
+Signature::Signature(const Signature &_signature)
     : sig(_signature.sig),
       aggregationInfo(_signature.aggregationInfo) {
 }
 
-const AggregationInfo* BLSSignature::GetAggregationInfo() const {
+const AggregationInfo* Signature::GetAggregationInfo() const {
     return &aggregationInfo;
 }
 
-void BLSSignature::SetAggregationInfo(
+void Signature::SetAggregationInfo(
         const AggregationInfo &newAggregationInfo) {
     aggregationInfo = newAggregationInfo;
 }
 
-void BLSSignature::Serialize(uint8_t* buffer) const {
+void Signature::Serialize(uint8_t* buffer) const {
     sig.Serialize(buffer);
 }
 
-std::vector<uint8_t> BLSSignature::Serialize() const {
+std::vector<uint8_t> Signature::Serialize() const {
     return sig.Serialize();
 }
 
-bool operator==(BLSSignature const &a, BLSSignature const &b) {
+bool operator==(Signature const &a, Signature const &b) {
     BLS::AssertInitialized();
     return a.sig == b.sig;
 }
 
-bool operator!=(BLSSignature const &a, BLSSignature const &b) {
+bool operator!=(Signature const &a, Signature const &b) {
     return !(a == b);
 }
 
-std::ostream &operator<<(std::ostream &os, BLSSignature const &s) {
+std::ostream &operator<<(std::ostream &os, Signature const &s) {
     BLS::AssertInitialized();
-    uint8_t data[BLSInsecureSignature::SIGNATURE_SIZE];
+    uint8_t data[InsecureSignature::SIGNATURE_SIZE];
     s.Serialize(data);
-    return os << BLSUtil::HexStr(data, BLSInsecureSignature::SIGNATURE_SIZE);
+    return os << Util::HexStr(data, InsecureSignature::SIGNATURE_SIZE);
 }
 
 /*
@@ -265,11 +265,11 @@ std::ostream &operator<<(std::ostream &os, BLSSignature const &s) {
  * message (since we grouped them), we can verify using the
  * distinct verification procedure.
  */
-bool BLSSignature::Verify() const {
+bool Signature::Verify() const {
     if (GetAggregationInfo()->Empty()) {
         return false;
     }
-    std::vector<BLSPublicKey> pubKeys = GetAggregationInfo()
+    std::vector<PublicKey> pubKeys = GetAggregationInfo()
             ->GetPubKeys();
     std::vector<uint8_t*> messageHashes = GetAggregationInfo()
             ->GetMessageHashes();
@@ -278,8 +278,8 @@ bool BLSSignature::Verify() const {
     }
     // Group all of the messages that are idential, with the
     // pubkeys and signatures, the std::maps's key is the message hash
-    std::map<uint8_t*, std::vector<BLSPublicKey>,
-            BLSUtil::BytesCompare32> hashToPubKeys;
+    std::map<uint8_t*, std::vector<PublicKey>,
+            Util::BytesCompare32> hashToPubKeys;
 
     for (size_t i = 0; i < messageHashes.size(); i++) {
         auto pubKeyIter = hashToPubKeys.find(messageHashes[i]);
@@ -288,28 +288,28 @@ bool BLSSignature::Verify() const {
             pubKeyIter->second.push_back(pubKeys[i]);
         } else {
             // First time seeing this message, so create a vector
-            std::vector<BLSPublicKey> newPubKey = {pubKeys[i]};
+            std::vector<PublicKey> newPubKey = {pubKeys[i]};
             hashToPubKeys.insert(make_pair(messageHashes[i], newPubKey));
         }
     }
 
     // Aggregate pubkeys of identical messages
-    std::vector<BLSPublicKey> finalPubKeys;
+    std::vector<PublicKey> finalPubKeys;
     std::vector<const uint8_t*> finalMessageHashes;
     std::vector<const uint8_t*> collidingKeys;
 
     for (const auto &kv : hashToPubKeys) {
-        BLSPublicKey prod;
-        std::map<uint8_t*, size_t, BLSUtil::BytesCompare<BLSPublicKey::PUBLIC_KEY_SIZE>> dedupMap;
+        PublicKey prod;
+        std::map<uint8_t*, size_t, Util::BytesCompare<PublicKey::PUBLIC_KEY_SIZE>> dedupMap;
         for (size_t i = 0; i < kv.second.size(); i++) {
-            const BLSPublicKey& pk = kv.second[i];
-            uint8_t *k = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
+            const PublicKey& pk = kv.second[i];
+            uint8_t *k = new uint8_t[PublicKey::PUBLIC_KEY_SIZE];
             pk.Serialize(k);
             dedupMap.emplace(k, i);
         }
 
         for (const auto &kv2 : dedupMap) {
-            const BLSPublicKey& pk = kv.second[kv2.second];
+            const PublicKey& pk = kv.second[kv2.second];
 
             relic::bn_t exponent;
             bn_new(exponent);
@@ -321,7 +321,7 @@ bool BLSSignature::Verify() const {
                 }
                 return false;
             }
-            prod = BLSPublicKey::AggregateInsecure({prod, pk.Exp(exponent)});
+            prod = PublicKey::AggregateInsecure({prod, pk.Exp(exponent)});
         }
         finalPubKeys.push_back(prod);
         finalMessageHashes.push_back(kv.first);
@@ -335,19 +335,19 @@ bool BLSSignature::Verify() const {
     return sig.Verify(finalMessageHashes, finalPubKeys);
 }
 
-BLSSignature BLSSignature::AggregateSigs(
-        std::vector<BLSSignature> const &sigs) {
+Signature Signature::AggregateSigs(
+        std::vector<Signature> const &sigs) {
     BLS::AssertInitialized();
-    std::vector<std::vector<BLSPublicKey> > pubKeys;
+    std::vector<std::vector<PublicKey> > pubKeys;
     std::vector<std::vector<uint8_t*> > messageHashes;
 
     // Extracts the public keys and messages from the aggregation info
-    for (const BLSSignature &sig : sigs) {
+    for (const Signature &sig : sigs) {
         const AggregationInfo &info = *sig.GetAggregationInfo();
         if (info.Empty()) {
             throw std::string("Signature must include aggregation info.");
         }
-        std::vector<BLSPublicKey> infoPubKeys = info.GetPubKeys();
+        std::vector<PublicKey> infoPubKeys = info.GetPubKeys();
         std::vector<uint8_t*> infoMessageHashes = info.GetMessageHashes();
         if (infoPubKeys.size() < 1 || infoMessageHashes.size() < 1) {
             throw std::string("AggregationInfo must have items");
@@ -371,7 +371,7 @@ BLSSignature BLSSignature::AggregateSigs(
             throw std::string("Lengths of vectors must match.");
         }
     }
-    BLSSignature ret = AggregateSigsInternal(sigs, pubKeys,
+    Signature ret = AggregateSigsInternal(sigs, pubKeys,
                                              messageHashes);
     for (std::vector<uint8_t*> group : messageHashes) {
         for (const uint8_t* messageHash : group) {
@@ -381,9 +381,9 @@ BLSSignature BLSSignature::AggregateSigs(
     return ret;
 }
 
-BLSSignature BLSSignature::AggregateSigsSecure(
-        std::vector<BLSSignature> const &sigs,
-        std::vector<BLSPublicKey> const &pubKeys,
+Signature Signature::AggregateSigsSecure(
+        std::vector<Signature> const &sigs,
+        std::vector<PublicKey> const &pubKeys,
         std::vector<uint8_t*> const &messageHashes) {
     if (sigs.size() != pubKeys.size() || sigs.size() != messageHashes.size()
         || sigs.size() < 1) {
@@ -395,19 +395,19 @@ BLSSignature BLSSignature::AggregateSigsSecure(
     std::vector<uint8_t*> sortKeys(pubKeys.size());
     std::vector<size_t> keysSorted(pubKeys.size());
     for (size_t i = 0; i < pubKeys.size(); i++) {
-        serPubKeys[i] = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
+        serPubKeys[i] = new uint8_t[PublicKey::PUBLIC_KEY_SIZE];
         pubKeys[i].Serialize(serPubKeys[i]);
 
-        uint8_t *sortKey = new uint8_t[BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE];
+        uint8_t *sortKey = new uint8_t[BLS::MESSAGE_HASH_LEN + PublicKey::PUBLIC_KEY_SIZE];
         memcpy(sortKey, messageHashes[i], BLS::MESSAGE_HASH_LEN);
-        memcpy(sortKey + BLS::MESSAGE_HASH_LEN, serPubKeys[i], BLSPublicKey::PUBLIC_KEY_SIZE);
+        memcpy(sortKey + BLS::MESSAGE_HASH_LEN, serPubKeys[i], PublicKey::PUBLIC_KEY_SIZE);
 
         sortKeys[i] = sortKey;
         keysSorted[i] = i;
     }
 
     std::sort(keysSorted.begin(), keysSorted.end(), [&sortKeys](size_t a, size_t b) {
-        return memcmp(sortKeys[a], sortKeys[b], BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
+        return memcmp(sortKeys[a], sortKeys[b], BLS::MESSAGE_HASH_LEN + PublicKey::PUBLIC_KEY_SIZE) < 0;
     });
 
     relic::bn_t* computedTs = new relic::bn_t[keysSorted.size()];
@@ -417,13 +417,13 @@ BLSSignature BLSSignature::AggregateSigsSecure(
     BLS::HashPubKeys(computedTs, keysSorted.size(), serPubKeys, keysSorted);
 
     // Raise all signatures to power of the corresponding t's and aggregate the results into aggSig
-    std::vector<BLSInsecureSignature> expSigs;
+    std::vector<InsecureSignature> expSigs;
     expSigs.reserve(keysSorted.size());
     for (size_t i = 0; i < keysSorted.size(); i++) {
         auto& s = sigs[keysSorted[i]].sig;
         expSigs.emplace_back(s.Exp(computedTs[i]));
     }
-    BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(expSigs);
+    InsecureSignature aggSig = InsecureSignature::Aggregate(expSigs);
 
     delete[] computedTs;
     for (auto p : serPubKeys) {
@@ -433,14 +433,14 @@ BLSSignature BLSSignature::AggregateSigsSecure(
         delete[] p;
     }
 
-    BLSSignature ret = BLSSignature::FromInsecureSig(aggSig);
+    Signature ret = Signature::FromInsecureSig(aggSig);
     BLS::CheckRelicErrors();
     return ret;
 }
 
-BLSSignature BLSSignature::AggregateSigsInternal(
-        std::vector<BLSSignature> const &sigs,
-        std::vector<std::vector<BLSPublicKey> > const &pubKeys,
+Signature Signature::AggregateSigsInternal(
+        std::vector<Signature> const &sigs,
+        std::vector<std::vector<PublicKey> > const &pubKeys,
         std::vector<std::vector<uint8_t*> > const &messageHashes) {
     BLS::AssertInitialized();
     if (sigs.size() != pubKeys.size()
@@ -454,10 +454,10 @@ BLSSignature BLSSignature::AggregateSigsInternal(
     }
 
     // Find colliding vectors, save colliding messages
-    std::set<const uint8_t*, BLSUtil::BytesCompare32> messagesSet;
-    std::set<const uint8_t*, BLSUtil::BytesCompare32> collidingMessagesSet;
+    std::set<const uint8_t*, Util::BytesCompare32> messagesSet;
+    std::set<const uint8_t*, Util::BytesCompare32> collidingMessagesSet;
     for (auto &msgVector : messageHashes) {
-        std::set<const uint8_t*, BLSUtil::BytesCompare32> messagesSetLocal;
+        std::set<const uint8_t*, Util::BytesCompare32> messagesSetLocal;
         for (auto &msg : msgVector) {
             auto lookupEntry = messagesSet.find(msg);
             auto lookupEntryLocal = messagesSetLocal.find(msg);
@@ -475,9 +475,9 @@ BLSSignature BLSSignature::AggregateSigsInternal(
         // that every group is a valid aggregate signature. If an invalid
         // or insecure signature is given, and invalid signature will
         // be created. We don't verify for performance reasons.
-        BLSSignature ret = AggregateSigsSimple(sigs);
+        Signature ret = AggregateSigsSimple(sigs);
         std::vector<AggregationInfo> infos;
-        for (const BLSSignature &sig : sigs) {
+        for (const Signature &sig : sigs) {
             infos.push_back(*sig.GetAggregationInfo());
         }
         ret.SetAggregationInfo(AggregationInfo::MergeInfos(infos));
@@ -488,10 +488,10 @@ BLSSignature BLSSignature::AggregateSigsInternal(
     // to use a secure form of aggregation. First we find which
     // groups collide, and securely aggregate these. Then, we
     // use simple aggregation at the end.
-    std::vector<BLSSignature > collidingSigs;
-    std::vector<BLSSignature> nonCollidingSigs;
+    std::vector<Signature > collidingSigs;
+    std::vector<Signature> nonCollidingSigs;
     std::vector<std::vector<uint8_t*> > collidingMessageHashes;
-    std::vector<std::vector<BLSPublicKey> > collidingPks;
+    std::vector<std::vector<PublicKey> > collidingPks;
 
     for (size_t i = 0; i < sigs.size(); i++) {
         bool groupCollides = false;
@@ -530,11 +530,11 @@ BLSSignature BLSSignature::AggregateSigsInternal(
     sortKeysSorted.reserve(sortKeysCount);
     for (size_t i = 0; i < collidingPks.size(); i++) {
         for (size_t j = 0; j < collidingPks[i].size(); j++) {
-            uint8_t *serPk = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
-            uint8_t *sortKey = new uint8_t[BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE];
+            uint8_t *serPk = new uint8_t[PublicKey::PUBLIC_KEY_SIZE];
+            uint8_t *sortKey = new uint8_t[BLS::MESSAGE_HASH_LEN + PublicKey::PUBLIC_KEY_SIZE];
             collidingPks[i][j].Serialize(serPk);
             std::memcpy(sortKey, collidingMessageHashes[i][j], BLS::MESSAGE_HASH_LEN);
-            std::memcpy(sortKey + BLS::MESSAGE_HASH_LEN, serPk, BLSPublicKey::PUBLIC_KEY_SIZE);
+            std::memcpy(sortKey + BLS::MESSAGE_HASH_LEN, serPk, PublicKey::PUBLIC_KEY_SIZE);
             serPubKeys.emplace_back(serPk);
             sortKeysSorted.emplace_back(sortKeys.size());
             sortKeys.emplace_back(sortKey);
@@ -542,13 +542,13 @@ BLSSignature BLSSignature::AggregateSigsInternal(
     }
     // Sort everything according to message || pubkey
     std::sort(sortKeysSorted.begin(), sortKeysSorted.end(), [&sortKeys](size_t a, size_t b) {
-        return memcmp(sortKeys[a], sortKeys[b], BLS::MESSAGE_HASH_LEN + BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
+        return memcmp(sortKeys[a], sortKeys[b], BLS::MESSAGE_HASH_LEN + PublicKey::PUBLIC_KEY_SIZE) < 0;
     });
 
-    std::vector<BLSPublicKey> pubKeysSorted;
+    std::vector<PublicKey> pubKeysSorted;
     for (size_t i = 0; i < sortKeysSorted.size(); i++) {
         const uint8_t *sortKey = sortKeys[sortKeysSorted[i]];
-        pubKeysSorted.push_back(BLSPublicKey::FromBytes(sortKey
+        pubKeysSorted.push_back(PublicKey::FromBytes(sortKey
                                                         + BLS::MESSAGE_HASH_LEN));
     }
     relic::bn_t* computedTs = new relic::bn_t[sigsSorted.size()];
@@ -560,7 +560,7 @@ BLSSignature BLSSignature::AggregateSigsInternal(
     // Raise all signatures to power of the corresponding t's and aggregate the results into aggSig
     // Also accumulates aggregation info for each signature
     std::vector<AggregationInfo> infos;
-    std::vector<BLSInsecureSignature> expSigs;
+    std::vector<InsecureSignature> expSigs;
     infos.reserve(sigsSorted.size());
     expSigs.reserve(sigsSorted.size());
     for (size_t i = 0; i < sigsSorted.size(); i++) {
@@ -571,13 +571,13 @@ BLSSignature BLSSignature::AggregateSigsInternal(
 
     // Also collect all non-colliding signatures for aggregation
     // These don't need exponentiation
-    for (const BLSSignature &nonColliding : nonCollidingSigs) {
+    for (const Signature &nonColliding : nonCollidingSigs) {
         expSigs.emplace_back(nonColliding.sig);
         infos.emplace_back(*nonColliding.GetAggregationInfo());
     }
 
-    BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(expSigs);
-    BLSSignature ret = BLSSignature::FromInsecureSig(aggSig);
+    InsecureSignature aggSig = InsecureSignature::Aggregate(expSigs);
+    Signature ret = Signature::FromInsecureSig(aggSig);
 
     // Merge the aggregation infos, which will be combined in an
     // identical way as above.
@@ -595,7 +595,7 @@ BLSSignature BLSSignature::AggregateSigsInternal(
     return ret;
 }
 
-BLSSignature BLSSignature::AggregateSigsSimple(std::vector<BLSSignature> const &sigs) {
+Signature Signature::AggregateSigsSimple(std::vector<Signature> const &sigs) {
     if (sigs.size() < 1) {
         throw std::string("Must have atleast one signatures and key");
     }
@@ -604,28 +604,28 @@ BLSSignature BLSSignature::AggregateSigsSimple(std::vector<BLSSignature> const &
     }
 
     // Multiplies the signatures together (relic uses additive group operation)
-    std::vector<BLSInsecureSignature> sigs2;
+    std::vector<InsecureSignature> sigs2;
     sigs2.reserve(sigs.size());
-    for (const BLSSignature &sig : sigs) {
+    for (const Signature &sig : sigs) {
         sigs2.emplace_back(sig.sig);
     }
-    BLSInsecureSignature aggSig = BLSInsecureSignature::Aggregate(sigs2);
-    BLSSignature ret = BLSSignature::FromInsecureSig(aggSig);
+    InsecureSignature aggSig = InsecureSignature::Aggregate(sigs2);
+    Signature ret = Signature::FromInsecureSig(aggSig);
     BLS::CheckRelicErrors();
     return ret;
 }
 
-BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs) const {
+Signature Signature::DivideBy(std::vector<Signature> const &divisorSigs) const {
     relic::bn_t ord;
     g2_get_ord(ord);
 
     std::vector<uint8_t*> messageHashesToRemove;
-    std::vector<BLSPublicKey> pubKeysToRemove;
+    std::vector<PublicKey> pubKeysToRemove;
 
-    std::vector<BLSInsecureSignature> expSigs;
+    std::vector<InsecureSignature> expSigs;
     expSigs.reserve(divisorSigs.size());
-    for (const BLSSignature &divisorSig : divisorSigs) {
-        std::vector<BLSPublicKey> pks = divisorSig.GetAggregationInfo()
+    for (const Signature &divisorSig : divisorSigs) {
+        std::vector<PublicKey> pks = divisorSig.GetAggregationInfo()
                 ->GetPubKeys();
         std::vector<uint8_t*> messageHashes = divisorSig.GetAggregationInfo()
                 ->GetMessageHashes();
@@ -670,8 +670,8 @@ BLSSignature BLSSignature::DivideBy(std::vector<BLSSignature> const &divisorSigs
         expSigs.emplace_back(divisorSig.sig.Exp(quotient));
     }
 
-    BLSInsecureSignature prod = sig.DivideBy(expSigs);
-    BLSSignature result = BLSSignature::FromInsecureSig(prod, aggregationInfo);
+    InsecureSignature prod = sig.DivideBy(expSigs);
+    Signature result = Signature::FromInsecureSig(prod, aggregationInfo);
     result.aggregationInfo.RemoveEntries(messageHashesToRemove, pubKeysToRemove);
 
     return result;

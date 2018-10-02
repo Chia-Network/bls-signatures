@@ -28,7 +28,7 @@ import blspy
 seed = bytes([0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
                 19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
                 82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22])
-sk = BLSPrivateKey.from_seed(seed)
+sk = PrivateKey.from_seed(seed)
 pk = sk.get_public_key()
 
 msg = bytes([100, 2, 254, 88, 90, 45, 23])
@@ -46,11 +46,11 @@ sig_bytes = sig.serialize() # 96 bytes
 #### Loading keys and signatures from bytes
 ```python
 # Takes bytes object of size 32
-sk = BLSPrivateKey.from_bytes(sk_bytes)
+sk = PrivateKey.from_bytes(sk_bytes)
 # Takes bytes object of size 48
-pk = BLSPublicKey.from_bytes(pk_bytes)
+pk = PublicKey.from_bytes(pk_bytes)
 # Takes bytes object of size 96
-sig = BLSSignature.from_bytes(sig_bytes)
+sig = Signature.from_bytes(sig_bytes)
 ```
 
 #### Verifying signatures
@@ -64,9 +64,9 @@ ok = BLS.verify(sig)
 ```python
 # Generate some more private keys
 seed = bytes([1]) + seed[1:]
-sk1 = BLSPrivateKey.from_seed(seed)
+sk1 = PrivateKey.from_seed(seed)
 seed = bytes([2]) + seed[1:]
-sk2 = BLSPrivateKey.from_seed(seed)
+sk2 = PrivateKey.from_seed(seed)
 
 # Generate first sig
 pk1 = sk1.get_public_key()
@@ -90,7 +90,7 @@ agg_pubkey = BLS.aggregate_pub_keys([pk1, pk2], True)
 ```python
 # Generate one more key and message
 seed = bytes([3]) + seed[1:]
-sk3 = BLSPrivateKey.from_seed(seed)
+sk3 = PrivateKey.from_seed(seed)
 pk3 = sk3.get_public_key()
 msg2 = bytes([100, 2, 254, 88, 90, 45, 23])
 
@@ -114,7 +114,7 @@ sig_bytes = agg_sig_final.serialize()
 #### Verify aggregate signature for different messages
 ```python
 # Deserialize aggregate signature
-agg_sig_final = BLSSignature.from_bytes(sig_bytes)
+agg_sig_final = Signature.from_bytes(sig_bytes)
 
 # Create aggregation information (or deserialize it)
 a1 = AggregationInfo.from_msg(pk1, msg)

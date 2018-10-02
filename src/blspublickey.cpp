@@ -20,9 +20,9 @@
 #include "blsutil.hpp"
 #include "bls.hpp"
 
-BLSPublicKey BLSPublicKey::FromBytes(const uint8_t * key) {
+PublicKey PublicKey::FromBytes(const uint8_t * key) {
     BLS::AssertInitialized();
-    BLSPublicKey pk = BLSPublicKey();
+    PublicKey pk = PublicKey();
     uint8_t uncompressed[PUBLIC_KEY_SIZE + 1];
     std::memcpy(uncompressed + 1, key, PUBLIC_KEY_SIZE);
     if (key[0] & 0x80) {
@@ -35,43 +35,43 @@ BLSPublicKey BLSPublicKey::FromBytes(const uint8_t * key) {
     return pk;
 }
 
-BLSPublicKey BLSPublicKey::FromG1(const relic::g1_t* pubKey) {
+PublicKey PublicKey::FromG1(const relic::g1_t* pubKey) {
     BLS::AssertInitialized();
-    BLSPublicKey pk = BLSPublicKey();
+    PublicKey pk = PublicKey();
     g1_copy(pk.q, *pubKey);
     return pk;
 }
 
-BLSPublicKey::BLSPublicKey() {
+PublicKey::PublicKey() {
     BLS::AssertInitialized();
     g1_set_infty(q);
 }
 
-BLSPublicKey::BLSPublicKey(const BLSPublicKey &pubKey) {
+PublicKey::PublicKey(const PublicKey &pubKey) {
     BLS::AssertInitialized();
     g1_copy(q, pubKey.q);
 }
 
-BLSPublicKey BLSPublicKey::AggregateInsecure(std::vector<BLSPublicKey> const& pubKeys) {
+PublicKey PublicKey::AggregateInsecure(std::vector<PublicKey> const& pubKeys) {
     if (pubKeys.empty()) {
         throw std::string("Number of public keys must be at least 1");
     }
 
-    BLSPublicKey ret = pubKeys[0];
+    PublicKey ret = pubKeys[0];
     for (size_t i = 1; i < pubKeys.size(); i++) {
         g1_add(ret.q, ret.q, pubKeys[i].q);
     }
     return ret;
 }
 
-BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
+PublicKey PublicKey::Aggregate(std::vector<PublicKey> const& pubKeys) {
     if (pubKeys.size() < 1) {
         throw std::string("Number of public keys must be at least 1");
     }
 
     std::vector<uint8_t*> serPubKeys(pubKeys.size());
     for (size_t i = 0; i < pubKeys.size(); i++) {
-        serPubKeys[i] = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
+        serPubKeys[i] = new uint8_t[PublicKey::PUBLIC_KEY_SIZE];
         pubKeys[i].Serialize(serPubKeys[i]);
     }
 
@@ -82,7 +82,7 @@ BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
     }
 
     std::sort(pubKeysSorted.begin(), pubKeysSorted.end(), [&serPubKeys](size_t a, size_t b) {
-        return memcmp(serPubKeys[a], serPubKeys[b], BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
+        return memcmp(serPubKeys[a], serPubKeys[b], PublicKey::PUBLIC_KEY_SIZE) < 0;
     });
 
     relic::bn_t *computedTs = new relic::bn_t[pubKeysSorted.size()];
@@ -92,13 +92,13 @@ BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
     BLS::HashPubKeys(computedTs, pubKeysSorted.size(), serPubKeys, pubKeysSorted);
 
     // Raise all keys to power of the corresponding t's and aggregate the results into aggKey
-    std::vector<BLSPublicKey> expKeys;
+    std::vector<PublicKey> expKeys;
     expKeys.reserve(pubKeysSorted.size());
     for (size_t i = 0; i < pubKeysSorted.size(); i++) {
-        const BLSPublicKey& pk = pubKeys[pubKeysSorted[i]];
+        const PublicKey& pk = pubKeys[pubKeysSorted[i]];
         expKeys.emplace_back(pk.Exp(computedTs[i]));
     }
-    BLSPublicKey aggKey = BLSPublicKey::AggregateInsecure(expKeys);
+    PublicKey aggKey = PublicKey::AggregateInsecure(expKeys);
 
     for (size_t i = 0; i < pubKeysSorted.size(); i++) {
         bn_free(computedTs[i]);
@@ -112,52 +112,52 @@ BLSPublicKey BLSPublicKey::Aggregate(std::vector<BLSPublicKey> const& pubKeys) {
     return aggKey;
 }
 
-BLSPublicKey BLSPublicKey::Exp(relic::bn_t const n) const {
-    BLSPublicKey ret;
+PublicKey PublicKey::Exp(relic::bn_t const n) const {
+    PublicKey ret;
     g1_mul(ret.q, q, n);
     return ret;
 }
 
-void BLSPublicKey::Serialize(uint8_t *buffer) const {
+void PublicKey::Serialize(uint8_t *buffer) const {
     BLS::AssertInitialized();
     CompressPoint(buffer, &q);
 }
 
-std::vector<uint8_t> BLSPublicKey::Serialize() const {
+std::vector<uint8_t> PublicKey::Serialize() const {
     std::vector<uint8_t> data(PUBLIC_KEY_SIZE);
     Serialize(data.data());
     return data;
 }
 
 // Comparator implementation.
-bool operator==(BLSPublicKey const &a,  BLSPublicKey const &b) {
+bool operator==(PublicKey const &a,  PublicKey const &b) {
     BLS::AssertInitialized();
     return g1_cmp(a.q, b.q) == CMP_EQ;
 }
 
-bool operator!=(BLSPublicKey const&a,  BLSPublicKey const&b) {
+bool operator!=(PublicKey const&a,  PublicKey const&b) {
     return !(a == b);
 }
 
-std::ostream &operator<<(std::ostream &os, BLSPublicKey const &pk) {
+std::ostream &operator<<(std::ostream &os, PublicKey const &pk) {
     BLS::AssertInitialized();
-    uint8_t data[BLSPublicKey::PUBLIC_KEY_SIZE];
+    uint8_t data[PublicKey::PUBLIC_KEY_SIZE];
     pk.Serialize(data);
-    return os << BLSUtil::HexStr(data, BLSPublicKey::PUBLIC_KEY_SIZE);
+    return os << Util::HexStr(data, PublicKey::PUBLIC_KEY_SIZE);
 }
 
-uint32_t BLSPublicKey::GetFingerprint() const {
+uint32_t PublicKey::GetFingerprint() const {
     BLS::AssertInitialized();
-    uint8_t buffer[BLSPublicKey::PUBLIC_KEY_SIZE];
+    uint8_t buffer[PublicKey::PUBLIC_KEY_SIZE];
     uint8_t hash[32];
     Serialize(buffer);
-    BLSUtil::Hash256(hash, buffer, BLSPublicKey::PUBLIC_KEY_SIZE);
-    return BLSUtil::FourBytesToInt(hash);
+    Util::Hash256(hash, buffer, PublicKey::PUBLIC_KEY_SIZE);
+    return Util::FourBytesToInt(hash);
 }
 
-void BLSPublicKey::CompressPoint(uint8_t* result, const relic::g1_t* point) {
-    uint8_t buffer[BLSPublicKey::PUBLIC_KEY_SIZE + 1];
-    g1_write_bin(buffer, BLSPublicKey::PUBLIC_KEY_SIZE + 1, *point, 1);
+void PublicKey::CompressPoint(uint8_t* result, const relic::g1_t* point) {
+    uint8_t buffer[PublicKey::PUBLIC_KEY_SIZE + 1];
+    g1_write_bin(buffer, PublicKey::PUBLIC_KEY_SIZE + 1, *point, 1);
 
     if (buffer[0] == 0x03) {
         buffer[1] |= 0x80;

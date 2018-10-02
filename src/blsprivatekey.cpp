@@ -20,15 +20,15 @@
 #include "blsutil.hpp"
 #include "blsprivatekey.hpp"
 
-BLSPrivateKey BLSPrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
+PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
     BLS::AssertInitialized();
 
     // "BLS private key seed" in ascii
     const uint8_t hmacKey[] = {66, 76, 83, 32, 112, 114, 105, 118, 97, 116, 101,
                               32, 107, 101, 121, 32, 115, 101, 101, 100};
 
-    uint8_t* hash = BLSUtil::SecAlloc<uint8_t>(
-            BLSPrivateKey::PRIVATE_KEY_SIZE);
+    uint8_t* hash = Util::SecAlloc<uint8_t>(
+            PrivateKey::PRIVATE_KEY_SIZE);
 
     // Hash the seed into sk
     relic::md_hmac(hash, seed, seedLen, hmacKey, sizeof(hmacKey));
@@ -38,26 +38,26 @@ BLSPrivateKey BLSPrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
     g1_get_ord(order);
 
     // Make sure private key is less than the curve order
-    relic::bn_t* skBn = BLSUtil::SecAlloc<relic::bn_t>(1);
+    relic::bn_t* skBn = Util::SecAlloc<relic::bn_t>(1);
     bn_new(*skBn);
-    bn_read_bin(*skBn, hash, BLSPrivateKey::PRIVATE_KEY_SIZE);
+    bn_read_bin(*skBn, hash, PrivateKey::PRIVATE_KEY_SIZE);
     bn_mod_basic(*skBn, *skBn, order);
 
-    BLSPrivateKey k;
+    PrivateKey k;
     k.AllocateKeyData();
     bn_copy(*k.keydata, *skBn);
 
-    BLSUtil::SecFree(skBn);
-    BLSUtil::SecFree(hash);
+    Util::SecFree(skBn);
+    Util::SecFree(hash);
     return k;
 }
 
 // Construct a private key from a bytearray.
-BLSPrivateKey BLSPrivateKey::FromBytes(const uint8_t* bytes, bool modOrder) {
+PrivateKey PrivateKey::FromBytes(const uint8_t* bytes, bool modOrder) {
     BLS::AssertInitialized();
-    BLSPrivateKey k;
+    PrivateKey k;
     k.AllocateKeyData();
-    bn_read_bin(*k.keydata, bytes, BLSPrivateKey::PRIVATE_KEY_SIZE);
+    bn_read_bin(*k.keydata, bytes, PrivateKey::PRIVATE_KEY_SIZE);
     relic::bn_t ord;
     bn_new(ord);
     g1_get_ord(ord);
@@ -72,33 +72,33 @@ BLSPrivateKey BLSPrivateKey::FromBytes(const uint8_t* bytes, bool modOrder) {
 }
 
 // Construct a private key from another private key.
-BLSPrivateKey::BLSPrivateKey(const BLSPrivateKey &privateKey) {
+PrivateKey::PrivateKey(const PrivateKey &privateKey) {
     BLS::AssertInitialized();
     AllocateKeyData();
     bn_copy(*keydata, *privateKey.keydata);
 }
 
-BLSPrivateKey::BLSPrivateKey(BLSPrivateKey&& k) {
+PrivateKey::PrivateKey(PrivateKey&& k) {
     BLS::AssertInitialized();
     std::swap(keydata, k.keydata);
 }
 
-BLSPrivateKey::~BLSPrivateKey() {
+PrivateKey::~PrivateKey() {
     BLS::AssertInitialized();
-    BLSUtil::SecFree(keydata);
+    Util::SecFree(keydata);
 }
 
-BLSPublicKey BLSPrivateKey::GetPublicKey() const {
+PublicKey PrivateKey::GetPublicKey() const {
     BLS::AssertInitialized();
-    relic::g1_t *q = BLSUtil::SecAlloc<relic::g1_t>(1);
+    relic::g1_t *q = Util::SecAlloc<relic::g1_t>(1);
     g1_mul_gen(*q, *keydata);
 
-    const BLSPublicKey ret = BLSPublicKey::FromG1(q);
-    BLSUtil::SecFree(*q);
+    const PublicKey ret = PublicKey::FromG1(q);
+    Util::SecFree(*q);
     return ret;
 }
 
-BLSPrivateKey BLSPrivateKey::AggregateInsecure(std::vector<BLSPrivateKey> const& privateKeys) {
+PrivateKey PrivateKey::AggregateInsecure(std::vector<PrivateKey> const& privateKeys) {
     if (privateKeys.empty()) {
         throw std::string("Number of private keys must be at least 1");
     }
@@ -107,7 +107,7 @@ BLSPrivateKey BLSPrivateKey::AggregateInsecure(std::vector<BLSPrivateKey> const&
     bn_new(order);
     g1_get_ord(order);
 
-    BLSPrivateKey ret(privateKeys[0]);
+    PrivateKey ret(privateKeys[0]);
     for (size_t i = 1; i < privateKeys.size(); i++) {
         relic::bn_add(*ret.keydata, *ret.keydata, *privateKeys[i].keydata);
         relic::bn_mod_basic(*ret.keydata, *ret.keydata, order);
@@ -115,8 +115,8 @@ BLSPrivateKey BLSPrivateKey::AggregateInsecure(std::vector<BLSPrivateKey> const&
     return ret;
 }
 
-BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& privateKeys,
-                                       std::vector<BLSPublicKey> const& pubKeys) {
+PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const& privateKeys,
+                                       std::vector<PublicKey> const& pubKeys) {
     if (pubKeys.size() != privateKeys.size()) {
         throw std::string("Number of public keys must equal number of private keys");
     }
@@ -126,7 +126,7 @@ BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& private
 
     std::vector<uint8_t*> serPubKeys(pubKeys.size());
     for (size_t i = 0; i < pubKeys.size(); i++) {
-        serPubKeys[i] = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
+        serPubKeys[i] = new uint8_t[PublicKey::PUBLIC_KEY_SIZE];
         pubKeys[i].Serialize(serPubKeys[i]);
     }
 
@@ -137,7 +137,7 @@ BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& private
     }
 
     std::sort(keysSorted.begin(), keysSorted.end(), [&serPubKeys](size_t a, size_t b) {
-        return memcmp(serPubKeys[a], serPubKeys[b], BLSPublicKey::PUBLIC_KEY_SIZE) < 0;
+        return memcmp(serPubKeys[a], serPubKeys[b], PublicKey::PUBLIC_KEY_SIZE) < 0;
     });
 
 
@@ -148,13 +148,13 @@ BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& private
     BLS::HashPubKeys(computedTs, keysSorted.size(), serPubKeys, keysSorted);
 
     // Raise all keys to power of the corresponding t's and aggregate the results into aggKey
-    std::vector<BLSPrivateKey> expKeys;
+    std::vector<PrivateKey> expKeys;
     expKeys.reserve(keysSorted.size());
     for (size_t i = 0; i < keysSorted.size(); i++) {
         auto& k = privateKeys[keysSorted[i]];
         expKeys.emplace_back(k.Mul(computedTs[i]));
     }
-    BLSPrivateKey aggKey = BLSPrivateKey::AggregateInsecure(expKeys);
+    PrivateKey aggKey = PrivateKey::AggregateInsecure(expKeys);
 
     for (size_t i = 0; i < keysSorted.size(); i++) {
         bn_free(p);
@@ -168,76 +168,76 @@ BLSPrivateKey BLSPrivateKey::Aggregate(std::vector<BLSPrivateKey> const& private
     return aggKey;
 }
 
-BLSPrivateKey BLSPrivateKey::Mul(const relic::bn_t n) const {
+PrivateKey PrivateKey::Mul(const relic::bn_t n) const {
     relic::bn_t order;
     bn_new(order);
     g2_get_ord(order);
 
-    BLSPrivateKey ret;
+    PrivateKey ret;
     ret.AllocateKeyData();
     bn_mul_comba(*ret.keydata, *keydata, n);
     bn_mod_basic(*ret.keydata, *ret.keydata, order);
     return ret;
 }
 
-bool operator==(const BLSPrivateKey& a, const BLSPrivateKey& b) {
+bool operator==(const PrivateKey& a, const PrivateKey& b) {
     BLS::AssertInitialized();
     return bn_cmp(*a.keydata, *b.keydata) == CMP_EQ;
 }
 
-bool operator!=(const BLSPrivateKey& a, const BLSPrivateKey& b) {
+bool operator!=(const PrivateKey& a, const PrivateKey& b) {
     BLS::AssertInitialized();
     return !(a == b);
 }
 
-BLSPrivateKey& BLSPrivateKey::operator=(const BLSPrivateKey &rhs) {
+PrivateKey& PrivateKey::operator=(const PrivateKey &rhs) {
     BLS::AssertInitialized();
-    BLSUtil::SecFree(keydata);
+    Util::SecFree(keydata);
     AllocateKeyData();
     bn_copy(*keydata, *rhs.keydata);
     return *this;
 }
 
-void BLSPrivateKey::Serialize(uint8_t* buffer) const {
+void PrivateKey::Serialize(uint8_t* buffer) const {
     BLS::AssertInitialized();
-    bn_write_bin(buffer, BLSPrivateKey::PRIVATE_KEY_SIZE, *keydata);
+    bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, *keydata);
 }
 
-std::vector<uint8_t> BLSPrivateKey::Serialize() const {
+std::vector<uint8_t> PrivateKey::Serialize() const {
     std::vector<uint8_t> data(PRIVATE_KEY_SIZE);
     Serialize(data.data());
     return data;
 }
 
-BLSInsecureSignature BLSPrivateKey::SignInsecure(const uint8_t *msg, size_t len) const {
+InsecureSignature PrivateKey::SignInsecure(const uint8_t *msg, size_t len) const {
     BLS::AssertInitialized();
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-    BLSUtil::Hash256(messageHash, msg, len);
+    Util::Hash256(messageHash, msg, len);
     return SignInsecurePrehashed(messageHash);
 }
 
-BLSInsecureSignature BLSPrivateKey::SignInsecurePrehashed(const uint8_t *messageHash) const {
+InsecureSignature PrivateKey::SignInsecurePrehashed(const uint8_t *messageHash) const {
     BLS::AssertInitialized();
     relic::g2_t sig, point;
 
     g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN, 0);
     g2_mul(sig, point, *keydata);
 
-    return BLSInsecureSignature::FromG2(&sig);
+    return InsecureSignature::FromG2(&sig);
 }
 
-BLSSignature BLSPrivateKey::Sign(const uint8_t *msg, size_t len) const {
+Signature PrivateKey::Sign(const uint8_t *msg, size_t len) const {
     BLS::AssertInitialized();
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-    BLSUtil::Hash256(messageHash, msg, len);
+    Util::Hash256(messageHash, msg, len);
     return SignPrehashed(messageHash);
 }
 
-BLSSignature BLSPrivateKey::SignPrehashed(const uint8_t *messageHash) const {
+Signature PrivateKey::SignPrehashed(const uint8_t *messageHash) const {
     BLS::AssertInitialized();
 
-    BLSInsecureSignature insecureSig = SignInsecurePrehashed(messageHash);
-    BLSSignature ret = BLSSignature::FromInsecureSig(insecureSig);
+    InsecureSignature insecureSig = SignInsecurePrehashed(messageHash);
+    Signature ret = Signature::FromInsecureSig(insecureSig);
 
     ret.SetAggregationInfo(AggregationInfo::FromMsgHash(GetPublicKey(),
             messageHash));
@@ -245,9 +245,9 @@ BLSSignature BLSPrivateKey::SignPrehashed(const uint8_t *messageHash) const {
     return ret;
 }
 
-void BLSPrivateKey::AllocateKeyData() {
+void PrivateKey::AllocateKeyData() {
     BLS::AssertInitialized();
-    keydata = BLSUtil::SecAlloc<relic::bn_t>(1);
+    keydata = Util::SecAlloc<relic::bn_t>(1);
     bn_new(*keydata);  // Freed in destructor
     relic::bn_zero(*keydata);
 }

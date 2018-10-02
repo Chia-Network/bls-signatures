@@ -25,11 +25,11 @@ PYBIND11_MODULE(blspy, m) {
     py::class_<relic::bn_t*>(m, "bn_ptr");
 
     py::class_<AggregationInfo>(m, "AggregationInfo")
-        .def("from_msg_hash", [](const BLSPublicKey &pk, const py::bytes &b) {
+        .def("from_msg_hash", [](const PublicKey &pk, const py::bytes &b) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
             return AggregationInfo::FromMsgHash(pk, input);
         })
-        .def("from_msg", [](const BLSPublicKey &pk, const py::bytes &b) {
+        .def("from_msg", [](const PublicKey &pk, const py::bytes &b) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
             return AggregationInfo::FromMsg(pk, input, len(b));
         })
@@ -52,102 +52,102 @@ PYBIND11_MODULE(blspy, m) {
             return "<AggregationInfo " + s.str() + ">";
         });
 
-    py::class_<BLSPrivateKey>(m, "BLSPrivateKey")
+    py::class_<PrivateKey>(m, "PrivateKey")
         .def_property_readonly_static("PRIVATE_KEY_SIZE", [](py::object self) {
-            return BLSPrivateKey::PRIVATE_KEY_SIZE;
+            return PrivateKey::PRIVATE_KEY_SIZE;
         })
         .def("from_seed", [](const py::bytes &b) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
-            return BLSPrivateKey::FromSeed(input, len(b));
+            return PrivateKey::FromSeed(input, len(b));
         })
         .def("from_bytes", [](const py::bytes &b) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
-            return BLSPrivateKey::FromBytes(input);
+            return PrivateKey::FromBytes(input);
         })
-        .def("serialize", [](const BLSPrivateKey &k) {
-            uint8_t* output = BLSUtil::SecAlloc<uint8_t>(BLSPrivateKey::PRIVATE_KEY_SIZE);
+        .def("serialize", [](const PrivateKey &k) {
+            uint8_t* output = Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
             k.Serialize(output);
-            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), BLSPrivateKey::PRIVATE_KEY_SIZE);
-            BLSUtil::SecFree(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), PrivateKey::PRIVATE_KEY_SIZE);
+            Util::SecFree(output);
             return ret;
         })
-        .def("get_public_key", [](const BLSPrivateKey &k) {
+        .def("get_public_key", [](const PrivateKey &k) {
             return k.GetPublicKey();
         })
-        .def("aggregate", &BLSPrivateKey::Aggregate)
-        .def("sign", [](const BLSPrivateKey &k, const py::bytes &msg) {
+        .def("aggregate", &PrivateKey::Aggregate)
+        .def("sign", [](const PrivateKey &k, const py::bytes &msg) {
             uint8_t* input = reinterpret_cast<uint8_t*>(&std::string(msg)[0]);
             return k.Sign(input, len(msg));
         })
-        .def("sign_prehashed", [](const BLSPrivateKey &k, const py::bytes &msg) {
+        .def("sign_prehashed", [](const PrivateKey &k, const py::bytes &msg) {
             uint8_t* input = reinterpret_cast<uint8_t*>(&std::string(msg)[0]);
             return k.SignPrehashed(input);
         })
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("__repr__", [](const BLSPrivateKey &k) {
-            uint8_t* output = BLSUtil::SecAlloc<uint8_t>(BLSPrivateKey::PRIVATE_KEY_SIZE);
+        .def("__repr__", [](const PrivateKey &k) {
+            uint8_t* output = Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
             k.Serialize(output);
-            std::string ret = "<BLSPrivateKey " + BLSUtil::HexStr(output, BLSPrivateKey::PRIVATE_KEY_SIZE) + ">";
-            BLSUtil::SecFree(output);
+            std::string ret = "<PrivateKey " + Util::HexStr(output, PrivateKey::PRIVATE_KEY_SIZE) + ">";
+            Util::SecFree(output);
             return ret;
         });
 
 
-    py::class_<BLSPublicKey>(m, "BLSPublicKey")
+    py::class_<PublicKey>(m, "PublicKey")
         .def_property_readonly_static("PUBLIC_KEY_SIZE", [](py::object self) {
-            return BLSPublicKey::PUBLIC_KEY_SIZE;
+            return PublicKey::PUBLIC_KEY_SIZE;
         })
         .def("from_bytes", [](const py::bytes &b) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
-            return BLSPublicKey::FromBytes(input);
+            return PublicKey::FromBytes(input);
         })
-        .def("aggregate", &BLSPublicKey::Aggregate)
-        .def("get_fingerprint", &BLSPublicKey::GetFingerprint)
-        .def("serialize", [](const BLSPublicKey &pk) {
-            uint8_t* output = new uint8_t[BLSPublicKey::PUBLIC_KEY_SIZE];
+        .def("aggregate", &PublicKey::Aggregate)
+        .def("get_fingerprint", &PublicKey::GetFingerprint)
+        .def("serialize", [](const PublicKey &pk) {
+            uint8_t* output = new uint8_t[PublicKey::PUBLIC_KEY_SIZE];
             pk.Serialize(output);
-            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), BLSPublicKey::PUBLIC_KEY_SIZE);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), PublicKey::PUBLIC_KEY_SIZE);
             delete[] output;
             return ret;
         })
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("__repr__", [](const BLSPublicKey &pk) {
+        .def("__repr__", [](const PublicKey &pk) {
             std::stringstream s;
             s << pk;
-            return "<BLSPublicKey " + s.str() + ">";
+            return "<PublicKey " + s.str() + ">";
         });
 
 
-    py::class_<BLSSignature>(m, "BLSSignature")
+    py::class_<Signature>(m, "Signature")
         .def_property_readonly_static("SIGNATURE_SIZE", [](py::object self) {
-            return BLSSignature::SIGNATURE_SIZE;
+            return Signature::SIGNATURE_SIZE;
         })
         .def("from_bytes", [](const py::bytes &b) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
-            return BLSSignature::FromBytes(input);
+            return Signature::FromBytes(input);
         })
-        .def("serialize", [](const BLSSignature &sig) {
-            uint8_t* output = new uint8_t[BLSSignature::SIGNATURE_SIZE];
+        .def("serialize", [](const Signature &sig) {
+            uint8_t* output = new uint8_t[Signature::SIGNATURE_SIZE];
             sig.Serialize(output);
-            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), BLSSignature::SIGNATURE_SIZE);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), Signature::SIGNATURE_SIZE);
             delete[] output;
             return ret;
         })
-        .def("verify", &BLSSignature::Verify)
-        .def("aggregate", &BLSSignature::AggregateSigs)
-        .def("divide_by", &BLSSignature::DivideBy)
-        .def("set_aggregation_info", &BLSSignature::SetAggregationInfo)
-        .def("get_aggregation_info", [](const BLSSignature &sig) {
+        .def("verify", &Signature::Verify)
+        .def("aggregate", &Signature::AggregateSigs)
+        .def("divide_by", &Signature::DivideBy)
+        .def("set_aggregation_info", &Signature::SetAggregationInfo)
+        .def("get_aggregation_info", [](const Signature &sig) {
             return *sig.GetAggregationInfo();
         })
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("__repr__", [](const BLSSignature &sig) {
+        .def("__repr__", [](const Signature &sig) {
             std::stringstream s;
             s << sig;
-            return "<BLSSignature " + s.str() + ">";
+            return "<Signature " + s.str() + ">";
         });
 
     py::class_<ChainCode>(m, "ChainCode")
@@ -169,9 +169,9 @@ PYBIND11_MODULE(blspy, m) {
         .def("__repr__", [](const ChainCode &cc) {
             uint8_t* output = new uint8_t[ChainCode::CHAIN_CODE_SIZE];
             cc.Serialize(output);
-            std::string ret = "<ChainCode " + BLSUtil::HexStr(output,
+            std::string ret = "<ChainCode " + Util::HexStr(output,
                     ChainCode::CHAIN_CODE_SIZE) + ">";
-            BLSUtil::SecFree(output);
+            Util::SecFree(output);
             return ret;
         });
 
@@ -207,9 +207,9 @@ PYBIND11_MODULE(blspy, m) {
             uint8_t* output = new uint8_t[
                     ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
             pk.Serialize(output);
-            std::string ret = "<ExtendedPublicKey " + BLSUtil::HexStr(output,
+            std::string ret = "<ExtendedPublicKey " + Util::HexStr(output,
                     ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE) + ">";
-            BLSUtil::SecFree(output);
+            Util::SecFree(output);
             return ret;
         });
 
@@ -238,21 +238,21 @@ PYBIND11_MODULE(blspy, m) {
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("serialize", [](const ExtendedPrivateKey &k) {
-            uint8_t* output = BLSUtil::SecAlloc<uint8_t>(
+            uint8_t* output = Util::SecAlloc<uint8_t>(
                     ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE);
             k.Serialize(output);
             py::bytes ret = py::bytes(reinterpret_cast<char*>(output),
                     ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE);
-            BLSUtil::SecFree(output);
+            Util::SecFree(output);
             return ret;
         })
         .def("__repr__", [](const ExtendedPrivateKey &k) {
-            uint8_t* output = BLSUtil::SecAlloc<uint8_t>(
+            uint8_t* output = Util::SecAlloc<uint8_t>(
                     ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE);
             k.Serialize(output);
-            std::string ret = "<ExtendedPrivateKey " + BLSUtil::HexStr(output,
+            std::string ret = "<ExtendedPrivateKey " + Util::HexStr(output,
                     ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE) + ">";
-            BLSUtil::SecFree(output);
+            Util::SecFree(output);
             return ret;
         });
 
@@ -265,11 +265,11 @@ PYBIND11_MODULE(blspy, m) {
         .def("assert_initialized", &BLS::AssertInitialized)
         .def("clean", &BLS::Clean);
 
-    py::class_<BLSUtil>(m, "BLSUtil")
+    py::class_<Util>(m, "Util")
         .def("hash256", [](const py::bytes &message) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(message)[0]);
             uint8_t output[BLS::MESSAGE_HASH_LEN];
-            BLSUtil::Hash256(output, input, len(message));
+            Util::Hash256(output, input, len(message));
             return py::bytes(reinterpret_cast<char*>(output), BLS::MESSAGE_HASH_LEN);
         });
 

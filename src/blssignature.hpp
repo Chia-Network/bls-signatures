@@ -29,48 +29,48 @@
 
 /**
  * An insecure BLS signature.
- * A BLSSignature is a group element of g2
- * Aggregation of these signatures is not secure on it's own, use BLSSignature instead
+ * A Signature is a group element of g2
+ * Aggregation of these signatures is not secure on it's own, use Signature instead
  */
-class BLSInsecureSignature {
- friend class BLSSignature;
+class InsecureSignature {
+ friend class Signature;
  public:
     static const size_t SIGNATURE_SIZE = 96;
 
     // Initializes from serialized byte array/
-    static BLSInsecureSignature FromBytes(const uint8_t *data);
+    static InsecureSignature FromBytes(const uint8_t *data);
 
     // Initializes from native relic g2 element/
-    static BLSInsecureSignature FromG2(const relic::g2_t* element);
+    static InsecureSignature FromG2(const relic::g2_t* element);
 
     // Copy constructor. Deep copies contents.
-    BLSInsecureSignature(const BLSInsecureSignature &signature);
+    InsecureSignature(const InsecureSignature &signature);
 
     // This verification method is insecure in regard to the rogue public key attack
-    bool Verify(const std::vector<const uint8_t*>& hashes, const std::vector<BLSPublicKey>& pubKeys) const;
+    bool Verify(const std::vector<const uint8_t*>& hashes, const std::vector<PublicKey>& pubKeys) const;
 
     // Insecurely aggregates signatures
-    static BLSInsecureSignature Aggregate(const std::vector<BLSInsecureSignature>& sigs);
+    static InsecureSignature Aggregate(const std::vector<InsecureSignature>& sigs);
 
     // Insecurely divides signatures
-    BLSInsecureSignature DivideBy(const std::vector<BLSInsecureSignature>& sigs) const;
+    InsecureSignature DivideBy(const std::vector<InsecureSignature>& sigs) const;
 
     // Serializes ONLY the 96 byte public key. It does not serialize
     // the aggregation info.
     void Serialize(uint8_t* buffer) const;
     std::vector<uint8_t> Serialize() const;
 
-    friend bool operator==(BLSInsecureSignature const &a, BLSInsecureSignature const &b);
-    friend bool operator!=(BLSInsecureSignature const &a, BLSInsecureSignature const &b);
-    friend std::ostream &operator<<(std::ostream &os, BLSInsecureSignature const &s);
-    BLSInsecureSignature& operator=(const BLSInsecureSignature& rhs);
+    friend bool operator==(InsecureSignature const &a, InsecureSignature const &b);
+    friend bool operator!=(InsecureSignature const &a, InsecureSignature const &b);
+    friend std::ostream &operator<<(std::ostream &os, InsecureSignature const &s);
+    InsecureSignature& operator=(const InsecureSignature& rhs);
 
  private:
     // Prevent public construction, force static method
-    BLSInsecureSignature();
+    InsecureSignature();
 
     // Exponentiate signature with n
-    BLSInsecureSignature Exp(const relic::bn_t n) const;
+    InsecureSignature Exp(const relic::bn_t n) const;
 
     static void CompressPoint(uint8_t* result, const relic::g2_t* point);
 
@@ -89,35 +89,35 @@ class BLSInsecureSignature {
 
 /**
  * An encapsulated signature.
- * A BLSSignature is composed of two things:
+ * A Signature is composed of two things:
  *     1. 96 byte group element of g2
  *     2. AggregationInfo object, which describes how the signature was
  *        generated, and how it should be verified.
  */
-class BLSSignature {
+class Signature {
  public:
-    static const size_t SIGNATURE_SIZE = BLSInsecureSignature::SIGNATURE_SIZE;
+    static const size_t SIGNATURE_SIZE = InsecureSignature::SIGNATURE_SIZE;
 
     // Initializes from serialized byte array/
-    static BLSSignature FromBytes(const uint8_t *data);
+    static Signature FromBytes(const uint8_t *data);
 
     // Initializes from bytes with AggregationInfo/
-    static BLSSignature FromBytes(const uint8_t *data, const AggregationInfo &info);
+    static Signature FromBytes(const uint8_t *data, const AggregationInfo &info);
 
     // Initializes from native relic g2 element/
-    static BLSSignature FromG2(const relic::g2_t* element);
+    static Signature FromG2(const relic::g2_t* element);
 
     // Initializes from native relic g2 element with AggregationInfo/
-    static BLSSignature FromG2(const relic::g2_t* element, const AggregationInfo &info);
+    static Signature FromG2(const relic::g2_t* element, const AggregationInfo &info);
 
     // Initializes from insecure signature/
-    static BLSSignature FromInsecureSig(const BLSInsecureSignature& sig);
+    static Signature FromInsecureSig(const InsecureSignature& sig);
 
     // Initializes from insecure signature with AggregationInfo/
-    static BLSSignature FromInsecureSig(const BLSInsecureSignature& sig, const AggregationInfo &info);
+    static Signature FromInsecureSig(const InsecureSignature& sig, const AggregationInfo &info);
 
     // Copy constructor. Deep copies contents.
-    BLSSignature(const BLSSignature &signature);
+    Signature(const Signature &signature);
 
     // Verifies a single or aggregate signature.
     // Performs two pairing operations, sig must contain information on
@@ -129,13 +129,13 @@ class BLSSignature {
     // which may be identical. The signature can then be verified
     // using VerifyAggregate. The returned signature contains
     // information on how the aggregation was done (AggragationInfo).
-    static BLSSignature AggregateSigs(
-            std::vector<BLSSignature> const &sigs);
+    static Signature AggregateSigs(
+            std::vector<Signature> const &sigs);
 
     // Divides the aggregate signature (this) by a list of signatures.
     // These divisors can be single or aggregate signatures, but all
     // msg/pk pairs in these signatures must be distinct and unique.
-    BLSSignature DivideBy(std::vector<BLSSignature> const &divisorSigs) const;
+    Signature DivideBy(std::vector<Signature> const &divisorSigs) const;
 
     // Gets the aggregation info on this signature.
     const AggregationInfo* GetAggregationInfo() const;
@@ -150,35 +150,35 @@ class BLSSignature {
     void Serialize(uint8_t* buffer) const;
     std::vector<uint8_t> Serialize() const;
 
-    friend bool operator==(BLSSignature const &a, BLSSignature const &b);
-    friend bool operator!=(BLSSignature const &a, BLSSignature const &b);
-    friend std::ostream &operator<<(std::ostream &os, BLSSignature const &s);
+    friend bool operator==(Signature const &a, Signature const &b);
+    friend bool operator!=(Signature const &a, Signature const &b);
+    friend std::ostream &operator<<(std::ostream &os, Signature const &s);
 
  private:
     // Prevent public construction, force static method
-    BLSSignature() {}
+    Signature() {}
 
     // Aggregates many signatures using the secure aggregation method.
     // Performs ~ n * 256 g2 operations.
-    static BLSSignature AggregateSigsSecure(
-            std::vector<BLSSignature> const &sigs,
-            std::vector<BLSPublicKey> const &pubKeys,
+    static Signature AggregateSigsSecure(
+            std::vector<Signature> const &sigs,
+            std::vector<PublicKey> const &pubKeys,
             std::vector<uint8_t*> const &messageHashes);
 
     // Internal methods
-    static BLSSignature AggregateSigsInternal(
-            std::vector<BLSSignature> const &sigs,
-            std::vector<std::vector<BLSPublicKey> > const &pubKeys,
+    static Signature AggregateSigsInternal(
+            std::vector<Signature> const &sigs,
+            std::vector<std::vector<PublicKey> > const &pubKeys,
             std::vector<std::vector<uint8_t*> > const &messageHashes);
 
     // Efficiently aggregates many signatures using the simple aggregation
     // method. Performs only n g2 operations.
-    static BLSSignature AggregateSigsSimple(
-            std::vector<BLSSignature> const &sigs);
+    static Signature AggregateSigsSimple(
+            std::vector<Signature> const &sigs);
 
  private:
     // internal signature
-    BLSInsecureSignature sig;
+    InsecureSignature sig;
 
     // Optional info about how this was aggregated
     AggregationInfo aggregationInfo;
