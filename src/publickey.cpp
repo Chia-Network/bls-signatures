@@ -16,8 +16,8 @@
 #include <cstring>
 #include <algorithm>
 
-#include "blspublickey.hpp"
-#include "blsutil.hpp"
+#include "publickey.hpp"
+#include "util.hpp"
 #include "bls.hpp"
 
 PublicKey PublicKey::FromBytes(const uint8_t * key) {

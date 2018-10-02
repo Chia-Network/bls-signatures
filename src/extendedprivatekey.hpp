@@ -23,8 +23,8 @@
 #include <gmp.h>
 #endif
 
-#include "blsprivatekey.hpp"
-#include "blspublickey.hpp"
+#include "privatekey.hpp"
+#include "publickey.hpp"
 #include "chaincode.hpp"
 #include "extendedpublickey.hpp"
 

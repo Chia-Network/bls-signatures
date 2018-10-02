@@ -21,8 +21,8 @@
 #include <gmp.h>
 #endif
 
-#include "blspublickey.hpp"
-#include "blssignature.hpp"
+#include "publickey.hpp"
+#include "signature.hpp"
 
 class PrivateKey {
  public:

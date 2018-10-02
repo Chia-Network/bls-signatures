@@ -17,8 +17,8 @@
 #include <algorithm>
 
 #include "bls.hpp"
-#include "blsutil.hpp"
-#include "blsprivatekey.hpp"
+#include "util.hpp"
+#include "privatekey.hpp"
 
 PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
     BLS::AssertInitialized();

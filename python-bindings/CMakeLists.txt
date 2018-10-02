@@ -14,9 +14,9 @@ pybind11_add_module(blspy
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/extendedpublickey.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/extendedprivatekey.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/chaincode.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../src/blssignature.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../src/blspublickey.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/../src/blsprivatekey.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../src/signature.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../src/publickey.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../src/privatekey.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/bls.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/../src/aggregationinfo.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/pythonbindings.cpp)

@@ -17,8 +17,8 @@
 
 #include <map>
 #include <vector>
-#include "blspublickey.hpp"
-#include "blsutil.hpp"
+#include "publickey.hpp"
+#include "util.hpp"
 
 /**
  * Represents information about how aggregation was performed,

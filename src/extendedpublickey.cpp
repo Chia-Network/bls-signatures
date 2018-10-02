@@ -15,7 +15,7 @@
 #include <string>
 #include "extendedpublickey.hpp"
 #include "extendedprivatekey.hpp"
-#include "blsutil.hpp"
+#include "util.hpp"
 #include "bls.hpp"
 
 ExtendedPublicKey ExtendedPublicKey::FromBytes(

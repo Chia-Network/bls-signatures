@@ -17,7 +17,7 @@
 #include <set>
 #include <algorithm>
 
-#include "blssignature.hpp"
+#include "signature.hpp"
 #include "bls.hpp"
 
 using std::string;

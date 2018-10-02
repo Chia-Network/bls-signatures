@@ -23,7 +23,7 @@
 #include <gmp.h>
 #endif
 
-#include "blspublickey.hpp"
+#include "publickey.hpp"
 #include "chaincode.hpp"
 
 namespace relic {

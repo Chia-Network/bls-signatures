@@ -24,7 +24,7 @@
 #include <gmp.h>
 #endif
 
-#include "blsutil.hpp"
+#include "util.hpp"
 
 /** An encapsulated public key. */
 class PublicKey {

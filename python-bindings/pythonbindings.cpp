@@ -16,7 +16,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/operators.h>
 
-#include "../src/blsprivatekey.hpp"
+#include "../src/privatekey.hpp"
 #include "../src/bls.hpp"
 
 namespace py = pybind11;

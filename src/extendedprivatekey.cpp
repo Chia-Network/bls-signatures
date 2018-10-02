@@ -15,7 +15,7 @@
 #include <string>
 #include <cstring>
 #include "extendedprivatekey.hpp"
-#include "blsutil.hpp"
+#include "util.hpp"
 #include "bls.hpp"
 
 ExtendedPrivateKey ExtendedPrivateKey::FromSeed(const uint8_t* seed,
