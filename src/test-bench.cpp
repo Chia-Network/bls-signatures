@@ -21,6 +21,8 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+using namespace bls;
+
 void benchSigs() {
     string testName = "Sigining";
     double numIters = 1000;

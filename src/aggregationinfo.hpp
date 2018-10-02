@@ -19,7 +19,7 @@
 #include <vector>
 #include "publickey.hpp"
 #include "util.hpp"
-
+namespace bls {
 /**
  * Represents information about how aggregation was performed,
  * or how a signature was generated (pks, messageHashes, etc).
@@ -104,5 +104,6 @@ class AggregationInfo {
     std::vector<uint8_t*> sortedMessageHashes;
     std::vector<PublicKey> sortedPubKeys;
 };
+} // end namespace bls
 
 #endif  // SRC_AGGREGATIONINFO_HPP_

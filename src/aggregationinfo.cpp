@@ -19,6 +19,7 @@
 #include <utility>
 #include "aggregationinfo.hpp"
 #include "bls.hpp"
+namespace bls {
 
 // Creates a new object, copying the messageHash and pk
 AggregationInfo AggregationInfo::FromMsgHash(const PublicKey &pk,
@@ -409,3 +410,4 @@ AggregationInfo::AggregationInfo() {}
 AggregationInfo::~AggregationInfo() {
     Clear();
 }
+} // end namespace bls

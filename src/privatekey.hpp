@@ -23,7 +23,7 @@
 
 #include "publickey.hpp"
 #include "signature.hpp"
-
+namespace bls {
 class PrivateKey {
  public:
     // Private keys are represented as 32 byte field elements. Note that
@@ -85,5 +85,6 @@ class PrivateKey {
     // The actual byte data
     relic::bn_t *keydata{nullptr};
 };
+} // end namespace bls
 
 #endif  // SRC_BLSPRIVATEKEY_HPP_

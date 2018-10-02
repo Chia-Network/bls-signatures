@@ -20,6 +20,7 @@
 #include "util.hpp"
 #include "bls.hpp"
 
+namespace bls {
 PublicKey PublicKey::FromBytes(const uint8_t * key) {
     BLS::AssertInitialized();
     PublicKey pk = PublicKey();
@@ -164,3 +165,4 @@ void PublicKey::CompressPoint(uint8_t* result, const relic::g1_t* point) {
     }
     std::memcpy(result, buffer + 1, PUBLIC_KEY_SIZE);
 }
+} // end namespace bls

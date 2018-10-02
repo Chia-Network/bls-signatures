@@ -20,6 +20,7 @@
 #include "../src/bls.hpp"
 
 namespace py = pybind11;
+using namespace bls;
 
 PYBIND11_MODULE(blspy, m) {
     py::class_<relic::bn_t*>(m, "bn_ptr");

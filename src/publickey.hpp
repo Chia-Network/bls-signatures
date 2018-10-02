@@ -25,7 +25,7 @@
 #endif
 
 #include "util.hpp"
-
+namespace bls {
 /** An encapsulated public key. */
 class PublicKey {
  friend class InsecureSignature;
@@ -74,4 +74,5 @@ class PublicKey {
     relic::g1_t q;
 };
 
+} // end namespace bls
 #endif  // SRC_BLSPUBLICKEY_HPP_

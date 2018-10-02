@@ -26,7 +26,7 @@
 
 #include "util.hpp"
 #include "aggregationinfo.hpp"
-
+namespace bls {
 /**
  * An insecure BLS signature.
  * A Signature is a group element of g2
@@ -183,5 +183,6 @@ class Signature {
     // Optional info about how this was aggregated
     AggregationInfo aggregationInfo;
 };
+} // end namespace bls
 
 #endif  // SRC_BLSSIGNATURE_HPP_

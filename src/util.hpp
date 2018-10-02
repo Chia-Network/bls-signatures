@@ -38,6 +38,7 @@ namespace relic {
     #include "relic.h"
     #include "relic_test.h"
 }
+namespace bls {
 
 class Util {
  public:
@@ -114,5 +115,5 @@ class Util {
         return sum;
     }
 };
-
+} // end namespace bls
 #endif  // SRC_BLSUTIL_HPP_

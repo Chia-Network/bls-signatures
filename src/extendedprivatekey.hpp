@@ -33,6 +33,7 @@ namespace relic {
     #include "relic_test.h"
 }
 
+namespace bls {
 /*
 Defines a BIP-32 style node, which is composed of a private key and a
 chain code. This follows the spec from BIP-0032, with a few changes:
@@ -104,5 +105,6 @@ class ExtendedPrivateKey {
     const ChainCode chainCode;
     const PrivateKey sk;
 };
+} // end namespace bls
 
 #endif  // SRC_EXTENDEDPRIVATEKEY_HPP_

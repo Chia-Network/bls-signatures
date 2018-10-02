@@ -17,6 +17,7 @@
 #include "extendedprivatekey.hpp"
 #include "util.hpp"
 #include "bls.hpp"
+namespace bls {
 
 ExtendedPrivateKey ExtendedPrivateKey::FromSeed(const uint8_t* seed,
                                                 size_t seedLen) {
@@ -207,3 +208,4 @@ std::vector<uint8_t> ExtendedPrivateKey::Serialize() const {
 
 // Destructors in PrivateKey and ChainCode handle cleaning of memory
 ExtendedPrivateKey::~ExtendedPrivateKey() {}
+} // end namespace bls

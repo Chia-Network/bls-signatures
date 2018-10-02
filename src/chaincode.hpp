@@ -30,7 +30,7 @@ namespace relic {
 }
 
 #include "util.hpp"
-
+namespace bls {
 class ChainCode {
  public:
     static const size_t CHAIN_CODE_SIZE = 32;
@@ -53,6 +53,7 @@ class ChainCode {
 
     relic::bn_t chainCode;
 };
+} // end namespace bls
 
 #endif  // SRC_CHAINCODE_HPP_
 

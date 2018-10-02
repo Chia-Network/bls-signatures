@@ -18,6 +18,7 @@
 #include <algorithm>
 
 #include "bls.hpp"
+namespace bls {
 
 const char BLS::GROUP_ORDER[] =
         "73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001";
@@ -107,3 +108,4 @@ void BLS::CheckRelicErrors() {
         throw std::string("Relic library error");
     }
 }
+} // end namespace bls

@@ -22,6 +22,8 @@ using std::vector;
 using std::cout;
 using std::endl;
 
+using namespace bls;
+
 TEST_CASE("Test vectors") {
     SECTION("Test vectors 1") {
         uint8_t seed1[5] = {1, 2, 3, 4, 5};

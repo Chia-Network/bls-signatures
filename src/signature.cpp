@@ -23,7 +23,7 @@
 using std::string;
 using relic::bn_t;
 using relic::fp_t;
-
+namespace bls {
 InsecureSignature InsecureSignature::FromBytes(const uint8_t *data) {
     BLS::AssertInitialized();
     InsecureSignature sigObj = InsecureSignature();
@@ -676,4 +676,5 @@ Signature Signature::DivideBy(std::vector<Signature> const &divisorSigs) const {
 
     return result;
 }
+} // end namespace bls
 

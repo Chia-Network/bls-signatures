@@ -19,7 +19,7 @@
 #include "bls.hpp"
 #include "util.hpp"
 #include "privatekey.hpp"
-
+namespace bls {
 PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
     BLS::AssertInitialized();
 
@@ -251,3 +251,4 @@ void PrivateKey::AllocateKeyData() {
     bn_new(*keydata);  // Freed in destructor
     relic::bn_zero(*keydata);
 }
+} // end namespace bls

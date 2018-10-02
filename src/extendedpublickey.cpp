@@ -17,6 +17,7 @@
 #include "extendedprivatekey.hpp"
 #include "util.hpp"
 #include "bls.hpp"
+namespace bls {
 
 ExtendedPublicKey ExtendedPublicKey::FromBytes(
         const uint8_t* serialized) {
@@ -137,3 +138,4 @@ std::vector<uint8_t> ExtendedPublicKey::Serialize() const {
     Serialize(data.data());
     return data;
 }
+} // end namespace bls

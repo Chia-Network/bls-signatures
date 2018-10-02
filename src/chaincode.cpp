@@ -14,6 +14,7 @@
 
 #include "chaincode.hpp"
 #include "bls.hpp"
+namespace bls {
 
 ChainCode ChainCode::FromBytes(const uint8_t* bytes) {
     BLS::AssertInitialized();
@@ -55,3 +56,4 @@ std::vector<uint8_t> ChainCode::Serialize() const {
     Serialize(data.data());
     return data;
 }
+} // end namespace bls
