@@ -150,6 +150,8 @@ class Signature {
     void Serialize(uint8_t* buffer) const;
     std::vector<uint8_t> Serialize() const;
 
+    InsecureSignature GetInsecureSig() const;
+
     friend bool operator==(Signature const &a, Signature const &b);
     friend bool operator!=(Signature const &a, Signature const &b);
     friend std::ostream &operator<<(std::ostream &os, Signature const &s);
