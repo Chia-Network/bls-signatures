@@ -76,14 +76,14 @@ class PrivateKey {
     PrivateKey() {}
 
     // Multiply private key with n
-    PrivateKey Mul(const relic::bn_t n) const;
+    PrivateKey Mul(const bn_t n) const;
 
     // Allocate memory for private key
     void AllocateKeyData();
 
  private:
     // The actual byte data
-    relic::bn_t *keydata{nullptr};
+    bn_t *keydata{nullptr};
 };
 } // end namespace bls
 

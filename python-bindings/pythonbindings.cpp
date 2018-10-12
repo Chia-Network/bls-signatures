@@ -23,7 +23,7 @@ namespace py = pybind11;
 using namespace bls;
 
 PYBIND11_MODULE(blspy, m) {
-    py::class_<relic::bn_t*>(m, "bn_ptr");
+    py::class_<bn_t*>(m, "bn_ptr");
 
     py::class_<AggregationInfo>(m, "AggregationInfo")
         .def("from_msg_hash", [](const PublicKey &pk, const py::bytes &b) {

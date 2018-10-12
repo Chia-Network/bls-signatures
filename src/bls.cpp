@@ -30,19 +30,19 @@ bool BLS::Init() {
         std::cout << "Must have ALLOC == AUTO";
         return false;
     }
-    relic::core_init();
-    if (relic::err_get_code() != STS_OK) {
+    core_init();
+    if (err_get_code() != STS_OK) {
         std::cout << "core_init() failed";
         return false;
     }
 
-    const int r = relic::ep_param_set_any_pairf();
+    const int r = ep_param_set_any_pairf();
     if (r != STS_OK) {
         std::cout << "ep_param_set_any_pairf() failed";
         return false;
     }
 #if BLSALLOC_SODIUM
-    if (libsodium::sodium_init() < 0) {
+    if (sodium_init() < 0) {
         std::cout << "libsodium init failed";
         return false;
     }
@@ -51,24 +51,24 @@ bool BLS::Init() {
 }
 
 void BLS::AssertInitialized() {
-    if (!relic::core_get()) {
+    if (!core_get()) {
         throw std::string("Library not initialized properly. Call BLS::Init()");
     }
 #if BLSALLOC_SODIUM
-    if (libsodium::sodium_init() < 0) {
+    if (sodium_init() < 0) {
         throw std::string("Libsodium initialization failed.");
     }
 #endif
 }
 
 void BLS::Clean() {
-    relic::core_clean();
+    core_clean();
 }
 
-void BLS::HashPubKeys(relic::bn_t* output, size_t numOutputs,
+void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
                       std::vector<uint8_t*> const &serPubKeys,
                       std::vector<size_t> const& sortedIndices) {
-    relic::bn_t order;
+    bn_t order;
 
     bn_new(order);
     g2_get_ord(order);
@@ -101,10 +101,10 @@ void BLS::HashPubKeys(relic::bn_t* output, size_t numOutputs,
 }
 
 void BLS::CheckRelicErrors() {
-    if (!relic::core_get()) {
+    if (!core_get()) {
         throw std::string("Library not initialized properly. Call BLS::Init()");
     }
-    if (relic::core_get()->code != STS_OK) {
+    if (core_get()->code != STS_OK) {
         throw std::string("Relic library error");
     }
 }

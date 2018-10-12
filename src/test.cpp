@@ -188,7 +188,7 @@ TEST_CASE("Key generation") {
 
         PrivateKey sk = PrivateKey::FromSeed(seed, sizeof(seed));
         PublicKey pk = sk.GetPublicKey();
-        REQUIRE(relic::core_get()->code == STS_OK);
+        REQUIRE(core_get()->code == STS_OK);
         REQUIRE(pk.GetFingerprint() == 0xddad59bb);
     }
 }
@@ -239,10 +239,10 @@ TEST_CASE("Signatures") {
 
         // Hashing to g1
         uint8_t mapMsg[0] = {};
-        relic::g1_t result;
+        g1_t result;
         uint8_t buf[49];
-        relic::ep_map(result, mapMsg, 0);
-        relic::g1_write_bin(buf, 49, result, 1);
+        ep_map(result, mapMsg, 0);
+        g1_write_bin(buf, 49, result, 1);
         REQUIRE(Util::HexStr(buf + 1, 48) == "12fc5ad5a2fbe9d4b6eb0bc16d530e5f263b6d59cbaf26c3f2831962924aa588ab84d46cc80d3a433ce064adb307f256");
     }
 
