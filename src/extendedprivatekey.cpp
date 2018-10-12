@@ -36,14 +36,14 @@ ExtendedPrivateKey ExtendedPrivateKey::FromSeed(const uint8_t* seed,
 
     // Hash the seed into 64 bytes, half will be sk, half will be cc
     hashInput[seedLen] = 0;
-    relic::md_hmac(ILeft, hashInput, seedLen + 1, prefix, sizeof(prefix));
+    md_hmac(ILeft, hashInput, seedLen + 1, prefix, sizeof(prefix));
 
     hashInput[seedLen] = 1;
-    relic::md_hmac(IRight, hashInput, seedLen + 1, prefix, sizeof(prefix));
+    md_hmac(IRight, hashInput, seedLen + 1, prefix, sizeof(prefix));
 
     // Make sure private key is less than the curve order
-    relic::bn_t* skBn = Util::SecAlloc<relic::bn_t>(1);
-    relic::bn_t order;
+    bn_t* skBn = Util::SecAlloc<bn_t>(1);
+    bn_t order;
     bn_new(order);
     g1_get_ord(order);
 
@@ -109,13 +109,13 @@ ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
     }
     hmacInput[inputLen - 1] = 0;
 
-    relic::md_hmac(ILeft, hmacInput, inputLen,
+    md_hmac(ILeft, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
     // Change 1 byte to generate a different sequence for chaincode
     hmacInput[inputLen - 1] = 1;
 
-    relic::md_hmac(IRight, hmacInput, inputLen,
+    md_hmac(IRight, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
     PrivateKey newSk = PrivateKey::FromBytes(ILeft, true);

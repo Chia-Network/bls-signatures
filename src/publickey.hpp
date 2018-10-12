@@ -38,7 +38,7 @@ class PublicKey {
     static PublicKey FromBytes(const uint8_t* key);
 
     // Construct a public key from a native g1 element.
-    static PublicKey FromG1(const relic::g1_t* key);
+    static PublicKey FromG1(const g1_t* key);
 
     // Construct a public key from another public key.
     PublicKey(const PublicKey &pubKey);
@@ -65,13 +65,13 @@ class PublicKey {
     PublicKey();
 
     // Exponentiate public key with n
-    PublicKey Exp(const relic::bn_t n) const;
+    PublicKey Exp(const bn_t n) const;
 
-    static void CompressPoint(uint8_t* result, const relic::g1_t* point);
+    static void CompressPoint(uint8_t* result, const g1_t* point);
 
  private:
     // Public key group element
-    relic::g1_t q;
+    g1_t q;
 };
 
 } // end namespace bls

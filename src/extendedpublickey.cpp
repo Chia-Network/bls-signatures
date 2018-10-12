@@ -63,13 +63,13 @@ ExtendedPublicKey ExtendedPublicKey::PublicChild(uint32_t i) const {
     hmacInput[inputLen - 1] = 0;
     Util::IntToFourBytes(hmacInput + PublicKey::PUBLIC_KEY_SIZE, i);
 
-    relic::md_hmac(ILeft, hmacInput, inputLen,
+    md_hmac(ILeft, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
     // Change 1 byte to generate a different sequence for chaincode
     hmacInput[inputLen - 1] = 1;
 
-    relic::md_hmac(IRight, hmacInput, inputLen,
+    md_hmac(IRight, hmacInput, inputLen,
                     hmacKey, ChainCode::CHAIN_CODE_SIZE);
 
     PrivateKey leftSk = PrivateKey::FromBytes(ILeft, true);

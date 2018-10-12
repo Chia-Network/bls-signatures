@@ -31,10 +31,10 @@
 #include "extendedprivatekey.hpp"
 #include "aggregationinfo.hpp"
 
-namespace relic {
-    #include "relic.h"
-    #include "relic_test.h"
-}
+
+#include "relic.h"
+#include "relic_test.h"
+
 namespace bls {
 
 /*
@@ -56,7 +56,7 @@ class BLS {
 
     // Used for secure aggregation
     static void HashPubKeys(
-            relic::bn_t* output,
+            bn_t* output,
             size_t numOutputs,
             std::vector<uint8_t*> const &serPubKeys,
             std::vector<size_t> const &sortedIndices);

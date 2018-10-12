@@ -32,11 +32,11 @@ PublicKey PublicKey::FromBytes(const uint8_t * key) {
     } else {
         uncompressed[0] = 0x02;   // Insert extra byte for Y=0
     }
-    relic::g1_read_bin(pk.q, uncompressed, PUBLIC_KEY_SIZE + 1);
+    g1_read_bin(pk.q, uncompressed, PUBLIC_KEY_SIZE + 1);
     return pk;
 }
 
-PublicKey PublicKey::FromG1(const relic::g1_t* pubKey) {
+PublicKey PublicKey::FromG1(const g1_t* pubKey) {
     BLS::AssertInitialized();
     PublicKey pk = PublicKey();
     g1_copy(pk.q, *pubKey);
@@ -86,7 +86,7 @@ PublicKey PublicKey::Aggregate(std::vector<PublicKey> const& pubKeys) {
         return memcmp(serPubKeys[a], serPubKeys[b], PublicKey::PUBLIC_KEY_SIZE) < 0;
     });
 
-    relic::bn_t *computedTs = new relic::bn_t[pubKeysSorted.size()];
+    bn_t *computedTs = new bn_t[pubKeysSorted.size()];
     for (size_t i = 0; i < pubKeysSorted.size(); i++) {
         bn_new(computedTs[i]);
     }
@@ -113,7 +113,7 @@ PublicKey PublicKey::Aggregate(std::vector<PublicKey> const& pubKeys) {
     return aggKey;
 }
 
-PublicKey PublicKey::Exp(relic::bn_t const n) const {
+PublicKey PublicKey::Exp(bn_t const n) const {
     PublicKey ret;
     g1_mul(ret.q, q, n);
     return ret;
@@ -156,7 +156,7 @@ uint32_t PublicKey::GetFingerprint() const {
     return Util::FourBytesToInt(hash);
 }
 
-void PublicKey::CompressPoint(uint8_t* result, const relic::g1_t* point) {
+void PublicKey::CompressPoint(uint8_t* result, const g1_t* point) {
     uint8_t buffer[PublicKey::PUBLIC_KEY_SIZE + 1];
     g1_write_bin(buffer, PublicKey::PUBLIC_KEY_SIZE + 1, *point, 1);
 
