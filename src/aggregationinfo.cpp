@@ -394,15 +394,13 @@ AggregationInfo AggregationInfo::SecureMergeInfos(
 void AggregationInfo::Clear() {
     sortedMessageHashes.clear();
     sortedPubKeys.clear();
-    std::vector<uint8_t*> mapKeys;
-    for (auto &mapEntry : tree) {
-        delete[] mapEntry.second;
-        mapKeys.push_back(mapEntry.first);
+    if (!(tree.empty())) {
+        for (auto &mapEntry : tree) {
+            delete[] mapEntry.first;
+            delete[] mapEntry.second;
+        }
+        tree.clear();
     }
-    for (const uint8_t* mapKey : mapKeys) {
-        delete[] mapKey;
-    }
-    tree.clear();
 }
 
 AggregationInfo::AggregationInfo() {}
