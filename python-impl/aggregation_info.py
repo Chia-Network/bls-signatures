@@ -1,11 +1,11 @@
-from util import hash256, hash_pks
 from copy import deepcopy
+from util import hash256, hash_pks
 
 
 class AggregationInfo:
     """
     AggregationInfo represents information of how a tree of aggregate
-    signatures was created. Different tress will result in different
+    signatures was created. Different trees will result in different
     signatures, due to exponentiations required for security.
 
     An AggregationInfo is represented as a map from (message_hash, pk)

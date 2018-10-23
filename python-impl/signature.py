@@ -1,12 +1,12 @@
-from ec import (default_ec, default_ec_twist, y_for_x, AffinePoint,
-                JacobianPoint)
-from fields import Fq, Fq2
 from copy import deepcopy
+from ec import (AffinePoint, JacobianPoint, default_ec,
+                default_ec_twist, y_for_x)
+from fields import Fq, Fq2
 
 
 class BLSSignature:
     """
-    Signatures are G1 elements, which are elliptic curve points (x, y), where
+    Signatures are G2 elements, which are elliptic curve points (x, y), where
     each x, y is a (2*381) bit Fq2 element. The serialized represenentation is
     just the x value, and thus 96 bytes. (With the 1st bit determining the
     valid y).

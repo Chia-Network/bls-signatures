@@ -1,17 +1,19 @@
 # flake8: noqa: E501
-
-import time
-from ec import (generator_Fq, generator_Fq2, default_ec, default_ec_twist,
-                y_for_x, hash_to_point_Fq, hash_to_point_Fq2,
-                twist, untwist, sw_encode)
-import random
-from fields import Fq2, Fq6, Fq12, Fq
-from bls import BLS
-from keys import BLSPrivateKey, BLSPublicKey, ExtendedPrivateKey
 from aggregation_info import AggregationInfo
+from bls import BLS
+from ec import (default_ec, default_ec_twist, generator_Fq, generator_Fq2,
+                hash_to_point_Fq, hash_to_point_Fq2, sw_encode, twist, untwist,
+                y_for_x)
+from fields import Fq, Fq2, Fq6, Fq12
+from itertools import combinations
+from keys import BLSPrivateKey, BLSPublicKey, ExtendedPrivateKey
+import random
 from signature import BLSSignature
-from util import hash256
 from sys import setrecursionlimit
+import time
+from threshold import Threshold
+from util import hash256
+
 setrecursionlimit(10**6)
 
 def rand_scalar(ec=default_ec):
@@ -341,7 +343,72 @@ def test2():
 
     sk2 = sk
 
+    
+def test_threshold_instance(T, N):
+    commitments = []
+    # fragments[i][j] = fragment held by player i,
+    #                   received from player j
+    fragments = [[None] * N for _ in range(N)]
+    secrets = []
 
+    # Step 1 : BLSPrivateKey.new_threshold
+    for player in range(N):
+        secret_key, commi, frags = BLSPrivateKey.new_threshold(T, N)
+        for target, frag in enumerate(frags):
+            fragments[target][player] = frag
+        commitments.append(commi)
+        secrets.append(secret_key)
+
+    # Step 2 : Threshold.verify_secret_fragment
+    for player_source in range(1, N+1):
+        for player_target in range(1, N+1):
+            assert Threshold.verify_secret_fragment(
+                T, N, fragments[player_target - 1][player_source - 1],
+                player_target, commitments[player_source - 1])
+
+    # Step 3 : master_pubkey = BLS.aggregate_pub_keys(...)
+    #          secret_share = BLS.aggregate_priv_keys(...)
+    master_pubkey = BLS.aggregate_pub_keys(
+           [BLSPublicKey.from_g1(cpoly[0].to_jacobian())
+            for cpoly in commitments],
+           False)
+
+    secret_shares = [BLS.aggregate_priv_keys(map(BLSPrivateKey, row), None, False)
+                     for row in fragments]
+    
+    msg = 'Test'
+    h = hash_to_point_Fq2(msg, default_ec_twist)
+    master_privkey = BLS.aggregate_priv_keys(secrets, None, False)
+    signature_actual = master_privkey.sign(msg)
+
+    # Step 4 : sig_share = secret_share.sign_threshold(...) 
+    # Check every combination of T players
+    for X in combinations(range(1, N+1), T):
+        # X: a list of T indices like [1, 2, 5]
+
+        # Check underlying secret key is correct
+        r = Threshold.interpolate_at_zero(X, [secret_shares[x-1].value for x in X])
+        secret_cand = BLSPrivateKey(r)
+        assert secret_cand == master_privkey
+
+        # Check signatures
+        signature_shares = [secret_shares[x-1].sign_threshold(msg, x, X)
+                            for x in X]
+        signature_cand = BLS.aggregate_sigs_simple(signature_shares)
+        assert signature_cand == signature_actual
+
+    # Check that the signature actually verifies the message
+    agg_info = AggregationInfo.from_msg(master_pubkey, msg)
+    signature_actual.set_aggregation_info(agg_info)
+    assert BLS.verify(signature_actual)
+
+
+def test_threshold():
+    for T in range(1, 6):
+        test_threshold_instance(T, 5)
+
+
+test_threshold()
 test_fields()
 test_ec()
 test_vectors()

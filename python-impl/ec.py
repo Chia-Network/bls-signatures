@@ -1,7 +1,7 @@
-from collections import namedtuple
-from fields import Fq, Fq2, Fq6, Fq12, FieldExtBase
 import bls12381
+from collections import namedtuple
 from copy import deepcopy
+from fields import FieldExtBase, Fq, Fq2, Fq6, Fq12
 from util import hash256, hash512
 
 # Struct for elliptic curve parameters
@@ -91,7 +91,7 @@ class AffinePoint:
         return JacobianPoint(self.x, self.y, self.FE.one(self.ec.q),
                              self.infinity, self.ec)
 
-    # Lexicografically greater than the negation
+    # Lexicographically greater than the negation
     def lex_gt_neg(self):
         if self.FE == Fq:
             if self.y > (self.ec.q // 2):
@@ -234,7 +234,7 @@ def add_points(p1, p2, ec=default_ec, FE=Fq):
     if p1 == p2:
         return double_point(p1, ec, FE)
     if p1.x == p2.x:
-        return AffinePoint(0, 0, True, ec)
+        return AffinePoint(FE.zero(), FE.zero(), True, ec)
 
     x1, y1 = p1.x, p1.y
     x2, y2 = p2.x, p2.y

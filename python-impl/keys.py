@@ -1,11 +1,14 @@
-from util import hash256, hmac256
-from ec import (generator_Fq, hash_to_point_Fq2, default_ec,
-                hash_to_point_prehashed_Fq2, y_for_x,
-                AffinePoint)
-from fields import Fq
-from copy import deepcopy
 from aggregation_info import AggregationInfo
+from copy import deepcopy
+from ec import (AffinePoint, JacobianPoint, default_ec, generator_Fq,
+                hash_to_point_Fq2, hash_to_point_prehashed_Fq2, y_for_x)
+from fields import Fq
+from secrets import SystemRandom
 from signature import BLSSignature
+from threshold import Threshold
+from util import hash256, hmac256
+
+RNG = SystemRandom()
 
 
 class BLSPublicKey:
@@ -35,6 +38,7 @@ class BLSPublicKey:
 
     @staticmethod
     def from_g1(g1_el):
+        assert isinstance(g1_el, JacobianPoint)
         return BLSPublicKey(g1_el)
 
     def get_fingerprint(self):
@@ -83,7 +87,32 @@ class BLSPrivateKey:
     def from_seed(seed):
         hashed = hmac256(seed, b"BLS private key seed")
         return BLSPrivateKey(int.from_bytes(hashed, "big") % default_ec.n)
+    
+    @staticmethod
+    def new_threshold(T, N):
+        """
+        Create a new private key with associated data suitable for
+        T of N threshold signatures under a Joint-Feldman scheme.
+        
+        After the dealing phase, one needs cooperation of T players
+        out of N in order to sign a message with the master key pair.
 
+        Return:
+          - poly[0] - your share of the master secret key
+          - commitments to your polynomial P
+          - secret_fragments[j] = P(j), to be sent to player j
+            (All N secret_fragments[j] can be combined to make a secret share.)
+        """
+        assert 1 <= T <= N
+        g1 = generator_Fq()
+        poly = [Fq(default_ec.n, RNG.randint(1, default_ec.n - 1))
+                for _ in range(T)]
+        commitments = [g1 * c for c in poly]
+        secret_fragments = [sum(c * pow(x, i, default_ec.n) for i, c in enumerate(poly))
+                            for x in range(1, N+1)]
+        
+        return BLSPrivateKey(poly[0]), commitments, secret_fragments
+        
     def get_public_key(self):
         return BLSPublicKey.from_g1((self.value * generator_Fq())
                                     .to_jacobian())
@@ -99,6 +128,17 @@ class BLSPrivateKey:
                                                          h)
         return BLSSignature.from_g2(self.value * r, aggregation_info)
 
+    def sign_threshold(self, m, player, players):
+        """
+        As the given player out of a list of player indices,
+        return a signature share for the given message.
+        """
+        assert player in players
+        r = hash_to_point_Fq2(m).to_jacobian()
+        i = players.index(player)
+        lambs = Threshold.lagrange_coeffs_at_zero(players)
+        return BLSSignature.from_g2(self.value * (r * lambs[i]))
+        
     def __lt__(self, other):
         return self.value < other.value
 

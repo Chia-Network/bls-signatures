@@ -1,5 +1,6 @@
 from copy import deepcopy
 
+
 class Fq(int):
     """
     Represents an element of a finite field mod a prime q.
@@ -150,9 +151,6 @@ class Fq(int):
 
     def __deepcopy__(self, memo):
         return Fq(self.Q, int(self))
-
-    def getint():
-        return super()
 
     @classmethod
     def zero(cls, Q):

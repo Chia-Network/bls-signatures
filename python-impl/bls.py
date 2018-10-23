@@ -1,12 +1,11 @@
-from ec import (generator_Fq, default_ec,
-                AffinePoint, JacobianPoint,
-                hash_to_point_prehashed_Fq2)
-from util import hash_pks
-from fields import Fq, Fq2, Fq12
-from pairing import ate_pairing_multi
-from keys import BLSPrivateKey, BLSPublicKey
-from signature import BLSSignature
 from aggregation_info import AggregationInfo
+from ec import (AffinePoint, JacobianPoint, default_ec, generator_Fq,
+                hash_to_point_prehashed_Fq2)
+from fields import Fq, Fq2, Fq12
+from keys import BLSPrivateKey, BLSPublicKey
+from pairing import ate_pairing_multi
+from signature import BLSSignature
+from util import hash_pks
 
 
 class BLS:
@@ -228,23 +227,24 @@ class BLS:
         """
         Aggregates private keys together
         """
-        if secure and len(private_keys) != len(public_keys):
-            raise Exception("Invalid number of keys")
+        if not secure:
+            sum_keys = sum(pk.value for pk in private_keys) % default_ec.n
 
-        priv_pub_keys = [(public_keys[i], private_keys[i])
-                         for i in range(len(private_keys))]
-        # Sort by public keys
-        priv_pub_keys.sort()
+        else:
+            if not public_keys:
+                raise Exception("Must include public keys in secure aggregation")
+            if len(private_keys) != len(public_keys):
+                raise Exception("Invalid number of keys")
 
-        computed_Ts = hash_pks(len(private_keys), public_keys)
-
-        n = public_keys[0].value.ec.n
-        sum_keys = 0
-        for i in range(len(priv_pub_keys)):
-            addend = priv_pub_keys[i][1].value
-            if (secure):
-                addend *= computed_Ts[i]
-            sum_keys = (sum_keys + addend) % n
+            priv_pub_keys = zip(public_keys, private_keys)
+            priv_pub_keys.sort()
+            computed_Ts = hash_pks(len(private_keys), public_keys)
+            n = public_keys[0].value.ec.n
+            
+            sum_keys = 0
+            for i, (_, privkey) in enumerate(priv_pub_keys):
+                sum_keys += privkey.value * computed_Ts[i]
+                sum_keys %= n
 
         return BLSPrivateKey.from_bytes(sum_keys.to_bytes(32, "big"))
 

@@ -1,8 +1,7 @@
-from collections import namedtuple
 import bls12381
-from fields import Fq12
+from collections import namedtuple
 from ec import untwist
-
+from fields import Fq12
 
 # Struct for elliptic curve parameters
 EC = namedtuple("EC", "q a b gx gy g2x g2y n h x k sqrt_n3 sqrt_n3m1o2")
