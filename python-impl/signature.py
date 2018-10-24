@@ -4,7 +4,7 @@ from ec import (AffinePoint, JacobianPoint, default_ec,
 from fields import Fq, Fq2
 
 
-class BLSSignature:
+class Signature:
     """
     Signatures are G2 elements, which are elliptic curve points (x, y), where
     each x, y is a (2*381) bit Fq2 element. The serialized represenentation is
@@ -32,13 +32,13 @@ class BLSSignature:
                 (not use_big_y and ys[1][1] < default_ec.q // 2)):
             y = ys[1]
 
-        return BLSSignature(AffinePoint(x, y, False, default_ec_twist)
+        return Signature(AffinePoint(x, y, False, default_ec_twist)
                             .to_jacobian(),
                             aggregation_info)
 
     @staticmethod
     def from_g2(g2_el, aggregation_info=None):
-        return BLSSignature(g2_el, aggregation_info)
+        return Signature(g2_el, aggregation_info)
 
     def divide_by(self, divisor_signatures):
         """
@@ -87,7 +87,7 @@ class BLSSignature:
                 message_hashes_to_remove.append(message_hashes[i])
                 pubkeys_to_remove.append(pks[i])
             prod += (divisor_sig.value * -quotient)
-        copy = BLSSignature(deepcopy(self.value + prod),
+        copy = Signature(deepcopy(self.value + prod),
                             deepcopy(self.aggregation_info))
 
         for i in range(len(message_hashes_to_remove)):
@@ -123,10 +123,10 @@ class BLSSignature:
         return self.SIGNATURE_SIZE
 
     def __str__(self):
-        return "BLSSignature(" + self.value.to_affine().__str__() + ")"
+        return "Signature(" + self.value.to_affine().__str__() + ")"
 
     def __repr__(self):
-        return "BLSSignature(" + self.value.to_affine().__repr__() + ")"
+        return "Signature(" + self.value.to_affine().__repr__() + ")"
 
 
 """

@@ -2,9 +2,9 @@ from aggregation_info import AggregationInfo
 from ec import (AffinePoint, JacobianPoint, default_ec, generator_Fq,
                 hash_to_point_prehashed_Fq2)
 from fields import Fq, Fq2, Fq12
-from keys import BLSPrivateKey, BLSPublicKey
+from keys import PrivateKey, PublicKey
 from pairing import ate_pairing_multi
-from signature import BLSSignature
+from signature import Signature
 from util import hash_pks
 
 
@@ -23,7 +23,7 @@ class BLS:
         for sig in signatures:
             agg_sig += sig.value
 
-        return BLSSignature.from_g2(agg_sig)
+        return Signature.from_g2(agg_sig)
 
     @staticmethod
     def aggregate_sigs_secure(signatures, public_keys, message_hashes):
@@ -53,7 +53,7 @@ class BLS:
         for i, (_, _, signature) in enumerate(mh_pub_sigs):
             agg_sig += signature * computed_Ts[i]
 
-        return BLSSignature.from_g2(agg_sig)
+        return Signature.from_g2(agg_sig)
 
     @staticmethod
     def aggregate_sigs(signatures):
@@ -143,7 +143,7 @@ class BLS:
         for signature in non_colliding_sigs:
             agg_sig += signature.value
 
-        final_sig = BLSSignature.from_g2(agg_sig)
+        final_sig = Signature.from_g2(agg_sig)
         aggregation_infos = [sig.aggregation_info for sig in signatures]
         final_agg_info = AggregationInfo.merge_infos(aggregation_infos)
         final_sig.set_aggregation_info(final_agg_info)
@@ -220,7 +220,7 @@ class BLS:
                 addend *= computed_Ts[i]
             sum_keys += addend
 
-        return BLSPublicKey.from_g1(sum_keys)
+        return PublicKey.from_g1(sum_keys)
 
     @staticmethod
     def aggregate_priv_keys(private_keys, public_keys, secure):
@@ -246,7 +246,7 @@ class BLS:
                 sum_keys += privkey.value * computed_Ts[i]
                 sum_keys %= n
 
-        return BLSPrivateKey.from_bytes(sum_keys.to_bytes(32, "big"))
+        return PrivateKey.from_bytes(sum_keys.to_bytes(32, "big"))
 
 
 """

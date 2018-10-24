@@ -21,10 +21,10 @@
 #include <gmp.h>
 #endif
 
-#include "blspublickey.hpp"
-#include "blssignature.hpp"
-
-class BLSPrivateKey {
+#include "publickey.hpp"
+#include "signature.hpp"
+namespace bls {
+class PrivateKey {
  public:
     // Private keys are represented as 32 byte field elements. Note that
     // not all 32 byte integers are valid keys, the private key must be
@@ -33,44 +33,58 @@ class BLSPrivateKey {
 
     // Generates a private key from a seed, similar to HD key generation
     // (hashes the seed), and reduces it mod the group order.
-    static BLSPrivateKey FromSeed(
+    static PrivateKey FromSeed(
             const uint8_t* seed, size_t seedLen);
 
     // Construct a private key from a bytearray.
-    static BLSPrivateKey FromBytes(const uint8_t* bytes);
+    static PrivateKey FromBytes(const uint8_t* bytes, bool modOrder = false);
 
     // Construct a private key from another private key. Allocates memory in
     // secure heap, and copies keydata.
-    BLSPrivateKey(const BLSPrivateKey& k);
+    PrivateKey(const PrivateKey& k);
+    PrivateKey(PrivateKey&& k);
 
-    ~BLSPrivateKey();
+    ~PrivateKey();
 
-    BLSPublicKey GetPublicKey() const;
+    PublicKey GetPublicKey() const;
+
+    // Insecurely aggregate multiple private keys into one
+    static PrivateKey AggregateInsecure(std::vector<PrivateKey> const& privateKeys);
+
+    // Securely aggregate multiple private keys into one by exponentiating the keys with the pubKey hashes first
+    static PrivateKey Aggregate(std::vector<PrivateKey> const& privateKeys,
+                                   std::vector<PublicKey> const& pubKeys);
 
     // Compare to different private key
-    friend bool operator==(const BLSPrivateKey& a, const BLSPrivateKey& b);
-    friend bool operator!=(const BLSPrivateKey& a, const BLSPrivateKey& b);
-    BLSPrivateKey& operator=(const BLSPrivateKey& rhs);
-
-    relic::bn_t* GetValue() const { return keydata; }
+    friend bool operator==(const PrivateKey& a, const PrivateKey& b);
+    friend bool operator!=(const PrivateKey& a, const PrivateKey& b);
+    PrivateKey& operator=(const PrivateKey& rhs);
 
     // Serialize the key into bytes
     void Serialize(uint8_t* buffer) const;
     std::vector<uint8_t> Serialize() const;
 
     // Sign a message
-    BLSSignature Sign(const uint8_t *msg, size_t len) const;
-    BLSSignature SignPrehashed(const uint8_t *hash) const;
+    // The secure variants will also set and return appropriate aggregation info
+    InsecureSignature SignInsecure(const uint8_t *msg, size_t len) const;
+    InsecureSignature SignInsecurePrehashed(const uint8_t *hash) const;
+    Signature Sign(const uint8_t *msg, size_t len) const;
+    Signature SignPrehashed(const uint8_t *hash) const;
 
  private:
     // Don't allow public construction, force static methods
-    BLSPrivateKey() {}
+    PrivateKey() {}
 
-    // The actual byte data
-    relic::bn_t *keydata;
+    // Multiply private key with n
+    PrivateKey Mul(const bn_t n) const;
 
     // Allocate memory for private key
     void AllocateKeyData();
+
+ private:
+    // The actual byte data
+    bn_t *keydata{nullptr};
 };
+} // end namespace bls
 
 #endif  // SRC_BLSPRIVATEKEY_HPP_

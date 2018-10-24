@@ -28,22 +28,21 @@
 #endif
 
 #if BLSALLOC_SODIUM
-namespace libsodium {
-    #include "sodium/utils.h"
-    #include "sodium/core.h"
-}
+#include "sodium/utils.h"
+#include "sodium/core.h"
 #endif
 
-namespace relic {
-    #include "relic.h"
-    #include "relic_test.h"
-}
 
-class BLSUtil {
+#include "relic.h"
+#include "relic_test.h"
+
+namespace bls {
+
+class Util {
  public:
     static void Hash256(uint8_t* output, const uint8_t* message,
                         size_t messageLen) {
-        relic::md_map_sh256(output, message, messageLen);
+        md_map_sh256(output, message, messageLen);
     }
 
     template<size_t S>
@@ -74,7 +73,7 @@ class BLSUtil {
     template<class T>
     static T* SecAlloc(size_t numTs) {
 #if BLSALLOC_SODIUM
-        return static_cast<T*>(libsodium::sodium_malloc
+        return static_cast<T*>(sodium_malloc
                 (sizeof(T) * numTs));
 #else
         return static_cast<T*>(malloc(sizeof(T) * numTs));
@@ -86,7 +85,7 @@ class BLSUtil {
      */
     static void SecFree(void* ptr) {
 #if BLSALLOC_SODIUM
-        libsodium::sodium_free(ptr);
+        sodium_free(ptr);
 #else
         free(ptr);
 #endif
@@ -114,5 +113,5 @@ class BLSUtil {
         return sum;
     }
 };
-
+} // end namespace bls
 #endif  // SRC_BLSUTIL_HPP_

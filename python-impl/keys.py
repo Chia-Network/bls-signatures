@@ -4,14 +4,14 @@ from ec import (AffinePoint, JacobianPoint, default_ec, generator_Fq,
                 hash_to_point_Fq2, hash_to_point_prehashed_Fq2, y_for_x)
 from fields import Fq
 from secrets import SystemRandom
-from signature import BLSSignature
+from signature import Signature
 from threshold import Threshold
 from util import hash256, hmac256
 
 RNG = SystemRandom()
 
 
-class BLSPublicKey:
+class PublicKey:
     """
     Public keys are G1 elements, which are elliptic curve points (x, y), where
     each x, y is a 381 bit Fq element. The serialized represenentation is just
@@ -34,12 +34,12 @@ class BLSPublicKey:
         if bit1:
             y = y_values[1]
 
-        return BLSPublicKey(AffinePoint(x, y, False, default_ec).to_jacobian())
+        return PublicKey(AffinePoint(x, y, False, default_ec).to_jacobian())
 
     @staticmethod
     def from_g1(g1_el):
         assert isinstance(g1_el, JacobianPoint)
-        return BLSPublicKey(g1_el)
+        return PublicKey(g1_el)
 
     def get_fingerprint(self):
         ser = self.serialize()
@@ -61,16 +61,16 @@ class BLSPublicKey:
         return self.value.serialize() < other.value.serialize()
 
     def __str__(self):
-        return "BLSPublicKey(" + self.value.to_affine().__str__() + ")"
+        return "PublicKey(" + self.value.to_affine().__str__() + ")"
 
     def __repr__(self):
-        return "BLSPublicKey(" + self.value.to_affine().__repr__() + ")"
+        return "PublicKey(" + self.value.to_affine().__repr__() + ")"
 
     def __deepcopy__(self, memo):
-        return BLSPublicKey.from_g1(deepcopy(self.value, memo))
+        return PublicKey.from_g1(deepcopy(self.value, memo))
 
 
-class BLSPrivateKey:
+class PrivateKey:
     """
     Private keys are just random integers between 1 and the group order.
     """
@@ -81,12 +81,12 @@ class BLSPrivateKey:
 
     @staticmethod
     def from_bytes(buffer):
-        return BLSPrivateKey(int.from_bytes(buffer, "big"))
+        return PrivateKey(int.from_bytes(buffer, "big"))
 
     @staticmethod
     def from_seed(seed):
         hashed = hmac256(seed, b"BLS private key seed")
-        return BLSPrivateKey(int.from_bytes(hashed, "big") % default_ec.n)
+        return PrivateKey(int.from_bytes(hashed, "big") % default_ec.n)
     
     @staticmethod
     def new_threshold(T, N):
@@ -111,22 +111,22 @@ class BLSPrivateKey:
         secret_fragments = [sum(c * pow(x, i, default_ec.n) for i, c in enumerate(poly))
                             for x in range(1, N+1)]
         
-        return BLSPrivateKey(poly[0]), commitments, secret_fragments
-        
+        return PrivateKey(poly[0]), commitments, secret_fragments
+
     def get_public_key(self):
-        return BLSPublicKey.from_g1((self.value * generator_Fq())
+        return PublicKey.from_g1((self.value * generator_Fq())
                                     .to_jacobian())
 
     def sign(self, m):
         r = hash_to_point_Fq2(m).to_jacobian()
         aggregation_info = AggregationInfo.from_msg(self.get_public_key(), m)
-        return BLSSignature.from_g2(self.value * r, aggregation_info)
+        return Signature.from_g2(self.value * r, aggregation_info)
 
     def sign_prehashed(self, h):
         r = hash_to_point_prehashed_Fq2(h).to_jacobian()
         aggregation_info = AggregationInfo.from_msg_hash(self.get_public_key(),
                                                          h)
-        return BLSSignature.from_g2(self.value * r, aggregation_info)
+        return Signature.from_g2(self.value * r, aggregation_info)
 
     def sign_threshold(self, m, player, players):
         """
@@ -137,7 +137,7 @@ class BLSPrivateKey:
         r = hash_to_point_Fq2(m).to_jacobian()
         i = players.index(player)
         lambs = Threshold.lagrange_coeffs_at_zero(players)
-        return BLSSignature.from_g2(self.value * (r * lambs[i]))
+        return Signature.from_g2(self.value * (r * lambs[i]))
         
     def __lt__(self, other):
         return self.value < other.value
@@ -155,10 +155,10 @@ class BLSPrivateKey:
         return self.PRIVATE_KEY_SIZE
 
     def __str__(self):
-        return "BLSPrivateKey(" + hex(self.value) + ")"
+        return "PrivateKey(" + hex(self.value) + ")"
 
     def __repr__(self):
-        return "BLSPrivateKey(" + hex(self.value) + ")"
+        return "PrivateKey(" + hex(self.value) + ")"
 
 
 class ExtendedPrivateKey:
@@ -180,8 +180,8 @@ class ExtendedPrivateKey:
         i_right = hmac256(seed + bytes([1]), b"BLS HD seed")
 
         sk_int = int.from_bytes(i_left, "big") % default_ec.n
-        sk = BLSPrivateKey.from_bytes(
-            sk_int.to_bytes(BLSPrivateKey.PRIVATE_KEY_SIZE, "big"))
+        sk = PrivateKey.from_bytes(
+            sk_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big"))
         return ExtendedPrivateKey(ExtendedPrivateKey.version, 0, 0,
                                   0, i_right, sk)
 
@@ -203,8 +203,8 @@ class ExtendedPrivateKey:
 
         sk_int = ((int.from_bytes(i_left, "big") + self.private_key.value)
                   % default_ec.n)
-        sk = BLSPrivateKey.from_bytes(
-            sk_int.to_bytes(BLSPrivateKey.PRIVATE_KEY_SIZE, "big"))
+        sk = PrivateKey.from_bytes(
+            sk_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big"))
 
         return ExtendedPrivateKey(ExtendedPrivateKey.version, self.depth + 1,
                                   self.private_key.get_public_key()
@@ -266,7 +266,7 @@ class ExtendedPublicKey:
         parent_fingerprint = int.from_bytes(serialized[5:9], "big")
         child_number = int.from_bytes(serialized[9:13], "big")
         chain_code = serialized[13:45]
-        public_key = BLSPublicKey.from_bytes(serialized[45:])
+        public_key = PublicKey.from_bytes(serialized[45:])
         return ExtendedPublicKey(version, depth, parent_fingerprint,
                                  child_number, chain_code, public_key)
 
@@ -283,10 +283,10 @@ class ExtendedPublicKey:
         i_right = hmac256(hmac_input + bytes([1]), self.chain_code)
 
         sk_left_int = (int.from_bytes(i_left, "big") % default_ec.n)
-        sk_left = BLSPrivateKey.from_bytes(
-            sk_left_int.to_bytes(BLSPrivateKey.PRIVATE_KEY_SIZE, "big"))
+        sk_left = PrivateKey.from_bytes(
+            sk_left_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big"))
 
-        new_pk = BLSPublicKey.from_g1(sk_left.get_public_key().value +
+        new_pk = PublicKey.from_g1(sk_left.get_public_key().value +
                                       self.public_key.value)
         return ExtendedPublicKey(self.version, self.depth + 1,
                                  self.public_key.get_fingerprint(), i,

@@ -24,42 +24,55 @@
 #include <gmp.h>
 #endif
 
-#include "blsutil.hpp"
-
+#include "util.hpp"
+namespace bls {
 /** An encapsulated public key. */
-class BLSPublicKey {
+class PublicKey {
+ friend class InsecureSignature;
+ friend class Signature;
+ friend class ExtendedPublicKey;
  public:
     static const size_t PUBLIC_KEY_SIZE = 48;
 
     // Construct a public key from a byte vector.
-    static BLSPublicKey FromBytes(const uint8_t* key);
+    static PublicKey FromBytes(const uint8_t* key);
 
     // Construct a public key from a native g1 element.
-    static BLSPublicKey FromG1(const relic::g1_t* key);
+    static PublicKey FromG1(const g1_t* key);
 
     // Construct a public key from another public key.
-    BLSPublicKey(const BLSPublicKey &pubKey);
+    PublicKey(const PublicKey &pubKey);
+
+    // Insecurely aggregate multiple public keys into one
+    static PublicKey AggregateInsecure(std::vector<PublicKey> const& pubKeys);
+
+    // Securely aggregate multiple public keys into one by exponentiating the keys with the pubKey hashes first
+    static PublicKey Aggregate(std::vector<PublicKey> const& pubKeys);
 
     // Comparator implementation.
-    friend bool operator==(BLSPublicKey const &a,  BLSPublicKey const &b);
-    friend bool operator!=(BLSPublicKey const &a,  BLSPublicKey const &b);
-    friend std::ostream &operator<<(std::ostream &os, BLSPublicKey const &s);
+    friend bool operator==(PublicKey const &a,  PublicKey const &b);
+    friend bool operator!=(PublicKey const &a,  PublicKey const &b);
+    friend std::ostream &operator<<(std::ostream &os, PublicKey const &s);
 
     void Serialize(uint8_t *buffer) const;
     std::vector<uint8_t> Serialize() const;
-    void GetPoint(relic::g1_t &output) const { *output = *q; }
 
     // Returns the first 4 bytes of the serialized pk
     uint32_t GetFingerprint() const;
 
  private:
     // Don't allow public construction, force static methods
-    BLSPublicKey() {}
+    PublicKey();
 
-    static void CompressPoint(uint8_t* result, const relic::g1_t* point);
+    // Exponentiate public key with n
+    PublicKey Exp(const bn_t n) const;
 
+    static void CompressPoint(uint8_t* result, const g1_t* point);
+
+ private:
     // Public key group element
-    relic::g1_t q;
+    g1_t q;
 };
 
+} // end namespace bls
 #endif  // SRC_BLSPUBLICKEY_HPP_

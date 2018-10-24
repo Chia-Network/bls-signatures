@@ -24,13 +24,12 @@
 #include <gmp.h>
 #endif
 
-namespace relic {
-    #include "relic.h"
-    #include "relic_test.h"
-}
 
-#include "blsutil.hpp"
+#include "relic.h"
+#include "relic_test.h"
 
+#include "util.hpp"
+namespace bls {
 class ChainCode {
  public:
     static const size_t CHAIN_CODE_SIZE = 32;
@@ -51,8 +50,9 @@ class ChainCode {
     // Prevent direct construction, use static constructor
     ChainCode() {}
 
-    relic::bn_t chainCode;
+    bn_t chainCode;
 };
+} // end namespace bls
 
 #endif  // SRC_CHAINCODE_HPP_
 

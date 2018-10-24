@@ -17,9 +17,9 @@
 
 #include <map>
 #include <vector>
-#include "blspublickey.hpp"
-#include "blsutil.hpp"
-
+#include "publickey.hpp"
+#include "util.hpp"
+namespace bls {
 /**
  * Represents information about how aggregation was performed,
  * or how a signature was generated (pks, messageHashes, etc).
@@ -36,17 +36,17 @@
 class AggregationInfo {
  public:
     // Creates a base aggregation info object.
-    static AggregationInfo FromMsgHash(const BLSPublicKey &pk,
+    static AggregationInfo FromMsgHash(const PublicKey &pk,
                                        const uint8_t* messageHash);
 
-    static AggregationInfo FromMsg(const BLSPublicKey &pk,
+    static AggregationInfo FromMsg(const PublicKey &pk,
                                    const uint8_t* message,
                                    size_t len);
 
     static AggregationInfo FromVectors(
-                std::vector<BLSPublicKey> const &pubKeys,
+                std::vector<PublicKey> const &pubKeys,
                 std::vector<uint8_t*> const &messageHashes,
-                std::vector<relic::bn_t*> const &exponents);
+                std::vector<bn_t*> const &exponents);
 
     // Merge two AggregationInfo objects into one.
     static AggregationInfo MergeInfos(std::vector<AggregationInfo>
@@ -57,12 +57,12 @@ class AggregationInfo {
 
     // Removes the messages and pubkeys from the tree
     void RemoveEntries(std::vector<uint8_t*> const &messages,
-                       std::vector<BLSPublicKey> const &pubKeys);
+                       std::vector<PublicKey> const &pubKeys);
 
     // Public accessors
-    void GetExponent(relic::bn_t *result, const uint8_t* messageHash,
-                     const BLSPublicKey &pubkey) const;
-    std::vector<BLSPublicKey> GetPubKeys() const;
+    void GetExponent(bn_t *result, const uint8_t* messageHash,
+                     const PublicKey &pubkey) const;
+    std::vector<PublicKey> GetPubKeys() const;
     std::vector<uint8_t*> GetMessageHashes() const;
     bool Empty() const;
 
@@ -79,12 +79,12 @@ class AggregationInfo {
  private:
     // This is the data structure that maps messages (32) and
     // public keys (48) to exponents (bn_t*).
-    typedef std::map<uint8_t*, relic::bn_t*,
-                     BLSUtil::BytesCompare80> AggregationTree;
+    typedef std::map<uint8_t*, bn_t*,
+                     Util::BytesCompare80> AggregationTree;
 
     explicit AggregationInfo(const AggregationTree& tr,
                              std::vector<uint8_t*> ms,
-                             std::vector<BLSPublicKey> pks)
+                             std::vector<PublicKey> pks)
          : tree(tr),
            sortedMessageHashes(ms),
            sortedPubKeys(pks) {}
@@ -92,7 +92,7 @@ class AggregationInfo {
     static void InsertIntoTree(AggregationTree &tree,
                                const AggregationInfo& info);
     static void SortIntoVectors(std::vector<uint8_t*> &ms,
-                                std::vector<BLSPublicKey> &pks,
+                                std::vector<PublicKey> &pks,
                                 const AggregationTree &tree);
     static AggregationInfo SimpleMergeInfos(
             std::vector<AggregationInfo> const &infos);
@@ -102,7 +102,8 @@ class AggregationInfo {
 
     AggregationTree tree;
     std::vector<uint8_t*> sortedMessageHashes;
-    std::vector<BLSPublicKey> sortedPubKeys;
+    std::vector<PublicKey> sortedPubKeys;
 };
+} // end namespace bls
 
 #endif  // SRC_AGGREGATIONINFO_HPP_

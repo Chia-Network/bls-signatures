@@ -17,7 +17,7 @@ class Threshold:
     
     To initialize a T of N threshold key under a Joint-Feldman scheme:
 
-    1. Each player calls BLSPrivateKey.new_threshold(T, N)
+    1. Each player calls PrivateKey.new_threshold(T, N)
        to create a secret key, commitment to a polynomial, and
        secret fragments.
        They send everyone the commitment, and send player j
@@ -30,14 +30,14 @@ class Threshold:
 
     3. Each player computes the shared, master public key:
        master_pubkey = BLS.aggregate_pub_keys(
-           [BLSPublicKey.from_g1(cpoly[0].to_jacobian())
+           [PublicKey.from_g1(cpoly[0].to_jacobian())
             for cpoly in commitments],
            False)
 
        They also create their secret share from all secret
        fragments received (now verified):
        secret_share = BLS.aggregate_priv_keys(
-           [BLSPrivateKey(frag) for frag in share_fragments],
+           [PrivateKey(frag) for frag in share_fragments],
            None,
            False)
 
