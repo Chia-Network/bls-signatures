@@ -30,7 +30,7 @@
 #include "signature.hpp"
 #include "extendedprivatekey.hpp"
 #include "aggregationinfo.hpp"
-
+#include "threshold.hpp"
 
 #include "relic.h"
 #include "relic_test.h"

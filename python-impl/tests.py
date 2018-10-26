@@ -63,7 +63,7 @@ def test_fields():
         for expo in range(1, base.extension):
             assert base.qi_power(expo) == pow(base, pow(default_ec.q, expo))
 
-    
+
 def test_ec():
     g = generator_Fq(default_ec)
 
@@ -344,7 +344,7 @@ def test2():
 
     sk2 = sk
 
-    
+
 def test_threshold_instance(T, N):
     commitments = []
     # fragments[i][j] = fragment held by player i,
@@ -364,7 +364,7 @@ def test_threshold_instance(T, N):
     for player_source in range(1, N+1):
         for player_target in range(1, N+1):
             assert Threshold.verify_secret_fragment(
-                T, N, fragments[player_target - 1][player_source - 1],
+                T, fragments[player_target - 1][player_source - 1],
                 player_target, commitments[player_source - 1])
 
     # Step 3 : master_pubkey = BLS.aggregate_pub_keys(...)
@@ -376,19 +376,18 @@ def test_threshold_instance(T, N):
 
     secret_shares = [BLS.aggregate_priv_keys(map(PrivateKey, row), None, False)
                      for row in fragments]
-    
-    msg = 'Test'
-    h = hash_to_point_Fq2(msg, default_ec_twist)
+
     master_privkey = BLS.aggregate_priv_keys(secrets, None, False)
     signature_actual = master_privkey.sign(msg)
 
-    # Step 4 : sig_share = secret_share.sign_threshold(...) 
+    # Step 4 : sig_share = secret_share.sign_threshold(...)
     # Check every combination of T players
     for X in combinations(range(1, N+1), T):
         # X: a list of T indices like [1, 2, 5]
 
         # Check underlying secret key is correct
-        r = Threshold.interpolate_at_zero(X, [secret_shares[x-1].value for x in X])
+        r = Threshold.interpolate_at_zero(X,
+                [secret_shares[x-1].value for x in X])
         secret_cand = PrivateKey(r)
         assert secret_cand == master_privkey
 

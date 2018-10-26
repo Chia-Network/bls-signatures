@@ -24,6 +24,7 @@ add_library(blstmp ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/aggregationinfo.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/threshold.cpp
 )
 
 set(OPREFIX object_)

@@ -10,11 +10,11 @@ class Threshold:
     The end result of initializing a T of N Joint-Feldman scheme is
     that each of N players has a secret share (private key) they can
     use to sign messages; and there is a master secret and public key.
-    
+
     The signatures of any T players (along with the indices of those
     players) can be combined to form a valid signature for that master
     key pair.
-    
+
     To initialize a T of N threshold key under a Joint-Feldman scheme:
 
     1. Each player calls PrivateKey.new_threshold(T, N)
@@ -100,24 +100,26 @@ class Threshold:
 
 
     @staticmethod
-    def verify_secret_fragment(T: int, N: int, secret_fragment: Fq,
+    def verify_secret_fragment(T: int, secret_fragment: Fq,
                                player: int, commitment: List[AffinePoint],
                                ec=default_ec) -> bool:
         """
-        A player has given you (target) your secret share fragment,
-        shares[i] = P(target) and has also committed to polynomial P.
+        You are player, and have received a secret share fragment,
+        claimed to be shares[i] = P(player) from a polynomial P
+        with the given commitment.
 
-        Return True if the share from player is correct.
+        Return True if the share given to you is correct wrt that commitment.
         """
         assert len(commitment) == T
         assert secret_fragment != 0
         assert player != 0
-        
+
         g1 = generator_Fq(ec)
         lhs = g1 * secret_fragment
         rhs = commitment[0]
         for k in range(1, len(commitment)):
             rhs += commitment[k] * pow(player, k, ec.n)
+
         return lhs == rhs
 
 

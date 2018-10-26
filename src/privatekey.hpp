@@ -39,6 +39,12 @@ class PrivateKey {
     // Construct a private key from a bytearray.
     static PrivateKey FromBytes(const uint8_t* bytes, bool modOrder = false);
 
+    // Construct a private key with associated data suitable for
+    // a threshold signature scheme.
+    // commitment, secretFragments are output parameters.
+    static PrivateKey NewThreshold(g1_t *commitment,
+            bn_t *secretFragments, int T, int N);
+
     // Construct a private key from another private key. Allocates memory in
     // secure heap, and copies keydata.
     PrivateKey(const PrivateKey& k);
@@ -68,6 +74,8 @@ class PrivateKey {
     // The secure variants will also set and return appropriate aggregation info
     InsecureSignature SignInsecure(const uint8_t *msg, size_t len) const;
     InsecureSignature SignInsecurePrehashed(const uint8_t *hash) const;
+    InsecureSignature SignInsecureThreshold(const uint8_t *msg, size_t len,
+        int player, int *players, int T) const;
     Signature Sign(const uint8_t *msg, size_t len) const;
     Signature SignPrehashed(const uint8_t *hash) const;
 

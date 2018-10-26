@@ -71,6 +71,53 @@ PrivateKey PrivateKey::FromBytes(const uint8_t* bytes, bool modOrder) {
     return k;
 }
 
+PrivateKey PrivateKey::NewThreshold(g1_t *commitment,
+        bn_t *secretFragments, int T, int N) {
+    BLS::AssertInitialized();
+    if (T < 1 || T > N) {
+        throw std::string("Threshold parameter T must be between 1 and N");
+    }
+    PrivateKey k;
+    k.AllocateKeyData();
+    bn_t ord;
+    bn_new(ord);
+    g1_get_ord(ord);
+    g1_t g1;
+    g1_get_gen(g1);
+
+    // poly = [random(1, ord-1), ...]
+    // commitment = [g1 * poly[i], ...]
+    bn_t *poly = new bn_t[T];
+    for (int i = 0; i < T; ++i) {
+        bn_new(poly[i]);
+        bn_rand_mod(poly[i], ord);
+        g1_copy(commitment[i], g1);
+        g1_mul(commitment[i], commitment[i], poly[i]);
+    }
+
+    bn_t frag, w, e;
+    bn_new(frag);
+    bn_new(w);
+    bn_new(e);
+    for (int x = 1; x <= N; ++x) {
+        bn_zero(frag);
+        // frag = sum_i (poly[i] * (x ** i % ord))
+        for (int i = 0; i < T; ++i) {
+            bn_set_dig(w, (dig_t) x);
+            bn_set_dig(e, (dig_t) i);
+            bn_mxp(w, w, e, ord);
+            bn_mul(w, w, poly[i]);
+            bn_mod(w, w, ord);
+            bn_add(frag, frag, w);
+            bn_mod(frag, frag, ord);
+        }
+        bn_copy(secretFragments[x-1], frag);
+    }
+
+    bn_copy(*k.keydata, poly[0]);
+    return k;
+}
+
 // Construct a private key from another private key.
 PrivateKey::PrivateKey(const PrivateKey &privateKey) {
     BLS::AssertInitialized();
@@ -222,6 +269,30 @@ InsecureSignature PrivateKey::SignInsecurePrehashed(const uint8_t *messageHash) 
 
     g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN, 0);
     g2_mul(sig, point, *keydata);
+
+    return InsecureSignature::FromG2(&sig);
+}
+
+InsecureSignature PrivateKey::SignInsecureThreshold(const uint8_t *msg, size_t len,
+        int player, int *players, int T) const {
+    BLS::AssertInitialized();
+    if (player == 0) {
+        throw std::string("player must be a positive integer");
+    }
+    int index = std::distance(players,
+        std::find(players, players + T, player));
+
+    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+    Util::Hash256(messageHash, msg, len);
+
+    g2_t sig;
+    g2_map(sig, messageHash, BLS::MESSAGE_HASH_LEN, 0);
+
+    bn_t *coeffs = new bn_t[T];
+    ThresholdUtil::lagrangeCoeffsAtZero(coeffs, players, T);
+
+    g2_mul(sig, sig, coeffs[index]);
+    g2_mul(sig, sig, *keydata);
 
     return InsecureSignature::FromG2(&sig);
 }
