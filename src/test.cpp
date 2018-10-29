@@ -16,6 +16,8 @@
 #include "catch.hpp"
 #include "bls.hpp"
 #include "test-utils.hpp"
+#include "relic.h"
+#include "relic_test.h"
 
 using std::string;
 using std::vector;
@@ -1346,6 +1348,84 @@ TEST_CASE("AggregationInfo") {
     }
 }
 
+TEST_CASE("Threshold") {
+    SECTION("README") {
+        // To initialize a T of N threshold key under a
+        // Joint-Feldman scheme:
+        int T = 2;
+        int N = 3;
+
+        // 1. Each player calls PrivateKey::NewThreshold.
+        // They send everyone commitment to the polynomial,
+        // and send secret share fragments frags[j-1] to
+        // the j-th player (All players have index >= 1).
+        g1_t commits[N][T];
+        bn_t frags[N][N];
+        PrivateKey sk1 = PrivateKey::NewThreshold(commits[0], frags[0], T, N);
+        PrivateKey sk2 = PrivateKey::NewThreshold(commits[1], frags[1], T, N);
+        PrivateKey sk3 = PrivateKey::NewThreshold(commits[2], frags[2], T, N);
+
+        // 2. Each player calls ThresholdUtil::verifySecretFragment
+        // on all secret fragments they receive.  If any verify
+        // false, they complain to abort the scheme.  (Note that
+        // repeatedly aborting, or 'speaking' last, can bias the
+        // master public key.)
+
+        for (int target = 1; target <= N; ++target) {
+            for (int source = 1; source <= N; ++source) {
+                REQUIRE(ThresholdUtil::verifySecretFragment(
+                    target, frags[source-1][target-1], commits[source-1], T));
+            }
+        }
+
+        // 3. Each player computes the shared, master public key:
+        // masterPubkey = PublicKey::AggregateInsecure(...)
+        // They also create their secret share from all secret
+        // fragments received (now verified):
+        // secretShare = PrivateKey::AggregateInsecureNative(...)
+
+        PublicKey masterPubkey = PublicKey::AggregateInsecure({
+            PublicKey::FromG1(&commits[0][0]),
+            PublicKey::FromG1(&commits[1][0]),
+            PublicKey::FromG1(&commits[2][0]),
+        });
+
+        bn_t recvdFrags[N][N];
+        for (int i = 0; i < N; ++i) {
+            for (int j = 0; j < N; ++j) {
+                bn_copy(recvdFrags[j][i], frags[i][j]);
+            }
+        }
+
+        PrivateKey secretShare1 = PrivateKey::AggregateInsecureNative(
+            recvdFrags[0], (size_t) N);
+        PrivateKey secretShare2 = PrivateKey::AggregateInsecureNative(
+            recvdFrags[1], (size_t) N);
+        PrivateKey secretShare3 = PrivateKey::AggregateInsecureNative(
+            recvdFrags[2], (size_t) N);
+
+        // 4. Player P may create a signature share wrt T players:
+        // sigShare = secretShare.SignInsecureThreshold(...)
+        // These signature shares can be combined to sign the msg:
+        // signature = BLS.AggregateSigsSimple(...)
+
+        uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
+        uint8_t hash[32];
+        Util::Hash256(hash, msg, sizeof(msg));
+
+        int players[] = {1, 3};
+        // For example, players 1 and 3 sign.
+        InsecureSignature sigShare1 = secretShare1.SignInsecureThreshold(
+            msg, sizeof(msg), 1, players, T);
+        InsecureSignature sigShare3 = secretShare3.SignInsecureThreshold(
+            msg, sizeof(msg), 3, players, T);
+
+        InsecureSignature signature = InsecureSignature::Aggregate({
+            sigShare1, sigShare3});
+
+        REQUIRE(signature.Verify({hash}, {masterPubkey}));
+    }
+}
 int main(int argc, char* argv[]) {
     int result = Catch::Session().run(argc, argv);
     return result;

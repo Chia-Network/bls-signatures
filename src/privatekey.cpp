@@ -82,8 +82,6 @@ PrivateKey PrivateKey::NewThreshold(g1_t *commitment,
     bn_t ord;
     bn_new(ord);
     g1_get_ord(ord);
-    g1_t g1;
-    g1_get_gen(g1);
 
     // poly = [random(1, ord-1), ...]
     // commitment = [g1 * poly[i], ...]
@@ -91,8 +89,7 @@ PrivateKey PrivateKey::NewThreshold(g1_t *commitment,
     for (int i = 0; i < T; ++i) {
         bn_new(poly[i]);
         bn_rand_mod(poly[i], ord);
-        g1_copy(commitment[i], g1);
-        g1_mul(commitment[i], commitment[i], poly[i]);
+        g1_mul_gen(commitment[i], poly[i]);
     }
 
     bn_t frag, w, e;
@@ -160,6 +157,22 @@ PrivateKey PrivateKey::AggregateInsecure(std::vector<PrivateKey> const& privateK
         bn_mod_basic(*ret.keydata, *ret.keydata, order);
     }
     return ret;
+}
+
+PrivateKey PrivateKey::AggregateInsecureNative(bn_t *bn_elements, size_t len) {
+    BLS::AssertInitialized();
+    PrivateKey k;
+    k.AllocateKeyData();
+
+    bn_t order;
+    bn_new(order);
+    g1_get_ord(order);
+    for (int i = 0; i < len; ++i) {
+        bn_add(*k.keydata, *k.keydata, bn_elements[i]);
+        bn_mod(*k.keydata, *k.keydata, order);
+    }
+
+    return k;
 }
 
 PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const& privateKeys,

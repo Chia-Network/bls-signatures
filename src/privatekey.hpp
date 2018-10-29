@@ -57,6 +57,9 @@ class PrivateKey {
     // Insecurely aggregate multiple private keys into one
     static PrivateKey AggregateInsecure(std::vector<PrivateKey> const& privateKeys);
 
+    // Insecurely aggregate multiple bn_t elements into one private key
+    static PrivateKey AggregateInsecureNative(bn_t *bn_elements, size_t len);
+
     // Securely aggregate multiple private keys into one by exponentiating the keys with the pubKey hashes first
     static PrivateKey Aggregate(std::vector<PrivateKey> const& privateKeys,
                                    std::vector<PublicKey> const& pubKeys);
