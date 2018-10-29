@@ -378,6 +378,7 @@ def test_threshold_instance(T, N):
                      for row in fragments]
 
     master_privkey = BLS.aggregate_priv_keys(secrets, None, False)
+    msg = 'Test'
     signature_actual = master_privkey.sign(msg)
 
     # Step 4 : sig_share = secret_share.sign_threshold(...)
