@@ -105,6 +105,7 @@ void BLS::CheckRelicErrors() {
         throw std::string("Library not initialized properly. Call BLS::Init()");
     }
     if (core_get()->code != STS_OK) {
+        core_get()->code = STS_OK;
         throw std::string("Relic library error");
     }
 }
