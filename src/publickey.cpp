@@ -33,6 +33,7 @@ PublicKey PublicKey::FromBytes(const uint8_t * key) {
         uncompressed[0] = 0x02;   // Insert extra byte for Y=0
     }
     g1_read_bin(pk.q, uncompressed, PUBLIC_KEY_SIZE + 1);
+    BLS::CheckRelicErrors();
     return pk;
 }
 

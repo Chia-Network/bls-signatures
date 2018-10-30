@@ -34,6 +34,7 @@ InsecureSignature InsecureSignature::FromBytes(const uint8_t *data) {
         uncompressed[0] = 0x02;   // Insert extra byte for Y=0
     }
     g2_read_bin(sigObj.sig, uncompressed, SIGNATURE_SIZE + 1);
+    BLS::CheckRelicErrors();
     return sigObj;
 }
 
