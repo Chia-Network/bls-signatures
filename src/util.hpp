@@ -27,18 +27,17 @@
 #include <gmp.h>
 #endif
 
-#if BLSALLOC_SODIUM
-#include "sodium/utils.h"
-#include "sodium/core.h"
-#endif
-
-
 #include "relic.h"
 #include "relic_test.h"
 
 namespace bls {
 
+class BLS;
+
 class Util {
+ public:
+    typedef void *(*SecureAllocCallback)(size_t);
+    typedef void (*SecureFreeCallback)(void*);
  public:
     static void Hash256(uint8_t* output, const uint8_t* message,
                         size_t messageLen) {
@@ -72,23 +71,14 @@ class Util {
      */
     template<class T>
     static T* SecAlloc(size_t numTs) {
-#if BLSALLOC_SODIUM
-        return static_cast<T*>(sodium_malloc
-                (sizeof(T) * numTs));
-#else
-        return static_cast<T*>(malloc(sizeof(T) * numTs));
-#endif
+        return static_cast<T*>(secureAllocCallback(sizeof(T) * numTs));
     }
 
     /*
      * Frees memory allocated using SecAlloc.
      */
     static void SecFree(void* ptr) {
-#if BLSALLOC_SODIUM
-        sodium_free(ptr);
-#else
-        free(ptr);
-#endif
+        secureFreeCallback(ptr);
     }
 
     /*
@@ -112,6 +102,11 @@ class Util {
         }
         return sum;
     }
+
+ private:
+    friend class BLS;
+    static SecureAllocCallback secureAllocCallback;
+    static SecureFreeCallback secureFreeCallback;
 };
 } // end namespace bls
 #endif  // SRC_BLSUTIL_HPP_
