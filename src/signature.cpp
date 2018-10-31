@@ -236,6 +236,10 @@ std::vector<uint8_t> Signature::Serialize() const {
     return sig.Serialize();
 }
 
+InsecureSignature Signature::GetInsecureSig() const {
+    return sig;
+}
+
 bool operator==(Signature const &a, Signature const &b) {
     BLS::AssertInitialized();
     return a.sig == b.sig;
