@@ -105,7 +105,9 @@ PublicKey BLS::DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey)
     if (!privKey.keydata) {
         throw std::string("keydata not initialized");
     }
-    return pubKey.Exp(*privKey.keydata);
+    PublicKey ret = pubKey.Exp(*privKey.keydata);
+    CheckRelicErrors();
+    return ret;
 }
 
 void BLS::CheckRelicErrors() {
