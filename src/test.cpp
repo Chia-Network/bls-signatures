@@ -17,6 +17,7 @@
 #include "bls.hpp"
 #include "test-utils.hpp"
 
+#include <thread>
 using std::string;
 using std::vector;
 using std::cout;
@@ -235,6 +236,34 @@ TEST_CASE("Error handling") {
                 REQUIRE(invalid.count(i) != 0);
             }
         }
+    }
+
+    SECTION("Error handling should be thread safe") {
+        core_get()->code = 10;
+        REQUIRE(core_get()->code == 10);
+
+        ctx_t* ctx1 = core_get();
+        bool ctxError = false;
+
+        // spawn a thread and make sure it uses a different context
+        std::thread([&]() {
+            if (ctx1 == core_get()) {
+                ctxError = true;
+            }
+            if (core_get()->code != STS_OK) {
+                ctxError = true;
+            }
+            // this should not modify the code of the main thread
+            core_get()->code = 1;
+        }).join();
+
+        REQUIRE(!ctxError);
+
+        // other thread should not modify code
+        REQUIRE(core_get()->code == 10);
+
+        // reset so that future test cases don't fail
+        core_get()->code = STS_OK;
     }
 }
 

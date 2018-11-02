@@ -28,47 +28,40 @@ bool BLSInitResult = BLS::Init();
 Util::SecureAllocCallback Util::secureAllocCallback;
 Util::SecureFreeCallback Util::secureFreeCallback;
 
-bool BLS::Init() {
-    if (ALLOC != AUTO) {
-        std::cout << "Must have ALLOC == AUTO";
-        return false;
-    }
+static void relic_core_initializer(void* ptr) {
     core_init();
     if (err_get_code() != STS_OK) {
         std::cout << "core_init() failed";
-        return false;
+        // this will most likely crash the application...but there isn't much we can do
+        throw std::string("core_init() failed");
     }
 
     const int r = ep_param_set_any_pairf();
     if (r != STS_OK) {
         std::cout << "ep_param_set_any_pairf() failed";
-        return false;
+        // this will most likely crash the application...but there isn't much we can do
+        throw std::string("ep_param_set_any_pairf() failed");
+    }
+}
+
+bool BLS::Init() {
+    if (ALLOC != AUTO) {
+        std::cout << "Must have ALLOC == AUTO";
+        throw std::string("Must have ALLOC == AUTO");
     }
 #if BLSALLOC_SODIUM
     if (sodium_init() < 0) {
         std::cout << "libsodium init failed";
-        return false;
+        throw std::string("libsodium init failed");
     }
     SetSecureAllocator(libsodium::sodium_malloc, libsodium::sodium_free);
 #else
     SetSecureAllocator(malloc, free);
 #endif
+
+    core_set_thread_initializer(relic_core_initializer, nullptr);
+
     return true;
-}
-
-void BLS::AssertInitialized() {
-    if (!core_get()) {
-        throw std::string("Library not initialized properly. Call BLS::Init()");
-    }
-#if BLSALLOC_SODIUM
-    if (sodium_init() < 0) {
-        throw std::string("Libsodium initialization failed.");
-    }
-#endif
-}
-
-void BLS::Clean() {
-    core_clean();
 }
 
 void BLS::SetSecureAllocator(Util::SecureAllocCallback allocCb, Util::SecureFreeCallback freeCb) {
