@@ -105,7 +105,6 @@ void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
 }
 
 PublicKey BLS::DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey) {
-    AssertInitialized();
     if (!privKey.keydata) {
         throw std::string("keydata not initialized");
     }
