@@ -188,8 +188,8 @@ bls::ExtendedPublicKey pkChild = epk.PublicChild(0)
                                .PublicChild(5);
 
 // Serialize extended keys
-uint8_t buffer1[bls::ExtendedPublicKey::ExtendedPublicKeySize]   // 93 bytes
-uint8_t buffer2[bls::ExtendedPrivateKey::ExtendedPrivateKeySize] // 77 bytes
+uint8_t buffer1[bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];   // 93 bytes
+uint8_t buffer2[bls::ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE]; // 77 bytes
 
 pkChild.Serialize(buffer1);
 skChild.Serialize(buffer2);
