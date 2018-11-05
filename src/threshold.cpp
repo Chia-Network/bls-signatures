@@ -23,7 +23,101 @@
 using std::string;
 namespace bls {
 
-void ThresholdUtil::lagrangeCoeffsAtZero(bn_t *res, int *players, int T) {
+PrivateKey Threshold::Create(std::vector<PublicKey> &commitment,
+        std::vector<PrivateKey> &secretFragments, size_t T, size_t N) {
+    BLS::AssertInitialized();
+    if (T < 1 || T > N) {
+        throw std::string("Threshold parameter T must be between 1 and N");
+    }
+    PrivateKey k;
+    k.AllocateKeyData();
+    bn_t ord;
+    bn_new(ord);
+    g1_get_ord(ord);
+
+    // poly = [random(1, ord-1), ...]
+    // commitment = [g1 * poly[i], ...]
+    g1_t g;
+    bn_t *poly = new bn_t[T];
+    for (int i = 0; i < T; ++i) {
+        bn_new(poly[i]);
+        bn_rand_mod(poly[i], ord);
+        g1_mul_gen(g, poly[i]);
+        commitment[i] = PublicKey::FromG1(&g);
+    }
+
+    bn_t frag, w, e;
+    bn_new(frag);
+    bn_new(w);
+    bn_new(e);
+    for (int x = 1; x <= N; ++x) {
+        bn_zero(frag);
+        // frag = sum_i (poly[i] * (x ** i % ord))
+        for (int i = 0; i < T; ++i) {
+            bn_set_dig(w, (dig_t) x);
+            bn_set_dig(e, (dig_t) i);
+            bn_mxp(w, w, e, ord);
+            bn_mul(w, w, poly[i]);
+            bn_mod(w, w, ord);
+            bn_add(frag, frag, w);
+            bn_mod(frag, frag, ord);
+        }
+        secretFragments[x-1] = PrivateKey::FromBN(frag);
+    }
+
+    bn_copy(*k.keydata, poly[0]);
+
+    delete[] poly;
+    bn_free(frag);
+    bn_free(w);
+    bn_free(e);
+
+    return k;
+}
+
+InsecureSignature Threshold::SignWithCoefficient(PrivateKey sk, uint8_t *msg,
+        size_t len, size_t player, size_t *players, size_t T) {
+    BLS::AssertInitialized();
+    if (player == 0) {
+        throw std::string("player must be a positive integer");
+    }
+    int index = std::distance(players,
+        std::find(players, players + T, player));
+
+    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+    Util::Hash256(messageHash, msg, len);
+
+    g2_t sig;
+    g2_map(sig, messageHash, BLS::MESSAGE_HASH_LEN, 0);
+
+    bn_t *coeffs = new bn_t[T];
+    Threshold::LagrangeCoeffsAtZero(coeffs, players, T);
+
+    g2_mul(sig, sig, coeffs[index]);
+    g2_mul(sig, sig, *sk.keydata);
+
+    return InsecureSignature::FromG2(&sig);
+}
+
+InsecureSignature Threshold::AggregateUnitSigs(
+        std::vector<InsecureSignature> sigs, uint8_t *msg, size_t len,
+        size_t *players, size_t T) {
+    BLS::AssertInitialized();
+    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+    Util::Hash256(messageHash, msg, len);
+
+    bn_t *coeffs = new bn_t[T];
+    Threshold::LagrangeCoeffsAtZero(coeffs, players, T);
+
+    std::vector<InsecureSignature> powers;
+    for (size_t i = 0; i < T; ++i) {
+        powers.emplace_back(sigs[i].Exp(coeffs[i]));
+    }
+
+    return InsecureSignature::Aggregate(powers);
+}
+
+void Threshold::LagrangeCoeffsAtZero(bn_t *res, size_t *players, size_t T) {
     if (T <= 0) {
         throw std::string("T must be a positive integer");
     }
@@ -37,6 +131,9 @@ void ThresholdUtil::lagrangeCoeffsAtZero(bn_t *res, int *players, int T) {
 
     bn_zero(denominator);
     for (int j = 0; j < T; ++j) {
+        if (players[j] <= 0) {
+            throw std::string("Player index must be positive");
+        }
         // weight = (prod (X[j] - X[i])) ** -1
         bn_set_dig(weight, (dig_t) 1);
         for (int i = 0; i < T; ++i) if (i != j) {
@@ -53,6 +150,9 @@ void ThresholdUtil::lagrangeCoeffsAtZero(bn_t *res, int *players, int T) {
         }
         // weight = weight ** -1
         // x = (-players[j]) ** -1
+        if (bn_is_zero(weight)) {
+            throw std::string("Player indices can't be equiv. mod group order");
+        }
         fp_inv_exgcd_bn(weight, weight, n);
         bn_set_dig(x, (dig_t) players[j]);
         bn_sub(x, n, x);
@@ -72,7 +172,7 @@ void ThresholdUtil::lagrangeCoeffsAtZero(bn_t *res, int *players, int T) {
     }
 }
 
-void ThresholdUtil::interpolateAtZero(bn_t res, int *X, bn_t *Y, int T) {
+void Threshold::InterpolateAtZero(bn_t res, size_t *X, bn_t *Y, size_t T) {
     if (T <= 0) {
         throw std::string("T must be a positive integer");
     }
@@ -83,7 +183,7 @@ void ThresholdUtil::interpolateAtZero(bn_t res, int *X, bn_t *Y, int T) {
     g1_get_ord(n);
 
     bn_t *coeffs = new bn_t[T];
-    lagrangeCoeffsAtZero(coeffs, X, T);
+    LagrangeCoeffsAtZero(coeffs, X, T);
     for (int i = 0; i < T; ++i) {
         // res += coeffs[i] * Y[i]
         bn_mul(coeffs[i], coeffs[i], Y[i]);
@@ -93,47 +193,32 @@ void ThresholdUtil::interpolateAtZero(bn_t res, int *X, bn_t *Y, int T) {
     }
 }
 
-bool ThresholdUtil::verifySecretFragment(int player, bn_t secretFragment, g1_t *commitment, int T) {
+bool Threshold::VerifySecretFragment(size_t player, PrivateKey secretFragment, std::vector<PublicKey> const& commitment, size_t T) {
     if (T <= 0) {
         throw std::string("T must be a positive integer");
-    } else if (bn_is_zero(secretFragment) == 1) {
-        throw std::string("secretFragment must be non-zero");
     } else if (player <= 0) {
-        throw std::string("player index must be positive");
+        throw std::string("Player index must be positive");
     }
 
-    g1_t g1, lhs, rhs, t;
-    g1_null(g1);
-    g1_null(lhs);
-    g1_null(rhs);
-    g1_null(t);
-    g1_new(g1);
-    g1_new(lhs);
-    g1_new(rhs);
-    g1_new(t);
-
+    g1_t rhs, t;
     bn_t x, n, e;
     bn_new(x);
     bn_new(n);
     bn_new(e);
     g1_get_ord(n);
 
-    // lhs = g1 * secretFragment
-    g1_get_gen(g1);
-    g1_copy(lhs, g1);
-    g1_mul(lhs, lhs, secretFragment);
-
-    // rhs = sum commitment[i] * (player ** i)
-    g1_copy(rhs, commitment[0]);
-    for (int i = 1; i < T; ++i) {
-        g1_copy(t, commitment[i]);
+    // rhs = sum commitment[i] ** (player ** i)
+    std::vector<PublicKey> expKeys;
+    expKeys.reserve(T);
+    for (size_t i = 0; i < T; i++) {
         bn_set_dig(x, (dig_t) player);
         bn_set_dig(e, (dig_t) i);
         bn_mxp(x, x, e, n);
-        g1_mul(t, t, x);
-        g1_add(rhs, rhs, t);
+        expKeys.emplace_back(commitment[i].Exp(x));
     }
 
-    return (g1_cmp(lhs, rhs) == CMP_EQ);
+    return (secretFragment.GetPublicKey() ==
+            PublicKey::AggregateInsecure(expKeys));
 }
+
 } // end namespace bls

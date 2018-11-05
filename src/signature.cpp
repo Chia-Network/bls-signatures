@@ -675,4 +675,3 @@ Signature Signature::DivideBy(std::vector<Signature> const &divisorSigs) const {
     return result;
 }
 } // end namespace bls
-

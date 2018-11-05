@@ -25,6 +25,7 @@
 #include "signature.hpp"
 namespace bls {
 class PrivateKey {
+friend class Threshold;
  public:
     // Private keys are represented as 32 byte field elements. Note that
     // not all 32 byte integers are valid keys, the private key must be
@@ -39,11 +40,8 @@ class PrivateKey {
     // Construct a private key from a bytearray.
     static PrivateKey FromBytes(const uint8_t* bytes, bool modOrder = false);
 
-    // Construct a private key with associated data suitable for
-    // a threshold signature scheme.
-    // commitment, secretFragments are output parameters.
-    static PrivateKey NewThreshold(g1_t *commitment,
-            bn_t *secretFragments, int T, int N);
+    // Construct a private key from a native bn element.
+    static PrivateKey FromBN(bn_t sk);
 
     // Construct a private key from another private key. Allocates memory in
     // secure heap, and copies keydata.
@@ -56,9 +54,6 @@ class PrivateKey {
 
     // Insecurely aggregate multiple private keys into one
     static PrivateKey AggregateInsecure(std::vector<PrivateKey> const& privateKeys);
-
-    // Insecurely aggregate multiple bn_t elements into one private key
-    static PrivateKey AggregateInsecureNative(bn_t *bn_elements, size_t len);
 
     // Securely aggregate multiple private keys into one by exponentiating the keys with the pubKey hashes first
     static PrivateKey Aggregate(std::vector<PrivateKey> const& privateKeys,
@@ -77,8 +72,6 @@ class PrivateKey {
     // The secure variants will also set and return appropriate aggregation info
     InsecureSignature SignInsecure(const uint8_t *msg, size_t len) const;
     InsecureSignature SignInsecurePrehashed(const uint8_t *hash) const;
-    InsecureSignature SignInsecureThreshold(const uint8_t *msg, size_t len,
-        int player, int *players, int T) const;
     Signature Sign(const uint8_t *msg, size_t len) const;
     Signature SignPrehashed(const uint8_t *hash) const;
 
