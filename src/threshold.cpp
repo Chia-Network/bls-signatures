@@ -25,7 +25,6 @@ namespace bls {
 
 PrivateKey Threshold::Create(std::vector<PublicKey> &commitment,
         std::vector<PrivateKey> &secretFragments, size_t T, size_t N) {
-    BLS::AssertInitialized();
     if (T < 1 || T > N) {
         throw std::string("Threshold parameter T must be between 1 and N");
     }
@@ -77,7 +76,6 @@ PrivateKey Threshold::Create(std::vector<PublicKey> &commitment,
 
 InsecureSignature Threshold::SignWithCoefficient(PrivateKey sk, uint8_t *msg,
         size_t len, size_t player, size_t *players, size_t T) {
-    BLS::AssertInitialized();
     if (player == 0) {
         throw std::string("player must be a positive integer");
     }
@@ -102,7 +100,6 @@ InsecureSignature Threshold::SignWithCoefficient(PrivateKey sk, uint8_t *msg,
 InsecureSignature Threshold::AggregateUnitSigs(
         std::vector<InsecureSignature> sigs, uint8_t *msg, size_t len,
         size_t *players, size_t T) {
-    BLS::AssertInitialized();
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
     Util::Hash256(messageHash, msg, len);
 

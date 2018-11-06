@@ -47,12 +47,10 @@ class BLS {
     static const char GROUP_ORDER[];
     static const size_t MESSAGE_HASH_LEN = 32;
 
-    // Initializes the BLS library manually
+    // Initializes the BLS library (called automatically)
     static bool Init();
-    // Asserts the BLS library is initialized
-    static void AssertInitialized();
-    // Cleans the BLS library
-    static void Clean();
+
+    static void SetSecureAllocator(Util::SecureAllocCallback allocCb, Util::SecureFreeCallback freeCb);
 
     // Used for secure aggregation
     static void HashPubKeys(
@@ -60,6 +58,8 @@ class BLS {
             size_t numOutputs,
             std::vector<uint8_t*> const &serPubKeys,
             std::vector<size_t> const &sortedIndices);
+
+    static PublicKey DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey);
 
     static void CheckRelicErrors();
 };

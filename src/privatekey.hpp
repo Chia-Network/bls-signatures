@@ -25,6 +25,7 @@
 #include "signature.hpp"
 namespace bls {
 class PrivateKey {
+friend class BLS;
 friend class Threshold;
  public:
     // Private keys are represented as 32 byte field elements. Note that
