@@ -1493,6 +1493,8 @@ TEST_CASE("Threshold") {
 
         size_t players[] = {1, 3};
         // For example, players 1 and 3 sign.
+        // As we have verified the coefficients through the commitments given,
+        // using InsecureSignature is okay.
         InsecureSignature sigShareC1 = Threshold::SignWithCoefficient(
             secretShare1, msg, (size_t) sizeof(msg), (size_t) 1, players, T);
         InsecureSignature sigShareC3 = Threshold::SignWithCoefficient(

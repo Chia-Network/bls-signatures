@@ -72,7 +72,6 @@ PrivateKey PrivateKey::FromBN(bn_t sk) {
     PrivateKey k;
     k.AllocateKeyData();
     bn_copy(*k.keydata, sk);
-    bn_free(sk);
     return k;
 }
 

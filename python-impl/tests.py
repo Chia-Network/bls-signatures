@@ -403,6 +403,16 @@ def test_threshold_instance(T, N):
     signature_actual.set_aggregation_info(agg_info)
     assert BLS.verify(signature_actual)
 
+    # Step 4b : Alternatively, we can add the lagrange coefficients
+    # to 'unit' signatures.
+    for X in combinations(range(1, N+1), T):
+        # X: a list of T indices like [1, 2, 5]
+
+        # Check signatures
+        signature_shares = [secret_shares[x-1].sign(msg) for x in X]
+        signature_cand = Threshold.aggregate_unit_sigs(signature_shares, X, T)
+        assert signature_cand == signature_actual
+
 
 def test_threshold():
     test_threshold_instance(1, 1)

@@ -1,5 +1,6 @@
 from ec import AffinePoint, default_ec, generator_Fq
-from fields import Fq
+from fields import Fq, Fq2
+from signature import Signature
 from typing import List
 
 
@@ -122,6 +123,16 @@ class Threshold:
 
         return lhs == rhs
 
+    @staticmethod
+    def aggregate_unit_sigs(signatures: List[Signature], players: List[int],
+            T: int, ec=default_ec) -> Signature:
+
+        lambs = Threshold.lagrange_coeffs_at_zero(players, ec)
+        agg = (AffinePoint(Fq2.zero(ec.q), Fq2.zero(ec.q), True, ec)
+               .to_jacobian())
+        for i, sig in enumerate(signatures):
+            agg += sig.value * lambs[i]
+        return Signature.from_g2(agg)
 
 """
 Copyright 2018 Chia Network Inc
