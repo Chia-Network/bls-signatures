@@ -25,7 +25,8 @@
 #include "signature.hpp"
 namespace bls {
 class PrivateKey {
- friend class BLS;
+friend class BLS;
+friend class Threshold;
  public:
     // Private keys are represented as 32 byte field elements. Note that
     // not all 32 byte integers are valid keys, the private key must be
@@ -39,6 +40,9 @@ class PrivateKey {
 
     // Construct a private key from a bytearray.
     static PrivateKey FromBytes(const uint8_t* bytes, bool modOrder = false);
+
+    // Construct a private key from a native bn element.
+    static PrivateKey FromBN(bn_t sk);
 
     // Construct a private key from another private key. Allocates memory in
     // secure heap, and copies keydata.

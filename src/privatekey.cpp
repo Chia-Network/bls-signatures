@@ -68,6 +68,13 @@ PrivateKey PrivateKey::FromBytes(const uint8_t* bytes, bool modOrder) {
     return k;
 }
 
+PrivateKey PrivateKey::FromBN(bn_t sk) {
+    PrivateKey k;
+    k.AllocateKeyData();
+    bn_copy(*k.keydata, sk);
+    return k;
+}
+
 // Construct a private key from another private key.
 PrivateKey::PrivateKey(const PrivateKey &privateKey) {
     AllocateKeyData();

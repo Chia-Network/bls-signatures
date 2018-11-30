@@ -1,3 +1,4 @@
+
 // Copyright 2018 Chia Network Inc
 
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,6 +17,8 @@
 #include "catch.hpp"
 #include "bls.hpp"
 #include "test-utils.hpp"
+#include "relic.h"
+#include "relic_test.h"
 
 #include <thread>
 using std::string;
@@ -1404,6 +1407,120 @@ TEST_CASE("AggregationInfo") {
                 privateKeysList, pubKeysList);
 
         Signature aggSig3 = aggSk.Sign(msg, sizeof(msg));
+    }
+}
+
+TEST_CASE("Threshold") {
+    SECTION("README") {
+        // To initialize a T of N threshold key under a
+        // Joint-Feldman scheme:
+        size_t T = 2;
+        size_t N = 3;
+
+        // 1. Each player calls PrivateKey::NewThreshold.
+        // They send everyone commitment to the polynomial,
+        // and send secret share fragments frags[j-1] to
+        // the j-th player (All players have index >= 1).
+
+        // PublicKey commits[N][T]
+        // PrivateKey frags[N][N]
+        std::vector<std::vector<PublicKey>> commits = {{}};
+        std::vector<std::vector<PrivateKey>> frags = {{}};
+        for (size_t i = 0; i < N; ++i) {
+            commits.emplace_back(std::vector<PublicKey>());
+            frags.emplace_back(std::vector<PrivateKey>());
+            for (size_t j = 0; j < N; ++j) {
+                if (j < T) {
+                    g1_t g;
+                    commits[i].emplace_back(PublicKey::FromG1(&g));
+                }
+                bn_t b;
+                bn_new(b);
+                frags[i].emplace_back(PrivateKey::FromBN(b));
+            }
+        }
+
+        PrivateKey sk1 = Threshold::Create(commits[0], frags[0], T, N);
+        PrivateKey sk2 = Threshold::Create(commits[1], frags[1], T, N);
+        PrivateKey sk3 = Threshold::Create(commits[2], frags[2], T, N);
+
+        // 2. Each player calls Threshold::VerifySecretFragment
+        // on all secret fragments they receive.  If any verify
+        // false, they complain to abort the scheme.  (Note that
+        // repeatedly aborting, or 'speaking' last, can bias the
+        // master public key.)
+
+        for (int target = 1; target <= N; ++target) {
+            for (int source = 1; source <= N; ++source) {
+                REQUIRE(Threshold::VerifySecretFragment(
+                    target, frags[source-1][target-1], commits[source-1], T));
+            }
+        }
+
+        // 3. Each player computes the shared, master public key:
+        // masterPubkey = PublicKey::AggregateInsecure(...)
+        // They also create their secret share from all secret
+        // fragments received (now verified):
+        // secretShare = PrivateKey::AggregateInsecure(...)
+
+        PublicKey masterPubkey = PublicKey::AggregateInsecure({
+            commits[0][0], commits[1][0], commits[2][0]
+        });
+
+        // recvdFrags[j][i] = frags[i][j]
+        std::vector<std::vector<PrivateKey>> recvdFrags = {{}};
+        for (int i = 0; i < N; ++i) {
+            recvdFrags.emplace_back(std::vector<PrivateKey>());
+            for (int j = 0; j < N; ++j) {
+                recvdFrags[i].emplace_back(frags[j][i]);
+            }
+        }
+
+        PrivateKey secretShare1 = PrivateKey::AggregateInsecure(recvdFrags[0]);
+        PrivateKey secretShare2 = PrivateKey::AggregateInsecure(recvdFrags[1]);
+        PrivateKey secretShare3 = PrivateKey::AggregateInsecure(recvdFrags[2]);
+
+        // 4a. Player P creates a pre-multiplied signature share wrt T players:
+        // sigShare = Threshold::SignWithCoefficient(...)
+        // These signature shares can be combined to sign the msg:
+        // signature = InsecureSignature::Aggregate(...)
+        // The advantage of this approach is that forming the final signature
+        // no longer requires information about the players.
+
+        uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
+        uint8_t hash[32];
+        Util::Hash256(hash, msg, sizeof(msg));
+
+        size_t players[] = {1, 3};
+        // For example, players 1 and 3 sign.
+        // As we have verified the coefficients through the commitments given,
+        // using InsecureSignature is okay.
+        InsecureSignature sigShareC1 = Threshold::SignWithCoefficient(
+            secretShare1, msg, (size_t) sizeof(msg), (size_t) 1, players, T);
+        InsecureSignature sigShareC3 = Threshold::SignWithCoefficient(
+            secretShare3, msg, (size_t) sizeof(msg), (size_t) 3, players, T);
+
+        InsecureSignature signature = InsecureSignature::Aggregate({
+            sigShareC1, sigShareC3});
+
+        REQUIRE(signature.Verify({hash}, {masterPubkey}));
+
+        // 4b. Alternatively, players may sign the message blindly, creating
+        // a unit signature share: sigShare = secretShare.SignInsecure(...)
+        // These signatures may be combined with lagrange coefficients to
+        // sign the message: signature = Threshold::AggregateUnitSigs(...)
+        // The advantage to this approach is that each player does not need
+        // to know the final list of signatories.
+
+        // For example, players 1 and 3 sign.
+        InsecureSignature sigShareU1 = secretShare1.SignInsecure(
+            msg, (size_t) sizeof(msg));
+        InsecureSignature sigShareU3 = secretShare3.SignInsecure(
+            msg, (size_t) sizeof(msg));
+        InsecureSignature signature2 = Threshold::AggregateUnitSigs(
+            {sigShareU1, sigShareU3}, msg, (size_t) sizeof(msg), players, T);
+
+        REQUIRE(signature2.Verify({hash}, {masterPubkey}));
     }
 }
 
