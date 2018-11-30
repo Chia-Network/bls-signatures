@@ -13,6 +13,7 @@ Features:
 * Efficient verification (only one pairing per distinct message)
 * Security against rogue public key attack
 * Aggregate public keys and private keys
+* M/N threshold keys and signatures using Joint-Feldman scheme
 * HD (BIP32) key derivation
 * Key and signature serialization
 * Batch verification
@@ -248,7 +249,6 @@ keybase team request-access chia_network.public
 ### TODO
 * Serialize aggregation info
 * Secure allocation during signing, key derivation
-* Threshold signatures
 * Remove unnecessary dependency files
 * Constant time and side channel attacks
 * Adaptor signatures / Blind signatures
