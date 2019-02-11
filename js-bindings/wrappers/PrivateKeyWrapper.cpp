@@ -1,0 +1,31 @@
+//
+// Created by anton on 11.02.19.
+//
+
+#include "PrivateKeyWrapper.h"
+#include "../helpers.cpp"
+#include "emscripten/val.h"
+
+namespace js_wrappers {
+    PrivateKeyWrapper::PrivateKeyWrapper(PrivateKey &privateKey) : wrappedPrivateKey(privateKey) {}
+
+    PrivateKeyWrapper PrivateKeyWrapper::FromSeed(val buffer) {
+        std::vector<uint8_t> bytes = helpers::uint8ArrayToVector(buffer);
+        PrivateKey pk = PrivateKey::FromSeed(bytes.data(), bytes.size());
+        PrivateKeyWrapper pw = PrivateKeyWrapper(pk);
+        return pk;
+    }
+
+    PrivateKeyWrapper PrivateKeyWrapper::FromBytes(val buffer, bool modOrder) {
+        std::vector<uint8_t> bytes = helpers::uint8ArrayToVector(buffer);
+        PrivateKey pk = PrivateKey::FromBytes(bytes.data(), modOrder);
+        PrivateKeyWrapper pw = PrivateKeyWrapper(pk);
+        return pk;
+    }
+
+    val PrivateKeyWrapper::Serialize() const {
+        std::vector<uint8_t> pk = wrappedPrivateKey.Serialize();
+        val buffer = helpers::vectorToUint8Array(pk);
+        return buffer;
+    }
+}

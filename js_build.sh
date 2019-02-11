@@ -5,6 +5,6 @@ git submodule update --init --recursive
 rm -rf js_build
 mkdir js_build
 cd js_build
-emmake cmake -DARCH= ../
-emmake cmake --build . -- -j3
-emcc ./js_build/libbls.a -o bls_signatures.js
+
+cmake ../ -DARCH= -DWSIZE=32 -DCMAKE_TOOLCHAIN_FILE=/home/anton/Programs/emsdk/emscripten/1.38.25/cmake/Modules/Platform/Emscripten.cmake
+cmake --build . --

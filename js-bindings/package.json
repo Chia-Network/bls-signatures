@@ -1,0 +1,20 @@
+{
+  "name": "bls-js-bindings-test",
+  "version": "0.1.0",
+  "description": "Test for the javascript bindings for the Chia Network bls-signature library",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "mocha ./tests --recursive"
+  },
+  "author": {
+    "name": "Anton Suprunchuk",
+    "email": "antouhou@gmail.com",
+    "url": "https://github.com/antouhou"
+  },
+  "dependencies": {
+    "mocha": "^5.2.0"
+  }
+}
