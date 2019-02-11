@@ -1,11 +1,9 @@
 //
-// Created by anton on 11.02.19.
+// Created by anton on 12.02.19.
 //
 
-#include <vector>
-#include "stdint.h"
-#include <stdio.h>
-#include "emscripten/val.h"
+#ifndef BLS_HELPERS_H
+#define BLS_HELPERS_H
 
 using namespace emscripten;
 
@@ -28,3 +26,5 @@ namespace helpers {
         return val(typed_memory_view(vec.size(), vec.data()));
     }
 }
+
+#endif //BLS_HELPERS_H

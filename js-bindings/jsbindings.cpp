@@ -24,10 +24,19 @@ EMSCRIPTEN_BINDINGS(blsjs) {
     class_<PrivateKeyWrapper>("PrivateKey")
             .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
             .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
-            .function("serialize", &PrivateKeyWrapper::Serialize);
+            .function("serialize", &PrivateKeyWrapper::Serialize)
+            .function("sign", &PrivateKeyWrapper::Sign);
 //        .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
-//        .function("sign", &PrivateKeyWrapper::Sign)
 //        .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed)
+
+    class_<SignatureWrapper>("Signature")
+        .class_function("fromBytes", &SignatureWrapper::FromBytes)
+        .function("serialize", &SignatureWrapper::Serialize)
+        .function("verify", &SignatureWrapper::Verify);
+//        .class_function("aggregateSigs", &SignatureWrapper::AggregateSigs)
+//        .function("divideBy", &SignatureWrapper::DivideBy)
+//        .function("getAggregationInfo", &SignatureWrapper::GetAggregationInfo)
+//        .function("setAggregationInfo", &SignatureWrapper::SetAggregationInfo);
 
 
 //    class_<ExtendedPrivateKey>("ExtendedPrivateKey")
@@ -62,16 +71,6 @@ EMSCRIPTEN_BINDINGS(blsjs) {
 //        .property("CHAIN_CODE_KEY_SIZE")
 //        .class_function("fromBytes", &ChainCode::FromBytes)
 //        .function("serialize", &ChainCode::Serialize);
-//
-//    class_<Signature>("Signature")
-//        .property("SIGNATURE_SIZE", &Signature::SIGNATURE_SIZE)
-//        .class_function("fromBytes", &Signature::FromBytes)
-//        .class_function("aggregateSigs", &Signature::AggregateSigs)
-//        .function("serialize", &Signature::Serialize)
-//        .function("verify", &Signature::Verify)
-//        .function("divideBy", &Signature::DivideBy)
-//        .function("getAggregationInfo", &Signature::GetAggregationInfo)
-//        .function("setAggregationInfo", &Signature::SetAggregationInfo);
 //
 //    class_<AggregationInfo>("AggregationInfo")
 //        .class_function("fromMsgHash", &AggregationInfo::FromMsgHash)

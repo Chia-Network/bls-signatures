@@ -4,6 +4,7 @@
 
 #include "../../src/privatekey.hpp"
 #include "emscripten/val.h"
+#include "SignatureWrapper.cpp"
 
 #ifndef BLS_PRIVATEKEYWRAPPER_H
 #define BLS_PRIVATEKEYWRAPPER_H
@@ -20,13 +21,13 @@ namespace js_wrappers {
 //        static PrivateKeyWrapper Aggregate(val privateKeys, val publicKeys);
 
         val Serialize() const;
+        SignatureWrapper Sign(val messageBuffer) const;
 //        PublicKeyWrapper GetPublicKey() const;
 //        InsecureSignatureWrapper SignInsecure(val hashBuffer) const;
 //        InsecureSignatureWrapper SignInsecurePrehashed(val hashBuffer) const;
-//        SignatureWrapper Sign(val messageBuffer) const;
 //        SignatureSrapper SignPrehashed(val hashBuffer) const;
     private:
-        PrivateKeyWrapper(PrivateKey& privateKey);
+        explicit PrivateKeyWrapper(PrivateKey& privateKey);
         PrivateKey wrappedPrivateKey;
     };
 }

@@ -1,4 +1,4 @@
-const { PrivateKey } = require('../../js_build/js-bindings/blsjs');
+const { PrivateKey, Signature } = require('../../js_build/js-bindings/blsjs');
 const assert = require('assert');
 
 function getPkSeed() {
@@ -45,6 +45,7 @@ describe('PrivateKey', () => {
             });
         });
     });
+
     describe('#serialize', () => {
         it('Should serialize key to a Uint8Array', () => {
             const pk = PrivateKey.fromSeed(getPkSeed());
@@ -53,4 +54,12 @@ describe('PrivateKey', () => {
             assert.deepStrictEqual(serialized, getPkUint8Array());
         });
     });
+
+    describe('#sign', () => {
+        it('Should return a signature', () => {
+            const pk = PrivateKey.fromBytes(getPkUint8Array(), false);
+            const signature = pk.sign(Buffer.from('Hello world', 'utf8'));
+            assert(signature instanceof Signature);
+        });
+    })
 });
