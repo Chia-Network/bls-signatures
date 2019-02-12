@@ -44,4 +44,10 @@ namespace js_wrappers {
         SignatureWrapper sw = SignatureWrapper::FromSignature(signature);
         return sw;
     }
+
+    PublicKeyWrapper PrivateKeyWrapper::GetPublicKey() const {
+        PublicKey pk = wrappedPrivateKey.GetPublicKey();
+        PublicKeyWrapper pw = PublicKeyWrapper(pk);
+        return pw;
+    }
 }

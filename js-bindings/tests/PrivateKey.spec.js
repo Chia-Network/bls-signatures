@@ -1,5 +1,12 @@
-const { PrivateKey, Signature } = require('../../js_build/js-bindings/blsjs');
+const { PrivateKey, Signature, PublicKey } = require('../../js_build/js-bindings/blsjs');
 const assert = require('assert');
+
+function getSeedAndFinferprint() {
+    return {
+        seed: Buffer.from([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]),
+        fingerprint: 0xddad59bb
+    };
+}
 
 function getPkSeed() {
     return Buffer.from([
@@ -50,16 +57,33 @@ describe('PrivateKey', () => {
         it('Should serialize key to a Uint8Array', () => {
             const pk = PrivateKey.fromSeed(getPkSeed());
             const serialized = pk.serialize();
-            assert(serialized instanceof Uint8Array);
+            assert(serialized instanceof Buffer);
             assert.deepStrictEqual(serialized, getPkBuffer());
         });
     });
 
     describe('#sign', () => {
         it('Should return a signature', () => {
-            const pk = PrivateKey.fromBytes(getPkUint8Array(), false);
-            const signature = pk.sign(Buffer.from('Hello world', 'utf8'));
+            const pk = PrivateKey.fromBytes(getPkBuffer(), false);
+            const message = 'Hello world';
+            const signature = pk.sign(Buffer.from(message, 'utf8'));
             assert(signature instanceof Signature);
+            assert(signature.verify());
         });
-    })
+    });
+
+    describe('#signPrehashed', () => {
+        it('Should sign a hash and return a signature', () => {
+            throw new Error('Not implemented');
+        });
+    });
+
+    describe('#getPublicKey', () => {
+       it('Should return a public key', () => {
+           const pk = PrivateKey.fromSeed(getSeedAndFinferprint().seed);
+           const publicKey = pk.getPublicKey();
+           assert(publicKey instanceof PublicKey);
+           assert.strictEqual(publicKey.getFingerprint(), getSeedAndFinferprint().fingerprint);
+       });
+    });
 });

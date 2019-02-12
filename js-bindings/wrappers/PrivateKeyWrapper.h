@@ -8,6 +8,7 @@
 #include "emscripten/val.h"
 #include "../../src/privatekey.hpp"
 #include "SignatureWrapper.h"
+#include "PublicKeyWrapper.h"
 
 using namespace emscripten;
 using namespace bls;
@@ -23,7 +24,7 @@ namespace js_wrappers {
         val Serialize() const;
         SignatureWrapper Sign(val messageBuffer) const;
         SignatureWrapper SignPrehashed(val messageHashBuffer) const;
-//        PublicKeyWrapper GetPublicKey() const;
+        PublicKeyWrapper GetPublicKey() const;
         // Insecure signatures does not contain aggregation info
         // InsecureSignature SignInsecure(val messageBuffer) const;
         // InsecureSignature SignInsecurePrehashed(val messageHashBuffer) const;

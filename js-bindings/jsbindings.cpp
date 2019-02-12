@@ -21,11 +21,12 @@ using namespace js_wrappers;
 
 EMSCRIPTEN_BINDINGS(blsjs) {
     class_<PrivateKeyWrapper>("PrivateKey")
-            .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
-            .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
-            .function("serialize", &PrivateKeyWrapper::Serialize)
-            .function("sign", &PrivateKeyWrapper::Sign)
-            .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed);
+        .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
+        .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
+        .function("serialize", &PrivateKeyWrapper::Serialize)
+        .function("sign", &PrivateKeyWrapper::Sign)
+        .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed)
+        .function("getPublicKey", &PrivateKeyWrapper::GetPublicKey);
 //        .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
 
     class_<SignatureWrapper>("Signature")
@@ -37,6 +38,11 @@ EMSCRIPTEN_BINDINGS(blsjs) {
 //        .function("getAggregationInfo", &SignatureWrapper::GetAggregationInfo)
 //        .function("setAggregationInfo", &SignatureWrapper::SetAggregationInfo);
 
+    class_<PublicKeyWrapper>("PublicKey")
+        .class_function("fromBytes", &PublicKeyWrapper::FromBytes)
+        .function("getFingerprint", &PublicKeyWrapper::GetFingerprint)
+        .function("serialize", &PublicKeyWrapper::Serialize);
+//        .class_function("aggregate", &PublicKeyWrapper::Aggregate)
 
 //    class_<ExtendedPrivateKey>("ExtendedPrivateKey")
 //        .class_function("fromSeed", &ExtendedPrivateKey::FromSeed, allow_raw_pointers())
@@ -77,21 +83,4 @@ EMSCRIPTEN_BINDINGS(blsjs) {
 //        .class_function("mergeInfos", &AggregationInfo::MergeInfos)
 //        .class_function("getPubKeys", &AggregationInfo::GetPubKey)
 //        .function("getMessageHashes", &AggregationInfo::GetMessageHashes);
-//
-//    //TODO: check serialize method. It should be a bit more complicated, look at the python binding for the example
-//    class_<PrivateKey>("PrivateKey")
-//        .class_function("fromSeed", &PrivateKey::FromSeed, allow_raw_pointers())
-//        .class_function("fromBytes", &PrivateKey::FromBytes, allow_raw_pointers())
-//        .class_function("aggregate", &PrivateKey::Aggregate)
-//        .function("sign", &PrivateKey::Sign)
-//        .function("signPrehashed", &PrivateKey::SignPrehashed);
-    //        .function("serialize", &PrivateKey::Serialize)
-    //        .property("PRIVATE_KEY_SIZE", &PrivateKey::PRIVATE_KEY_SIZE)
-//
-//    class_<PublicKey>("PublicKey")
-//        .property("PUBLIC_KEY_SIZE", &PublicKey::PUBLIC_KEY_SIZE)
-//        .class_function("fromBytes", &PublicKey::FromBytes)
-//        .class_function("aggregate", &PublicKey::Aggregate)
-//        .function("getFingerprint", &PublicKey::GetFingerprint)
-//        .function("serialize", &PublicKey::Serialize);
 };

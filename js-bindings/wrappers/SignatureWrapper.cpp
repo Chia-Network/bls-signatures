@@ -25,7 +25,7 @@ namespace js_wrappers {
     }
 
     val SignatureWrapper::Serialize() const {
-        return helpers::vectorToUint8Array(wrappedSignature.Serialize());
+        return helpers::vectorToJSBuffer(wrappedSignature.Serialize());
     }
 
     bool SignatureWrapper::Verify() const {
