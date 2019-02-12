@@ -24,19 +24,19 @@ describe('PrivateKey', () => {
         it('Should create a private key from a seed', () => {
             const pk = PrivateKey.fromSeed(getPkSeed());
             assert(pk instanceof PrivateKey);
-            assert.deepStrictEqual(pk.serialize(), getPkUint8Array());
+            assert.deepStrictEqual(pk.serialize(), getPkBuffer());
         });
     });
     describe('.fromBytes', () => {
         it('Should create a private key from a Buffer', () => {
             const pk = PrivateKey.fromBytes(getPkBuffer(), false);
             assert(pk instanceof PrivateKey);
-            assert.deepStrictEqual(pk.serialize(), getPkUint8Array());
+            assert.deepStrictEqual(pk.serialize(), getPkBuffer());
         });
         it('Should create a private key from a Uint8Array', () => {
             const pk = PrivateKey.fromBytes(getPkUint8Array(), false);
             assert(pk instanceof PrivateKey);
-            assert.deepStrictEqual(pk.serialize(), getPkUint8Array());
+            assert.deepStrictEqual(pk.serialize(), getPkBuffer());
         });
         it('Should throw an error if the buffer size is wrong', () => {
             const uintArr = getPkUint8Array().slice(0, 21);
@@ -51,7 +51,7 @@ describe('PrivateKey', () => {
             const pk = PrivateKey.fromSeed(getPkSeed());
             const serialized = pk.serialize();
             assert(serialized instanceof Uint8Array);
-            assert.deepStrictEqual(serialized, getPkUint8Array());
+            assert.deepStrictEqual(serialized, getPkBuffer());
         });
     });
 

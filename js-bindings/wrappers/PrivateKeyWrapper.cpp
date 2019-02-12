@@ -4,8 +4,9 @@
 
 #include "PrivateKeyWrapper.h"
 #include "../helpers.h"
-#include "emscripten/val.h"
 #include "SignatureWrapper.h"
+
+using namespace emscripten;
 
 namespace js_wrappers {
     PrivateKeyWrapper::PrivateKeyWrapper(PrivateKey &privateKey) : wrappedPrivateKey(privateKey) {}
@@ -26,13 +27,20 @@ namespace js_wrappers {
 
     val PrivateKeyWrapper::Serialize() const {
         std::vector<uint8_t> pk = wrappedPrivateKey.Serialize();
-        val buffer = helpers::vectorToUint8Array(pk);
+        val buffer = helpers::vectorToBuffer(pk);
         return buffer;
     }
 
     SignatureWrapper PrivateKeyWrapper::Sign(val messageBuffer) const {
         std::vector<uint8_t> message = helpers::uint8ArrayToVector(messageBuffer);
         Signature signature = wrappedPrivateKey.Sign(message.data(), message.size());
+        SignatureWrapper sw = SignatureWrapper::FromSignature(signature);
+        return sw;
+    }
+
+    SignatureWrapper PrivateKeyWrapper::SignPrehashed(val messageHashBuffer) const {
+        std::vector<uint8_t> hash = helpers::uint8ArrayToVector(messageHashBuffer);
+        Signature signature = wrappedPrivateKey.SignPrehashed(hash.data());
         SignatureWrapper sw = SignatureWrapper::FromSignature(signature);
         return sw;
     }

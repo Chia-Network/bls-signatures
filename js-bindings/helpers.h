@@ -5,6 +5,8 @@
 #ifndef BLS_HELPERS_H
 #define BLS_HELPERS_H
 
+#include "emscripten/val.h"
+
 using namespace emscripten;
 
 namespace helpers {
@@ -13,7 +15,7 @@ namespace helpers {
      * @param {emscripten::val} jsUint8Array
      * @return {std::vector<uint8_t>}
      */
-    std::vector<uint8_t> uint8ArrayToVector(val jsUint8Array) {
+    inline std::vector<uint8_t> uint8ArrayToVector(val jsUint8Array) {
         auto l = jsUint8Array["length"].as<unsigned>();
         std::vector<uint8_t> vec;
         for(unsigned i = 0; i < l; ++i) {
@@ -22,8 +24,18 @@ namespace helpers {
         return vec;
     }
 
-    val vectorToUint8Array(std::vector<uint8_t> vec) {
+    inline val vectorToUint8Array(std::vector<uint8_t> vec) {
         return val(typed_memory_view(vec.size(), vec.data()));
+    }
+
+    inline val vectorToBuffer(std::vector<uint8_t> vec) {
+        size_t bufferSize = vec.size();
+        val Buffer = val::global("Buffer");
+        val buffer = Buffer.call<val>("alloc", bufferSize);
+        for(unsigned i = 0; i < bufferSize; ++i) {
+            buffer.call<void>("writeUInt8", vec[i], i);
+        }
+        return buffer;
     }
 }
 

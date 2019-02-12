@@ -5,7 +5,6 @@
 #include "SignatureWrapper.h"
 #include "../helpers.h"
 #include "../../src/signature.hpp"
-#include "emscripten/val.h"
 
 using namespace bls;
 using namespace emscripten;

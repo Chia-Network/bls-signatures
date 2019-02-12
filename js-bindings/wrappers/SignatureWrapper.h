@@ -16,10 +16,10 @@ namespace js_wrappers {
         public:
             static SignatureWrapper FromSignature(Signature& signature);
             static SignatureWrapper FromBytes(val buffer);
+            // static SignatureWrapper AggregateSigs(val signatures);
             // static SignatureWrapper FromBytes(val buffer, const AggregationInfoWrapper &info);
             // static SignatureWrapper FromInsecureSig(const InsecureSignature& sig);
             // static SignatureWrapper FromInsecureSig(const InsecureSignature& sig, const AggregationInfo &info);
-            //static SignatureWrapper AggregateSigs(val signatures);
 
             bool Verify() const;
             val Serialize() const;

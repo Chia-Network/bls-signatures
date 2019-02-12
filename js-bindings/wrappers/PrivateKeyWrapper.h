@@ -2,12 +2,12 @@
 // Created by anton on 11.02.19.
 //
 
-#include "../../src/privatekey.hpp"
-#include "emscripten/val.h"
-#include "SignatureWrapper.cpp"
-
 #ifndef BLS_PRIVATEKEYWRAPPER_H
 #define BLS_PRIVATEKEYWRAPPER_H
+
+#include "emscripten/val.h"
+#include "../../src/privatekey.hpp"
+#include "SignatureWrapper.h"
 
 using namespace emscripten;
 using namespace bls;
@@ -22,10 +22,11 @@ namespace js_wrappers {
 
         val Serialize() const;
         SignatureWrapper Sign(val messageBuffer) const;
+        SignatureWrapper SignPrehashed(val messageHashBuffer) const;
 //        PublicKeyWrapper GetPublicKey() const;
-//        InsecureSignatureWrapper SignInsecure(val hashBuffer) const;
-//        InsecureSignatureWrapper SignInsecurePrehashed(val hashBuffer) const;
-//        SignatureSrapper SignPrehashed(val hashBuffer) const;
+        // Insecure signatures does not contain aggregation info
+        // InsecureSignature SignInsecure(val messageBuffer) const;
+        // InsecureSignature SignInsecurePrehashed(val messageHashBuffer) const;
     private:
         explicit PrivateKeyWrapper(PrivateKey& privateKey);
         PrivateKey wrappedPrivateKey;

@@ -8,7 +8,12 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
   )
 
-add_executable(blsjs ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/jsbindings.cpp)
+add_executable(blsjs ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/jsbindings.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/wrappers/PrivateKeyWrapper.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/wrappers/SignatureWrapper.h
+  ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/wrappers/PrivateKeyWrapper.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/wrappers/SignatureWrapper.cpp
+)
 
 if (SODIUM_FOUND)
   target_link_libraries(blsjs PRIVATE blstmp relic_s sodium)

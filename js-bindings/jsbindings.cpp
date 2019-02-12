@@ -13,9 +13,8 @@
 // limitations under the License.
 
 #include <emscripten/bind.h>
-
-#include "wrappers/PrivateKeyWrapper.cpp"
-#include "../src/bls.hpp"
+#include "wrappers/PrivateKeyWrapper.h"
+// #include "wrappers/SignatureWrapper.h"
 
 using namespace emscripten;
 using namespace js_wrappers;
@@ -25,9 +24,9 @@ EMSCRIPTEN_BINDINGS(blsjs) {
             .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
             .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
             .function("serialize", &PrivateKeyWrapper::Serialize)
-            .function("sign", &PrivateKeyWrapper::Sign);
+            .function("sign", &PrivateKeyWrapper::Sign)
+            .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed);
 //        .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
-//        .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed)
 
     class_<SignatureWrapper>("Signature")
         .class_function("fromBytes", &SignatureWrapper::FromBytes)
