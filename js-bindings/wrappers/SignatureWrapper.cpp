@@ -18,7 +18,7 @@ namespace js_wrappers {
     }
 
     SignatureWrapper SignatureWrapper::FromBytes(val buffer) {
-        std::vector<uint8_t> bytes = helpers::uint8ArrayToVector(buffer);
+        std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
         Signature sig = Signature::FromBytes(bytes.data());
         SignatureWrapper sw = SignatureWrapper(sig);
         return sw;
