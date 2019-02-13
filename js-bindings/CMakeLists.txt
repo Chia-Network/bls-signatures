@@ -21,4 +21,4 @@ else()
   target_link_libraries(blsjs PRIVATE blstmp relic_s)
 endif()
 
-set_target_properties(blsjs PROPERTIES LINK_FLAGS "--bind -s WASM=0")
+set_target_properties(blsjs PROPERTIES LINK_FLAGS "--bind -s WASM=0 -s DISABLE_EXCEPTION_CATCHING=2")

@@ -40,9 +40,9 @@ EMSCRIPTEN_BINDINGS(blsjs) {
 
     class_<PublicKeyWrapper>("PublicKey")
         .class_function("fromBytes", &PublicKeyWrapper::FromBytes)
+        .class_function("aggregate", &PublicKeyWrapper::Aggregate)
         .function("getFingerprint", &PublicKeyWrapper::GetFingerprint)
         .function("serialize", &PublicKeyWrapper::Serialize);
-//        .class_function("aggregate", &PublicKeyWrapper::Aggregate)
 
 //    class_<ExtendedPrivateKey>("ExtendedPrivateKey")
 //        .class_function("fromSeed", &ExtendedPrivateKey::FromSeed, allow_raw_pointers())

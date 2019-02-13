@@ -63,7 +63,7 @@ describe('PrivateKey', () => {
     });
 
     describe('#sign', () => {
-        it('Should return a signature', () => {
+        it('Should return a verifiable signature', () => {
             const pk = PrivateKey.fromBytes(getPkBuffer(), false);
             const message = 'Hello world';
             const signature = pk.sign(Buffer.from(message, 'utf8'));
@@ -79,7 +79,7 @@ describe('PrivateKey', () => {
     });
 
     describe('#getPublicKey', () => {
-       it('Should return a public key', () => {
+       it('Should return a public key with a verifiable fingerprint', () => {
            const pk = PrivateKey.fromSeed(getSeedAndFinferprint().seed);
            const publicKey = pk.getPublicKey();
            assert(publicKey instanceof PublicKey);
