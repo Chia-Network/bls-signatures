@@ -53,6 +53,14 @@ describe('PrivateKey', () => {
         });
     });
 
+    describe('.aggregate', () => {
+        it('Should aggregate private keys', () => {
+            const pks = [PrivateKey.fromSeed(Buffer.from([1,2,3])), PrivateKey.fromSeed(Buffer.from([3,4,5]))];
+            const aggregatedKey = PrivateKey.aggregate(pks);
+            assert(aggregatedKey instanceof PrivateKey);
+        });
+    });
+
     describe('#serialize', () => {
         it('Should serialize key to a Uint8Array', () => {
             const pk = PrivateKey.fromSeed(getPkSeed());

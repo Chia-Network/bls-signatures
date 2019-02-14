@@ -18,6 +18,27 @@ namespace js_wrappers {
         return pw;
     }
 
+    PrivateKeyWrapper PrivateKeyWrapper::Aggregate(val privateKeysBuffers, val publicKeysBuffers) {
+        std::vector<std::vector<uint8_t>> publicKeysVectors = helpers::buffersArrayToVector(publicKeysBuffers);
+        std::vector<std::vector<uint8_t>> privateKeysVectors = helpers::buffersArrayToVector(privateKeysBuffers);
+
+        std::vector<PublicKey> pubKeys;
+        auto pkCount = publicKeysVectors.size();
+        for(unsigned i = 0; i < pkCount; ++i) {
+            pubKeys.push_back(PublicKey::FromBytes(publicKeysVectors[i].data()));
+        }
+
+        std::vector<PrivateKey> privateKeys;
+        auto skCount = privateKeys.size();
+        for(unsigned i = 0; i < skCount; ++i) {
+            privateKeys.push_back(PrivateKey::FromBytes(privateKeysVectors[i].data()));
+        }
+
+        PrivateKey aggregatedPk = PrivateKey::Aggregate(privateKeys, pubKeys);
+        PrivateKeyWrapper pw = PrivateKeyWrapper(aggregatedPk);
+        return pw;
+    }
+
     PrivateKeyWrapper PrivateKeyWrapper::FromBytes(val buffer, bool modOrder) {
         std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
         PrivateKey pk = PrivateKey::FromBytes(bytes.data(), modOrder);

@@ -23,11 +23,11 @@ EMSCRIPTEN_BINDINGS(blsjs) {
     class_<PrivateKeyWrapper>("PrivateKey")
         .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
         .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
+        .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
         .function("serialize", &PrivateKeyWrapper::Serialize)
         .function("sign", &PrivateKeyWrapper::Sign)
         .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed)
         .function("getPublicKey", &PrivateKeyWrapper::GetPublicKey);
-//        .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
 
     class_<SignatureWrapper>("Signature")
         .class_function("fromBytes", &SignatureWrapper::FromBytes)
