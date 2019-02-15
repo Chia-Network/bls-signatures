@@ -14,7 +14,6 @@
 
 #include <emscripten/bind.h>
 #include "wrappers/PrivateKeyWrapper.h"
-// #include "wrappers/SignatureWrapper.h"
 
 using namespace emscripten;
 using namespace js_wrappers;
@@ -33,7 +32,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .class_function("fromBytes", &SignatureWrapper::FromBytes)
         .function("serialize", &SignatureWrapper::Serialize)
         .function("verify", &SignatureWrapper::Verify);
-//        .class_function("aggregateSigs", &SignatureWrapper::AggregateSigs)
+        .class_function("aggregateSigs", &SignatureWrapper::AggregateSigs)
 //        .function("divideBy", &SignatureWrapper::DivideBy)
 //        .function("getAggregationInfo", &SignatureWrapper::GetAggregationInfo)
 //        .function("setAggregationInfo", &SignatureWrapper::SetAggregationInfo);
@@ -57,7 +56,6 @@ EMSCRIPTEN_BINDINGS(blsjs) {
 //        .function("getPrivateKey", &ExtendedPrivateKey::GetPrivateKey)
 //        .function("getPublicKey", &ExtendedPrivateKey::GetPublicKey)
 //        .function("getExtendedPublicKey", &ExtendedPrivateKey::GetExtendedPublicKey);
-//    // TODO: add serialize here
 
 //
 //    class_<ExtendedPublicKey>("ExtendedPublicKey")

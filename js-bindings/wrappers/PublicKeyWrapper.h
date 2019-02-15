@@ -14,11 +14,14 @@ using namespace bls;
 namespace js_wrappers {
     class PublicKeyWrapper {
     public:
-        explicit PublicKeyWrapper(PublicKey& publicKey);
+        explicit PublicKeyWrapper(PublicKey &publicKey);
+
         static PublicKeyWrapper FromBytes(val buffer);
+
         static PublicKeyWrapper Aggregate(val pubKeysBuffersArray);
 
         val Serialize() const;
+
         uint32_t GetFingerprint() const;
 
     private:

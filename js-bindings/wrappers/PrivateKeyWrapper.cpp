@@ -4,7 +4,6 @@
 
 #include "PrivateKeyWrapper.h"
 #include "../helpers.h"
-#include "SignatureWrapper.h"
 
 using namespace emscripten;
 
@@ -24,13 +23,13 @@ namespace js_wrappers {
 
         std::vector<PublicKey> pubKeys;
         auto pkCount = publicKeysVectors.size();
-        for(unsigned i = 0; i < pkCount; ++i) {
+        for (unsigned i = 0; i < pkCount; ++i) {
             pubKeys.push_back(PublicKey::FromBytes(publicKeysVectors[i].data()));
         }
 
         std::vector<PrivateKey> privateKeys;
         auto skCount = privateKeys.size();
-        for(unsigned i = 0; i < skCount; ++i) {
+        for (unsigned i = 0; i < skCount; ++i) {
             privateKeys.push_back(PrivateKey::FromBytes(privateKeysVectors[i].data()));
         }
 

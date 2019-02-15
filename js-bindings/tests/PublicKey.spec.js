@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-const { PublicKey, PrivateKey } = require('../../js_build/js-bindings/blsjs');
+const {PublicKey, PrivateKey} = require('../../js_build/js-bindings/blsjs');
 
 function getPublicKeyFixture() {
     return {
@@ -19,8 +19,8 @@ function getPublicKeysArray() {
 describe('PublicKey', () => {
     describe(".fromBytes", () => {
         it('Should create a public key from bytes', () => {
-           const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
-           assert(pk instanceof PublicKey);
+            const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
+            assert(pk instanceof PublicKey);
         });
     });
 

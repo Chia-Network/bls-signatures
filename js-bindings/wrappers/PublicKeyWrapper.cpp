@@ -8,7 +8,7 @@
 using namespace emscripten;
 
 namespace js_wrappers {
-    PublicKeyWrapper::PublicKeyWrapper(PublicKey& publicKey) : wrapperPublicKey(publicKey) {}
+    PublicKeyWrapper::PublicKeyWrapper(PublicKey &publicKey) : wrapperPublicKey(publicKey) {}
 
     PublicKeyWrapper PublicKeyWrapper::FromBytes(val buffer) {
         std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
@@ -21,7 +21,7 @@ namespace js_wrappers {
         std::vector<std::vector<uint8_t>> keys = helpers::buffersArrayToVector(pubKeysBuffersArray);
         std::vector<PublicKey> pubKeys;
         auto l = keys.size();
-        for(unsigned i = 0; i < l; ++i) {
+        for (unsigned i = 0; i < l; ++i) {
             pubKeys.push_back(PublicKey::FromBytes(keys[i].data()));
         }
         PublicKey aggregatedPk = PublicKey::Aggregate(pubKeys);

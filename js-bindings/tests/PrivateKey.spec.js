@@ -1,4 +1,4 @@
-const { PrivateKey, Signature, PublicKey } = require('../../js_build/js-bindings/blsjs');
+const {PrivateKey, Signature, PublicKey} = require('../../js_build/js-bindings/blsjs');
 const assert = require('assert');
 
 function getSeedAndFinferprint() {
@@ -55,7 +55,7 @@ describe('PrivateKey', () => {
 
     describe('.aggregate', () => {
         it('Should aggregate private keys', () => {
-            const pks = [PrivateKey.fromSeed(Buffer.from([1,2,3])), PrivateKey.fromSeed(Buffer.from([3,4,5]))];
+            const pks = [PrivateKey.fromSeed(Buffer.from([1, 2, 3])), PrivateKey.fromSeed(Buffer.from([3, 4, 5]))];
             const aggregatedKey = PrivateKey.aggregate(pks);
             assert(aggregatedKey instanceof PrivateKey);
         });
@@ -87,11 +87,11 @@ describe('PrivateKey', () => {
     });
 
     describe('#getPublicKey', () => {
-       it('Should return a public key with a verifiable fingerprint', () => {
-           const pk = PrivateKey.fromSeed(getSeedAndFinferprint().seed);
-           const publicKey = pk.getPublicKey();
-           assert(publicKey instanceof PublicKey);
-           assert.strictEqual(publicKey.getFingerprint(), getSeedAndFinferprint().fingerprint);
-       });
+        it('Should return a public key with a verifiable fingerprint', () => {
+            const pk = PrivateKey.fromSeed(getSeedAndFinferprint().seed);
+            const publicKey = pk.getPublicKey();
+            assert(publicKey instanceof PublicKey);
+            assert.strictEqual(publicKey.getFingerprint(), getSeedAndFinferprint().fingerprint);
+        });
     });
 });

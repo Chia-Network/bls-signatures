@@ -13,24 +13,28 @@ using namespace emscripten;
 
 namespace js_wrappers {
     class SignatureWrapper {
-        public:
-            static SignatureWrapper FromSignature(Signature& signature);
-            static SignatureWrapper FromBytes(val buffer);
-            // static SignatureWrapper AggregateSigs(val signatures);
-            // static SignatureWrapper FromBytes(val buffer, const AggregationInfoWrapper &info);
-            // static SignatureWrapper FromInsecureSig(const InsecureSignature& sig);
-            // static SignatureWrapper FromInsecureSig(const InsecureSignature& sig, const AggregationInfo &info);
+    public:
+        static SignatureWrapper FromSignature(Signature &signature);
 
-            bool Verify() const;
-            val Serialize() const;
-            //Signature DivideBy(val signatures) const;
-            //AggregationInfoWrapper GetAggregationInfo() const;
-            //void SetAggregationInfo(const AggregationInfoWrapper *newAggregationInfo);
-            //InsecureSignatureWrapper GetInsecureSig() const;
+        static SignatureWrapper FromBytes(val buffer);
 
-        private:
-            explicit SignatureWrapper(Signature& signature);
-            Signature wrappedSignature;
+        static SignatureWrapper AggregateSigs(val signatures);
+        // static SignatureWrapper FromBytes(val buffer, const AggregationInfoWrapper &info);
+        // static SignatureWrapper FromInsecureSig(const InsecureSignature& sig);
+        // static SignatureWrapper FromInsecureSig(const InsecureSignature& sig, const AggregationInfo &info);
+
+        bool Verify() const;
+
+        val Serialize() const;
+        //Signature DivideBy(val signatures) const;
+        //AggregationInfoWrapper GetAggregationInfo() const;
+        //void SetAggregationInfo(const AggregationInfoWrapper *newAggregationInfo);
+        //InsecureSignatureWrapper GetInsecureSig() const;
+
+    private:
+        explicit SignatureWrapper(Signature &signature);
+
+        Signature wrappedSignature;
     };
 }
 

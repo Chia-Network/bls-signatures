@@ -17,18 +17,24 @@ namespace js_wrappers {
     class PrivateKeyWrapper {
     public:
         static PrivateKeyWrapper FromSeed(val buffer);
+
         static PrivateKeyWrapper FromBytes(val buffer, bool modOrder);
+
         static PrivateKeyWrapper Aggregate(val privateKeysBuffers, val publicKeysBuffers);
 
         val Serialize() const;
+
         SignatureWrapper Sign(val messageBuffer) const;
+
         SignatureWrapper SignPrehashed(val messageHashBuffer) const;
+
         PublicKeyWrapper GetPublicKey() const;
         // Insecure signatures does not contain aggregation info
         // InsecureSignature SignInsecure(val messageBuffer) const;
         // InsecureSignature SignInsecurePrehashed(val messageHashBuffer) const;
     private:
-        explicit PrivateKeyWrapper(PrivateKey& privateKey);
+        explicit PrivateKeyWrapper(PrivateKey &privateKey);
+
         PrivateKey wrappedPrivateKey;
     };
 }

@@ -18,7 +18,7 @@ namespace helpers {
     inline std::vector<uint8_t> jsBufferToVector(val jsUint8Array) {
         auto l = jsUint8Array["length"].as<unsigned>();
         std::vector<uint8_t> vec;
-        for(unsigned i = 0; i < l; ++i) {
+        for (unsigned i = 0; i < l; ++i) {
             vec.push_back(jsUint8Array[i].as<uint8_t>());
         }
         return vec;
@@ -33,7 +33,7 @@ namespace helpers {
         size_t bufferSize = vec.size();
         val Buffer = val::global("Buffer");
         val buffer = Buffer.call<val>("alloc", bufferSize);
-        for(unsigned i = 0; i < bufferSize; ++i) {
+        for (unsigned i = 0; i < bufferSize; ++i) {
             buffer.call<void>("writeUInt8", vec[i], i);
         }
         return buffer;
@@ -42,7 +42,7 @@ namespace helpers {
     inline std::vector<std::vector<uint8_t>> buffersArrayToVector(val arrayOfBuffers) {
         auto l = arrayOfBuffers["length"].as<unsigned>();
         std::vector<std::vector<uint8_t>> vec;
-        for(unsigned i = 0; i < l; ++i) {
+        for (unsigned i = 0; i < l; ++i) {
             vec.push_back(jsBufferToVector(arrayOfBuffers[i].as<val>()));
         }
         return vec;
