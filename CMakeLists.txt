@@ -68,7 +68,17 @@ set(PP_EXT "LAZYR" CACHE STRING "")
 set(PP_METHD "LAZYR;OATEP" CACHE STRING "")
 
 add_subdirectory(contrib/relic)
-#add_subdirectory(contrib/pybind11)
 add_subdirectory(src)
-#add_subdirectory(python-bindings)
-add_subdirectory(js-bindings)
+
+# emscripten defines a varibale, so we can detect it
+if (EMSCRIPTEN)
+  # emscripten needs arch set to be none since it can't compile assembly
+  set(ARCH NONE)
+  # emscripten is a 32 bit compiler
+  set(WSIZE 32)
+  add_subdirectory(js-bindings)
+else()
+  # emscripten can't build python bindings, it produces only javascript
+  add_subdirectory(contrib/pybind11)
+  add_subdirectory(python-bindings)
+endif()
