@@ -63,12 +63,35 @@ namespace js_wrappers {
         std::vector<Signature> sigs;
         auto l = signatureWrappersArray["length"].as<unsigned>();
         for (unsigned i = 0; i < l; ++i) {
+            // Getting signature bytes without aggregation info
             val wrappedSig = signatureWrappersArray[i];
             std::vector<uint8_t> serializedSig = helpers::jsBufferToVector(wrappedSig.call<val>("serialize"));
 
+            // Getting data from the aggregation info
             val wrappedAggregationInfo = wrappedSig.call<val>("getAggregationInfo");
+            val messageHashes = wrappedAggregationInfo.call<val>("getMessageHashes");
+            val pubKeys = wrappedAggregationInfo.call<val>("GetPubKeysBuffers");
+            val exponents = wrappedAggregationInfo.call<val>("getExponents");
 
-            Signature sig = Signature::FromBytes(serializedSig.data());
+            // Converting JS arrays to cpp vectors
+            printf("%d \n", 10);
+            std::vector<uint8_t*> messageHashesVector = helpers::jsBuffersArrayToByteArraysVector(messageHashes);
+            std::vector<std::vector<uint8_t>> pubKeysBuffers = helpers::jsBuffersArrayToVector(pubKeys);
+            std::vector<PublicKey> pubKeysVector;
+            printf("%d \n", 11);
+            for (unsigned j = 0; j<pubKeysBuffers.size(); j++) {
+                pubKeysVector.push_back(PublicKey::FromBytes(pubKeysBuffers[j].data()));
+            }
+            printf("%d \n", 12);
+            std::vector<bn_t*> exponentsVector = helpers::jsBuffersArrayToBnVector(exponents);
+
+            printf("%d \n", 13);
+            // Constructing aggregation info and restoring data from it
+            AggregationInfo info = AggregationInfo::FromVectors(pubKeysVector, messageHashesVector, exponentsVector);
+            printf("%d \n", 14);
+            Signature sig = Signature::FromBytes(serializedSig.data(), info);
+
+            printf("%d \n", 15);
             sigs.push_back(sig);
         }
         return sigs;

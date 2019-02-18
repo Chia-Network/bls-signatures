@@ -46,13 +46,35 @@ namespace helpers {
         return buffer;
     }
 
-    std::vector<std::vector<uint8_t>> buffersArrayToVector(val arrayOfBuffers) {
-        auto l = arrayOfBuffers["length"].as<unsigned>();
+    std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray) {
+        auto l = buffersArray["length"].as<unsigned>();
         std::vector<std::vector<uint8_t>> vec;
         for (unsigned i = 0; i < l; ++i) {
-            vec.push_back(jsBufferToVector(arrayOfBuffers[i].as<val>()));
+            vec.push_back(jsBufferToVector(buffersArray[i].as<val>()));
         }
         return vec;
+    }
+
+    std::vector<uint8_t*> jsBuffersArrayToByteArraysVector(val buffersArray) {
+        auto l = buffersArray["length"].as<unsigned>();
+        std::vector<uint8_t*> vec;
+        for (unsigned i = 0; i < l; ++i) {
+            std::vector<uint8_t> data = jsBufferToVector(buffersArray[i].as<val>());
+            vec.push_back(data.data());
+        }
+        return vec;
+    }
+
+    val vectorOfVectorsToBuffersArray(std::vector<std::vector<uint8_t>> vec) {
+        val Array = val::global("Array");
+        val arr = Array.new_();
+        auto l = vec.size();
+        for (unsigned i = 0; i < l; ++i) {
+            std::vector<uint8_t> innerVec = vec[i];
+            val buffer = vectorToJSBuffer(innerVec);
+            arr.call<void>("push", buffer);
+        }
+        return arr;
     }
 
     val byteArrayToJsBuffer(uint8_t* pointer, size_t data_size) {
@@ -88,6 +110,18 @@ namespace helpers {
     void jsBufferToBn(bn_t result, val buffer) {
         std::vector<uint8_t> vec = jsBufferToVector(buffer);
         bn_read_bin(result, vec.data(), (int)vec.size());
+    }
+
+    std::vector<bn_t*> jsBuffersArrayToBnVector(val buffersArray) {
+        auto l = buffersArray["length"].as<unsigned>();
+        std::vector<bn_t*> vec;
+        for (unsigned i = 0; i < l; ++i) {
+            bn_t data;
+            bn_new(data);
+            helpers::jsBufferToBn(data, buffersArray[i].as<val>());
+            vec.push_back(&data);
+        }
+        return vec;
     }
 
     val byteArraysVectorToJsBuffersArray(std::vector<uint8_t*> arraysVector, size_t element_size) {

@@ -18,13 +18,16 @@ using namespace emscripten;
 namespace helpers {
     std::vector<uint8_t> byteArrayToVector(uint8_t* pointer, size_t data_size);
     std::vector<uint8_t> jsBufferToVector(val jsUint8Array);
-    val vectorToJSBuffer(std::vector<uint8_t> vec);
-    std::vector<std::vector<uint8_t>> buffersArrayToVector(val arrayOfBuffers);
-    val byteArrayToJsBuffer(uint8_t* pointer, size_t data_size);
-    val valVectorToJsArray(std::vector<val> vec);
+    std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray);
+    std::vector<uint8_t*> jsBuffersArrayToByteArraysVector(val buffersArray);
+    std::vector<bn_t*> jsBuffersArrayToBnVector(val buffersArray);
     std::vector<uint8_t> bnToByteVector(bn_t bn);
+    void jsBufferToBn(bn_t result, val buffer);
+    val byteArrayToJsBuffer(uint8_t* pointer, size_t data_size);
+    val vectorToJSBuffer(std::vector<uint8_t> vec);
+    val valVectorToJsArray(std::vector<val> vec);
+    val vectorOfVectorsToBuffersArray(std::vector<std::vector<uint8_t>> vec);
     val bnToJsBuffer(bn_t bn);
-    void jsBufferToBn(bn_t *result, val buffer);
     val byteArraysVectorToJsBuffersArray(std::vector<uint8_t*> arraysVector, size_t element_size);
 }
 

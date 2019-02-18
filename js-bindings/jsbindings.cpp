@@ -46,10 +46,10 @@ EMSCRIPTEN_BINDINGS(blsjs) {
 
     class_<AggregationInfoWrapper>("AggregationInfo")
         .class_function("fromMsgHash", &AggregationInfoWrapper::FromMsgHash)
-        .class_function("fromMsg", &AggregationInfoWrapper::FromMsg);
-//        .class_function("mergeInfos", &AggregationInfoWrapper::MergeInfos)
-//        .function("getPubKeys", &AggregationInfoWrapper::GetPubKey)
-//        .function("getMessageHashes", &AggregationInfoWrapper::GetMessageHashes);
+        .class_function("fromMsg", &AggregationInfoWrapper::FromMsg)
+        .function("GetPubKeysBuffers", &AggregationInfoWrapper::GetPubKeysBuffers)
+        .function("getMessageHashes", &AggregationInfoWrapper::GetMessageHashes)
+        .function("getExponents",  &AggregationInfoWrapper::GetExponents);
 
 //    class_<ExtendedPrivateKey>("ExtendedPrivateKey")
 //        .class_function("fromSeed", &ExtendedPrivateKey::FromSeed, allow_raw_pointers())

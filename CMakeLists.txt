@@ -73,9 +73,9 @@ add_subdirectory(src)
 # emscripten defines a varibale, so we can detect it
 if (EMSCRIPTEN)
   # emscripten needs arch set to be none since it can't compile assembly
-  set(ARCH NONE)
+  set(ARCH "" CACHE STRING "")
   # emscripten is a 32 bit compiler
-  set(WSIZE 32)
+  set(WSIZE 32 CACHE INTEGER "")
   add_subdirectory(js-bindings)
 else()
   # emscripten can't build python bindings, it produces only javascript

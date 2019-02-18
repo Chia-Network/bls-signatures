@@ -18,7 +18,7 @@ namespace js_wrappers {
     }
 
     PublicKeyWrapper PublicKeyWrapper::Aggregate(val pubKeysBuffersArray) {
-        std::vector<std::vector<uint8_t>> keys = helpers::buffersArrayToVector(pubKeysBuffersArray);
+        std::vector<std::vector<uint8_t>> keys = helpers::jsBuffersArrayToVector(pubKeysBuffersArray);
         std::vector<PublicKey> pubKeys;
         auto l = keys.size();
         for (unsigned i = 0; i < l; ++i) {

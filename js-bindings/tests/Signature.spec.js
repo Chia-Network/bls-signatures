@@ -40,10 +40,7 @@ describe('Signature', () => {
 
         console.log(4);
 
-        const aggregatedSignature = Signature.aggregateSigs(
-            [ sig1.serialize(), sig2.serialize(), sig3.serialize() ],
-            [ sig1.getAggregationInfo(), sig2.getAggregationInfo(), sig3.getAggregationInfo() ]
-        );
+        const aggregatedSignature = Signature.aggregateSigs([ sig1, sig2, sig3 ]);
 
         console.log(5);
 
