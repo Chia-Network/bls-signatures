@@ -8,7 +8,7 @@
 using namespace emscripten;
 
 namespace js_wrappers {
-    PublicKeyWrapper::PublicKeyWrapper(PublicKey &publicKey) : wrapperPublicKey(publicKey) {}
+    PublicKeyWrapper::PublicKeyWrapper(PublicKey &publicKey) : wrappedPublicKey(publicKey) {}
 
     PublicKeyWrapper PublicKeyWrapper::FromBytes(val buffer) {
         std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
@@ -30,12 +30,16 @@ namespace js_wrappers {
     }
 
     val PublicKeyWrapper::Serialize() const {
-        std::vector<uint8_t> bytes = wrapperPublicKey.Serialize();
+        std::vector<uint8_t> bytes = wrappedPublicKey.Serialize();
         val buffer = helpers::vectorToJSBuffer(bytes);
         return buffer;
     }
 
     uint32_t PublicKeyWrapper::GetFingerprint() const {
-        return wrapperPublicKey.GetFingerprint();
+        return wrappedPublicKey.GetFingerprint();
+    }
+
+    PublicKey PublicKeyWrapper::GetWrappedKey() const {
+        return wrappedPublicKey;
     }
 }

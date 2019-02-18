@@ -5,48 +5,27 @@
 #ifndef BLS_HELPERS_H
 #define BLS_HELPERS_H
 
+#include "relic_conf.h"
+#include "relic.h"
+#include "relic_bn.h"
 #include "emscripten/val.h"
+#include <algorithm>
+#include "../src/bls.hpp"
 
+using namespace bls;
 using namespace emscripten;
 
 namespace helpers {
-    /**
-     * Copies data from a JS Buffer/Uint8Array to vector<uint_8t>
-     * @param {emscripten::val} jsUint8Array
-     * @return {std::vector<uint8_t>}
-     */
-    inline std::vector<uint8_t> jsBufferToVector(val jsUint8Array) {
-        auto l = jsUint8Array["length"].as<unsigned>();
-        std::vector<uint8_t> vec;
-        for (unsigned i = 0; i < l; ++i) {
-            vec.push_back(jsUint8Array[i].as<uint8_t>());
-        }
-        return vec;
-    }
-
-    /**
-     * Copies data from a vector<uint8_t> to a JS Buffer
-     * @param {std::vector<uint8_t>} vec
-     * @return {emscripten::val}
-     */
-    inline val vectorToJSBuffer(std::vector<uint8_t> vec) {
-        size_t bufferSize = vec.size();
-        val Buffer = val::global("Buffer");
-        val buffer = Buffer.call<val>("alloc", bufferSize);
-        for (unsigned i = 0; i < bufferSize; ++i) {
-            buffer.call<void>("writeUInt8", vec[i], i);
-        }
-        return buffer;
-    }
-
-    inline std::vector<std::vector<uint8_t>> buffersArrayToVector(val arrayOfBuffers) {
-        auto l = arrayOfBuffers["length"].as<unsigned>();
-        std::vector<std::vector<uint8_t>> vec;
-        for (unsigned i = 0; i < l; ++i) {
-            vec.push_back(jsBufferToVector(arrayOfBuffers[i].as<val>()));
-        }
-        return vec;
-    }
+    std::vector<uint8_t> byteArrayToVector(uint8_t* pointer, size_t data_size);
+    std::vector<uint8_t> jsBufferToVector(val jsUint8Array);
+    val vectorToJSBuffer(std::vector<uint8_t> vec);
+    std::vector<std::vector<uint8_t>> buffersArrayToVector(val arrayOfBuffers);
+    val byteArrayToJsBuffer(uint8_t* pointer, size_t data_size);
+    val valVectorToJsArray(std::vector<val> vec);
+    std::vector<uint8_t> bnToByteVector(bn_t bn);
+    val bnToJsBuffer(bn_t bn);
+    void jsBufferToBn(bn_t *result, val buffer);
+    val byteArraysVectorToJsBuffersArray(std::vector<uint8_t*> arraysVector, size_t element_size);
 }
 
 #endif //BLS_HELPERS_H

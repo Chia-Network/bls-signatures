@@ -24,8 +24,10 @@ namespace js_wrappers {
 
         uint32_t GetFingerprint() const;
 
+        PublicKey GetWrappedKey() const;
+
     private:
-        PublicKey wrapperPublicKey;
+        PublicKey wrappedPublicKey;
     };
 }
 

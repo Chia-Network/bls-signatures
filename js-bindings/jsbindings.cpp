@@ -30,18 +30,26 @@ EMSCRIPTEN_BINDINGS(blsjs) {
 
     class_<SignatureWrapper>("Signature")
         .class_function("fromBytes", &SignatureWrapper::FromBytes)
-        .function("serialize", &SignatureWrapper::Serialize)
-        .function("verify", &SignatureWrapper::Verify);
+        .class_function("fromBytesAndAggregationInfo", &SignatureWrapper::FromBytesAndAggregationInfo)
         .class_function("aggregateSigs", &SignatureWrapper::AggregateSigs)
-//        .function("divideBy", &SignatureWrapper::DivideBy)
-//        .function("getAggregationInfo", &SignatureWrapper::GetAggregationInfo)
-//        .function("setAggregationInfo", &SignatureWrapper::SetAggregationInfo);
+        .function("serialize", &SignatureWrapper::Serialize)
+        .function("verify", &SignatureWrapper::Verify)
+        .function("getAggregationInfo", &SignatureWrapper::GetAggregationInfo)
+        .function("setAggregationInfo", &SignatureWrapper::SetAggregationInfo);
+        //.function("divideBy", &SignatureWrapper::DivideBy)
 
     class_<PublicKeyWrapper>("PublicKey")
         .class_function("fromBytes", &PublicKeyWrapper::FromBytes)
         .class_function("aggregate", &PublicKeyWrapper::Aggregate)
         .function("getFingerprint", &PublicKeyWrapper::GetFingerprint)
         .function("serialize", &PublicKeyWrapper::Serialize);
+
+    class_<AggregationInfoWrapper>("AggregationInfo")
+        .class_function("fromMsgHash", &AggregationInfoWrapper::FromMsgHash)
+        .class_function("fromMsg", &AggregationInfoWrapper::FromMsg);
+//        .class_function("mergeInfos", &AggregationInfoWrapper::MergeInfos)
+//        .function("getPubKeys", &AggregationInfoWrapper::GetPubKey)
+//        .function("getMessageHashes", &AggregationInfoWrapper::GetMessageHashes);
 
 //    class_<ExtendedPrivateKey>("ExtendedPrivateKey")
 //        .class_function("fromSeed", &ExtendedPrivateKey::FromSeed, allow_raw_pointers())
@@ -74,11 +82,4 @@ EMSCRIPTEN_BINDINGS(blsjs) {
 //        .property("CHAIN_CODE_KEY_SIZE")
 //        .class_function("fromBytes", &ChainCode::FromBytes)
 //        .function("serialize", &ChainCode::Serialize);
-//
-//    class_<AggregationInfo>("AggregationInfo")
-//        .class_function("fromMsgHash", &AggregationInfo::FromMsgHash)
-//        .class_function("fromMsg", &AggregationInfo::FromMsg)
-//        .class_function("mergeInfos", &AggregationInfo::MergeInfos)
-//        .class_function("getPubKeys", &AggregationInfo::GetPubKey)
-//        .function("getMessageHashes", &AggregationInfo::GetMessageHashes);
 };

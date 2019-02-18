@@ -7,6 +7,7 @@
 
 #include "emscripten/val.h"
 #include "../../src/signature.hpp"
+#include "AggregationInfoWrapper.h"
 
 using namespace bls;
 using namespace emscripten;
@@ -18,23 +19,26 @@ namespace js_wrappers {
 
         static SignatureWrapper FromBytes(val buffer);
 
-        static SignatureWrapper AggregateSigs(val signatures);
-        // static SignatureWrapper FromBytes(val buffer, const AggregationInfoWrapper &info);
-        // static SignatureWrapper FromInsecureSig(const InsecureSignature& sig);
-        // static SignatureWrapper FromInsecureSig(const InsecureSignature& sig, const AggregationInfo &info);
+        // Unlike the original method, this method also needs to know corresponding aggregation infos
+        // for each signature, since serialized signature doesn't contain
+        static SignatureWrapper AggregateSigs(val signatureWrappers);
+
+        static SignatureWrapper FromBytesAndAggregationInfo(val buffer, const AggregationInfoWrapper &infoWrapper);
 
         bool Verify() const;
 
         val Serialize() const;
-        //Signature DivideBy(val signatures) const;
-        //AggregationInfoWrapper GetAggregationInfo() const;
-        //void SetAggregationInfo(const AggregationInfoWrapper *newAggregationInfo);
-        //InsecureSignatureWrapper GetInsecureSig() const;
+
+        AggregationInfoWrapper GetAggregationInfo() const;
+
+        void SetAggregationInfo(AggregationInfoWrapper &newAggregationInfo);
 
     private:
         explicit SignatureWrapper(Signature &signature);
 
         Signature wrappedSignature;
+
+        static std::vector<Signature> GetRawSignatures(val signatureWrappers);
     };
 }
 
