@@ -55,16 +55,6 @@ namespace helpers {
         return vec;
     }
 
-    std::vector<uint8_t*> jsBuffersArrayToByteArraysVector(val buffersArray) {
-        auto l = buffersArray["length"].as<unsigned>();
-        std::vector<uint8_t*> vec;
-        for (unsigned i = 0; i < l; ++i) {
-            std::vector<uint8_t> data = jsBufferToVector(buffersArray[i].as<val>());
-            vec.push_back(data.data());
-        }
-        return vec;
-    }
-
     val vectorOfVectorsToBuffersArray(std::vector<std::vector<uint8_t>> vec) {
         val Array = val::global("Array");
         val arr = Array.new_();
@@ -95,9 +85,9 @@ namespace helpers {
 
     // Note: those methods using relic's bn implementation
     std::vector<uint8_t> bnToByteVector(bn_t bn) {
-        uint8_t buf[RELIC_BN_BYTES * 3 + 1];
-        bn_write_bin(buf, sizeof(buf) , bn);
-        std::vector<uint8_t> vec = helpers::byteArrayToVector(buf, sizeof(buf));
+        uint8_t buf[bn_size_bin(bn)];
+        bn_write_bin(buf, bn_size_bin(bn), bn);
+        std::vector<uint8_t> vec = helpers::byteArrayToVector(buf, bn_size_bin(bn));
         return vec;
     }
 
@@ -107,19 +97,17 @@ namespace helpers {
         return buffer;
     }
 
-    void jsBufferToBn(bn_t result, val buffer) {
-        std::vector<uint8_t> vec = jsBufferToVector(buffer);
-        bn_read_bin(result, vec.data(), (int)vec.size());
-    }
-
     std::vector<bn_t*> jsBuffersArrayToBnVector(val buffersArray) {
         auto l = buffersArray["length"].as<unsigned>();
         std::vector<bn_t*> vec;
         for (unsigned i = 0; i < l; ++i) {
             bn_t data;
+            //new bn_t[1];
             bn_new(data);
-            helpers::jsBufferToBn(data, buffersArray[i].as<val>());
-            vec.push_back(&data);
+            std::vector<uint8_t> bnVec = jsBufferToVector(buffersArray[i]);
+            bn_read_bin(data, bnVec.data(), (int)bnVec.size());
+            bn_t* point = &data;
+            vec.push_back(point);
         }
         return vec;
     }

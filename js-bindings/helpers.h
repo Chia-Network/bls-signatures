@@ -19,10 +19,9 @@ namespace helpers {
     std::vector<uint8_t> byteArrayToVector(uint8_t* pointer, size_t data_size);
     std::vector<uint8_t> jsBufferToVector(val jsUint8Array);
     std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray);
-    std::vector<uint8_t*> jsBuffersArrayToByteArraysVector(val buffersArray);
     std::vector<bn_t*> jsBuffersArrayToBnVector(val buffersArray);
     std::vector<uint8_t> bnToByteVector(bn_t bn);
-    void jsBufferToBn(bn_t result, val buffer);
+
     val byteArrayToJsBuffer(uint8_t* pointer, size_t data_size);
     val vectorToJSBuffer(std::vector<uint8_t> vec);
     val valVectorToJsArray(std::vector<val> vec);

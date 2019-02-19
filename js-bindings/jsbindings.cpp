@@ -47,7 +47,8 @@ EMSCRIPTEN_BINDINGS(blsjs) {
     class_<AggregationInfoWrapper>("AggregationInfo")
         .class_function("fromMsgHash", &AggregationInfoWrapper::FromMsgHash)
         .class_function("fromMsg", &AggregationInfoWrapper::FromMsg)
-        .function("GetPubKeysBuffers", &AggregationInfoWrapper::GetPubKeysBuffers)
+        .class_function("fromBuffers", &AggregationInfoWrapper::FromBuffers)
+        .function("getPublicKeysBuffers", &AggregationInfoWrapper::GetPubKeysBuffers)
         .function("getMessageHashes", &AggregationInfoWrapper::GetMessageHashes)
         .function("getExponents",  &AggregationInfoWrapper::GetExponents);
 

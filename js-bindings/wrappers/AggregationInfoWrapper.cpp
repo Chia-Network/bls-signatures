@@ -26,6 +26,29 @@ namespace js_wrappers {
         return AggregationInfoWrapper(info);
     }
 
+    AggregationInfo AggregationInfoWrapper::FromBuffersUnwrapped(val pubKeyBuffers, val messageHashes,
+                                                                 val exponentBns) {
+        std::vector<std::vector<uint8_t>> messageHashesVectors = helpers::jsBuffersArrayToVector(messageHashes);
+        std::vector<uint8_t*> messageHashesVector;
+        for (auto &i : messageHashesVectors) {
+            messageHashesVector.push_back(i.data());
+        }
+        std::vector<std::vector<uint8_t>> pubKeysBuffers = helpers::jsBuffersArrayToVector(pubKeyBuffers);
+        std::vector<PublicKey> pubKeysVector;
+        for (auto &pubKeysBuffer : pubKeysBuffers) {
+            pubKeysVector.push_back(PublicKey::FromBytes(pubKeysBuffer.data()));
+        }
+        std::vector<bn_t*> exponentsVector = helpers::jsBuffersArrayToBnVector(exponentBns);
+
+        AggregationInfo info = AggregationInfo::FromVectors(pubKeysVector, messageHashesVector, exponentsVector);
+        return info;
+    }
+
+    AggregationInfoWrapper AggregationInfoWrapper::FromBuffers(val pubKeyBuffers, val messageHashes, val exponentBns) {
+        AggregationInfo info = AggregationInfoWrapper::FromBuffersUnwrapped(pubKeyBuffers, messageHashes, exponentBns);
+        return AggregationInfoWrapper(info);
+    }
+
     val AggregationInfoWrapper::GetPubKeysBuffers() const {
         std::vector<PublicKey> pubKeys = wrappedInfo.GetPubKeys();
         std::vector<std::vector<uint8_t>> serializedKeys;
@@ -48,9 +71,10 @@ namespace js_wrappers {
         std::vector<val> exponents;
         auto l = pubKeys.size();
         for (unsigned i = 0; i < l; ++i) {
-            bn_t *exponent;
+            bn_t* exponent;
             wrappedInfo.GetExponent(exponent, messageHashes[i], pubKeys[i]);
             val serializedExponent = helpers::bnToJsBuffer(*exponent);
+            auto l = serializedExponent["length"].as<unsigned>();
             exponents.push_back(serializedExponent);
         }
         val jsExponents = helpers::valVectorToJsArray(exponents);

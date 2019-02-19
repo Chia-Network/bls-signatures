@@ -22,7 +22,9 @@ namespace js_wrappers {
 
         static AggregationInfoWrapper FromMsg(const PublicKeyWrapper &pkw, val messageBuffer);
 
-//        static AggregationInfoWrapper FromVectors(val pubKeyBuffers, val messageHashes, val exponentBns);
+        static AggregationInfoWrapper FromBuffers(val pubKeyBuffers, val messageHashes, val exponentBns);
+
+        static AggregationInfo FromBuffersUnwrapped(val pubKeyBuffers, val messageHashes, val exponentBns);
 //
 //        static AggregationInfoWrapper MergeInfos(val infos);
 //

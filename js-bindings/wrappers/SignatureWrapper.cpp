@@ -32,11 +32,8 @@ namespace js_wrappers {
 
     SignatureWrapper SignatureWrapper::AggregateSigs(val signatureWrappers) {
         std::vector<Signature> signatures = SignatureWrapper::GetRawSignatures(signatureWrappers);
-        printf("Sigs constructed \n");
         Signature aggregatedSignature = Signature::AggregateSigs(signatures);
-        printf("Sigs aggregated \n");
         SignatureWrapper sw = SignatureWrapper(aggregatedSignature);
-        printf("Wrapper created \n");
         return sw;
     }
 
@@ -70,28 +67,12 @@ namespace js_wrappers {
             // Getting data from the aggregation info
             val wrappedAggregationInfo = wrappedSig.call<val>("getAggregationInfo");
             val messageHashes = wrappedAggregationInfo.call<val>("getMessageHashes");
-            val pubKeys = wrappedAggregationInfo.call<val>("GetPubKeysBuffers");
+            val pubKeys = wrappedAggregationInfo.call<val>("getPublicKeysBuffers");
             val exponents = wrappedAggregationInfo.call<val>("getExponents");
 
-            // Converting JS arrays to cpp vectors
-            printf("%d \n", 10);
-            std::vector<uint8_t*> messageHashesVector = helpers::jsBuffersArrayToByteArraysVector(messageHashes);
-            std::vector<std::vector<uint8_t>> pubKeysBuffers = helpers::jsBuffersArrayToVector(pubKeys);
-            std::vector<PublicKey> pubKeysVector;
-            printf("%d \n", 11);
-            for (unsigned j = 0; j<pubKeysBuffers.size(); j++) {
-                pubKeysVector.push_back(PublicKey::FromBytes(pubKeysBuffers[j].data()));
-            }
-            printf("%d \n", 12);
-            std::vector<bn_t*> exponentsVector = helpers::jsBuffersArrayToBnVector(exponents);
-
-            printf("%d \n", 13);
-            // Constructing aggregation info and restoring data from it
-            AggregationInfo info = AggregationInfo::FromVectors(pubKeysVector, messageHashesVector, exponentsVector);
-            printf("%d \n", 14);
+            AggregationInfo info = AggregationInfoWrapper::FromBuffersUnwrapped(pubKeys, messageHashes, exponents);
             Signature sig = Signature::FromBytes(serializedSig.data(), info);
 
-            printf("%d \n", 15);
             sigs.push_back(sig);
         }
         return sigs;
