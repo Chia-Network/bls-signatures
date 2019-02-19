@@ -19,16 +19,16 @@ using namespace emscripten;
 using namespace js_wrappers;
 
 EMSCRIPTEN_BINDINGS(blsjs) {
-    class_<PrivateKeyWrapper>("PrivateKey")
-        .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
-        .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
-        .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
-        .function("serialize", &PrivateKeyWrapper::Serialize)
-        .function("sign", &PrivateKeyWrapper::Sign)
-        .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed)
-        .function("getPublicKey", &PrivateKeyWrapper::GetPublicKey);
+        class_<PrivateKeyWrapper>("PrivateKey")
+                .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
+                .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
+                .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
+                .function("serialize", &PrivateKeyWrapper::Serialize)
+                .function("sign", &PrivateKeyWrapper::Sign)
+                .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed)
+                .function("getPublicKey", &PrivateKeyWrapper::GetPublicKey);
 
-    class_<SignatureWrapper>("Signature")
+        class_<SignatureWrapper>("Signature")
         .class_function("fromBytes", &SignatureWrapper::FromBytes)
         .class_function("fromBytesAndAggregationInfo", &SignatureWrapper::FromBytesAndAggregationInfo)
         .class_function("aggregateSigs", &SignatureWrapper::AggregateSigs)
@@ -38,19 +38,19 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("setAggregationInfo", &SignatureWrapper::SetAggregationInfo);
         //.function("divideBy", &SignatureWrapper::DivideBy)
 
-    class_<PublicKeyWrapper>("PublicKey")
+        class_<PublicKeyWrapper>("PublicKey")
         .class_function("fromBytes", &PublicKeyWrapper::FromBytes)
         .class_function("aggregate", &PublicKeyWrapper::Aggregate)
         .function("getFingerprint", &PublicKeyWrapper::GetFingerprint)
         .function("serialize", &PublicKeyWrapper::Serialize);
 
-    class_<AggregationInfoWrapper>("AggregationInfo")
+        class_<AggregationInfoWrapper>("AggregationInfo")
         .class_function("fromMsgHash", &AggregationInfoWrapper::FromMsgHash)
         .class_function("fromMsg", &AggregationInfoWrapper::FromMsg)
         .class_function("fromBuffers", &AggregationInfoWrapper::FromBuffers)
         .function("getPublicKeysBuffers", &AggregationInfoWrapper::GetPubKeysBuffers)
         .function("getMessageHashes", &AggregationInfoWrapper::GetMessageHashes)
-        .function("getExponents",  &AggregationInfoWrapper::GetExponents);
+        .function("getExponents", &AggregationInfoWrapper::GetExponents);
 
 //    class_<ExtendedPrivateKey>("ExtendedPrivateKey")
 //        .class_function("fromSeed", &ExtendedPrivateKey::FromSeed, allow_raw_pointers())

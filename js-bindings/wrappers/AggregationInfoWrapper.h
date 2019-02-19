@@ -25,17 +25,21 @@ namespace js_wrappers {
         static AggregationInfoWrapper FromBuffers(val pubKeyBuffers, val messageHashes, val exponentBns);
 
         static AggregationInfo FromBuffersUnwrapped(val pubKeyBuffers, val messageHashes, val exponentBns);
+
 //
 //        static AggregationInfoWrapper MergeInfos(val infos);
 //
 //        void RemoveEntries(val messageBuffers, val pubKeyBuffers);
 //
         val GetPubKeysBuffers() const;
+
         val GetMessageHashes() const;
+
         val GetExponents() const;
 //        bool Empty() const;
 
         AggregationInfo GetWrappedInfo() const;
+
     private:
         AggregationInfo wrappedInfo;
     };

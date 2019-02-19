@@ -11,12 +11,13 @@ namespace helpers {
      * @param {size_t} data_size
      * @return {std::vector<uint8_t>}
      */
-    std::vector<uint8_t> byteArrayToVector(uint8_t* pointer, size_t data_size) {
+    std::vector<uint8_t> byteArrayToVector(uint8_t *pointer, size_t data_size) {
         std::vector<uint8_t> data;
         data.reserve(data_size);
         std::copy(pointer, pointer + data_size, std::back_inserter(data));
         return data;
     }
+
     /**
      * Copies data from a JS Buffer/Uint8Array to vector<uint_8t>
      * @param {emscripten::val} jsUint8Array
@@ -67,7 +68,7 @@ namespace helpers {
         return arr;
     }
 
-    val byteArrayToJsBuffer(uint8_t* pointer, size_t data_size) {
+    val byteArrayToJsBuffer(uint8_t *pointer, size_t data_size) {
         std::vector<uint8_t> vec = byteArrayToVector(pointer, data_size);
         val buffer = vectorToJSBuffer(vec);
         return buffer;
@@ -97,22 +98,22 @@ namespace helpers {
         return buffer;
     }
 
-    std::vector<bn_t*> jsBuffersArrayToBnVector(val buffersArray) {
+    std::vector<bn_t *> jsBuffersArrayToBnVector(val buffersArray) {
         auto l = buffersArray["length"].as<unsigned>();
-        std::vector<bn_t*> vec;
+        std::vector<bn_t *> vec;
         for (unsigned i = 0; i < l; ++i) {
             bn_t data;
             //new bn_t[1];
             bn_new(data);
             std::vector<uint8_t> bnVec = jsBufferToVector(buffersArray[i]);
-            bn_read_bin(data, bnVec.data(), (int)bnVec.size());
-            bn_t* point = &data;
+            bn_read_bin(data, bnVec.data(), (int) bnVec.size());
+            bn_t *point = &data;
             vec.push_back(point);
         }
         return vec;
     }
 
-    val byteArraysVectorToJsBuffersArray(std::vector<uint8_t*> arraysVector, size_t element_size) {
+    val byteArraysVectorToJsBuffersArray(std::vector<uint8_t *> arraysVector, size_t element_size) {
         auto vecSize = arraysVector.size();
         std::vector<val> valVector;
         for (unsigned i = 0; i < vecSize; ++i) {

@@ -23,7 +23,8 @@ namespace js_wrappers {
         return sw;
     }
 
-    SignatureWrapper SignatureWrapper::FromBytesAndAggregationInfo(val buffer, const AggregationInfoWrapper &infoWrapper) {
+    SignatureWrapper
+    SignatureWrapper::FromBytesAndAggregationInfo(val buffer, const AggregationInfoWrapper &infoWrapper) {
         AggregationInfo info = infoWrapper.GetWrappedInfo();
         std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
         Signature sig = Signature::FromBytes(bytes.data(), info);

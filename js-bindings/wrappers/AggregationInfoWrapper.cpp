@@ -29,7 +29,7 @@ namespace js_wrappers {
     AggregationInfo AggregationInfoWrapper::FromBuffersUnwrapped(val pubKeyBuffers, val messageHashes,
                                                                  val exponentBns) {
         std::vector<std::vector<uint8_t>> messageHashesVectors = helpers::jsBuffersArrayToVector(messageHashes);
-        std::vector<uint8_t*> messageHashesVector;
+        std::vector<uint8_t *> messageHashesVector;
         for (auto &i : messageHashesVectors) {
             messageHashesVector.push_back(i.data());
         }
@@ -38,7 +38,7 @@ namespace js_wrappers {
         for (auto &pubKeysBuffer : pubKeysBuffers) {
             pubKeysVector.push_back(PublicKey::FromBytes(pubKeysBuffer.data()));
         }
-        std::vector<bn_t*> exponentsVector = helpers::jsBuffersArrayToBnVector(exponentBns);
+        std::vector<bn_t *> exponentsVector = helpers::jsBuffersArrayToBnVector(exponentBns);
 
         AggregationInfo info = AggregationInfo::FromVectors(pubKeysVector, messageHashesVector, exponentsVector);
         return info;
@@ -60,18 +60,18 @@ namespace js_wrappers {
     }
 
     val AggregationInfoWrapper::GetMessageHashes() const {
-        std::vector<uint8_t*> messageHashesPointers = wrappedInfo.GetMessageHashes();
+        std::vector<uint8_t *> messageHashesPointers = wrappedInfo.GetMessageHashes();
         val messageHashes = helpers::byteArraysVectorToJsBuffersArray(messageHashesPointers, BLS::MESSAGE_HASH_LEN);
         return messageHashes;
     }
 
     val AggregationInfoWrapper::GetExponents() const {
         std::vector<PublicKey> pubKeys = wrappedInfo.GetPubKeys();
-        std::vector<uint8_t*> messageHashes = wrappedInfo.GetMessageHashes();
+        std::vector<uint8_t *> messageHashes = wrappedInfo.GetMessageHashes();
         std::vector<val> exponents;
         auto l = pubKeys.size();
         for (unsigned i = 0; i < l; ++i) {
-            bn_t* exponent;
+            bn_t *exponent;
             wrappedInfo.GetExponent(exponent, messageHashes[i], pubKeys[i]);
             val serializedExponent = helpers::bnToJsBuffer(*exponent);
             auto l = serializedExponent["length"].as<unsigned>();
