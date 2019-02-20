@@ -33,12 +33,13 @@ namespace js_wrappers {
 
         void SetAggregationInfo(AggregationInfoWrapper &newAggregationInfo);
 
+        Signature GetWrappedSignature() const;
+
     private:
         explicit SignatureWrapper(Signature &signature);
 
         Signature wrappedSignature;
 
-        static std::vector<Signature> GetRawSignatures(val signatureWrappers);
     };
 }
 

@@ -2,15 +2,15 @@ const assert = require('assert');
 const {Signature, PublicKey, PrivateKey, AggregationInfo} = require('../../js_build/js-bindings/blsjs');
 
 function getSignatureBuffer() {
-    return Buffer.from('', 'hex');
+    return Buffer.from('006d0a8661db762a94be51be85efb1199f62dfc3f8fa8c9f003d02fdc69b281e689a54928b9adce98a8471a889c55af40c9bd7b7339c00f6f8bf871d132cfa5cf4e9b11f7ce05acafbb24c2db82b7f6193ee954f5167a2a46e3daecf4a007609', 'hex');
 }
 
-function getTwoSigntureBuffers() {
+function getAggregationInfo() {
     return {
-        signatureBuffers: [],
-        aggregationInfos: [],
-        publicKeys: []
-    }
+        publicKeys: [Buffer.from('02a8d2aaa6a5e2e08d4b8d406aaf0121a2fc2088ed12431e6b0663028da9ac5922c9ea91cde7dd74b7d795580acc7a61', 'hex')],
+        messageHashes: [Buffer.from('c7495fe7e1d49086a1966a2020e01b4f36ed71c456b6aa5e684ad6c3631890af', 'hex')],
+        exponents: [Buffer.from('01', 'hex')]
+    };
 }
 
 describe('Signature', () => {
@@ -39,21 +39,11 @@ describe('Signature', () => {
             assert(sig3.verify(), 'Signature 3 is not verifiable');
 
             const aggregatedSignature = Signature.aggregateSigs([sig1, sig2, sig3]);
-            const info = aggregatedSignature.getAggregationInfo();
-            console.log(info.getExponents());
-            console.log(info.getPublicKeysBuffers());
-            console.log(info.getMessageHashes());
-            console.log('======');
-            // assert(aggregatedSignature.verify(), 'Aggregated sig is not verified');
+            assert(aggregatedSignature.verify(), 'Aggregated sig is not verified');
 
-            const aggregatedPubKey = PublicKey.aggregate([
-                publicKey1.serialize(), publicKey2.serialize(), publicKey3.serialize()
-            ]);
+            const aggregatedPubKey = PublicKey.aggregate([publicKey1, publicKey2, publicKey3]);
 
             const aggregationInfo = AggregationInfo.fromMsg(aggregatedPubKey, message);
-            console.log(aggregationInfo.getExponents());
-            console.log(aggregationInfo.getPublicKeysBuffers());
-            console.log(aggregationInfo.getMessageHashes());
 
             aggregatedSignature.setAggregationInfo(aggregationInfo);
             assert(aggregatedSignature.verify());
@@ -61,20 +51,65 @@ describe('Signature', () => {
     });
     describe('.fromBytes', () => {
         it('Should create verifiable signature from bytes', () => {
-            throw new Error('Not implemented');
+            const sig = Signature.fromBytes(getSignatureBuffer());
+            assert.strictEqual(sig.serialize().toString('hex'), getSignatureBuffer().toString('hex'));
+            // Since there is no aggregation info, it's impossible to verify sig
+            assert.strictEqual(sig.verify(), false);
         });
     });
     describe('.fromBytesAndAggregationInfo', () => {
-
+        it('Should create verifiable signature', () => {
+            const pk = PrivateKey.fromSeed(Buffer.from([1, 2, 3, 4, 5]));
+            const sig = pk.sign(Buffer.from([100, 2, 254, 88, 90, 45, 23]));
+            const info = sig.getAggregationInfo();
+            const restoredSig = Signature.fromBytesAndAggregationInfo(
+                sig.serialize(),
+                sig.getAggregationInfo()
+            );
+            const restoredInfo = restoredSig.getAggregationInfo();
+            assert(restoredSig instanceof Signature);
+            assert(restoredSig.verify());
+            assert.deepStrictEqual(info.getPublicKeys()[0].serialize(), restoredInfo.getPublicKeys()[0].serialize());
+            assert.deepStrictEqual(info.getMessageHashes()[0], restoredInfo.getMessageHashes()[0]);
+            assert.deepStrictEqual(info.getExponents()[0], restoredInfo.getExponents()[0]);
+        });
     });
     describe('.aggregateSigs', () => {
 
     });
     describe('#serialize', () => {
-
+        it('Should serialize signature to Buffer', () => {
+            const pk = PrivateKey.fromSeed(Buffer.from([1, 2, 3, 4, 5]));
+            const sig = pk.sign(Buffer.from([100, 2, 254, 88, 90, 45, 23]));
+            assert(sig instanceof Signature);
+            assert.deepStrictEqual(sig.serialize(), getSignatureBuffer());
+        });
     });
     describe('#verify', () => {
-
+        it('Should return true if signature can be verified', () => {
+            const pks = getAggregationInfo().publicKeys.map(buf => PublicKey.fromBytes(buf));
+            const sig = Signature.fromBytesAndAggregationInfo(
+                getSignatureBuffer(),
+                AggregationInfo.fromBuffers(
+                    pks,
+                    getAggregationInfo().messageHashes,
+                    getAggregationInfo().exponents
+                )
+            );
+            assert(sig.verify());
+        });
+        it("Should return false if signature can't be verified", () => {
+            const sk = PrivateKey.fromSeed(Buffer.from([1, 2, 3, 4, 5]));
+            const pks = getAggregationInfo().publicKeys.map(buf => PublicKey.fromBytes(buf));
+            const sig = sk.sign(Buffer.from('Message'));
+            const info = AggregationInfo.fromBuffers(
+                pks,
+                getAggregationInfo().messageHashes,
+                getAggregationInfo().exponents
+            );
+            sig.setAggregationInfo(info);
+            assert.strictEqual(sig.verify(), false);
+        })
     });
     describe('#getAggregationInfo', () => {
 

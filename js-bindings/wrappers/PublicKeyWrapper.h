@@ -18,7 +18,7 @@ namespace js_wrappers {
 
         static PublicKeyWrapper FromBytes(val buffer);
 
-        static PublicKeyWrapper Aggregate(val pubKeysBuffersArray);
+        static PublicKeyWrapper Aggregate(val pubKeysWrappers);
 
         val Serialize() const;
 

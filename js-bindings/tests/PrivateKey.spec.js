@@ -1,5 +1,6 @@
 const {PrivateKey, Signature, PublicKey} = require('../../js_build/js-bindings/blsjs');
 const assert = require('assert');
+const crypto = require('crypto');
 
 function getSeedAndFinferprint() {
     return {
@@ -45,24 +46,25 @@ describe('PrivateKey', () => {
             assert(pk instanceof PrivateKey);
             assert.deepStrictEqual(pk.serialize(), getPkBuffer());
         });
-        it('Should throw an error if the buffer size is wrong', () => {
-            const uintArr = getPkUint8Array().slice(0, 21);
-            assert.throws(() => {
-                const pk = PrivateKey.fromBytes(uintArr, false);
-            });
-        });
     });
 
     describe('.aggregate', () => {
         it('Should aggregate private keys', () => {
-            const pks = [PrivateKey.fromSeed(Buffer.from([1, 2, 3])), PrivateKey.fromSeed(Buffer.from([3, 4, 5]))];
-            const aggregatedKey = PrivateKey.aggregate(pks);
+            const privateKeys = [
+                PrivateKey.fromSeed(Buffer.from([1, 2, 3])),
+                PrivateKey.fromSeed(Buffer.from([3, 4, 5]))
+            ];
+            const publicKeys = [
+                privateKeys[0].getPublicKey(),
+                privateKeys[1].getPublicKey()
+            ];
+            const aggregatedKey = PrivateKey.aggregate(privateKeys, publicKeys);
             assert(aggregatedKey instanceof PrivateKey);
         });
     });
 
     describe('#serialize', () => {
-        it('Should serialize key to a Uint8Array', () => {
+        it('Should serialize key to a Buffer', () => {
             const pk = PrivateKey.fromSeed(getPkSeed());
             const serialized = pk.serialize();
             assert(serialized instanceof Buffer);
@@ -82,7 +84,16 @@ describe('PrivateKey', () => {
 
     describe('#signPrehashed', () => {
         it('Should sign a hash and return a signature', () => {
-            throw new Error('Not implemented');
+            const pk = PrivateKey.fromSeed(Buffer.from([1, 2, 3, 4, 5]));
+            const messageHash = crypto
+                .createHash('sha256')
+                .update('Hello world')
+                .digest();
+            const sig = pk.signPrehashed(messageHash);
+            const info = sig.getAggregationInfo();
+            assert(sig instanceof Signature);
+            assert(sig.verify());
+            assert.deepStrictEqual(info.getMessageHashes()[0], messageHash);
         });
     });
 

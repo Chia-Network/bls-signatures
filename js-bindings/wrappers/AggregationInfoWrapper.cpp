@@ -14,29 +14,29 @@ namespace js_wrappers {
 
     AggregationInfoWrapper AggregationInfoWrapper::FromMsgHash(const PublicKeyWrapper &pkw, val messageHashBuffer) {
         PublicKey pk = pkw.GetWrappedKey();
-        std::vector<uint8_t> messageHash = helpers::jsBufferToVector(messageHashBuffer);
+        std::vector<uint8_t> messageHash = helpers::toVector(messageHashBuffer);
         AggregationInfo info = AggregationInfo::FromMsgHash(pk, messageHash.data());
         return AggregationInfoWrapper(info);
     }
 
     AggregationInfoWrapper AggregationInfoWrapper::FromMsg(const PublicKeyWrapper &pkw, val messageHashBuffer) {
         PublicKey pk = pkw.GetWrappedKey();
-        std::vector<uint8_t> message = helpers::jsBufferToVector(messageHashBuffer);
+        std::vector<uint8_t> message = helpers::toVector(messageHashBuffer);
         AggregationInfo info = AggregationInfo::FromMsg(pk, message.data(), message.size());
         return AggregationInfoWrapper(info);
     }
 
-    AggregationInfo AggregationInfoWrapper::FromBuffersUnwrapped(val pubKeyBuffers, val messageHashes,
+    AggregationInfo AggregationInfoWrapper::FromBuffersUnwrapped(val pubKeyWrappersArray, val messageHashes,
                                                                  val exponentBns) {
         std::vector<std::vector<uint8_t>> messageHashesVectors = helpers::jsBuffersArrayToVector(messageHashes);
         std::vector<uint8_t *> messageHashesVector;
         for (auto &i : messageHashesVectors) {
             messageHashesVector.push_back(i.data());
         }
-        std::vector<std::vector<uint8_t>> pubKeysBuffers = helpers::jsBuffersArrayToVector(pubKeyBuffers);
+        std::vector<PublicKeyWrapper> pubKeyWrappers = helpers::fromJSArray<PublicKeyWrapper>(pubKeyWrappersArray);
         std::vector<PublicKey> pubKeysVector;
-        for (auto &pubKeysBuffer : pubKeysBuffers) {
-            pubKeysVector.push_back(PublicKey::FromBytes(pubKeysBuffer.data()));
+        for (auto &pubKeyWrapper : pubKeyWrappers) {
+            pubKeysVector.push_back(pubKeyWrapper.GetWrappedKey());
         }
         std::vector<bn_t *> exponentsVector = helpers::jsBuffersArrayToBnVector(exponentBns);
 
@@ -44,25 +44,23 @@ namespace js_wrappers {
         return info;
     }
 
-    AggregationInfoWrapper AggregationInfoWrapper::FromBuffers(val pubKeyBuffers, val messageHashes, val exponentBns) {
-        AggregationInfo info = AggregationInfoWrapper::FromBuffersUnwrapped(pubKeyBuffers, messageHashes, exponentBns);
+    AggregationInfoWrapper AggregationInfoWrapper::FromBuffers(val pubKeys, val messageHashes, val exponentBns) {
+        AggregationInfo info = AggregationInfoWrapper::FromBuffersUnwrapped(pubKeys, messageHashes, exponentBns);
         return AggregationInfoWrapper(info);
     }
 
-    val AggregationInfoWrapper::GetPubKeysBuffers() const {
+    val AggregationInfoWrapper::GetPubKeys() const {
         std::vector<PublicKey> pubKeys = wrappedInfo.GetPubKeys();
-        std::vector<std::vector<uint8_t>> serializedKeys;
-        for (unsigned i = 0; i < pubKeys.size(); i++) {
-            serializedKeys.push_back(pubKeys[i].Serialize());
+        std::vector<val> pubKeyWrappers;
+        for (auto &pubKey : pubKeys) {
+            pubKeyWrappers.emplace_back(val(PublicKeyWrapper(pubKey)));
         }
-        val pubKeysArray = helpers::vectorOfVectorsToBuffersArray(serializedKeys);
-        return pubKeysArray;
+        return helpers::toJSArray(pubKeyWrappers);
     }
 
     val AggregationInfoWrapper::GetMessageHashes() const {
         std::vector<uint8_t *> messageHashesPointers = wrappedInfo.GetMessageHashes();
-        val messageHashes = helpers::byteArraysVectorToJsBuffersArray(messageHashesPointers, BLS::MESSAGE_HASH_LEN);
-        return messageHashes;
+        return helpers::byteArraysVectorToJsBuffersArray(messageHashesPointers, BLS::MESSAGE_HASH_LEN);
     }
 
     val AggregationInfoWrapper::GetExponents() const {
@@ -73,12 +71,10 @@ namespace js_wrappers {
         for (unsigned i = 0; i < l; ++i) {
             bn_t *exponent;
             wrappedInfo.GetExponent(exponent, messageHashes[i], pubKeys[i]);
-            val serializedExponent = helpers::bnToJsBuffer(*exponent);
-            auto l = serializedExponent["length"].as<unsigned>();
+            val serializedExponent = helpers::toJSBuffer(*exponent);
             exponents.push_back(serializedExponent);
         }
-        val jsExponents = helpers::valVectorToJsArray(exponents);
-        return jsExponents;
+        return helpers::toJSArray(exponents);
     }
 
     AggregationInfo AggregationInfoWrapper::GetWrappedInfo() const {

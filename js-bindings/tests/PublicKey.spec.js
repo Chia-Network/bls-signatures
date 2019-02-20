@@ -26,8 +26,8 @@ describe('PublicKey', () => {
 
     describe(".aggregate", () => {
         it('Should aggregate keys if keys array contains more than one key', () => {
-            throw new Error('Not implemented');
-            const aggregatedKey = PublicKey.aggregate(getPublicKeysArray());
+            const pks = getPublicKeysArray().map(buf => PublicKey.fromBytes(buf));
+            const aggregatedKey = PublicKey.aggregate(pks);
             assert(aggregatedKey instanceof PublicKey);
         });
     });

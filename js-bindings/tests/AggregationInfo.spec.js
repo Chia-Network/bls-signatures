@@ -14,7 +14,7 @@ describe('AggregationInfo', () => {
         assert(sig.verify());
 
         const info = sig.getAggregationInfo();
-        const pubKeyFromInfo = PublicKey.fromBytes(info.getPublicKeysBuffers()[0]);
+        const pubKeyFromInfo = info.getPublicKeys()[0];
 
         const serializedKeyFromInfo = pubKeyFromInfo.serialize();
         const serializedKeyFromPrivateKey = privateKey.getPublicKey().serialize();
@@ -29,12 +29,12 @@ describe('AggregationInfo', () => {
         assert.deepStrictEqual(messageHash, messageHashFromInfo);
 
         const restoredInfo = AggregationInfo.fromBuffers(
-            info.getPublicKeysBuffers(),
+            info.getPublicKeys(),
             info.getMessageHashes(),
             info.getExponents()
         );
 
-        assert.deepStrictEqual(restoredInfo.getPublicKeysBuffers()[0].toString('hex'), info.getPublicKeysBuffers()[0].toString('hex'));
+        assert.deepStrictEqual(restoredInfo.getPublicKeys()[0].serialize().toString('hex'), info.getPublicKeys()[0].serialize().toString('hex'));
         assert.deepStrictEqual(restoredInfo.getExponents(), info.getExponents());
         assert.deepStrictEqual(restoredInfo.getMessageHashes()[0].toString('hex'), info.getMessageHashes()[0].toString('hex'));
     });

@@ -11,63 +11,57 @@ namespace js_wrappers {
     PrivateKeyWrapper::PrivateKeyWrapper(PrivateKey &privateKey) : wrappedPrivateKey(privateKey) {}
 
     PrivateKeyWrapper PrivateKeyWrapper::FromSeed(val buffer) {
-        std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
+        std::vector<uint8_t> bytes = helpers::toVector(buffer);
         PrivateKey pk = PrivateKey::FromSeed(bytes.data(), bytes.size());
-        PrivateKeyWrapper pw = PrivateKeyWrapper(pk);
-        return pw;
+        return PrivateKeyWrapper(pk);
     }
 
-    PrivateKeyWrapper PrivateKeyWrapper::Aggregate(val privateKeysBuffers, val publicKeysBuffers) {
-        std::vector<std::vector<uint8_t>> publicKeysVectors = helpers::jsBuffersArrayToVector(publicKeysBuffers);
-        std::vector<std::vector<uint8_t>> privateKeysVectors = helpers::jsBuffersArrayToVector(privateKeysBuffers);
+    PrivateKeyWrapper PrivateKeyWrapper::Aggregate(val privateKeysArray, val publicKeysArray) {
+        std::vector<PublicKeyWrapper> publicKeysVector = helpers::fromJSArray<PublicKeyWrapper>(publicKeysArray);
+        std::vector<PrivateKeyWrapper> privateKeysVector = helpers::fromJSArray<PrivateKeyWrapper>(privateKeysArray);
 
         std::vector<PublicKey> pubKeys;
-        auto pkCount = publicKeysVectors.size();
-        for (unsigned i = 0; i < pkCount; ++i) {
-            pubKeys.push_back(PublicKey::FromBytes(publicKeysVectors[i].data()));
+        for (auto &publicKeyWrapper : publicKeysVector) {
+            pubKeys.push_back(publicKeyWrapper.GetWrappedKey());
         }
 
         std::vector<PrivateKey> privateKeys;
-        auto skCount = privateKeys.size();
-        for (unsigned i = 0; i < skCount; ++i) {
-            privateKeys.push_back(PrivateKey::FromBytes(privateKeysVectors[i].data()));
+        for (auto &privateKeyWrapper : privateKeysVector) {
+            privateKeys.push_back(privateKeyWrapper.GetWrappedKey());
         }
 
         PrivateKey aggregatedPk = PrivateKey::Aggregate(privateKeys, pubKeys);
-        PrivateKeyWrapper pw = PrivateKeyWrapper(aggregatedPk);
-        return pw;
+        return PrivateKeyWrapper(aggregatedPk);
     }
 
     PrivateKeyWrapper PrivateKeyWrapper::FromBytes(val buffer, bool modOrder) {
-        std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
+        std::vector<uint8_t> bytes = helpers::toVector(buffer);
         PrivateKey pk = PrivateKey::FromBytes(bytes.data(), modOrder);
-        PrivateKeyWrapper pw = PrivateKeyWrapper(pk);
-        return pw;
+        return PrivateKeyWrapper(pk);
     }
 
     val PrivateKeyWrapper::Serialize() const {
-        std::vector<uint8_t> pk = wrappedPrivateKey.Serialize();
-        val buffer = helpers::vectorToJSBuffer(pk);
-        return buffer;
+        return helpers::toJSBuffer(wrappedPrivateKey.Serialize());
     }
 
     SignatureWrapper PrivateKeyWrapper::Sign(val messageBuffer) const {
-        std::vector<uint8_t> message = helpers::jsBufferToVector(messageBuffer);
+        std::vector<uint8_t> message = helpers::toVector(messageBuffer);
         Signature signature = wrappedPrivateKey.Sign(message.data(), message.size());
-        SignatureWrapper sw = SignatureWrapper::FromSignature(signature);
-        return sw;
+        return SignatureWrapper::FromSignature(signature);
     }
 
     SignatureWrapper PrivateKeyWrapper::SignPrehashed(val messageHashBuffer) const {
-        std::vector<uint8_t> hash = helpers::jsBufferToVector(messageHashBuffer);
+        std::vector<uint8_t> hash = helpers::toVector(messageHashBuffer);
         Signature signature = wrappedPrivateKey.SignPrehashed(hash.data());
-        SignatureWrapper sw = SignatureWrapper::FromSignature(signature);
-        return sw;
+        return SignatureWrapper::FromSignature(signature);
     }
 
     PublicKeyWrapper PrivateKeyWrapper::GetPublicKey() const {
         PublicKey pk = wrappedPrivateKey.GetPublicKey();
-        PublicKeyWrapper pw = PublicKeyWrapper(pk);
-        return pw;
+        return PublicKeyWrapper(pk);
+    }
+
+    PrivateKey PrivateKeyWrapper::GetWrappedKey() const {
+        return wrappedPrivateKey;
     }
 }

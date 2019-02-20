@@ -17,7 +17,7 @@ namespace js_wrappers {
     }
 
     SignatureWrapper SignatureWrapper::FromBytes(val buffer) {
-        std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
+        std::vector<uint8_t> bytes = helpers::toVector(buffer);
         Signature sig = Signature::FromBytes(bytes.data());
         SignatureWrapper sw = SignatureWrapper(sig);
         return sw;
@@ -26,20 +26,24 @@ namespace js_wrappers {
     SignatureWrapper
     SignatureWrapper::FromBytesAndAggregationInfo(val buffer, const AggregationInfoWrapper &infoWrapper) {
         AggregationInfo info = infoWrapper.GetWrappedInfo();
-        std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
+        std::vector<uint8_t> bytes = helpers::toVector(buffer);
         Signature sig = Signature::FromBytes(bytes.data(), info);
         return SignatureWrapper(sig);
     }
 
     SignatureWrapper SignatureWrapper::AggregateSigs(val signatureWrappers) {
-        std::vector<Signature> signatures = SignatureWrapper::GetRawSignatures(signatureWrappers);
+        std::vector<SignatureWrapper> sigWrappers = helpers::fromJSArray<SignatureWrapper>(signatureWrappers);
+        std::vector<Signature> signatures;
+        for (auto &sigWrapper : sigWrappers) {
+            signatures.push_back(sigWrapper.GetWrappedSignature());
+        }
         Signature aggregatedSignature = Signature::AggregateSigs(signatures);
         SignatureWrapper sw = SignatureWrapper(aggregatedSignature);
         return sw;
     }
 
     val SignatureWrapper::Serialize() const {
-        return helpers::vectorToJSBuffer(wrappedSignature.Serialize());
+        return helpers::toJSBuffer(wrappedSignature.Serialize());
     }
 
     bool SignatureWrapper::Verify() const {
@@ -47,8 +51,7 @@ namespace js_wrappers {
     }
 
     AggregationInfoWrapper SignatureWrapper::GetAggregationInfo() const {
-        const AggregationInfo *info = wrappedSignature.GetAggregationInfo();
-        AggregationInfo in = AggregationInfo(*info);
+        AggregationInfo in = AggregationInfo(*wrappedSignature.GetAggregationInfo());
         AggregationInfoWrapper aw = AggregationInfoWrapper(in);
         return aw;
     }
@@ -57,25 +60,8 @@ namespace js_wrappers {
         wrappedSignature.SetAggregationInfo(newAggregationInfo.GetWrappedInfo());
     }
 
-    std::vector<Signature> SignatureWrapper::GetRawSignatures(val signatureWrappersArray) {
-        std::vector<Signature> sigs;
-        auto l = signatureWrappersArray["length"].as<unsigned>();
-        for (unsigned i = 0; i < l; ++i) {
-            // Getting signature bytes without aggregation info
-            val wrappedSig = signatureWrappersArray[i];
-            std::vector<uint8_t> serializedSig = helpers::jsBufferToVector(wrappedSig.call<val>("serialize"));
-
-            // Getting data from the aggregation info
-            val wrappedAggregationInfo = wrappedSig.call<val>("getAggregationInfo");
-            val messageHashes = wrappedAggregationInfo.call<val>("getMessageHashes");
-            val pubKeys = wrappedAggregationInfo.call<val>("getPublicKeysBuffers");
-            val exponents = wrappedAggregationInfo.call<val>("getExponents");
-
-            AggregationInfo info = AggregationInfoWrapper::FromBuffersUnwrapped(pubKeys, messageHashes, exponents);
-            Signature sig = Signature::FromBytes(serializedSig.data(), info);
-
-            sigs.push_back(sig);
-        }
-        return sigs;
+    Signature SignatureWrapper::GetWrappedSignature() const {
+        return wrappedSignature;
     }
+
 }

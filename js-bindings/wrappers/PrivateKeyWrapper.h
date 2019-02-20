@@ -29,9 +29,8 @@ namespace js_wrappers {
         SignatureWrapper SignPrehashed(val messageHashBuffer) const;
 
         PublicKeyWrapper GetPublicKey() const;
-        // Insecure signatures does not contain aggregation info
-        // InsecureSignature SignInsecure(val messageBuffer) const;
-        // InsecureSignature SignInsecurePrehashed(val messageHashBuffer) const;
+
+        PrivateKey GetWrappedKey() const;
     private:
         explicit PrivateKeyWrapper(PrivateKey &privateKey);
 

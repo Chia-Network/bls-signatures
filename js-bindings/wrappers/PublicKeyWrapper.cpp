@@ -11,28 +11,23 @@ namespace js_wrappers {
     PublicKeyWrapper::PublicKeyWrapper(PublicKey &publicKey) : wrappedPublicKey(publicKey) {}
 
     PublicKeyWrapper PublicKeyWrapper::FromBytes(val buffer) {
-        std::vector<uint8_t> bytes = helpers::jsBufferToVector(buffer);
+        std::vector<uint8_t> bytes = helpers::toVector(buffer);
         PublicKey pk = PublicKey::FromBytes(bytes.data());
-        PublicKeyWrapper pw = PublicKeyWrapper(pk);
-        return pw;
+        return PublicKeyWrapper(pk);
     }
 
-    PublicKeyWrapper PublicKeyWrapper::Aggregate(val pubKeysBuffersArray) {
-        std::vector<std::vector<uint8_t>> keys = helpers::jsBuffersArrayToVector(pubKeysBuffersArray);
+    PublicKeyWrapper PublicKeyWrapper::Aggregate(val pubKeysWrappers) {
+        std::vector<PublicKeyWrapper> keyWrappers = helpers::fromJSArray<PublicKeyWrapper>(pubKeysWrappers);
         std::vector<PublicKey> pubKeys;
-        auto l = keys.size();
-        for (unsigned i = 0; i < l; ++i) {
-            pubKeys.push_back(PublicKey::FromBytes(keys[i].data()));
+        for (auto &keyWrapper : keyWrappers) {
+            pubKeys.push_back(keyWrapper.GetWrappedKey());
         }
         PublicKey aggregatedPk = PublicKey::Aggregate(pubKeys);
-        PublicKeyWrapper pw = PublicKeyWrapper(aggregatedPk);
-        return pw;
+        return PublicKeyWrapper(aggregatedPk);
     }
 
     val PublicKeyWrapper::Serialize() const {
-        std::vector<uint8_t> bytes = wrappedPublicKey.Serialize();
-        val buffer = helpers::vectorToJSBuffer(bytes);
-        return buffer;
+        return helpers::toJSBuffer(wrappedPublicKey.Serialize());
     }
 
     uint32_t PublicKeyWrapper::GetFingerprint() const {
