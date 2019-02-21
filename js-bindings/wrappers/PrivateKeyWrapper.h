@@ -16,6 +16,8 @@ using namespace bls;
 namespace js_wrappers {
     class PrivateKeyWrapper {
     public:
+        explicit PrivateKeyWrapper(PrivateKey &privateKey);
+
         static PrivateKeyWrapper FromSeed(val buffer);
 
         static PrivateKeyWrapper FromBytes(val buffer, bool modOrder);
@@ -32,8 +34,6 @@ namespace js_wrappers {
 
         PrivateKey GetWrappedKey() const;
     private:
-        explicit PrivateKeyWrapper(PrivateKey &privateKey);
-
         PrivateKey wrappedPrivateKey;
     };
 }
