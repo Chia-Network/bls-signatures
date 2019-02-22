@@ -8,6 +8,7 @@
 #include "../helpers.h"
 #include "PublicKeyWrapper.h"
 #include "emscripten/val.h"
+#include "ChainCodeWrapper.h"
 
 namespace js_wrappers {
     class ExtendedPublicKeyWrapper {
@@ -22,7 +23,7 @@ namespace js_wrappers {
         uint32_t GetParentFingerprint() const;
         uint32_t GetChildNumber() const;
 
-        // ChainCodeWrapper GetChainCode() const;
+        ChainCodeWrapper GetChainCode() const;
         PublicKeyWrapper GetPublicKey() const;
 
         val Serialize() const;

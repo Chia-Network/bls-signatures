@@ -30,7 +30,11 @@ namespace js_wrappers {
         return wrappedPublicKey.GetChildNumber();
     };
 
-    // ChainCodeWrapper GetChainCode() const;
+    ChainCodeWrapper ExtendedPublicKeyWrapper::GetChainCode() const {
+        ChainCode chainCode = wrappedPublicKey.GetChainCode();
+        return ChainCodeWrapper(chainCode);
+    };
+
     PublicKeyWrapper ExtendedPublicKeyWrapper::GetPublicKey() const {
         PublicKey pk = wrappedPublicKey.GetPublicKey();
         return PublicKeyWrapper(pk);

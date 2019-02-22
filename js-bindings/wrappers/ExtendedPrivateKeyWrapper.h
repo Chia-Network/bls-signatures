@@ -10,6 +10,7 @@
 #include "../../src/extendedprivatekey.hpp"
 #include "PrivateKeyWrapper.h"
 #include "ExtendedPublicKeyWrapper.h"
+#include "ChainCodeWrapper.h"
 
 using namespace bls;
 using namespace emscripten;
@@ -22,14 +23,14 @@ namespace js_wrappers {
         static ExtendedPrivateKeyWrapper FromSeed(val seedBuffer);
         static ExtendedPrivateKeyWrapper FromBytes(val serializedBuffer);
         ExtendedPrivateKeyWrapper PrivateChild(uint32_t i) const;
-        // ExtendedPublicKeyWrapper PublicChild(uint32_t i) const;
+        ExtendedPublicKeyWrapper PublicChild(uint32_t i) const;
 
         uint32_t GetVersion() const;
         uint8_t GetDepth() const;
         uint32_t GetParentFingerprint() const;
         uint32_t GetChildNumber() const;
 
-        // ChainCodeWrapper GetChainCode() const;
+        ChainCodeWrapper GetChainCode() const;
         PrivateKeyWrapper GetPrivateKey() const;
 
         PublicKeyWrapper GetPublicKey() const;

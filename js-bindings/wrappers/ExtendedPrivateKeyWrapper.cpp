@@ -24,6 +24,11 @@ namespace js_wrappers {
         return ExtendedPrivateKeyWrapper(esk);
     }
 
+    ExtendedPublicKeyWrapper ExtendedPrivateKeyWrapper::PublicChild(uint32_t i) const {
+        ExtendedPublicKey epk = wrappedPrivateKey.PublicChild(i);
+        return ExtendedPublicKeyWrapper(epk);
+    };
+
     uint32_t ExtendedPrivateKeyWrapper::GetVersion() const {
         return wrappedPrivateKey.GetVersion();
     };
@@ -35,6 +40,11 @@ namespace js_wrappers {
     };
     uint32_t ExtendedPrivateKeyWrapper::GetChildNumber() const {
         return wrappedPrivateKey.GetChildNumber();
+    };
+
+    ChainCodeWrapper ExtendedPrivateKeyWrapper::GetChainCode() const {
+        ChainCode chainCode = wrappedPrivateKey.GetChainCode();
+        return ChainCodeWrapper(chainCode);
     };
 
     PrivateKeyWrapper ExtendedPrivateKeyWrapper::GetPrivateKey() const {

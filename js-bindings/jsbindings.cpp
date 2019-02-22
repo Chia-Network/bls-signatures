@@ -77,9 +77,8 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("getChainCode", &ExtendedPublicKeyWrapper::GetChainCode)
         .function("getPublicKey", &ExtendedPublicKey::GetPublicKey)
         .function("serialize", &ExtendedPublicKeyWrapper::Serialize);
-//
-//    class_<ChainCode>("ChainCode")
-//        .property("CHAIN_CODE_KEY_SIZE")
-//        .class_function("fromBytes", &ChainCode::FromBytes)
-//        .function("serialize", &ChainCode::Serialize);
+
+    class_<ChainCode>("ChainCode")
+        .class_function("fromBytes", &ChainCode::FromBytes)
+        .function("serialize", &ChainCode::Serialize);
 };
