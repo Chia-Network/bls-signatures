@@ -16,5 +16,6 @@
   },
   "dependencies": {
     "mocha": "^5.2.0"
-  }
+  },
+  "types": "typings.d.ts"
 }
