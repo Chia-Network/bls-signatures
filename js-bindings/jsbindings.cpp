@@ -14,6 +14,7 @@
 
 #include <emscripten/bind.h>
 #include "wrappers/PrivateKeyWrapper.h"
+#include "wrappers/ExtendedPrivateKeyWrapper.h"
 
 using namespace emscripten;
 using namespace js_wrappers;
@@ -52,32 +53,30 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("getMessageHashes", &AggregationInfoWrapper::GetMessageHashes)
         .function("getExponents", &AggregationInfoWrapper::GetExponents);
 
-//    class_<ExtendedPrivateKey>("ExtendedPrivateKey")
-//        .class_function("fromSeed", &ExtendedPrivateKey::FromSeed, allow_raw_pointers())
-//        .class_function("fromBytes", &ExtendedPrivateKey::FromBytes, allow_raw_pointers())
-//        .function("privateChild", &ExtendedPrivateKey::PrivateChild)
-//        .function("publicChild", &ExtendedPrivateKey::PublicChild)
-//        .function("getVersion", &ExtendedPrivateKey::GetVersion)
-//        .function("getDepth", &ExtendedPrivateKey::GetDepth)
-//        .function("getParentFingerprint", &ExtendedPrivateKey::GetParentFingerprint)
-//        .function("getChildNumber", &ExtendedPrivateKey::GetChildNumber)
-//        .function("getChainCode", &ExtendedPrivateKey::GetChainCode)
-//        .function("getPrivateKey", &ExtendedPrivateKey::GetPrivateKey)
-//        .function("getPublicKey", &ExtendedPrivateKey::GetPublicKey)
-//        .function("getExtendedPublicKey", &ExtendedPrivateKey::GetExtendedPublicKey);
+    class_<ExtendedPrivateKeyWrapper>("ExtendedPrivateKey")
+        .class_function("fromSeed", &ExtendedPrivateKeyWrapper::FromSeed, allow_raw_pointers())
+        .class_function("fromBytes", &ExtendedPrivateKeyWrapper::FromBytes, allow_raw_pointers())
+        .function("privateChild", &ExtendedPrivateKeyWrapper::PrivateChild)
+        .function("publicChild", &ExtendedPrivateKeyWrapper::PublicChild)
+        .function("getVersion", &ExtendedPrivateKeyWrapper::GetVersion)
+        .function("getDepth", &ExtendedPrivateKeyWrapper::GetDepth)
+        .function("getParentFingerprint", &ExtendedPrivateKeyWrapper::GetParentFingerprint)
+        .function("getChildNumber", &ExtendedPrivateKeyWrapper::GetChildNumber)
+        .function("getChainCode", &ExtendedPrivateKeyWrapper::GetChainCode)
+        .function("getPrivateKey", &ExtendedPrivateKeyWrapper::GetPrivateKey)
+        .function("getPublicKey", &ExtendedPrivateKeyWrapper::GetPublicKey)
+        .function("getExtendedPublicKey", &ExtendedPrivateKeyWrapper::GetExtendedPublicKey);
 
-//
-//    class_<ExtendedPublicKey>("ExtendedPublicKey")
-//        .property("EXTENDED_PUBLIC_KEY_SIZE", &ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE)
-//        .class_function("fromBytes", &ExtendedPublicKey::FromBytes)
-//        .function("publicChild", &ExtendedPublicKey::PublicChild)
-//        .function("getVersion", &ExtendedPublicKey::GetVersion)
-//        .function("getDepth", &ExtendedPublicKey::GetDepth)
-//        .function("getParentFingerprint", &ExtendedPublicKey::GetParentFingerprint)
-//        .function("getChildNumber", &ExtendedPublicKey::GetChildNumber)
-//        .function("getChainCode", &ExtendedPublicKey::GetChainCode)
-//        .function("getPublicKey", &ExtendedPublicKey::GetPublicKey)
-//        .function("serialize", &ExtendedPublicKey::Serialize);
+    class_<ExtendedPublicKeyWrapper>("ExtendedPublicKey")
+        .class_function("fromBytes", &ExtendedPublicKeyWrapper::FromBytes)
+        .function("publicChild", &ExtendedPublicKeyWrapper::PublicChild)
+        .function("getVersion", &ExtendedPublicKey::GetVersion)
+        .function("getDepth", &ExtendedPublicKeyWrapper::GetDepth)
+        .function("getParentFingerprint", &ExtendedPublicKeyWrapper::GetParentFingerprint)
+        .function("getChildNumber", &ExtendedPublicKeyWrapper::GetChildNumber)
+        .function("getChainCode", &ExtendedPublicKeyWrapper::GetChainCode)
+        .function("getPublicKey", &ExtendedPublicKey::GetPublicKey)
+        .function("serialize", &ExtendedPublicKeyWrapper::Serialize);
 //
 //    class_<ChainCode>("ChainCode")
 //        .property("CHAIN_CODE_KEY_SIZE")

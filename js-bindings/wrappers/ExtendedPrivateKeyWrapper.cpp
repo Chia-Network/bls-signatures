@@ -47,7 +47,12 @@ namespace js_wrappers {
         return PublicKeyWrapper(pk);
     }
 
-    emscripten::val ExtendedPrivateKeyWrapper::Serialize() const {
+    ExtendedPublicKeyWrapper ExtendedPrivateKeyWrapper::GetExtendedPublicKey() const {
+        ExtendedPublicKey pk = wrappedPrivateKey.GetExtendedPublicKey();
+        return ExtendedPublicKeyWrapper(pk);
+    }
+
+    val ExtendedPrivateKeyWrapper::Serialize() const {
         return helpers::toJSBuffer(wrappedPrivateKey.Serialize());
     }
 }

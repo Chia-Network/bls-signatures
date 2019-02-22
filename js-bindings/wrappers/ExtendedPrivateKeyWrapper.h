@@ -9,6 +9,7 @@
 #include "../helpers.h"
 #include "../../src/extendedprivatekey.hpp"
 #include "PrivateKeyWrapper.h"
+#include "ExtendedPublicKeyWrapper.h"
 
 using namespace bls;
 using namespace emscripten;
@@ -32,7 +33,7 @@ namespace js_wrappers {
         PrivateKeyWrapper GetPrivateKey() const;
 
         PublicKeyWrapper GetPublicKey() const;
-        // ExtendedPublicKeyWrapper GetExtendedPublicKey() const;
+        ExtendedPublicKeyWrapper GetExtendedPublicKey() const;
 
         val Serialize() const;
     private:
