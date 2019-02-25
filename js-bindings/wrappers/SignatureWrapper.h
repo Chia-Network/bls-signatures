@@ -8,22 +8,39 @@
 #include "emscripten/val.h"
 #include "../../src/signature.hpp"
 #include "AggregationInfoWrapper.h"
+#include "../helpers.h"
 
 using namespace bls;
 using namespace emscripten;
 
 namespace js_wrappers {
+    class InsecureSignatureWrapper {
+    public:
+        explicit InsecureSignatureWrapper(InsecureSignature &signature);
+        static InsecureSignatureWrapper FromBytes(val buffer);
+        static InsecureSignatureWrapper Aggregate(val insecureSignatureWrappers);
+        bool Verify(val hashesBuffers, val pubKeyWrappersArray) const;
+        InsecureSignatureWrapper DivideBy(val insecureSignatureWrappers) const;
+        val Serialize() const;
+        InsecureSignature GetWrappedSignature() const;
+
+    private:
+        InsecureSignature wrappedSignature;
+    };
+
     class SignatureWrapper {
     public:
         static SignatureWrapper FromSignature(Signature &signature);
 
         static SignatureWrapper FromBytes(val buffer);
 
-        // Unlike the original method, this method also needs to know corresponding aggregation infos
-        // for each signature, since serialized signature doesn't contain
         static SignatureWrapper AggregateSigs(val signatureWrappers);
 
         static SignatureWrapper FromBytesAndAggregationInfo(val buffer, const AggregationInfoWrapper &infoWrapper);
+
+        static SignatureWrapper FromInsecureSignature(InsecureSignatureWrapper signature);
+
+        static SignatureWrapper FromInsecureSignatureAndInfo(InsecureSignatureWrapper signature, AggregationInfoWrapper info);
 
         bool Verify() const;
 
@@ -32,6 +49,8 @@ namespace js_wrappers {
         AggregationInfoWrapper GetAggregationInfo() const;
 
         void SetAggregationInfo(AggregationInfoWrapper &newAggregationInfo);
+
+        SignatureWrapper DivideBy(val signatureWrappers) const;
 
         Signature GetWrappedSignature() const;
 

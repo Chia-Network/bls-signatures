@@ -2,7 +2,7 @@
   "name": "bls-js-bindings-test",
   "version": "0.1.0",
   "description": "Test for the javascript bindings for the Chia Network bls-signature library",
-  "main": "index.js",
+  "main": "blsjs.js",
   "directories": {
     "test": "tests"
   },
@@ -15,7 +15,8 @@
     "url": "https://github.com/antouhou"
   },
   "dependencies": {
-    "mocha": "^5.2.0"
+    "@types/node": "11.9.5",
+    "mocha": "5.2.0"
   },
-  "types": "typings.d.ts"
+  "types": "blsjs.d.ts"
 }
