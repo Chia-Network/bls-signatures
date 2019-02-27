@@ -1,4 +1,4 @@
-### BLS.js
+## BLS.js
 
 This library is a JavaScript port of the BLS lib. We also have typings, so you can use it with TypeScript too!
 
@@ -33,9 +33,7 @@ cmake --build . --
 
 ### Test
 
-To run tests, you need node.js installed.
-
-To run the tests, build the library, go to the build directory and run
+To run tests, you need node.js installed. Build the library, go to the build directory and run
 ```bash
 npm i
 npm test
