@@ -15,6 +15,7 @@
 #include <emscripten/bind.h>
 #include "wrappers/PrivateKeyWrapper.h"
 #include "wrappers/ExtendedPrivateKeyWrapper.h"
+#include "wrappers/ThresholdWrapper.h"
 
 using namespace emscripten;
 using namespace js_wrappers;

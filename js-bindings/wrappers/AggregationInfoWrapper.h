@@ -38,7 +38,7 @@ namespace js_wrappers {
         val GetExponents() const;
 //        bool Empty() const;
 
-        AggregationInfo GetWrappedInfo() const;
+        AggregationInfo GetWrappedInstance() const;
 
     private:
         AggregationInfo wrappedInfo;

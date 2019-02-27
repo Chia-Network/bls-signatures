@@ -16,6 +16,8 @@ namespace js_wrappers {
     public:
         explicit PublicKeyWrapper(PublicKey &publicKey);
 
+        static std::vector<PublicKey> GetWrappedComponents(std::vector<PublicKeyWrapper> wrappers);
+
         static PublicKeyWrapper FromBytes(val buffer);
 
         static PublicKeyWrapper Aggregate(val pubKeysWrappers);
@@ -24,10 +26,10 @@ namespace js_wrappers {
 
         uint32_t GetFingerprint() const;
 
-        PublicKey GetWrappedKey() const;
+        PublicKey GetWrappedInstance() const;
 
     private:
-        PublicKey wrappedPublicKey;
+        PublicKey wrapped;
     };
 }
 

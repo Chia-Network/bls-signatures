@@ -13,14 +13,14 @@ namespace js_wrappers {
     AggregationInfoWrapper::AggregationInfoWrapper(AggregationInfo &info) : wrappedInfo(info) {}
 
     AggregationInfoWrapper AggregationInfoWrapper::FromMsgHash(const PublicKeyWrapper &pkw, val messageHashBuffer) {
-        PublicKey pk = pkw.GetWrappedKey();
+        PublicKey pk = pkw.GetWrappedInstance();
         std::vector<uint8_t> messageHash = helpers::toVector(messageHashBuffer);
         AggregationInfo info = AggregationInfo::FromMsgHash(pk, messageHash.data());
         return AggregationInfoWrapper(info);
     }
 
     AggregationInfoWrapper AggregationInfoWrapper::FromMsg(const PublicKeyWrapper &pkw, val messageHashBuffer) {
-        PublicKey pk = pkw.GetWrappedKey();
+        PublicKey pk = pkw.GetWrappedInstance();
         std::vector<uint8_t> message = helpers::toVector(messageHashBuffer);
         AggregationInfo info = AggregationInfo::FromMsg(pk, message.data(), message.size());
         return AggregationInfoWrapper(info);
@@ -36,7 +36,7 @@ namespace js_wrappers {
         std::vector<PublicKeyWrapper> pubKeyWrappers = helpers::fromJSArray<PublicKeyWrapper>(pubKeyWrappersArray);
         std::vector<PublicKey> pubKeysVector;
         for (auto &pubKeyWrapper : pubKeyWrappers) {
-            pubKeysVector.push_back(pubKeyWrapper.GetWrappedKey());
+            pubKeysVector.push_back(pubKeyWrapper.GetWrappedInstance());
         }
         std::vector<bn_t *> exponentsVector = helpers::jsBuffersArrayToBnVector(exponentBns);
 
@@ -77,7 +77,7 @@ namespace js_wrappers {
         return helpers::toJSArray(exponents);
     }
 
-    AggregationInfo AggregationInfoWrapper::GetWrappedInfo() const {
+    AggregationInfo AggregationInfoWrapper::GetWrappedInstance() const {
         return wrappedInfo;
     }
 }

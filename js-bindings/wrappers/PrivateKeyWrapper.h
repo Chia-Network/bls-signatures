@@ -9,12 +9,13 @@
 #include "../../src/privatekey.hpp"
 #include "SignatureWrapper.h"
 #include "PublicKeyWrapper.h"
+#include "JSWrapper.h"
 
 using namespace emscripten;
 using namespace bls;
 
 namespace js_wrappers {
-    class PrivateKeyWrapper {
+    class PrivateKeyWrapper: public JSWrapper<PrivateKey> {
     public:
         explicit PrivateKeyWrapper(PrivateKey &privateKey);
 
@@ -31,10 +32,6 @@ namespace js_wrappers {
         SignatureWrapper SignPrehashed(val messageHashBuffer) const;
 
         PublicKeyWrapper GetPublicKey() const;
-
-        PrivateKey GetWrappedKey() const;
-    private:
-        PrivateKey wrappedPrivateKey;
     };
 }
 

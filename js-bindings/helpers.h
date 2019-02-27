@@ -11,6 +11,7 @@
 #include "emscripten/val.h"
 #include <algorithm>
 #include "../src/bls.hpp"
+#include "wrappers/JSWrapper.h"
 
 using namespace bls;
 using namespace emscripten;
@@ -35,6 +36,15 @@ namespace helpers {
         }
         return vec;
     };
+
+    template <typename T>
+    inline std::vector<T> unwrap(std::vector<js_wrappers::JSWrapper<T>> wrappers) {
+        std::vector<T> unwrapped;
+        for (auto &wrapper : wrappers) {
+            unwrapped.push_back(wrapper.GetWrappedInstance());
+        }
+        return unwrapped;
+    }
 
     std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray);
 

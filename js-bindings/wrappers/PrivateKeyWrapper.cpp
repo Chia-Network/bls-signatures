@@ -8,7 +8,7 @@
 using namespace emscripten;
 
 namespace js_wrappers {
-    PrivateKeyWrapper::PrivateKeyWrapper(PrivateKey &privateKey) : wrappedPrivateKey(privateKey) {}
+    PrivateKeyWrapper::PrivateKeyWrapper(PrivateKey &privateKey) : JSWrapper(privateKey) {};
 
     PrivateKeyWrapper PrivateKeyWrapper::FromSeed(val buffer) {
         std::vector<uint8_t> bytes = helpers::toVector(buffer);
@@ -22,12 +22,12 @@ namespace js_wrappers {
 
         std::vector<PublicKey> pubKeys;
         for (auto &publicKeyWrapper : publicKeysVector) {
-            pubKeys.push_back(publicKeyWrapper.GetWrappedKey());
+            pubKeys.push_back(publicKeyWrapper.GetWrappedInstance());
         }
 
         std::vector<PrivateKey> privateKeys;
         for (auto &privateKeyWrapper : privateKeysVector) {
-            privateKeys.push_back(privateKeyWrapper.GetWrappedKey());
+            privateKeys.push_back(privateKeyWrapper.GetWrappedInstance());
         }
 
         PrivateKey aggregatedPk = PrivateKey::Aggregate(privateKeys, pubKeys);
@@ -41,27 +41,23 @@ namespace js_wrappers {
     }
 
     val PrivateKeyWrapper::Serialize() const {
-        return helpers::toJSBuffer(wrappedPrivateKey.Serialize());
+        return helpers::toJSBuffer(wrapped.Serialize());
     }
 
     SignatureWrapper PrivateKeyWrapper::Sign(val messageBuffer) const {
         std::vector<uint8_t> message = helpers::toVector(messageBuffer);
-        Signature signature = wrappedPrivateKey.Sign(message.data(), message.size());
+        Signature signature = wrapped.Sign(message.data(), message.size());
         return SignatureWrapper::FromSignature(signature);
     }
 
     SignatureWrapper PrivateKeyWrapper::SignPrehashed(val messageHashBuffer) const {
         std::vector<uint8_t> hash = helpers::toVector(messageHashBuffer);
-        Signature signature = wrappedPrivateKey.SignPrehashed(hash.data());
+        Signature signature = wrapped.SignPrehashed(hash.data());
         return SignatureWrapper::FromSignature(signature);
     }
 
     PublicKeyWrapper PrivateKeyWrapper::GetPublicKey() const {
-        PublicKey pk = wrappedPrivateKey.GetPublicKey();
+        PublicKey pk = wrapped.GetPublicKey();
         return PublicKeyWrapper(pk);
-    }
-
-    PrivateKey PrivateKeyWrapper::GetWrappedKey() const {
-        return wrappedPrivateKey;
     }
 }

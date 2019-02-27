@@ -1,4 +1,4 @@
-const {AggregationInfo, PrivateKey} = require('../');
+const {AggregationInfo, PrivateKey} = require('../../js_build/js-bindings/blsjs');
 const assert = require('assert');
 const crypto = require('crypto');
 

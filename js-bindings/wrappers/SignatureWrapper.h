@@ -14,7 +14,7 @@ using namespace bls;
 using namespace emscripten;
 
 namespace js_wrappers {
-    class InsecureSignatureWrapper {
+    class InsecureSignatureWrapper: public JSWrapper<InsecureSignature> {
     public:
         explicit InsecureSignatureWrapper(InsecureSignature &signature);
         static InsecureSignatureWrapper FromBytes(val buffer);
@@ -22,14 +22,12 @@ namespace js_wrappers {
         bool Verify(val hashesBuffers, val pubKeyWrappersArray) const;
         InsecureSignatureWrapper DivideBy(val insecureSignatureWrappers) const;
         val Serialize() const;
-        InsecureSignature GetWrappedSignature() const;
-
-    private:
-        InsecureSignature wrappedSignature;
     };
 
-    class SignatureWrapper {
+    class SignatureWrapper: public JSWrapper<Signature> {
     public:
+        explicit SignatureWrapper(Signature &signature);
+
         static SignatureWrapper FromSignature(Signature &signature);
 
         static SignatureWrapper FromBytes(val buffer);
@@ -51,14 +49,6 @@ namespace js_wrappers {
         void SetAggregationInfo(AggregationInfoWrapper &newAggregationInfo);
 
         SignatureWrapper DivideBy(val signatureWrappers) const;
-
-        Signature GetWrappedSignature() const;
-
-    private:
-        explicit SignatureWrapper(Signature &signature);
-
-        Signature wrappedSignature;
-
     };
 }
 
