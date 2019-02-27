@@ -16,29 +16,35 @@ using namespace bls;
 using namespace emscripten;
 
 namespace js_wrappers {
-    class ExtendedPrivateKeyWrapper {
+    class ExtendedPrivateKeyWrapper: public JSWrapper<ExtendedPrivateKey> {
     public:
         explicit ExtendedPrivateKeyWrapper(ExtendedPrivateKey &extendedPrivateKey);
 
         static ExtendedPrivateKeyWrapper FromSeed(val seedBuffer);
+
         static ExtendedPrivateKeyWrapper FromBytes(val serializedBuffer);
+
         ExtendedPrivateKeyWrapper PrivateChild(uint32_t i) const;
+
         ExtendedPublicKeyWrapper PublicChild(uint32_t i) const;
 
         uint32_t GetVersion() const;
+
         uint8_t GetDepth() const;
+
         uint32_t GetParentFingerprint() const;
+
         uint32_t GetChildNumber() const;
 
         ChainCodeWrapper GetChainCode() const;
+
         PrivateKeyWrapper GetPrivateKey() const;
 
         PublicKeyWrapper GetPublicKey() const;
+
         ExtendedPublicKeyWrapper GetExtendedPublicKey() const;
 
         val Serialize() const;
-    private:
-        ExtendedPrivateKey wrappedPrivateKey;
     };
 }
 

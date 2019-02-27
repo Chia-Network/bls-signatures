@@ -3,12 +3,19 @@
 //
 
 #include "PrivateKeyWrapper.h"
-#include "../helpers.h"
 
 using namespace emscripten;
 
 namespace js_wrappers {
     PrivateKeyWrapper::PrivateKeyWrapper(PrivateKey &privateKey) : JSWrapper(privateKey) {};
+
+    std::vector<PrivateKey> PrivateKeyWrapper::Unwrap(std::vector<PrivateKeyWrapper> wrappers) {
+        std::vector<PrivateKey> unwrapped;
+        for (auto &wrapper : wrappers) {
+            unwrapped.push_back(wrapper.GetWrappedInstance());
+        }
+        return unwrapped;
+    }
 
     PrivateKeyWrapper PrivateKeyWrapper::FromSeed(val buffer) {
         std::vector<uint8_t> bytes = helpers::toVector(buffer);
@@ -17,18 +24,10 @@ namespace js_wrappers {
     }
 
     PrivateKeyWrapper PrivateKeyWrapper::Aggregate(val privateKeysArray, val publicKeysArray) {
-        std::vector<PublicKeyWrapper> publicKeysVector = helpers::fromJSArray<PublicKeyWrapper>(publicKeysArray);
-        std::vector<PrivateKeyWrapper> privateKeysVector = helpers::fromJSArray<PrivateKeyWrapper>(privateKeysArray);
-
-        std::vector<PublicKey> pubKeys;
-        for (auto &publicKeyWrapper : publicKeysVector) {
-            pubKeys.push_back(publicKeyWrapper.GetWrappedInstance());
-        }
-
-        std::vector<PrivateKey> privateKeys;
-        for (auto &privateKeyWrapper : privateKeysVector) {
-            privateKeys.push_back(privateKeyWrapper.GetWrappedInstance());
-        }
+        std::vector<PublicKey> pubKeys = PublicKeyWrapper::Unwrap(
+                helpers::fromJSArray<PublicKeyWrapper>(publicKeysArray));
+        std::vector<PrivateKey> privateKeys = PrivateKeyWrapper::Unwrap(
+                helpers::fromJSArray<PrivateKeyWrapper>(privateKeysArray));
 
         PrivateKey aggregatedPk = PrivateKey::Aggregate(privateKeys, pubKeys);
         return PrivateKeyWrapper(aggregatedPk);

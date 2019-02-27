@@ -11,25 +11,27 @@
 #include "ChainCodeWrapper.h"
 
 namespace js_wrappers {
-    class ExtendedPublicKeyWrapper {
+    class ExtendedPublicKeyWrapper: public JSWrapper<ExtendedPublicKey> {
     public:
         explicit ExtendedPublicKeyWrapper(ExtendedPublicKey &extendedPublicKey);
+
         static ExtendedPublicKeyWrapper FromBytes(val serializedBuffer);
 
         ExtendedPublicKeyWrapper PublicChild(uint32_t i) const;
 
         uint32_t GetVersion() const;
+
         uint8_t GetDepth() const;
+
         uint32_t GetParentFingerprint() const;
+
         uint32_t GetChildNumber() const;
 
         ChainCodeWrapper GetChainCode() const;
+
         PublicKeyWrapper GetPublicKey() const;
 
         val Serialize() const;
-
-    private:
-        ExtendedPublicKey wrappedPublicKey;
     };
 }
 

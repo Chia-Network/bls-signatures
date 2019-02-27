@@ -14,7 +14,7 @@ using namespace emscripten;
 using namespace bls;
 
 namespace js_wrappers {
-    class AggregationInfoWrapper {
+    class AggregationInfoWrapper: public JSWrapper<AggregationInfo> {
     public:
         explicit AggregationInfoWrapper(AggregationInfo &info);
 
@@ -37,11 +37,6 @@ namespace js_wrappers {
 
         val GetExponents() const;
 //        bool Empty() const;
-
-        AggregationInfo GetWrappedInstance() const;
-
-    private:
-        AggregationInfo wrappedInfo;
     };
 }
 

@@ -14,11 +14,13 @@ namespace helpers {
         }
         return buffer;
     }
+
     val toJSBuffer(uint8_t *pointer, size_t data_size) {
         std::vector<uint8_t> vec = toVector(pointer, data_size);
         val buffer = toJSBuffer(vec);
         return buffer;
     }
+
     val toJSBuffer(bn_t bn) {
         std::vector<uint8_t> vec = toVector(bn);
         val buffer = toJSBuffer(vec);

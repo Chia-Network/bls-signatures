@@ -6,10 +6,11 @@
 #define BLS_ABSTRACTWRAPPER_H
 
 namespace js_wrappers {
-    template <class T>
+    template<class T>
     class JSWrapper {
     public:
         inline explicit JSWrapper(T &wrappedInstance) : wrapped(wrappedInstance) {};
+
         inline T GetWrappedInstance() const {
             return wrapped;
         };

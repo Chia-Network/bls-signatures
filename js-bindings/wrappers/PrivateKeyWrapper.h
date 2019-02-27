@@ -15,9 +15,11 @@ using namespace emscripten;
 using namespace bls;
 
 namespace js_wrappers {
-    class PrivateKeyWrapper: public JSWrapper<PrivateKey> {
+    class PrivateKeyWrapper : public JSWrapper<PrivateKey> {
     public:
         explicit PrivateKeyWrapper(PrivateKey &privateKey);
+
+        static std::vector<PrivateKey> Unwrap(std::vector<PrivateKeyWrapper> wrappers);
 
         static PrivateKeyWrapper FromSeed(val buffer);
 

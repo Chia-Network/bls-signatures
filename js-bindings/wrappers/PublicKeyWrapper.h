@@ -7,16 +7,17 @@
 
 #include "emscripten/val.h"
 #include "../../src/publickey.hpp"
+#include "JSWrapper.h"
 
 using namespace emscripten;
 using namespace bls;
 
 namespace js_wrappers {
-    class PublicKeyWrapper {
+    class PublicKeyWrapper : public JSWrapper<PublicKey> {
     public:
         explicit PublicKeyWrapper(PublicKey &publicKey);
 
-        static std::vector<PublicKey> GetWrappedComponents(std::vector<PublicKeyWrapper> wrappers);
+        static std::vector<PublicKey> Unwrap(std::vector<PublicKeyWrapper> wrappers);
 
         static PublicKeyWrapper FromBytes(val buffer);
 
@@ -25,11 +26,6 @@ namespace js_wrappers {
         val Serialize() const;
 
         uint32_t GetFingerprint() const;
-
-        PublicKey GetWrappedInstance() const;
-
-    private:
-        PublicKey wrapped;
     };
 }
 

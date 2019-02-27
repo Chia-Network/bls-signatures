@@ -18,15 +18,20 @@ using namespace emscripten;
 
 namespace helpers {
     val toJSBuffer(uint8_t *pointer, size_t data_size);
+
     val toJSBuffer(std::vector<uint8_t> vec);
+
     val toJSBuffer(bn_t bn);
 
     std::vector<uint8_t> toVector(uint8_t *pointer, size_t data_size);
+
     std::vector<uint8_t> toVector(val jsBuffer);
+
     std::vector<uint8_t> toVector(bn_t bn);
 
 
     val toJSArray(std::vector<val> vec);
+
     template<typename T>
     inline std::vector<T> fromJSArray(val array) {
         auto l = array["length"].as<unsigned>();
@@ -36,15 +41,6 @@ namespace helpers {
         }
         return vec;
     };
-
-    template <typename T>
-    inline std::vector<T> unwrap(std::vector<js_wrappers::JSWrapper<T>> wrappers) {
-        std::vector<T> unwrapped;
-        for (auto &wrapper : wrappers) {
-            unwrapped.push_back(wrapper.GetWrappedInstance());
-        }
-        return unwrapped;
-    }
 
     std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray);
 

@@ -10,6 +10,15 @@ using namespace emscripten;
 namespace js_wrappers {
     InsecureSignatureWrapper::InsecureSignatureWrapper(InsecureSignature &signature) : JSWrapper(signature) {}
 
+    std::vector<InsecureSignature> InsecureSignatureWrapper::Unwrap(
+            std::vector<js_wrappers::InsecureSignatureWrapper> sigWrappers) {
+        std::vector<InsecureSignature> signatures;
+        for (auto &sigWrapper : sigWrappers) {
+            signatures.push_back(sigWrapper.GetWrappedInstance());
+        }
+        return signatures;
+    }
+
     InsecureSignatureWrapper InsecureSignatureWrapper::FromBytes(val buffer) {
         std::vector<uint8_t> bytes = helpers::toVector(buffer);
         InsecureSignature sig = InsecureSignature::FromBytes(bytes.data());
@@ -17,36 +26,27 @@ namespace js_wrappers {
     }
 
     InsecureSignatureWrapper InsecureSignatureWrapper::Aggregate(val insecureSignatureWrappers) {
-        std::vector<InsecureSignatureWrapper> sigWrappers = helpers::fromJSArray<InsecureSignatureWrapper>(insecureSignatureWrappers);
-        std::vector<InsecureSignature> signatures;
-        for (auto &sigWrapper : sigWrappers) {
-            signatures.emplace_back(sigWrapper.GetWrappedInstance());
-        }
+        std::vector<InsecureSignature> signatures = InsecureSignatureWrapper::Unwrap(
+                helpers::fromJSArray<InsecureSignatureWrapper>(insecureSignatureWrappers));
         InsecureSignature aggregatedSignature = InsecureSignature::Aggregate(signatures);
         return InsecureSignatureWrapper(aggregatedSignature);
     }
 
     bool InsecureSignatureWrapper::Verify(val hashesBuffers, val pubKeyWrappersArray) const {
         std::vector<std::vector<uint8_t>> hashesVectors = helpers::jsBuffersArrayToVector(hashesBuffers);
-        std::vector<const uint8_t*> hashes;
+        std::vector<const uint8_t *> hashes;
         for (auto &i : hashesVectors) {
             hashes.push_back(i.data());
         }
-        std::vector<PublicKeyWrapper> pubKeyWrappers = helpers::fromJSArray<PublicKeyWrapper>(pubKeyWrappersArray);
-        std::vector<PublicKey> pubKeysVector;
-        for (auto &pubKeyWrapper : pubKeyWrappers) {
-            pubKeysVector.push_back(pubKeyWrapper.GetWrappedInstance());
-        }
+        std::vector<PublicKey> pubKeysVector = PublicKeyWrapper::Unwrap(
+                helpers::fromJSArray<PublicKeyWrapper>(pubKeyWrappersArray));
 
         return wrapped.Verify(hashes, pubKeysVector);
     }
 
     InsecureSignatureWrapper InsecureSignatureWrapper::DivideBy(val insecureSignatureWrappers) const {
-        std::vector<InsecureSignatureWrapper> sigWrappers = helpers::fromJSArray<InsecureSignatureWrapper>(insecureSignatureWrappers);
-        std::vector<InsecureSignature> signatures;
-        for (auto &sigWrapper : sigWrappers) {
-            signatures.emplace_back(sigWrapper.GetWrappedInstance());
-        }
+        std::vector<InsecureSignature> signatures = InsecureSignatureWrapper::Unwrap(
+                helpers::fromJSArray<InsecureSignatureWrapper>(insecureSignatureWrappers));
         InsecureSignature dividedSignature = wrapped.DivideBy(signatures);
         return InsecureSignatureWrapper(dividedSignature);
     }
@@ -60,16 +60,22 @@ namespace js_wrappers {
 
     SignatureWrapper::SignatureWrapper(Signature &signature) : JSWrapper(signature) {}
 
+    std::vector<Signature> SignatureWrapper::Unwrap(std::vector<js_wrappers::SignatureWrapper> sigWrappers) {
+        std::vector<Signature> signatures;
+        for (auto &sigWrapper : sigWrappers) {
+            signatures.push_back(sigWrapper.GetWrappedInstance());
+        }
+        return signatures;
+    }
+
     SignatureWrapper SignatureWrapper::FromSignature(Signature &signature) {
-        SignatureWrapper sw = SignatureWrapper(signature);
-        return sw;
+        return SignatureWrapper(signature);
     }
 
     SignatureWrapper SignatureWrapper::FromBytes(val buffer) {
         std::vector<uint8_t> bytes = helpers::toVector(buffer);
         Signature sig = Signature::FromBytes(bytes.data());
-        SignatureWrapper sw = SignatureWrapper(sig);
-        return sw;
+        return SignatureWrapper(sig);
     }
 
     SignatureWrapper
@@ -81,11 +87,8 @@ namespace js_wrappers {
     }
 
     SignatureWrapper SignatureWrapper::AggregateSigs(val signatureWrappers) {
-        std::vector<SignatureWrapper> sigWrappers = helpers::fromJSArray<SignatureWrapper>(signatureWrappers);
-        std::vector<Signature> signatures;
-        for (auto &sigWrapper : sigWrappers) {
-            signatures.push_back(sigWrapper.GetWrappedInstance());
-        }
+        std::vector<Signature> signatures = SignatureWrapper::Unwrap(
+                helpers::fromJSArray<SignatureWrapper>(signatureWrappers));
         Signature aggregatedSignature = Signature::AggregateSigs(signatures);
         return SignatureWrapper(aggregatedSignature);
     }
@@ -96,7 +99,7 @@ namespace js_wrappers {
     }
 
     SignatureWrapper SignatureWrapper::FromInsecureSignatureAndInfo(const InsecureSignatureWrapper signature,
-                                                             const AggregationInfoWrapper info) {
+                                                                    const AggregationInfoWrapper info) {
         Signature sig = Signature::FromInsecureSig(signature.GetWrappedInstance(), info.GetWrappedInstance());
         return SignatureWrapper(sig);
     }
@@ -120,11 +123,8 @@ namespace js_wrappers {
     }
 
     SignatureWrapper SignatureWrapper::DivideBy(val signatureWrappers) const {
-        std::vector<SignatureWrapper> sigWrappers = helpers::fromJSArray<SignatureWrapper>(signatureWrappers);
-        std::vector<Signature> signatures;
-        for (auto &sigWrapper : sigWrappers) {
-            signatures.push_back(sigWrapper.GetWrappedInstance());
-        }
+        std::vector<Signature> signatures = SignatureWrapper::Unwrap(
+                helpers::fromJSArray<SignatureWrapper>(signatureWrappers));
         Signature dividedSig = wrapped.DivideBy(signatures);
         return SignatureWrapper(dividedSig);
     }

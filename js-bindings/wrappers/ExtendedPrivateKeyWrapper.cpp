@@ -5,7 +5,8 @@
 #include "ExtendedPrivateKeyWrapper.h"
 
 namespace js_wrappers {
-    ExtendedPrivateKeyWrapper::ExtendedPrivateKeyWrapper(ExtendedPrivateKey &extendedPrivateKey) : wrappedPrivateKey(extendedPrivateKey) {};
+    ExtendedPrivateKeyWrapper::ExtendedPrivateKeyWrapper(ExtendedPrivateKey &extendedPrivateKey) : JSWrapper(
+            extendedPrivateKey) {};
 
     ExtendedPrivateKeyWrapper ExtendedPrivateKeyWrapper::FromSeed(val seedBuffer) {
         std::vector<uint8_t> seed = helpers::toVector(seedBuffer);
@@ -20,49 +21,52 @@ namespace js_wrappers {
     }
 
     ExtendedPrivateKeyWrapper ExtendedPrivateKeyWrapper::PrivateChild(uint32_t i) const {
-        ExtendedPrivateKey esk = wrappedPrivateKey.PrivateChild(i);
+        ExtendedPrivateKey esk = wrapped.PrivateChild(i);
         return ExtendedPrivateKeyWrapper(esk);
     }
 
     ExtendedPublicKeyWrapper ExtendedPrivateKeyWrapper::PublicChild(uint32_t i) const {
-        ExtendedPublicKey epk = wrappedPrivateKey.PublicChild(i);
+        ExtendedPublicKey epk = wrapped.PublicChild(i);
         return ExtendedPublicKeyWrapper(epk);
     };
 
     uint32_t ExtendedPrivateKeyWrapper::GetVersion() const {
-        return wrappedPrivateKey.GetVersion();
+        return wrapped.GetVersion();
     };
+
     uint8_t ExtendedPrivateKeyWrapper::GetDepth() const {
-        return wrappedPrivateKey.GetDepth();
+        return wrapped.GetDepth();
     };
+
     uint32_t ExtendedPrivateKeyWrapper::GetParentFingerprint() const {
-        return wrappedPrivateKey.GetParentFingerprint();
+        return wrapped.GetParentFingerprint();
     };
+
     uint32_t ExtendedPrivateKeyWrapper::GetChildNumber() const {
-        return wrappedPrivateKey.GetChildNumber();
+        return wrapped.GetChildNumber();
     };
 
     ChainCodeWrapper ExtendedPrivateKeyWrapper::GetChainCode() const {
-        ChainCode chainCode = wrappedPrivateKey.GetChainCode();
+        ChainCode chainCode = wrapped.GetChainCode();
         return ChainCodeWrapper(chainCode);
     };
 
     PrivateKeyWrapper ExtendedPrivateKeyWrapper::GetPrivateKey() const {
-        PrivateKey sk = wrappedPrivateKey.GetPrivateKey();
+        PrivateKey sk = wrapped.GetPrivateKey();
         return PrivateKeyWrapper(sk);
     }
 
     PublicKeyWrapper ExtendedPrivateKeyWrapper::GetPublicKey() const {
-        PublicKey pk = wrappedPrivateKey.GetPublicKey();
+        PublicKey pk = wrapped.GetPublicKey();
         return PublicKeyWrapper(pk);
     }
 
     ExtendedPublicKeyWrapper ExtendedPrivateKeyWrapper::GetExtendedPublicKey() const {
-        ExtendedPublicKey pk = wrappedPrivateKey.GetExtendedPublicKey();
+        ExtendedPublicKey pk = wrapped.GetExtendedPublicKey();
         return ExtendedPublicKeyWrapper(pk);
     }
 
     val ExtendedPrivateKeyWrapper::Serialize() const {
-        return helpers::toJSBuffer(wrappedPrivateKey.Serialize());
+        return helpers::toJSBuffer(wrapped.Serialize());
     }
 }

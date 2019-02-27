@@ -12,14 +12,13 @@
 using namespace bls;
 
 namespace js_wrappers {
-    class ChainCodeWrapper {
+    class ChainCodeWrapper: public JSWrapper<ChainCode> {
     public:
         explicit ChainCodeWrapper(ChainCode &chainCode);
-        static ChainCodeWrapper FromBytes(val jsBuffer);
-        val Serialize() const;
 
-    private:
-        ChainCode wrappedChainCode;
+        static ChainCodeWrapper FromBytes(val jsBuffer);
+
+        val Serialize() const;
     };
 }
 

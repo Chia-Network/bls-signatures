@@ -10,7 +10,15 @@
 using namespace emscripten;
 
 namespace js_wrappers {
-    PublicKeyWrapper::PublicKeyWrapper(PublicKey &publicKey) : wrapped(publicKey) {}
+    PublicKeyWrapper::PublicKeyWrapper(PublicKey &publicKey) : JSWrapper(publicKey) {}
+
+    std::vector<PublicKey> PublicKeyWrapper::Unwrap(std::vector<PublicKeyWrapper> wrappers) {
+        std::vector<PublicKey> unwrapped;
+        for (auto &wrapper : wrappers) {
+            unwrapped.push_back(wrapper.GetWrappedInstance());
+        }
+        return unwrapped;
+    }
 
     PublicKeyWrapper PublicKeyWrapper::FromBytes(val buffer) {
         std::vector<uint8_t> bytes = helpers::toVector(buffer);
@@ -19,11 +27,8 @@ namespace js_wrappers {
     }
 
     PublicKeyWrapper PublicKeyWrapper::Aggregate(val pubKeysWrappers) {
-        std::vector<PublicKeyWrapper> keyWrappers = helpers::fromJSArray<PublicKeyWrapper>(pubKeysWrappers);
-        std::vector<PublicKey> pubKeys;
-        for (auto &keyWrapper : keyWrappers) {
-            pubKeys.push_back(keyWrapper.GetWrappedInstance());
-        }
+        std::vector<PublicKey> pubKeys = PublicKeyWrapper::Unwrap(
+                helpers::fromJSArray<PublicKeyWrapper>(pubKeysWrappers));
         PublicKey aggregatedPk = PublicKey::Aggregate(pubKeys);
         return PublicKeyWrapper(aggregatedPk);
     }
@@ -34,9 +39,5 @@ namespace js_wrappers {
 
     uint32_t PublicKeyWrapper::GetFingerprint() const {
         return wrapped.GetFingerprint();
-    }
-
-    PublicKey PublicKeyWrapper::GetWrappedInstance() const {
-        return wrapped;
     }
 }
