@@ -23,11 +23,13 @@ else ()
     target_link_libraries(blsjs PRIVATE blstmp relic_s)
 endif ()
 
+# Copy necessary files for the npm package
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/package.json package.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/package-lock.json package-lock.json COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/blsjs.d.ts blsjs.d.ts COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/README.md README.md COPYONLY)
 
+# Copy test files
 file(GLOB JS_BINDINGS_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/ ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.spec.js)
 foreach(file ${JS_BINDINGS_TESTS})
     message(FILE ${file})

@@ -29,10 +29,9 @@ cmake ../ -DCMAKE_TOOLCHAIN_FILE=/home/anton/Programs/emsdk/emscripten/1.38.25/c
 cmake --build . --
 ```
 
-### Test
+### Run tests
 
-To run tests, you need node.js installed. Build the library, go to the build directory and run
+To run tests, build the library, go to the `js_bindings` folder in the build directory and run
 ```bash
-npm i
 npm test
 ```
