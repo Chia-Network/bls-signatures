@@ -1,6 +1,8 @@
 ## BLS.js
 
-This library is a JavaScript port of the BLS lib. We also have typings, so you can use it with TypeScript too!
+JavaScript library that implements BLS signatures with aggregation as in Boneh, Drijvers, Neven 2018, using relic toolkit for cryptographic primitives (pairings, EC, hashing).
+
+This library is a JavaScript port of the [Chia Network's BLS lib](https://github.com/Chia-Network/bls-signatures). We also have typings, so you can use it with TypeScript too!
 
 ### Usage
 
