@@ -9,9 +9,7 @@
   "scripts": {
     "test": "mocha ./tests --recursive"
   },
-  "repository": {
-
-  },
+  "repository": "https://github.com/antouhou/bls-signatures/tree/feature/js_build/js-bindings",
   "author": {
     "name": "Anton Suprunchuk",
     "email": "antouhou@gmail.com",
