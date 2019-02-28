@@ -18,10 +18,8 @@ You can look at [typings](./blsjs.d.ts) to see how the library's API looks like.
 
 ### Build
 
-The build process is the same as for c++ lib, except for two steps.
-
-1. Install [emscripten](https://emscripten.org/docs/getting_started/downloads.html)
-2. Follow original build instructions, but pass Emscripten toolchain file as an option to CMake.
+Build requires Node.js (with npm) and [Emcripten](https://emscripten.org/docs/getting_started/downloads.html) installed.
+The build process is the same as for c++ lib, with one additional step: pass Emscripten toolchain file as an option to CMake.
 From the project root directory, run:
 ```
 git submodule update --init --recursive

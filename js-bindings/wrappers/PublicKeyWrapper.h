@@ -17,6 +17,7 @@
 
 #include "emscripten/val.h"
 #include "../../src/publickey.hpp"
+#include "../helpers.h"
 #include "JSWrapper.h"
 
 using namespace emscripten;

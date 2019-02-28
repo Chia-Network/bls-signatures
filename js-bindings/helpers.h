@@ -12,14 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLS_HELPERS_H
-#define BLS_HELPERS_H
+#ifndef JS_BINDINGS_HELPERS_H_
+#define JS_BINDINGS_HELPERS_H_
 
+#include <algorithm>
+#include <vector>
+#include "emscripten/val.h"
 #include "relic_conf.h"
 #include "relic.h"
 #include "relic_bn.h"
-#include "emscripten/val.h"
-#include <algorithm>
 #include "../src/bls.hpp"
 #include "wrappers/JSWrapper.h"
 
@@ -33,14 +34,13 @@ namespace helpers {
 
     val toJSBuffer(bn_t bn);
 
+    val toJSArray(std::vector<val> vec);
+
     std::vector<uint8_t> toVector(uint8_t *pointer, size_t data_size);
 
     std::vector<uint8_t> toVector(val jsBuffer);
 
     std::vector<uint8_t> toVector(bn_t bn);
-
-
-    val toJSArray(std::vector<val> vec);
 
     template<typename T>
     inline std::vector<T> fromJSArray(val array) {
@@ -50,13 +50,13 @@ namespace helpers {
             vec.push_back(array[i].as<T>());
         }
         return vec;
-    };
+    }
 
     std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray);
 
     std::vector<bn_t *> jsBuffersArrayToBnVector(val buffersArray);
 
     val byteArraysVectorToJsBuffersArray(std::vector<uint8_t *> arraysVector, size_t element_size);
-}
+}  //namespace helpers
 
-#endif //BLS_HELPERS_H
+#endif  //JS_BINDINGS_HELPERS_H_

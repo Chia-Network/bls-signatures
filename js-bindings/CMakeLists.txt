@@ -8,17 +8,30 @@ include_directories(
         ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
 )
 
-file(GLOB_RECURSE WRAP_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/wrappers/*.h)
-file(GLOB_RECURSE WRAP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/wrappers/*.cpp)
+file(GLOB_RECURSE WRAP_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/wrappers/*.h)
+file(GLOB_RECURSE WRAP_SRC ${CMAKE_CURRENT_SOURCE_DIR}/wrappers/*.cpp)
 
-add_executable(blsjs ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/jsbindings.cpp
-        ${WRAP_HEADERS} ${WRAP_SRC} ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/helpers.h ${CMAKE_CURRENT_SOURCE_DIR}/../js-bindings/helpers.cpp
+add_executable(blsjs ${CMAKE_CURRENT_SOURCE_DIR}/jsbindings.cpp
+        ${WRAP_HEADERS} ${WRAP_SRC}  ${CMAKE_CURRENT_SOURCE_DIR}/helpers.h ${CMAKE_CURRENT_SOURCE_DIR}/helpers.cpp
         )
+add_custom_target(install_npm_dependencies npm ci)
+add_dependencies(blsjs install_npm_dependencies)
 
 if (SODIUM_FOUND)
     target_link_libraries(blsjs PRIVATE blstmp relic_s sodium)
 else ()
     target_link_libraries(blsjs PRIVATE blstmp relic_s)
 endif ()
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/package.json package.json COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/package-lock.json package-lock.json COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/blsjs.d.ts blsjs.d.ts COPYONLY)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/README.md README.md COPYONLY)
+
+file(GLOB JS_BINDINGS_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/ ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.spec.js)
+foreach(file ${JS_BINDINGS_TESTS})
+    message(FILE ${file})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/${file} tests/${file} COPYONLY)
+endforeach()
 
 set_target_properties(blsjs PROPERTIES LINK_FLAGS "--bind -s WASM=0 -s DISABLE_EXCEPTION_CATCHING=0")

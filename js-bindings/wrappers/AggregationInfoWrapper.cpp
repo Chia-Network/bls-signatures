@@ -13,8 +13,6 @@
 // limitations under the License.
 
 #include "AggregationInfoWrapper.h"
-#include "emscripten/val.h"
-#include "../helpers.h"
 
 using namespace bls;
 using namespace emscripten;

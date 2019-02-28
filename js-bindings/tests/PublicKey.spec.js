@@ -1,6 +1,6 @@
 const assert = require('assert');
 
-const {PublicKey, PrivateKey} = require('../../js_build/js-bindings/blsjs');
+const {PublicKey, PrivateKey} = require('../');
 
 function getPublicKeyFixture() {
     return {

@@ -1,5 +1,5 @@
 const assert = require('assert');
-const {Signature, PublicKey, PrivateKey, AggregationInfo} = require('../../js_build/js-bindings/blsjs');
+const {Signature, PublicKey, PrivateKey, AggregationInfo} = require('../');
 
 function getSignatureBuffer() {
     return Buffer.from('006d0a8661db762a94be51be85efb1199f62dfc3f8fa8c9f003d02fdc69b281e689a54928b9adce98a8471a889c55af40c9bd7b7339c00f6f8bf871d132cfa5cf4e9b11f7ce05acafbb24c2db82b7f6193ee954f5167a2a46e3daecf4a007609', 'hex');

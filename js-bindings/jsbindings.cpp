@@ -18,77 +18,78 @@
 #include "wrappers/ThresholdWrapper.h"
 
 using namespace emscripten;
-using namespace js_wrappers;
 
-EMSCRIPTEN_BINDINGS(blsjs) {
-    class_<PrivateKeyWrapper>("PrivateKey")
-        .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
-        .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
-        .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
-        .function("serialize", &PrivateKeyWrapper::Serialize)
-        .function("sign", &PrivateKeyWrapper::Sign)
-        .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed)
-        .function("getPublicKey", &PrivateKeyWrapper::GetPublicKey);
+namespace js_wrappers {
+    EMSCRIPTEN_BINDINGS(blsjs) {
+        class_<PrivateKeyWrapper>("PrivateKey")
+            .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
+            .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
+            .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
+            .function("serialize", &PrivateKeyWrapper::Serialize)
+            .function("sign", &PrivateKeyWrapper::Sign)
+            .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed)
+            .function("getPublicKey", &PrivateKeyWrapper::GetPublicKey);
 
-    class_<SignatureWrapper>("Signature")
-        .class_function("fromBytes", &SignatureWrapper::FromBytes)
-        .class_function("fromBytesAndAggregationInfo", &SignatureWrapper::FromBytesAndAggregationInfo)
-        .class_function("aggregateSigs", &SignatureWrapper::AggregateSigs)
-        .class_function("fromInsecureSignature", &SignatureWrapper::FromInsecureSignature)
-        .class_function("FromInsecureSignatureAndInfo", &SignatureWrapper::FromInsecureSignatureAndInfo)
-        .function("serialize", &SignatureWrapper::Serialize)
-        .function("verify", &SignatureWrapper::Verify)
-        .function("getAggregationInfo", &SignatureWrapper::GetAggregationInfo)
-        .function("setAggregationInfo", &SignatureWrapper::SetAggregationInfo)
-        .function("divideBy", &SignatureWrapper::DivideBy);
+        class_<SignatureWrapper>("Signature")
+            .class_function("fromBytes", &SignatureWrapper::FromBytes)
+            .class_function("fromBytesAndAggregationInfo", &SignatureWrapper::FromBytesAndAggregationInfo)
+            .class_function("aggregateSigs", &SignatureWrapper::AggregateSigs)
+            .class_function("fromInsecureSignature", &SignatureWrapper::FromInsecureSignature)
+            .class_function("FromInsecureSignatureAndInfo", &SignatureWrapper::FromInsecureSignatureAndInfo)
+            .function("serialize", &SignatureWrapper::Serialize)
+            .function("verify", &SignatureWrapper::Verify)
+            .function("getAggregationInfo", &SignatureWrapper::GetAggregationInfo)
+            .function("setAggregationInfo", &SignatureWrapper::SetAggregationInfo)
+            .function("divideBy", &SignatureWrapper::DivideBy);
 
-    class_<InsecureSignatureWrapper>("InsecureSignature")
-        .class_function("fromBytes", &InsecureSignatureWrapper::FromBytes)
-        .class_function("aggregate", &InsecureSignatureWrapper::Aggregate)
-        .function("verify", &InsecureSignatureWrapper::Verify)
-        .function("divideBy", &InsecureSignatureWrapper::DivideBy)
-        .function("serialize", &InsecureSignatureWrapper::Serialize);
+        class_<InsecureSignatureWrapper>("InsecureSignature")
+            .class_function("fromBytes", &InsecureSignatureWrapper::FromBytes)
+            .class_function("aggregate", &InsecureSignatureWrapper::Aggregate)
+            .function("verify", &InsecureSignatureWrapper::Verify)
+            .function("divideBy", &InsecureSignatureWrapper::DivideBy)
+            .function("serialize", &InsecureSignatureWrapper::Serialize);
 
-    class_<PublicKeyWrapper>("PublicKey")
-        .class_function("fromBytes", &PublicKeyWrapper::FromBytes)
-        .class_function("aggregate", &PublicKeyWrapper::Aggregate)
-        .function("getFingerprint", &PublicKeyWrapper::GetFingerprint)
-        .function("serialize", &PublicKeyWrapper::Serialize);
+        class_<PublicKeyWrapper>("PublicKey")
+            .class_function("fromBytes", &PublicKeyWrapper::FromBytes)
+            .class_function("aggregate", &PublicKeyWrapper::Aggregate)
+            .function("getFingerprint", &PublicKeyWrapper::GetFingerprint)
+            .function("serialize", &PublicKeyWrapper::Serialize);
 
-    class_<AggregationInfoWrapper>("AggregationInfo")
-        .class_function("fromMsgHash", &AggregationInfoWrapper::FromMsgHash)
-        .class_function("fromMsg", &AggregationInfoWrapper::FromMsg)
-        .class_function("fromBuffers", &AggregationInfoWrapper::FromBuffers)
-        .function("getPublicKeys", &AggregationInfoWrapper::GetPubKeys)
-        .function("getMessageHashes", &AggregationInfoWrapper::GetMessageHashes)
-        .function("getExponents", &AggregationInfoWrapper::GetExponents);
+        class_<AggregationInfoWrapper>("AggregationInfo")
+            .class_function("fromMsgHash", &AggregationInfoWrapper::FromMsgHash)
+            .class_function("fromMsg", &AggregationInfoWrapper::FromMsg)
+            .class_function("fromBuffers", &AggregationInfoWrapper::FromBuffers)
+            .function("getPublicKeys", &AggregationInfoWrapper::GetPubKeys)
+            .function("getMessageHashes", &AggregationInfoWrapper::GetMessageHashes)
+            .function("getExponents", &AggregationInfoWrapper::GetExponents);
 
-    class_<ExtendedPrivateKeyWrapper>("ExtendedPrivateKey")
-        .class_function("fromSeed", &ExtendedPrivateKeyWrapper::FromSeed, allow_raw_pointers())
-        .class_function("fromBytes", &ExtendedPrivateKeyWrapper::FromBytes, allow_raw_pointers())
-        .function("privateChild", &ExtendedPrivateKeyWrapper::PrivateChild)
-        .function("publicChild", &ExtendedPrivateKeyWrapper::PublicChild)
-        .function("getVersion", &ExtendedPrivateKeyWrapper::GetVersion)
-        .function("getDepth", &ExtendedPrivateKeyWrapper::GetDepth)
-        .function("getParentFingerprint", &ExtendedPrivateKeyWrapper::GetParentFingerprint)
-        .function("getChildNumber", &ExtendedPrivateKeyWrapper::GetChildNumber)
-        .function("getChainCode", &ExtendedPrivateKeyWrapper::GetChainCode)
-        .function("getPrivateKey", &ExtendedPrivateKeyWrapper::GetPrivateKey)
-        .function("getPublicKey", &ExtendedPrivateKeyWrapper::GetPublicKey)
-        .function("getExtendedPublicKey", &ExtendedPrivateKeyWrapper::GetExtendedPublicKey);
+        class_<ExtendedPrivateKeyWrapper>("ExtendedPrivateKey")
+            .class_function("fromSeed", &ExtendedPrivateKeyWrapper::FromSeed, allow_raw_pointers())
+            .class_function("fromBytes", &ExtendedPrivateKeyWrapper::FromBytes, allow_raw_pointers())
+            .function("privateChild", &ExtendedPrivateKeyWrapper::PrivateChild)
+            .function("publicChild", &ExtendedPrivateKeyWrapper::PublicChild)
+            .function("getVersion", &ExtendedPrivateKeyWrapper::GetVersion)
+            .function("getDepth", &ExtendedPrivateKeyWrapper::GetDepth)
+            .function("getParentFingerprint", &ExtendedPrivateKeyWrapper::GetParentFingerprint)
+            .function("getChildNumber", &ExtendedPrivateKeyWrapper::GetChildNumber)
+            .function("getChainCode", &ExtendedPrivateKeyWrapper::GetChainCode)
+            .function("getPrivateKey", &ExtendedPrivateKeyWrapper::GetPrivateKey)
+            .function("getPublicKey", &ExtendedPrivateKeyWrapper::GetPublicKey)
+            .function("getExtendedPublicKey", &ExtendedPrivateKeyWrapper::GetExtendedPublicKey);
 
-    class_<ExtendedPublicKeyWrapper>("ExtendedPublicKey")
-        .class_function("fromBytes", &ExtendedPublicKeyWrapper::FromBytes)
-        .function("publicChild", &ExtendedPublicKeyWrapper::PublicChild)
-        .function("getVersion", &ExtendedPublicKeyWrapper::GetVersion)
-        .function("getDepth", &ExtendedPublicKeyWrapper::GetDepth)
-        .function("getParentFingerprint", &ExtendedPublicKeyWrapper::GetParentFingerprint)
-        .function("getChildNumber", &ExtendedPublicKeyWrapper::GetChildNumber)
-        .function("getChainCode", &ExtendedPublicKeyWrapper::GetChainCode)
-        .function("getPublicKey", &ExtendedPublicKeyWrapper::GetPublicKey)
-        .function("serialize", &ExtendedPublicKeyWrapper::Serialize);
+        class_<ExtendedPublicKeyWrapper>("ExtendedPublicKey")
+            .class_function("fromBytes", &ExtendedPublicKeyWrapper::FromBytes)
+            .function("publicChild", &ExtendedPublicKeyWrapper::PublicChild)
+            .function("getVersion", &ExtendedPublicKeyWrapper::GetVersion)
+            .function("getDepth", &ExtendedPublicKeyWrapper::GetDepth)
+            .function("getParentFingerprint", &ExtendedPublicKeyWrapper::GetParentFingerprint)
+            .function("getChildNumber", &ExtendedPublicKeyWrapper::GetChildNumber)
+            .function("getChainCode", &ExtendedPublicKeyWrapper::GetChainCode)
+            .function("getPublicKey", &ExtendedPublicKeyWrapper::GetPublicKey)
+            .function("serialize", &ExtendedPublicKeyWrapper::Serialize);
 
-    class_<ChainCodeWrapper>("ChainCode")
-        .class_function("fromBytes", &ChainCodeWrapper::FromBytes)
-        .function("serialize", &ChainCodeWrapper::Serialize);
-};
+        class_<ChainCodeWrapper>("ChainCode")
+            .class_function("fromBytes", &ChainCodeWrapper::FromBytes)
+            .function("serialize", &ChainCodeWrapper::Serialize);
+    };
+}  //namespace js_wrappers

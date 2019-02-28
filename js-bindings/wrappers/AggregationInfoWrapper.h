@@ -17,8 +17,9 @@
 
 #include "emscripten/val.h"
 #include "../../src/aggregationinfo.hpp"
-#include "PublicKeyWrapper.h"
 #include "../../src/bls.hpp"
+#include "../helpers.h"
+#include "PublicKeyWrapper.h"
 
 using namespace emscripten;
 using namespace bls;
@@ -48,6 +49,6 @@ namespace js_wrappers {
         val GetExponents() const;
 //        bool Empty() const;
     };
-}
+}  // namespace js_wrappers
 
 #endif //BLS_AGGREGATIONINFOWRAPPER_H

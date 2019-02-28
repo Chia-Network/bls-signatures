@@ -9,6 +9,9 @@
   "scripts": {
     "test": "mocha ./tests --recursive"
   },
+  "repository": {
+
+  },
   "author": {
     "name": "Anton Suprunchuk",
     "email": "antouhou@gmail.com",

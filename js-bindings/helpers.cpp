@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "helpers.h"
+#include "./helpers.h"
 
 namespace helpers {
     val toJSBuffer(std::vector<uint8_t> vec) {
@@ -70,8 +70,6 @@ namespace helpers {
         return arr;
     }
 
-    /* ====== */
-
     std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray) {
         auto l = buffersArray["length"].as<unsigned>();
         std::vector<std::vector<uint8_t>> vec;
@@ -86,10 +84,9 @@ namespace helpers {
         std::vector<bn_t *> vec;
         for (unsigned i = 0; i < l; ++i) {
             bn_t data;
-            //new bn_t[1];
             bn_new(data);
             std::vector<uint8_t> bnVec = toVector(buffersArray[i]);
-            bn_read_bin(data, bnVec.data(), (int) bnVec.size());
+            bn_read_bin(data, bnVec.data(), static_cast<int>(bnVec.size()));
             bn_t *point = &data;
             vec.push_back(point);
         }
@@ -105,4 +102,4 @@ namespace helpers {
         val arr = toJSArray(valVector);
         return arr;
     }
-}
+}  // namespace helpers

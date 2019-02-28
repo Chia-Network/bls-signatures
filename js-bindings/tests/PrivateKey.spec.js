@@ -1,4 +1,4 @@
-const {PrivateKey, Signature, PublicKey} = require('../../js_build/js-bindings/blsjs');
+const {PrivateKey, Signature, PublicKey} = require('../');
 const assert = require('assert');
 const crypto = require('crypto');
 

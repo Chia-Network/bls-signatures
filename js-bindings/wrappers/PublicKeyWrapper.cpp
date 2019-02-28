@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include "PublicKeyWrapper.h"
-#include "../helpers.h"
 
 using namespace emscripten;
 
