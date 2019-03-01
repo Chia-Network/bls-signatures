@@ -37,7 +37,7 @@ namespace js_wrappers {
 
     InsecureSignatureWrapper InsecureSignatureWrapper::Aggregate(val insecureSignatureWrappers) {
         std::vector<InsecureSignature> signatures = InsecureSignatureWrapper::Unwrap(
-                helpers::fromJSArray<InsecureSignatureWrapper>(insecureSignatureWrappers));
+                helpers::toVectorFromJSArray<InsecureSignatureWrapper>(insecureSignatureWrappers));
         InsecureSignature aggregatedSignature = InsecureSignature::Aggregate(signatures);
         return InsecureSignatureWrapper(aggregatedSignature);
     }
@@ -49,14 +49,14 @@ namespace js_wrappers {
             hashes.push_back(i.data());
         }
         std::vector<PublicKey> pubKeysVector = PublicKeyWrapper::Unwrap(
-                helpers::fromJSArray<PublicKeyWrapper>(pubKeyWrappersArray));
+                helpers::toVectorFromJSArray<PublicKeyWrapper>(pubKeyWrappersArray));
 
         return wrapped.Verify(hashes, pubKeysVector);
     }
 
     InsecureSignatureWrapper InsecureSignatureWrapper::DivideBy(val insecureSignatureWrappers) const {
         std::vector<InsecureSignature> signatures = InsecureSignatureWrapper::Unwrap(
-                helpers::fromJSArray<InsecureSignatureWrapper>(insecureSignatureWrappers));
+                helpers::toVectorFromJSArray<InsecureSignatureWrapper>(insecureSignatureWrappers));
         InsecureSignature dividedSignature = wrapped.DivideBy(signatures);
         return InsecureSignatureWrapper(dividedSignature);
     }
@@ -98,7 +98,7 @@ namespace js_wrappers {
 
     SignatureWrapper SignatureWrapper::AggregateSigs(val signatureWrappers) {
         std::vector<Signature> signatures = SignatureWrapper::Unwrap(
-                helpers::fromJSArray<SignatureWrapper>(signatureWrappers));
+                helpers::toVectorFromJSArray<SignatureWrapper>(signatureWrappers));
         Signature aggregatedSignature = Signature::AggregateSigs(signatures);
         return SignatureWrapper(aggregatedSignature);
     }
@@ -134,7 +134,7 @@ namespace js_wrappers {
 
     SignatureWrapper SignatureWrapper::DivideBy(val signatureWrappers) const {
         std::vector<Signature> signatures = SignatureWrapper::Unwrap(
-                helpers::fromJSArray<SignatureWrapper>(signatureWrappers));
+                helpers::toVectorFromJSArray<SignatureWrapper>(signatureWrappers));
         Signature dividedSig = wrapped.DivideBy(signatures);
         return SignatureWrapper(dividedSig);
     }

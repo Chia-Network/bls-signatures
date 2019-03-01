@@ -12,7 +12,7 @@ export class PrivateKey {
 
 export class InsecureSignature {
     static fromBytes(bytes: Buffer);
-    static aggregate(signatures: Signature);
+    static aggregate(signatures: InsecureSignature[]): InsecureSignature;
     verify(hashes: Buffer[], pubKeys: PublicKey[]): boolean;
     divideBy(insecureSignatures: InsecureSignature[]): InsecureSignature;
     serialize(): Buffer;
@@ -77,6 +77,9 @@ export class ChainCode {
 
 export namespace Threshold {
     function create(commitment: PublicKey[], secretFragments: PrivateKey[], threshold: number, playersCount: number): PrivateKey;
-    function signWithCoefficient(sk: PrivateKey, message: Buffer, playerIndex: number, players: ): InsecureSignature;
-    function aggregateUnitSigns();
+    function signWithCoefficient(sk: PrivateKey, message: Buffer, playerIndex: number, players: number[]): InsecureSignature;
+    function aggregateUnitSigs(sk: PrivateKey, message: Buffer, players: number[]) : InsecureSignature;
+    function lagrangeCoeffsAtZero(players: number[]) : Buffer;
+    function interpolateAtZero(X: Buffer, Y: Buffer, T: number): Buffer;
+    function verifySecretFragment(playerIndex: number, secretFragment: PrivateKey, commitment: PublicKey[]) : boolean;
 }

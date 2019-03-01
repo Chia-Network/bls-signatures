@@ -42,7 +42,7 @@ namespace js_wrappers {
             messageHashesVector.push_back(i.data());
         }
         std::vector<PublicKey> pubKeysVector = PublicKeyWrapper::Unwrap(
-                helpers::fromJSArray<PublicKeyWrapper>(pubKeyWrappersArray));
+                helpers::toVectorFromJSArray<PublicKeyWrapper>(pubKeyWrappersArray));
         std::vector<bn_t *> exponentsVector = helpers::jsBuffersArrayToBnVector(exponentBns);
 
         AggregationInfo info = AggregationInfo::FromVectors(pubKeysVector, messageHashesVector, exponentsVector);

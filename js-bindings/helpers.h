@@ -43,11 +43,11 @@ namespace helpers {
     std::vector<uint8_t> toVector(bn_t bn);
 
     template<typename T>
-    inline std::vector<T> fromJSArray(val array) {
-        auto l = array["length"].as<unsigned>();
+    inline std::vector<T> toVectorFromJSArray(val jsArray) {
+        auto l = jsArray["length"].as<unsigned>();
         std::vector<T> vec;
         for (unsigned i = 0; i < l; ++i) {
-            vec.push_back(array[i].as<T>());
+            vec.push_back(jsArray[i].as<T>());
         }
         return vec;
     }

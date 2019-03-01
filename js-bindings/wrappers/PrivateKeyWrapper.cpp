@@ -35,9 +35,9 @@ namespace js_wrappers {
 
     PrivateKeyWrapper PrivateKeyWrapper::Aggregate(val privateKeysArray, val publicKeysArray) {
         std::vector<PublicKey> pubKeys = PublicKeyWrapper::Unwrap(
-                helpers::fromJSArray<PublicKeyWrapper>(publicKeysArray));
+                helpers::toVectorFromJSArray<PublicKeyWrapper>(publicKeysArray));
         std::vector<PrivateKey> privateKeys = PrivateKeyWrapper::Unwrap(
-                helpers::fromJSArray<PrivateKeyWrapper>(privateKeysArray));
+                helpers::toVectorFromJSArray<PrivateKeyWrapper>(privateKeysArray));
 
         PrivateKey aggregatedPk = PrivateKey::Aggregate(privateKeys, pubKeys);
         return PrivateKeyWrapper(aggregatedPk);

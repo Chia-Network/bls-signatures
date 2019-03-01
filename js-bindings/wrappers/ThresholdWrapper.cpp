@@ -17,14 +17,21 @@
 namespace js_wrappers {
     PrivateKeyWrapper ThresholdWrapper::Create(val pubKeyWrappersArray, val privateKeyWrappers, size_t threshold,
                                                size_t playersCount) {
-        std::vector<PublicKeyWrapper> pubKeyWrappers = helpers::fromJSArray<PublicKeyWrapper>(pubKeyWrappersArray);
-        std::vector<PublicKey> commitement;
-
+        std::vector<PublicKey> commitment = PublicKeyWrapper::Unwrap(
+                helpers::toVectorFromJSArray<PublicKeyWrapper>(pubKeyWrappersArray));
+        std::vector<PrivateKey> secretFragment = PrivateKeyWrapper::Unwrap(
+                helpers::toVectorFromJSArray<PrivateKeyWrapper>(privateKeyWrappers));
+        PrivateKey result = Threshold::Create(commitment, secretFragment, threshold, playersCount);
+        return PrivateKeyWrapper(result);
     }
 
-    InsecureSignatureWrapper ThresholdWrapper::SignWithCoefficient(const PrivateKeyWrapper &sk, val msgBuffer,
+    InsecureSignatureWrapper ThresholdWrapper::SignWithCoefficient(const PrivateKeyWrapper &privateKeyWrapper, val msgBuffer,
                                                                    size_t playerIndex, val players) {
-
+        PrivateKey sk = privateKeyWrapper.GetWrappedInstance();
+        std::vector<uint8_t> message = helpers::toVector(msgBuffer);
+        std::vector<size_t> playersVector = helpers::toVectorFromJSArray<size_t>(players);
+        InsecureSignature sig = Threshold::SignWithCoefficient(sk, message.data(), message.size(), playerIndex, playersVector.data(), playersVector.size());
+        return InsecureSignatureWrapper(sig);
     }
 
     InsecureSignatureWrapper ThresholdWrapper::AggregateUnitSigs(val insecureSignatures, val messageBuffer,
@@ -33,14 +40,14 @@ namespace js_wrappers {
     }
 
     val ThresholdWrapper::LagrangeCoeffsAtZero(val players) {
-
+        return Threshold::LagrangeCoeffsAtZero();
     }
 
     val ThresholdWrapper::InterpolateAtZero(val X, val Y, size_t T) {
 
     }
 
-    bool ThresholdWrapper::VerifySecretFragment(size_t playerIndex, js_wrappers::PrivateKeyWrapper secretFragment,
+    bool ThresholdWrapper::VerifySecretFragment(size_t playerIndex, const PrivateKeyWrapper &secretFragment,
                                                 val publicKeyWrappers, size_t threshold) {
 
     }
