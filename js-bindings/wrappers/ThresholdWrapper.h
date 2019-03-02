@@ -29,11 +29,7 @@ namespace js_wrappers {
         static InsecureSignatureWrapper
         SignWithCoefficient(const PrivateKeyWrapper &privateKeyWrapper, val msgBuffer, size_t playerIndex, val players);
 
-        static InsecureSignatureWrapper AggregateUnitSigs(val insecureSignatures, val messageBuffer, val players);
-
-        static val LagrangeCoeffsAtZero(val players);
-
-        static val InterpolateAtZero(val X, val Y, size_t T);
+        static InsecureSignatureWrapper AggregateUnitSigs(val insecureSignatures, val messageBuffer, val playersArray);
 
         static bool VerifySecretFragment(size_t playerIndex, const PrivateKeyWrapper &secretFragment, val publicKeyWrappers,
                                          size_t threshold);

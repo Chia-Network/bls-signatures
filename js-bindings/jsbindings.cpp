@@ -25,8 +25,10 @@ namespace js_wrappers {
             .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
             .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
             .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
+            .class_function("aggregateInsecure", &PrivateKeyWrapper::AggregateInsecure)
             .function("serialize", &PrivateKeyWrapper::Serialize)
             .function("sign", &PrivateKeyWrapper::Sign)
+            .function("signInsecure", &PrivateKeyWrapper::SignInsecure)
             .function("signPrehashed", &PrivateKeyWrapper::SignPrehashed)
             .function("getPublicKey", &PrivateKeyWrapper::GetPublicKey);
 
@@ -52,6 +54,7 @@ namespace js_wrappers {
         class_<PublicKeyWrapper>("PublicKey")
             .class_function("fromBytes", &PublicKeyWrapper::FromBytes)
             .class_function("aggregate", &PublicKeyWrapper::Aggregate)
+            .class_function("aggregateInsecure", &PublicKeyWrapper::AggregateInsecure)
             .function("getFingerprint", &PublicKeyWrapper::GetFingerprint)
             .function("serialize", &PublicKeyWrapper::Serialize);
 
@@ -91,5 +94,11 @@ namespace js_wrappers {
         class_<ChainCodeWrapper>("ChainCode")
             .class_function("fromBytes", &ChainCodeWrapper::FromBytes)
             .function("serialize", &ChainCodeWrapper::Serialize);
+
+        class_<ThresholdWrapper>("Threshold")
+            .class_function("create", &ThresholdWrapper::Create)
+            .class_function("signWithCoefficient", &ThresholdWrapper::SignWithCoefficient)
+            .class_function("aggregateUnitSigs", &ThresholdWrapper::AggregateUnitSigs)
+            .class_function("verifySecretFragment", &ThresholdWrapper::VerifySecretFragment);
     };
 }  //namespace js_wrappers

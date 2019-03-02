@@ -35,20 +35,17 @@ namespace js_wrappers {
     }
 
     InsecureSignatureWrapper ThresholdWrapper::AggregateUnitSigs(val insecureSignatures, val messageBuffer,
-                                                                 val players) {
-
-    }
-
-    val ThresholdWrapper::LagrangeCoeffsAtZero(val players) {
-        return Threshold::LagrangeCoeffsAtZero();
-    }
-
-    val ThresholdWrapper::InterpolateAtZero(val X, val Y, size_t T) {
-
+                                                                 val playersArray) {
+        std::vector<InsecureSignature> sigs = InsecureSignatureWrapper::Unwrap(helpers::toVectorFromJSArray<InsecureSignatureWrapper>(insecureSignatures));
+        std::vector<uint8_t> message = helpers::toVector(messageBuffer);
+        std::vector<size_t> players = helpers::toVectorFromJSArray<size_t>(playersArray);
+        InsecureSignature aggregatedSig = Threshold::AggregateUnitSigs(sigs, message.data(), message.size(), players.data(), players.size());
+        return InsecureSignatureWrapper(aggregatedSig);
     }
 
     bool ThresholdWrapper::VerifySecretFragment(size_t playerIndex, const PrivateKeyWrapper &secretFragment,
                                                 val publicKeyWrappers, size_t threshold) {
-
+        std::vector<PublicKey> commitment = PublicKeyWrapper::Unwrap(helpers::toVectorFromJSArray<PublicKeyWrapper>(publicKeyWrappers));
+        return Threshold::VerifySecretFragment(playerIndex,secretFragment.GetWrappedInstance(), commitment, threshold);
     }
 }

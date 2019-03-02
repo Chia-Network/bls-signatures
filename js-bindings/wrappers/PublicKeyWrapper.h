@@ -34,6 +34,8 @@ namespace js_wrappers {
 
         static PublicKeyWrapper Aggregate(val pubKeysWrappers);
 
+        static PublicKeyWrapper AggregateInsecure(val pubKeysWrappers);
+
         val Serialize() const;
 
         uint32_t GetFingerprint() const;

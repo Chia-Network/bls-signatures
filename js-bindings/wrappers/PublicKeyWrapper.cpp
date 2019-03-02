@@ -40,6 +40,13 @@ namespace js_wrappers {
         return PublicKeyWrapper(aggregatedPk);
     }
 
+    PublicKeyWrapper PublicKeyWrapper::AggregateInsecure(val pubKeysWrappers) {
+        std::vector<PublicKey> pubKeys = PublicKeyWrapper::Unwrap(
+                helpers::toVectorFromJSArray<PublicKeyWrapper>(pubKeysWrappers));
+        PublicKey aggregatedPk = PublicKey::AggregateInsecure(pubKeys);
+        return PublicKeyWrapper(aggregatedPk);
+    }
+
     val PublicKeyWrapper::Serialize() const {
         return helpers::toJSBuffer(wrapped.Serialize());
     }

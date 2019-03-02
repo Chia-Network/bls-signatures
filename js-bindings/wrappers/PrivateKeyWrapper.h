@@ -35,11 +35,15 @@ namespace js_wrappers {
 
         static PrivateKeyWrapper FromBytes(val buffer, bool modOrder);
 
-        static PrivateKeyWrapper Aggregate(val privateKeysBuffers, val publicKeysBuffers);
+        static PrivateKeyWrapper Aggregate(val privateKeysArray, val publicKeysArray);
+
+        static PrivateKeyWrapper AggregateInsecure(val privateKeysArray);
 
         val Serialize() const;
 
         SignatureWrapper Sign(val messageBuffer) const;
+
+        InsecureSignatureWrapper SignInsecure(val messageBuffer) const;
 
         SignatureWrapper SignPrehashed(val messageHashBuffer) const;
 

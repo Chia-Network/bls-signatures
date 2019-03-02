@@ -2,11 +2,13 @@
 
 export class PrivateKey {
     static fromSeed(seed: Buffer): PrivateKey;
-    static fromBytes(bytes: Buffer): PrivateKey;
+    static fromBytes(bytes: Buffer, modOrder: boolean): PrivateKey;
     static aggregate(privateKeys: PrivateKey[]): PrivateKey;
+    static aggregateInsecure(privateKeys: PrivateKey[]): PrivateKey;
     getPublicKey(): PublicKey;
     serialize(): Buffer;
     sign(message: Buffer): Signature;
+    signInsecure(message: Buffer): InsecureSignature;
     signPrehashed(messageHash: Buffer): Signature;
 }
 
@@ -31,6 +33,7 @@ export class Signature {
 export class PublicKey {
     static fromBytes(bytes: Buffer): PublicKey;
     static aggregate(publicKeys: PublicKey[]): PublicKey;
+    static aggregateInsecure(publicKeys: PublicKey[]): PublicKey;
     getFingerprint(): number;
     serialize(): Buffer;
 }
@@ -78,8 +81,6 @@ export class ChainCode {
 export namespace Threshold {
     function create(commitment: PublicKey[], secretFragments: PrivateKey[], threshold: number, playersCount: number): PrivateKey;
     function signWithCoefficient(sk: PrivateKey, message: Buffer, playerIndex: number, players: number[]): InsecureSignature;
-    function aggregateUnitSigs(sk: PrivateKey, message: Buffer, players: number[]) : InsecureSignature;
-    function lagrangeCoeffsAtZero(players: number[]) : Buffer;
-    function interpolateAtZero(X: Buffer, Y: Buffer, T: number): Buffer;
-    function verifySecretFragment(playerIndex: number, secretFragment: PrivateKey, commitment: PublicKey[]) : boolean;
+    function aggregateUnitSigs(signatures: InsecureSignature[], message: Buffer, players: number[]) : InsecureSignature;
+    function verifySecretFragment(playerIndex: number, secretFragment: PrivateKey, commitment: PublicKey[], threshold: number) : boolean;
 }
