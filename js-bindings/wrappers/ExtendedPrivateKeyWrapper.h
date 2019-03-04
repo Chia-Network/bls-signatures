@@ -26,7 +26,7 @@ using namespace bls;
 using namespace emscripten;
 
 namespace js_wrappers {
-    class ExtendedPrivateKeyWrapper: public JSWrapper<ExtendedPrivateKey> {
+    class ExtendedPrivateKeyWrapper : public JSWrapper<ExtendedPrivateKey> {
     public:
         explicit ExtendedPrivateKeyWrapper(ExtendedPrivateKey &extendedPrivateKey);
 

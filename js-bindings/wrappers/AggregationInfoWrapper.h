@@ -25,7 +25,7 @@ using namespace emscripten;
 using namespace bls;
 
 namespace js_wrappers {
-    class AggregationInfoWrapper: public JSWrapper<AggregationInfo> {
+    class AggregationInfoWrapper : public JSWrapper<AggregationInfo> {
     public:
         explicit AggregationInfoWrapper(AggregationInfo &info);
 

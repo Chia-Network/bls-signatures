@@ -31,8 +31,9 @@ namespace js_wrappers {
 
         static InsecureSignatureWrapper AggregateUnitSigs(val insecureSignatures, val messageBuffer, val playersArray);
 
-        static bool VerifySecretFragment(size_t playerIndex, const PrivateKeyWrapper &secretFragment, val publicKeyWrappers,
-                                         size_t threshold);
+        static bool
+        VerifySecretFragment(size_t playerIndex, const PrivateKeyWrapper &secretFragment, val publicKeyWrappers,
+                             size_t threshold);
     };
 
 }

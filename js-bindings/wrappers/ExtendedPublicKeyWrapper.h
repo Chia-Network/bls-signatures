@@ -21,7 +21,7 @@
 #include "ChainCodeWrapper.h"
 
 namespace js_wrappers {
-    class ExtendedPublicKeyWrapper: public JSWrapper<ExtendedPublicKey> {
+    class ExtendedPublicKeyWrapper : public JSWrapper<ExtendedPublicKey> {
     public:
         explicit ExtendedPublicKeyWrapper(ExtendedPublicKey &extendedPublicKey);
 

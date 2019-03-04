@@ -22,7 +22,7 @@
 using namespace bls;
 
 namespace js_wrappers {
-    class ChainCodeWrapper: public JSWrapper<ChainCode> {
+    class ChainCodeWrapper : public JSWrapper<ChainCode> {
     public:
         explicit ChainCodeWrapper(ChainCode &chainCode);
 
