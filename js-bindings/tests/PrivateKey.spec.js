@@ -1,4 +1,4 @@
-const {PrivateKey, Signature, PublicKey} = require('../');
+const {PrivateKey, Signature, PublicKey, AggregationInfo} = require('../');
 const assert = require('assert');
 const crypto = require('crypto');
 
@@ -28,6 +28,27 @@ function getPkUint8Array() {
 }
 
 describe('PrivateKey', () => {
+    it('Should sign and verify', () => {
+        const message1 = Buffer.from([1, 65, 254, 88, 90, 45, 22]);
+
+        const seed = Buffer.from([28, 20, 102, 229, 1, 157]);
+        const sk1 = PrivateKey.fromSeed(seed);
+        const pk1 = sk1.getPublicKey();
+        const sig1 = sk1.sign(message1);
+
+        sig1.setAggregationInfo(AggregationInfo.fromMsg(pk1, message1));
+        assert(sig1.verify());
+
+        const hash = crypto
+            .createHash('sha256')
+            .update(message1)
+            .digest();
+        const sig2 = sk1.signPrehashed(hash);
+        sig2.setAggregationInfo(AggregationInfo.fromMsgHash(pk1, hash));
+        assert.deepStrictEqual(sig1.serialize(), sig2.serialize());
+        assert(sig2.verify());
+    });
+
     describe('.fromSeed', () => {
         it('Should create a private key from a seed', () => {
             const pk = PrivateKey.fromSeed(getPkSeed());

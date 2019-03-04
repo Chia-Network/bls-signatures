@@ -59,6 +59,7 @@ export class ExtendedPrivateKey {
     getChainCode(): ChainCode;
     getPrivateKey(): PrivateKey;
     getPublicKey(): PublicKey;
+    getExtendedPublicKey(): ExtendedPublicKey;
     serialize(): Buffer;
 }
 
@@ -70,6 +71,7 @@ export class ExtendedPublicKey {
     getParentFingerprint(): number;
     getChildNumber(): number;
     getPublicKey(): PublicKey;
+    getChainCode(): ChainCode;
     serialize(): Buffer;
 }
 

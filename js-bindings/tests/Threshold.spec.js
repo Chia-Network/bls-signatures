@@ -61,8 +61,6 @@ describe('Threshold', () => {
 
         for (let target = 0; target < N; target++) {
             for (let source = 0; source < N; source++) {
-                console.log('target', target);
-                console.log('source', source);
                 assert(Threshold.verifySecretFragment(target + 1, fragments[target][source], commitments[source], T));
             }
         }
