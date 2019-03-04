@@ -1,4 +1,4 @@
-## BLS.js
+## bls-signatures
 
 JavaScript library that implements BLS signatures with aggregation as in [Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html), using relic toolkit for cryptographic primitives (pairings, EC, hashing).
 
@@ -7,7 +7,7 @@ This library is a JavaScript port of the [Chia Network's BLS lib](https://github
 ### Usage
 
 ```bash
-npm i bls-js
+npm i bls-signatures --save
 ```
 ```javascript
 const { PrivateKey } = require('bls-js');
