@@ -63,7 +63,7 @@ namespace js_wrappers {
 
     val InsecureSignatureWrapper::Serialize() const {
         std::vector<uint8_t> bytes = wrapped.Serialize();
-        return helpers::toJSBuffer(bytes);
+        return helpers::toUint8Array(bytes);
     }
 
     ///
@@ -115,7 +115,7 @@ namespace js_wrappers {
     }
 
     val SignatureWrapper::Serialize() const {
-        return helpers::toJSBuffer(wrapped.Serialize());
+        return helpers::toUint8Array(wrapped.Serialize());
     }
 
     bool SignatureWrapper::Verify() const {

@@ -77,6 +77,6 @@ namespace js_wrappers {
     }
 
     val ExtendedPrivateKeyWrapper::Serialize() const {
-        return helpers::toJSBuffer(wrapped.Serialize());
+        return helpers::toUint8Array(wrapped.Serialize());
     }
 }

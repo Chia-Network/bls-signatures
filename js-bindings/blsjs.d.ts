@@ -1,55 +1,53 @@
-/// <reference types="node" />
-
 export class PrivateKey {
-    static fromSeed(seed: Buffer): PrivateKey;
-    static fromBytes(bytes: Buffer, modOrder: boolean): PrivateKey;
-    static aggregate(privateKeys: PrivateKey[]): PrivateKey;
+    static fromSeed(seed: Uint8Array): PrivateKey;
+    static fromBytes(bytes: Uint8Array, modOrder: boolean): PrivateKey;
+    static aggregate(privateKeys: PrivateKey[], publicKeys: PublicKey[]): PrivateKey;
     static aggregateInsecure(privateKeys: PrivateKey[]): PrivateKey;
     getPublicKey(): PublicKey;
-    serialize(): Buffer;
-    sign(message: Buffer): Signature;
-    signInsecure(message: Buffer): InsecureSignature;
-    signPrehashed(messageHash: Buffer): Signature;
+    serialize(): Uint8Array;
+    sign(message: Uint8Array): Signature;
+    signInsecure(message: Uint8Array): InsecureSignature;
+    signPrehashed(messageHash: Uint8Array): Signature;
 }
 
 export class InsecureSignature {
-    static fromBytes(bytes: Buffer);
+    static fromBytes(bytes: Uint8Array);
     static aggregate(signatures: InsecureSignature[]): InsecureSignature;
-    verify(hashes: Buffer[], pubKeys: PublicKey[]): boolean;
+    verify(hashes: Uint8Array[], pubKeys: PublicKey[]): boolean;
     divideBy(insecureSignatures: InsecureSignature[]): InsecureSignature;
-    serialize(): Buffer;
+    serialize(): Uint8Array;
 }
 
 export class Signature {
-    static fromBytes(bytes: Buffer): Signature;
-    static fromBytesAndAggregationInfo(bytes: Buffer, aggregationInfo: AggregationInfo): Signature;
+    static fromBytes(bytes: Uint8Array): Signature;
+    static fromBytesAndAggregationInfo(bytes: Uint8Array, aggregationInfo: AggregationInfo): Signature;
     static aggregateSigs(signatures: Signature[]): Signature;
-    serialize(): Buffer;
+    serialize(): Uint8Array;
     verify(): boolean;
     getAggregationInfo(): AggregationInfo;
     setAggregationInfo(aggregationInfo: AggregationInfo): void;
 }
 
 export class PublicKey {
-    static fromBytes(bytes: Buffer): PublicKey;
+    static fromBytes(bytes: Uint8Array): PublicKey;
     static aggregate(publicKeys: PublicKey[]): PublicKey;
     static aggregateInsecure(publicKeys: PublicKey[]): PublicKey;
     getFingerprint(): number;
-    serialize(): Buffer;
+    serialize(): Uint8Array;
 }
 
 export class AggregationInfo {
-    static fromMsgHash(publicKey: PublicKey, messageHash: Buffer): AggregationInfo;
-    static fromMsg(publicKey: PublicKey, message: Buffer): AggregationInfo;
-    static fromBuffers(pubKeys: PublicKey[], msgHashes: Buffer[], exponents: Buffer[]): AggregationInfo;
+    static fromMsgHash(publicKey: PublicKey, messageHash: Uint8Array): AggregationInfo;
+    static fromMsg(publicKey: PublicKey, message: Uint8Array): AggregationInfo;
+    static fromBuffers(pubKeys: PublicKey[], msgHashes: Uint8Array[], exponents: Uint8Array[]): AggregationInfo;
     getPublicKeys(): PublicKey[];
-    getMessageHashes(): Buffer[];
-    getExponents(): Buffer[];
+    getMessageHashes(): Uint8Array[];
+    getExponents(): Uint8Array[];
 }
 
 export class ExtendedPrivateKey {
-    static fromSeed(seed: Buffer): ExtendedPrivateKey;
-    static fromBytes(bytes: Buffer): ExtendedPrivateKey;
+    static fromSeed(seed: Uint8Array): ExtendedPrivateKey;
+    static fromBytes(bytes: Uint8Array): ExtendedPrivateKey;
     privateChild(index: number): ExtendedPrivateKey;
     publicChild(index: number): ExtendedPublicKey;
     getVersion(): number;
@@ -60,11 +58,11 @@ export class ExtendedPrivateKey {
     getPrivateKey(): PrivateKey;
     getPublicKey(): PublicKey;
     getExtendedPublicKey(): ExtendedPublicKey;
-    serialize(): Buffer;
+    serialize(): Uint8Array;
 }
 
 export class ExtendedPublicKey {
-    static fromBytes(bytes: Buffer): ExtendedPublicKey;
+    static fromBytes(bytes: Uint8Array): ExtendedPublicKey;
     publicChild(index: number): ExtendedPublicKey;
     getVersion(): number;
     getDepth(): number;
@@ -72,17 +70,17 @@ export class ExtendedPublicKey {
     getChildNumber(): number;
     getPublicKey(): PublicKey;
     getChainCode(): ChainCode;
-    serialize(): Buffer;
+    serialize(): Uint8Array;
 }
 
 export class ChainCode {
-    static fromBytes(bytes: Buffer);
-    serialize(): Buffer;
+    static fromBytes(bytes: Uint8Array);
+    serialize(): Uint8Array;
 }
 
 export namespace Threshold {
     function create(commitment: PublicKey[], secretFragments: PrivateKey[], threshold: number, playersCount: number): PrivateKey;
-    function signWithCoefficient(sk: PrivateKey, message: Buffer, playerIndex: number, players: number[]): InsecureSignature;
-    function aggregateUnitSigs(signatures: InsecureSignature[], message: Buffer, players: number[]) : InsecureSignature;
+    function signWithCoefficient(sk: PrivateKey, message: Uint8Array, playerIndex: number, players: number[]): InsecureSignature;
+    function aggregateUnitSigs(signatures: InsecureSignature[], message: Uint8Array, players: number[]) : InsecureSignature;
     function verifySecretFragment(playerIndex: number, secretFragment: PrivateKey, commitment: PublicKey[], threshold: number) : boolean;
 }

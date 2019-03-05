@@ -48,7 +48,7 @@ namespace js_wrappers {
     }
 
     val PublicKeyWrapper::Serialize() const {
-        return helpers::toJSBuffer(wrapped.Serialize());
+        return helpers::toUint8Array(wrapped.Serialize());
     }
 
     uint32_t PublicKeyWrapper::GetFingerprint() const {

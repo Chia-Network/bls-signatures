@@ -28,13 +28,11 @@ using namespace bls;
 using namespace emscripten;
 
 namespace helpers {
-    val toJSBuffer(uint8_t *pointer, size_t data_size);
+    val toUint8Array(uint8_t *pointer, size_t data_size);
 
-    val toJSBuffer(std::vector<uint8_t> vec);
+    val toUint8Array(std::vector<uint8_t> vec);
 
-    val toJSBuffer(bn_t bn);
-
-    val toJSArray(std::vector<val> vec);
+    val toUint8Array(bn_t bn);
 
     std::vector<uint8_t> toVector(uint8_t *pointer, size_t data_size);
 
@@ -50,6 +48,17 @@ namespace helpers {
             vec.push_back(jsArray[i].as<T>());
         }
         return vec;
+    }
+
+    template<typename T>
+    inline val toJSArray(std::vector<T> vec) {
+        val Array = val::global("Array");
+        val arr = Array.new_();
+        auto l = vec.size();
+        for (unsigned i = 0; i < l; ++i) {
+            arr.call<void>("push", vec[i]);
+        }
+        return arr;
     }
 
     std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray);

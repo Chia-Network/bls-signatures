@@ -60,7 +60,7 @@ namespace js_wrappers {
         for (auto &pubKey : pubKeys) {
             pubKeyWrappers.emplace_back(val(PublicKeyWrapper(pubKey)));
         }
-        return helpers::toJSArray(pubKeyWrappers);
+        return helpers::toJSArray<val>(pubKeyWrappers);
     }
 
     val AggregationInfoWrapper::GetMessageHashes() const {
@@ -76,9 +76,9 @@ namespace js_wrappers {
         for (unsigned i = 0; i < l; ++i) {
             bn_t *exponent;
             wrapped.GetExponent(exponent, messageHashes[i], pubKeys[i]);
-            val serializedExponent = helpers::toJSBuffer(*exponent);
+            val serializedExponent = helpers::toUint8Array(*exponent);
             exponents.push_back(serializedExponent);
         }
-        return helpers::toJSArray(exponents);
+        return helpers::toJSArray<val>(exponents);
     }
 }

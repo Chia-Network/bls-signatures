@@ -57,7 +57,7 @@ namespace js_wrappers {
     }
 
     val PrivateKeyWrapper::Serialize() const {
-        return helpers::toJSBuffer(wrapped.Serialize());
+        return helpers::toUint8Array(wrapped.Serialize());
     }
 
     SignatureWrapper PrivateKeyWrapper::Sign(val messageBuffer) const {

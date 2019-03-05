@@ -15,25 +15,20 @@
 #include "./helpers.h"
 
 namespace helpers {
-    val toJSBuffer(std::vector<uint8_t> vec) {
-        size_t bufferSize = vec.size();
-        val Buffer = val::global("Buffer");
-        val buffer = Buffer.call<val>("alloc", bufferSize);
-        for (unsigned i = 0; i < bufferSize; ++i) {
-            buffer.call<void>("writeUInt8", vec[i], i);
-        }
-        return buffer;
+    val toUint8Array(std::vector<uint8_t> vec) {
+        val arr = helpers::toJSArray<uint8_t>(vec);
+        return val::global("Uint8Array").call<val>("from", arr);
     }
 
-    val toJSBuffer(uint8_t *pointer, size_t data_size) {
+    val toUint8Array(uint8_t *pointer, size_t data_size) {
         std::vector<uint8_t> vec = toVector(pointer, data_size);
-        val buffer = toJSBuffer(vec);
+        val buffer = toUint8Array(vec);
         return buffer;
     }
 
-    val toJSBuffer(bn_t bn) {
+    val toUint8Array(bn_t bn) {
         std::vector<uint8_t> vec = toVector(bn);
-        val buffer = toJSBuffer(vec);
+        val buffer = toUint8Array(vec);
         return buffer;
     }
 
@@ -58,16 +53,6 @@ namespace helpers {
         bn_write_bin(buf, bn_size_bin(bn), bn);
         std::vector<uint8_t> vec = helpers::toVector(buf, bn_size_bin(bn));
         return vec;
-    }
-
-    val toJSArray(std::vector<val> vec) {
-        val Array = val::global("Array");
-        val arr = Array.new_();
-        auto l = vec.size();
-        for (unsigned i = 0; i < l; ++i) {
-            arr.call<void>("push", vec[i]);
-        }
-        return arr;
     }
 
     std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray) {
@@ -97,9 +82,9 @@ namespace helpers {
         auto vecSize = arraysVector.size();
         std::vector<val> valVector;
         for (unsigned i = 0; i < vecSize; ++i) {
-            valVector.push_back(toJSBuffer(arraysVector[i], element_size));
+            valVector.push_back(toUint8Array(arraysVector[i], element_size));
         }
-        val arr = toJSArray(valVector);
+        val arr = helpers::toJSArray<val>(valVector);
         return arr;
     }
 }  // namespace helpers

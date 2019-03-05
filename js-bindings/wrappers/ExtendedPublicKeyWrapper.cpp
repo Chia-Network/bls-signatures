@@ -56,6 +56,6 @@ namespace js_wrappers {
     };
 
     val ExtendedPublicKeyWrapper::Serialize() const {
-        return helpers::toJSBuffer(wrapped.Serialize());
+        return helpers::toUint8Array(wrapped.Serialize());
     };
 }

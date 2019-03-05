@@ -36,4 +36,4 @@ foreach(file ${JS_BINDINGS_TESTS})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/${file} tests/${file} COPYONLY)
 endforeach()
 
-set_target_properties(blsjs PROPERTIES LINK_FLAGS "--bind --memory-init-file 0 -s WASM=0 -s DISABLE_EXCEPTION_CATCHING=0")
+set_target_properties(blsjs PROPERTIES LINK_FLAGS "--bind -s SINGLE_FILE=1 -s MODULARIZE_INSTANCE=1 -s BINARYEN_ASYNC_COMPILATION=0")

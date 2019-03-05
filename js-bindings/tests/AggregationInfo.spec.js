@@ -3,13 +3,13 @@ const assert = require('assert');
 const crypto = require('crypto');
 
 function getSeed() {
-    return Buffer.from([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    return Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 }
 
 describe('AggregationInfo', () => {
     it('Should be able to serialize and deserialize data correctly', () => {
         const privateKey = PrivateKey.fromSeed(getSeed());
-        const message = Buffer.from('Hello world', 'utf8');
+        const message = Uint8Array.from(Buffer.from('Hello world', 'utf8'));
         const sig = privateKey.sign(message);
         assert(sig.verify());
 
@@ -19,10 +19,10 @@ describe('AggregationInfo', () => {
         const serializedKeyFromInfo = pubKeyFromInfo.serialize();
         const serializedKeyFromPrivateKey = privateKey.getPublicKey().serialize();
 
-        const messageHash = crypto
+        const messageHash = Uint8Array.from(crypto
             .createHash('sha256')
             .update(message)
-            .digest();
+            .digest());
         const messageHashFromInfo = info.getMessageHashes()[0];
 
         assert.deepStrictEqual(serializedKeyFromInfo, serializedKeyFromPrivateKey);

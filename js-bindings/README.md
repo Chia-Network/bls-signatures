@@ -10,13 +10,13 @@ This library is a JavaScript port of the [Chia Network's BLS lib](https://github
 npm i bls-signatures --save
 ```
 ```javascript
-const { PrivateKey } = require('bls-js');
-const privateKey = PrivateKey.fromSeed(Buffer.from([1,2,3]));
-const sig = privateKey.sign(Buffer.from("Hello world!"));
+const { PrivateKey } = require('bls-signatures');
+const privateKey = PrivateKey.fromSeed(Uint8Array.from([1,2,3]));
+const sig = privateKey.sign(Uint8Array.from(Buffer.from("Hello world!")));
 sig.verify();
 ```
 
-Please refer to the library's [typings](../../js-bindings/blsjs.d.ts) or detailed API information. Use cases can be found in the [original lib's readme](../../README.md).
+Please refer to the library's [typings](../../js-bindings/blsjs.d.ts) for detailed API information. Use cases can be found in the [original lib's readme](../../README.md).
 
 ### Build
 
