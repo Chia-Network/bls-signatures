@@ -13,10 +13,19 @@ npm i bls-signatures --save
 const { PrivateKey } = require('bls-signatures');
 const privateKey = PrivateKey.fromSeed(Uint8Array.from([1,2,3]));
 const sig = privateKey.sign(Uint8Array.from(Buffer.from("Hello world!")));
-sig.verify();
+const isValidSignature = sig.verify();
+
+if (isValidSignature) {
+    // Do stuff...
+}
+
+privateKey.delete();
+sig.delete();
 ```
 
 Please refer to the library's [typings](../../js-bindings/blsjs.d.ts) for detailed API information. Use cases can be found in the [original lib's readme](../../README.md).
+
+__Important note on usage:__ Since this library is a WebAssembly port of the c++ library, JavaScript's automatic memory management isn't available. Please, delete all objects manually if they don't needed anymore by calling delete method on them, as shown in the example above.
 
 ### Build
 
@@ -31,6 +40,7 @@ cmake ../ -DCMAKE_TOOLCHAIN_FILE={path_to_your_emscripten_installation}/emsdk/em
 cmake --build . --
 ```
 
+Run the build after any changes to the library, including readme and tests, as the library will be deployed from the build directory, and the build system copies all the files from the source dir.
 ### Run tests
 
 To run tests, build the library, then go to the `js_bindings` folder in the build directory and run

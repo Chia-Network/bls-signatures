@@ -8,6 +8,7 @@ export class PrivateKey {
     sign(message: Uint8Array): Signature;
     signInsecure(message: Uint8Array): InsecureSignature;
     signPrehashed(messageHash: Uint8Array): Signature;
+    delete(): void;
 }
 
 export class InsecureSignature {
@@ -16,6 +17,7 @@ export class InsecureSignature {
     verify(hashes: Uint8Array[], pubKeys: PublicKey[]): boolean;
     divideBy(insecureSignatures: InsecureSignature[]): InsecureSignature;
     serialize(): Uint8Array;
+    delete(): void;
 }
 
 export class Signature {
@@ -26,6 +28,7 @@ export class Signature {
     verify(): boolean;
     getAggregationInfo(): AggregationInfo;
     setAggregationInfo(aggregationInfo: AggregationInfo): void;
+    delete(): void;
 }
 
 export class PublicKey {
@@ -34,6 +37,7 @@ export class PublicKey {
     static aggregateInsecure(publicKeys: PublicKey[]): PublicKey;
     getFingerprint(): number;
     serialize(): Uint8Array;
+    delete(): void;
 }
 
 export class AggregationInfo {
@@ -43,6 +47,7 @@ export class AggregationInfo {
     getPublicKeys(): PublicKey[];
     getMessageHashes(): Uint8Array[];
     getExponents(): Uint8Array[];
+    delete(): void;
 }
 
 export class ExtendedPrivateKey {
@@ -59,6 +64,7 @@ export class ExtendedPrivateKey {
     getPublicKey(): PublicKey;
     getExtendedPublicKey(): ExtendedPublicKey;
     serialize(): Uint8Array;
+    delete(): void;
 }
 
 export class ExtendedPublicKey {
@@ -71,11 +77,13 @@ export class ExtendedPublicKey {
     getPublicKey(): PublicKey;
     getChainCode(): ChainCode;
     serialize(): Uint8Array;
+    delete(): void;
 }
 
 export class ChainCode {
     static fromBytes(bytes: Uint8Array);
     serialize(): Uint8Array;
+    delete(): void;
 }
 
 export namespace Threshold {
