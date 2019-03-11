@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert').strict;
 const {Threshold, PublicKey, PrivateKey, InsecureSignature} = require('../');
 const crypto = require('crypto');
 

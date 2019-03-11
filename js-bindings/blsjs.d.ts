@@ -87,8 +87,8 @@ export class ChainCode {
 }
 
 export namespace Threshold {
-    function create(commitment: PublicKey[], secretFragments: PrivateKey[], threshold: number, playersCount: number): PrivateKey;
-    function signWithCoefficient(sk: PrivateKey, message: Uint8Array, playerIndex: number, players: number[]): InsecureSignature;
-    function aggregateUnitSigs(signatures: InsecureSignature[], message: Uint8Array, players: number[]) : InsecureSignature;
-    function verifySecretFragment(playerIndex: number, secretFragment: PrivateKey, commitment: PublicKey[], threshold: number) : boolean;
+    export function create(commitment: PublicKey[], secretFragments: PrivateKey[], threshold: number, playersCount: number): PrivateKey;
+    export function signWithCoefficient(sk: PrivateKey, message: Uint8Array, playerIndex: number, players: number[]): InsecureSignature;
+    export function aggregateUnitSigs(signatures: InsecureSignature[], message: Uint8Array, players: number[]) : InsecureSignature;
+    export function verifySecretFragment(playerIndex: number, secretFragment: PrivateKey, commitment: PublicKey[], threshold: number) : boolean;
 }

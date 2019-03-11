@@ -1,5 +1,5 @@
 const {AggregationInfo, PrivateKey} = require('../');
-const assert = require('assert');
+const assert = require('assert').strict;
 const crypto = require('crypto');
 
 function getSeed() {
@@ -25,8 +25,8 @@ describe('AggregationInfo', () => {
             .digest());
         const messageHashFromInfo = info.getMessageHashes()[0];
 
-        assert.deepStrictEqual(serializedKeyFromInfo, serializedKeyFromPrivateKey);
-        assert.deepStrictEqual(messageHash, messageHashFromInfo);
+        assert.deepEqual(serializedKeyFromInfo, serializedKeyFromPrivateKey);
+        assert.deepEqual(messageHash, messageHashFromInfo);
 
         const restoredInfo = AggregationInfo.fromBuffers(
             info.getPublicKeys(),
@@ -34,8 +34,8 @@ describe('AggregationInfo', () => {
             info.getExponents()
         );
 
-        assert.deepStrictEqual(restoredInfo.getPublicKeys()[0].serialize().toString('hex'), info.getPublicKeys()[0].serialize().toString('hex'));
-        assert.deepStrictEqual(restoredInfo.getExponents(), info.getExponents());
-        assert.deepStrictEqual(restoredInfo.getMessageHashes()[0].toString('hex'), info.getMessageHashes()[0].toString('hex'));
+        assert.deepEqual(restoredInfo.getPublicKeys()[0].serialize().toString('hex'), info.getPublicKeys()[0].serialize().toString('hex'));
+        assert.deepEqual(restoredInfo.getExponents(), info.getExponents());
+        assert.deepEqual(restoredInfo.getMessageHashes()[0].toString('hex'), info.getMessageHashes()[0].toString('hex'));
     });
 });

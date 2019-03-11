@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert').strict;
 const {Signature, PublicKey, PrivateKey, AggregationInfo} = require('../');
 
 function getSignatureHex() {
@@ -56,9 +56,9 @@ describe('Signature', () => {
     describe('.fromBytes', () => {
         it('Should create verifiable signature from bytes', () => {
             const sig = Signature.fromBytes(getSignatureBuffer());
-            assert.strictEqual(Buffer.from(sig.serialize()).toString('hex'), getSignatureHex());
+            assert.equal(Buffer.from(sig.serialize()).toString('hex'), getSignatureHex());
             // Since there is no aggregation info, it's impossible to verify sig
-            assert.strictEqual(sig.verify(), false);
+            assert.equal(sig.verify(), false);
         });
     });
     describe('.fromBytesAndAggregationInfo', () => {
@@ -73,9 +73,9 @@ describe('Signature', () => {
             const restoredInfo = restoredSig.getAggregationInfo();
             assert(restoredSig instanceof Signature);
             assert(restoredSig.verify());
-            assert.deepStrictEqual(info.getPublicKeys()[0].serialize(), restoredInfo.getPublicKeys()[0].serialize());
-            assert.deepStrictEqual(info.getMessageHashes()[0], restoredInfo.getMessageHashes()[0]);
-            assert.deepStrictEqual(info.getExponents()[0], restoredInfo.getExponents()[0]);
+            assert.deepEqual(info.getPublicKeys()[0].serialize(), restoredInfo.getPublicKeys()[0].serialize());
+            assert.deepEqual(info.getMessageHashes()[0], restoredInfo.getMessageHashes()[0]);
+            assert.deepEqual(info.getExponents()[0], restoredInfo.getExponents()[0]);
         });
     });
     describe('.aggregateSigs', () => {
@@ -86,7 +86,7 @@ describe('Signature', () => {
             const pk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3, 4, 5]));
             const sig = pk.sign(Uint8Array.from([100, 2, 254, 88, 90, 45, 23]));
             assert(sig instanceof Signature);
-            assert.deepStrictEqual(Buffer.from(sig.serialize()).toString('hex'), getSignatureHex());
+            assert.deepEqual(Buffer.from(sig.serialize()).toString('hex'), getSignatureHex());
         });
     });
     describe('#verify', () => {
@@ -112,7 +112,7 @@ describe('Signature', () => {
                 getAggregationInfo().exponents
             );
             sig.setAggregationInfo(info);
-            assert.strictEqual(sig.verify(), false);
+            assert.equal(sig.verify(), false);
         })
     });
 });

@@ -1,4 +1,4 @@
-const assert = require('assert');
+const assert = require('assert').strict;
 
 const {PublicKey, PrivateKey} = require('../');
 
@@ -46,7 +46,7 @@ describe('PublicKey', () => {
         it('Should serialize key to the same buffer', () => {
             const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
             const serialized = pk.serialize();
-            assert.deepStrictEqual(Buffer.from(serialized).toString('hex'), getPublicKeyFixtureHex());
+            assert.deepEqual(Buffer.from(serialized).toString('hex'), getPublicKeyFixtureHex());
         });
     });
 
@@ -54,7 +54,7 @@ describe('PublicKey', () => {
         it('Should get correct fingerprint', () => {
             const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
             const fingerprint = pk.getFingerprint();
-            assert.strictEqual(fingerprint, getPublicKeyFixture().fingerprint);
+            assert.equal(fingerprint, getPublicKeyFixture().fingerprint);
         });
     });
 });

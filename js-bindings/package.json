@@ -7,9 +7,10 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "npm run test:node && npm run test:browser",
-    "test:node": "mocha ./tests/*.spec.js --recursive",
-    "test:browser": "karma start ./tests/karma.conf.js --single-run"
+    "test": "npm run test:node && npm run test:browser && npm run test:typings",
+    "test:node": "mocha ./tests/*.spec.js",
+    "test:browser": "karma start ./tests/karma.conf.js --single-run",
+    "test:typings": "tsc ./tests/typings.spec.ts && mocha ./tests/typings.spec.js"
   },
   "repository": "https://github.com/antouhou/bls-signatures/tree/feature/js_build/js-bindings",
   "author": {
@@ -28,11 +29,14 @@
   "dependencies": {},
   "types": "blsjs.d.ts",
   "devDependencies": {
+    "@types/mocha": "^5.2.6",
+    "@types/node": "^11.11.0",
     "karma": "^4.0.1",
     "karma-firefox-launcher": "^1.1.0",
     "karma-mocha": "^1.3.0",
     "karma-webpack": "^3.0.5",
     "mocha": "6.0.2",
+    "typescript": "^3.3.3333",
     "webpack": "^4.29.6"
   }
 }
