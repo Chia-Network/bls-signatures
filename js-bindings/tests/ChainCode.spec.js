@@ -1,4 +1,4 @@
-const assert = require('assert').strict;
+const assert = require('assert');
 const { ChainCode } = require('../');
 
 function getChainCodeHex() {
@@ -14,6 +14,6 @@ describe('ChainCode', () => {
         const chainCode = ChainCode.fromBytes(getChainCodeBytes());
         assert(chainCode instanceof ChainCode);
         const serialized = chainCode.serialize();
-        assert.equal(Buffer.from(serialized).toString('hex'), getChainCodeHex());
+        assert.strictEqual(Buffer.from(serialized).toString('hex'), getChainCodeHex());
     });
 });

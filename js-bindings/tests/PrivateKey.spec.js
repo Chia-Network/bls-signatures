@@ -1,5 +1,5 @@
 const {PrivateKey, Signature, PublicKey, AggregationInfo} = require('../');
-const assert = require('assert').strict;
+const assert = require('assert');
 const crypto = require('crypto');
 
 function getSeedAndFinferprint() {
@@ -45,7 +45,7 @@ describe('PrivateKey', () => {
             .digest();
         const sig2 = sk1.signPrehashed(hash);
         sig2.setAggregationInfo(AggregationInfo.fromMsgHash(pk1, hash));
-        assert.deepEqual(sig1.serialize(), sig2.serialize());
+        assert.deepStrictEqual(sig1.serialize(), sig2.serialize());
         assert(sig2.verify());
     });
 
@@ -53,19 +53,19 @@ describe('PrivateKey', () => {
         it('Should create a private key from a seed', () => {
             const pk = PrivateKey.fromSeed(getPkSeed());
             assert(pk instanceof PrivateKey);
-            assert.deepEqual(pk.serialize(), getPkBuffer());
+            assert.deepStrictEqual(pk.serialize(), getPkBuffer());
         });
     });
     describe('.fromBytes', () => {
         it('Should create a private key from a Buffer', () => {
             const pk = PrivateKey.fromBytes(getPkBuffer(), false);
             assert(pk instanceof PrivateKey);
-            assert.deepEqual(pk.serialize(), getPkBuffer());
+            assert.deepStrictEqual(pk.serialize(), getPkBuffer());
         });
         it('Should create a private key from a Uint8Array', () => {
             const pk = PrivateKey.fromBytes(getPkUint8Array(), false);
             assert(pk instanceof PrivateKey);
-            assert.deepEqual(pk.serialize(), getPkBuffer());
+            assert.deepStrictEqual(pk.serialize(), getPkBuffer());
         });
     });
 
@@ -89,7 +89,7 @@ describe('PrivateKey', () => {
             const pk = PrivateKey.fromSeed(getPkSeed());
             const serialized = pk.serialize();
             assert(serialized instanceof Uint8Array);
-            assert.deepEqual(serialized, getPkBuffer());
+            assert.deepStrictEqual(serialized, getPkBuffer());
         });
     });
 
@@ -114,7 +114,7 @@ describe('PrivateKey', () => {
             const info = sig.getAggregationInfo();
             assert(sig instanceof Signature);
             assert(sig.verify());
-            assert.deepEqual(info.getMessageHashes()[0], messageHash);
+            assert.deepStrictEqual(info.getMessageHashes()[0], messageHash);
         });
     });
 
@@ -123,7 +123,7 @@ describe('PrivateKey', () => {
             const pk = PrivateKey.fromSeed(getSeedAndFinferprint().seed);
             const publicKey = pk.getPublicKey();
             assert(publicKey instanceof PublicKey);
-            assert.equal(publicKey.getFingerprint(), getSeedAndFinferprint().fingerprint);
+            assert.strictEqual(publicKey.getFingerprint(), getSeedAndFinferprint().fingerprint);
         });
     });
 });

@@ -78,7 +78,8 @@ namespace js_wrappers {
             .function("getChainCode", &ExtendedPrivateKeyWrapper::GetChainCode)
             .function("getPrivateKey", &ExtendedPrivateKeyWrapper::GetPrivateKey)
             .function("getPublicKey", &ExtendedPrivateKeyWrapper::GetPublicKey)
-            .function("getExtendedPublicKey", &ExtendedPrivateKeyWrapper::GetExtendedPublicKey);
+            .function("getExtendedPublicKey", &ExtendedPrivateKeyWrapper::GetExtendedPublicKey)
+            .function("serialize", &ExtendedPrivateKeyWrapper::Serialize);
 
         class_<ExtendedPublicKeyWrapper>("ExtendedPublicKey")
             .class_function("fromBytes", &ExtendedPublicKeyWrapper::FromBytes)
