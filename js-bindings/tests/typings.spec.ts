@@ -9,7 +9,8 @@ import {
     PrivateKey,
     PublicKey,
     Signature,
-    Threshold
+    Threshold,
+    DHKeyExchange
 } from '../';
 import {deepStrictEqual, ok, strictEqual} from 'assert';
 import {createHash} from 'crypto';
@@ -199,5 +200,15 @@ describe('typings', () => {
 
     it('GROUP_ORDER', () => {
         strictEqual(GROUP_ORDER, '73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001');
+    });
+
+    it('DHKeyExchange', () => {
+        const sk = PrivateKey.fromSeed(getSkSeed());
+        const pk = PublicKey.fromBytes(getPkBytes());
+        const result: PublicKey = DHKeyExchange(sk, pk);
+        strictEqual(result.serialize().length, PublicKey.PUBLIC_KEY_SIZE);
+        sk.delete();
+        pk.delete();
+        result.delete();
     });
 });

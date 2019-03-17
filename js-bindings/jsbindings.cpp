@@ -15,6 +15,7 @@
 #include <emscripten/bind.h>
 #include "wrappers/ExtendedPrivateKeyWrapper.h"
 #include "wrappers/ThresholdWrapper.h"
+#include "wrappers/BLSWrapper.h"
 
 using namespace emscripten;
 
@@ -112,5 +113,6 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .class_function("verifySecretFragment", &ThresholdWrapper::VerifySecretFragment);
 
     constant("GROUP_ORDER", GROUP_ORDER);
+    function("DHKeyExchange", &BLSWrapper::DHKeyExchange);
 };
 }  // namespace js_wrappers

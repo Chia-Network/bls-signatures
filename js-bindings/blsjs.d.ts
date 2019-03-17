@@ -167,4 +167,6 @@ export namespace Threshold {
     export function verifySecretFragment(playerIndex: number, secretFragment: PrivateKey, commitment: PublicKey[], threshold: number): boolean;
 }
 
+export function DHKeyExchange(privateKey: PrivateKey, publicKey: PublicKey);
+
 export const GROUP_ORDER: string;
