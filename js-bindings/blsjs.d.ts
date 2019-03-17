@@ -1,4 +1,5 @@
 export class PrivateKey {
+    static PRIVATE_KEY_SIZE: number;
     static fromSeed(seed: Uint8Array): PrivateKey;
     static fromBytes(bytes: Uint8Array, modOrder: boolean): PrivateKey;
     static aggregate(privateKeys: PrivateKey[], publicKeys: PublicKey[]): PrivateKey;
@@ -12,6 +13,7 @@ export class PrivateKey {
 }
 
 export class InsecureSignature {
+    static SIGNATURE_SIZE: number;
     static fromBytes(bytes: Uint8Array);
     static aggregate(signatures: InsecureSignature[]): InsecureSignature;
     verify(hashes: Uint8Array[], pubKeys: PublicKey[]): boolean;
@@ -21,6 +23,7 @@ export class InsecureSignature {
 }
 
 export class Signature {
+    static SIGNATURE_SIZE: number;
     static fromBytes(bytes: Uint8Array): Signature;
     static fromBytesAndAggregationInfo(bytes: Uint8Array, aggregationInfo: AggregationInfo): Signature;
     static aggregateSigs(signatures: Signature[]): Signature;
@@ -32,6 +35,7 @@ export class Signature {
 }
 
 export class PublicKey {
+    static PUBLIC_KEY_SIZE: number;
     static fromBytes(bytes: Uint8Array): PublicKey;
     static aggregate(publicKeys: PublicKey[]): PublicKey;
     static aggregateInsecure(publicKeys: PublicKey[]): PublicKey;
@@ -51,6 +55,7 @@ export class AggregationInfo {
 }
 
 export class ExtendedPrivateKey {
+    static EXTENDED_PRIVATE_KEY_SIZE: number;
     static fromSeed(seed: Uint8Array): ExtendedPrivateKey;
     static fromBytes(bytes: Uint8Array): ExtendedPrivateKey;
     privateChild(index: number): ExtendedPrivateKey;
@@ -68,6 +73,8 @@ export class ExtendedPrivateKey {
 }
 
 export class ExtendedPublicKey {
+    static VERSION: number;
+    static EXTENDED_PUBLIC_KEY_SIZE: number;
     static fromBytes(bytes: Uint8Array): ExtendedPublicKey;
     publicChild(index: number): ExtendedPublicKey;
     getVersion(): number;
@@ -81,6 +88,7 @@ export class ExtendedPublicKey {
 }
 
 export class ChainCode {
+    static CHAIN_CODE_SIZE: number;
     static fromBytes(bytes: Uint8Array);
     serialize(): Uint8Array;
     delete(): void;

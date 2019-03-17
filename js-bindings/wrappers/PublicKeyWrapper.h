@@ -28,7 +28,9 @@ namespace js_wrappers {
     public:
         explicit PublicKeyWrapper(PublicKey &publicKey);
 
-        static std::vector<PublicKey> Unwrap(std::vector<PublicKeyWrapper> wrappers);
+        static const size_t PUBLIC_KEY_SIZE;
+
+        static std::vector <PublicKey> Unwrap(std::vector <PublicKeyWrapper> wrappers);
 
         static PublicKeyWrapper FromBytes(val buffer);
 

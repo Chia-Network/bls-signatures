@@ -22,6 +22,7 @@ using namespace emscripten;
 namespace js_wrappers {
     EMSCRIPTEN_BINDINGS(blsjs) {
         class_<PrivateKeyWrapper>("PrivateKey")
+            .class_property("PRIVATE_KEY_SIZE", &PrivateKeyWrapper::PRIVATE_KEY_SIZE)
             .class_function("fromSeed", &PrivateKeyWrapper::FromSeed)
             .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
             .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
@@ -33,6 +34,7 @@ namespace js_wrappers {
             .function("getPublicKey", &PrivateKeyWrapper::GetPublicKey);
 
         class_<SignatureWrapper>("Signature")
+            .class_property("SIGNATURE_SIZE", &SignatureWrapper::SIGNATURE_SIZE)
             .class_function("fromBytes", &SignatureWrapper::FromBytes)
             .class_function("fromBytesAndAggregationInfo", &SignatureWrapper::FromBytesAndAggregationInfo)
             .class_function("aggregateSigs", &SignatureWrapper::AggregateSigs)
@@ -45,6 +47,7 @@ namespace js_wrappers {
             .function("divideBy", &SignatureWrapper::DivideBy);
 
         class_<InsecureSignatureWrapper>("InsecureSignature")
+            .class_property("SIGNATURE_SIZE", &InsecureSignatureWrapper::SIGNATURE_SIZE)
             .class_function("fromBytes", &InsecureSignatureWrapper::FromBytes)
             .class_function("aggregate", &InsecureSignatureWrapper::Aggregate)
             .function("verify", &InsecureSignatureWrapper::Verify)
@@ -52,6 +55,7 @@ namespace js_wrappers {
             .function("serialize", &InsecureSignatureWrapper::Serialize);
 
         class_<PublicKeyWrapper>("PublicKey")
+            .class_property("PUBLIC_KEY_SIZE", &PublicKeyWrapper::PUBLIC_KEY_SIZE)
             .class_function("fromBytes", &PublicKeyWrapper::FromBytes)
             .class_function("aggregate", &PublicKeyWrapper::Aggregate)
             .class_function("aggregateInsecure", &PublicKeyWrapper::AggregateInsecure)
@@ -67,6 +71,7 @@ namespace js_wrappers {
             .function("getExponents", &AggregationInfoWrapper::GetExponents);
 
         class_<ExtendedPrivateKeyWrapper>("ExtendedPrivateKey")
+            .class_property("EXTENDED_PRIVATE_KEY_SIZE", &ExtendedPrivateKeyWrapper::EXTENDED_PRIVATE_KEY_SIZE)
             .class_function("fromSeed", &ExtendedPrivateKeyWrapper::FromSeed, allow_raw_pointers())
             .class_function("fromBytes", &ExtendedPrivateKeyWrapper::FromBytes, allow_raw_pointers())
             .function("privateChild", &ExtendedPrivateKeyWrapper::PrivateChild)
@@ -82,6 +87,8 @@ namespace js_wrappers {
             .function("serialize", &ExtendedPrivateKeyWrapper::Serialize);
 
         class_<ExtendedPublicKeyWrapper>("ExtendedPublicKey")
+            .class_property("VERSION", &ExtendedPublicKeyWrapper::VERSION)
+            .class_property("EXTENDED_PUBLIC_KEY_SIZE", &ExtendedPublicKeyWrapper::EXTENDED_PUBLIC_KEY_SIZE)
             .class_function("fromBytes", &ExtendedPublicKeyWrapper::FromBytes)
             .function("publicChild", &ExtendedPublicKeyWrapper::PublicChild)
             .function("getVersion", &ExtendedPublicKeyWrapper::GetVersion)
@@ -93,6 +100,7 @@ namespace js_wrappers {
             .function("serialize", &ExtendedPublicKeyWrapper::Serialize);
 
         class_<ChainCodeWrapper>("ChainCode")
+            .class_property("CHAIN_CODE_SIZE", &ChainCodeWrapper::CHAIN_CODE_SIZE)
             .class_function("fromBytes", &ChainCodeWrapper::FromBytes)
             .function("serialize", &ChainCodeWrapper::Serialize);
 

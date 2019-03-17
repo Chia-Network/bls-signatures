@@ -10,7 +10,7 @@ import {
     Signature,
     Threshold
 } from '../';
-import {ok, deepStrictEqual} from 'assert';
+import {deepStrictEqual, ok, strictEqual} from 'assert';
 import {createHash} from "crypto";
 
 function getSkSeed(): Uint8Array {
@@ -51,6 +51,7 @@ function getChainCodeBytes(): Uint8Array {
 
 describe('typings', () => {
     it('PrivateKey', () => {
+        strictEqual(PrivateKey.PRIVATE_KEY_SIZE, 32);
         const sk: PrivateKey = PrivateKey.fromSeed(getSkSeed());
         const sk2: PrivateKey = PrivateKey.fromBytes(getSkBytes(), false);
         const aggSk: PrivateKey = PrivateKey.aggregate([sk], [sk.getPublicKey()]);
@@ -72,6 +73,7 @@ describe('typings', () => {
     });
 
     it('InsecureSignature', () => {
+        strictEqual(InsecureSignature.SIGNATURE_SIZE, 96);
         const sig: InsecureSignature = InsecureSignature.fromBytes(getSignatureBytes());
         const aggSig: InsecureSignature = InsecureSignature.aggregate([sig]);
         const isValid: boolean = sig.verify([getMessageHash()], [PublicKey.fromBytes(getPkBytes())]);
@@ -82,6 +84,7 @@ describe('typings', () => {
     });
 
     it('Signature', () => {
+        strictEqual(Signature.SIGNATURE_SIZE, 96);
         const info = AggregationInfo.fromMsg(PublicKey.fromBytes(getPkBytes()), getMessageBytes());
         const sig: Signature = Signature.fromBytesAndAggregationInfo(getSignatureBytes(), info);
         const aggSig: Signature = Signature.aggregateSigs([sig]);
@@ -98,6 +101,7 @@ describe('typings', () => {
     });
 
     it('PublicKey', () => {
+        strictEqual(PublicKey.PUBLIC_KEY_SIZE, 48);
         const pk: PublicKey = PublicKey.fromBytes(getPkBytes());
         const aggPk: PublicKey = PublicKey.aggregate([pk]);
         const aggPk2: PublicKey = PublicKey.aggregateInsecure([pk]);
@@ -125,6 +129,7 @@ describe('typings', () => {
     });
 
     it('ExtendedPrivateKey', () => {
+        strictEqual(ExtendedPrivateKey.EXTENDED_PRIVATE_KEY_SIZE, 77);
         const esk: ExtendedPrivateKey = ExtendedPrivateKey.fromSeed(getSkSeed());
         ExtendedPrivateKey.fromBytes(getEskBytes());
         const privateChild: ExtendedPrivateKey = esk.privateChild(1);
@@ -148,6 +153,8 @@ describe('typings', () => {
     });
 
     it('ExtendedPublicKey', () => {
+        strictEqual(ExtendedPublicKey.VERSION, 1);
+        strictEqual(ExtendedPublicKey.EXTENDED_PUBLIC_KEY_SIZE, 93);
         const epk: ExtendedPublicKey = ExtendedPublicKey.fromBytes(getEpkBytes());
         const publicChild: ExtendedPublicKey = epk.publicChild(1);
         const version: number = epk.getVersion();
@@ -164,6 +171,7 @@ describe('typings', () => {
     });
 
     it('ChainCode', () => {
+        strictEqual(ChainCode.CHAIN_CODE_SIZE, 32);
         const chainCode: ChainCode = ChainCode.fromBytes(getChainCodeBytes());
         const bytes: Uint8Array = chainCode.serialize();
         chainCode.delete();

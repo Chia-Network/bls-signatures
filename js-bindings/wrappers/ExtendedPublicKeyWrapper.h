@@ -25,6 +25,10 @@ namespace js_wrappers {
     public:
         explicit ExtendedPublicKeyWrapper(ExtendedPublicKey &extendedPublicKey);
 
+        static const size_t VERSION;
+
+        static const size_t EXTENDED_PUBLIC_KEY_SIZE;
+
         static ExtendedPublicKeyWrapper FromBytes(val serializedBuffer);
 
         ExtendedPublicKeyWrapper PublicChild(uint32_t i) const;

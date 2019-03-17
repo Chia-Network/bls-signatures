@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { ChainCode } = require('../');
+const {ChainCode} = require('../');
 
 function getChainCodeHex() {
     return '9728accd39f28f05077f224440e7f1781684e22855de41170ef2af0b75022083';

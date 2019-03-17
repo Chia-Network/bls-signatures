@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { ExtendedPublicKey, ExtendedPrivateKey } = require('../');
+const {ExtendedPublicKey, ExtendedPrivateKey} = require('../');
 
 describe('ExtendedPublicKey', () => {
     it('Should return correct data structures', () => {

@@ -29,7 +29,9 @@ namespace js_wrappers {
     public:
         explicit PrivateKeyWrapper(PrivateKey &privateKey);
 
-        static std::vector<PrivateKey> Unwrap(std::vector<PrivateKeyWrapper> wrappers);
+        static const size_t PRIVATE_KEY_SIZE;
+
+        static std::vector <PrivateKey> Unwrap(std::vector <PrivateKeyWrapper> wrappers);
 
         static PrivateKeyWrapper FromSeed(val buffer);
 

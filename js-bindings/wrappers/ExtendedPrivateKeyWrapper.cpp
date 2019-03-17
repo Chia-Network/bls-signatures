@@ -18,14 +18,16 @@ namespace js_wrappers {
     ExtendedPrivateKeyWrapper::ExtendedPrivateKeyWrapper(ExtendedPrivateKey &extendedPrivateKey) : JSWrapper(
             extendedPrivateKey) {};
 
+    const size_t ExtendedPrivateKeyWrapper::EXTENDED_PRIVATE_KEY_SIZE = ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE;
+
     ExtendedPrivateKeyWrapper ExtendedPrivateKeyWrapper::FromSeed(val seedBuffer) {
-        std::vector<uint8_t> seed = helpers::toVector(seedBuffer);
+        std::vector <uint8_t> seed = helpers::toVector(seedBuffer);
         ExtendedPrivateKey esk = ExtendedPrivateKey::FromSeed(seed.data(), seed.size());
         return ExtendedPrivateKeyWrapper(esk);
     }
 
     ExtendedPrivateKeyWrapper ExtendedPrivateKeyWrapper::FromBytes(val serializedBuffer) {
-        std::vector<uint8_t> serialized = helpers::toVector(serializedBuffer);
+        std::vector <uint8_t> serialized = helpers::toVector(serializedBuffer);
         ExtendedPrivateKey esk = ExtendedPrivateKey::FromBytes(serialized.data());
         return ExtendedPrivateKeyWrapper(esk);
     }

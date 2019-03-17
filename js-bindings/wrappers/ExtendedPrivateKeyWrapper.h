@@ -30,6 +30,8 @@ namespace js_wrappers {
     public:
         explicit ExtendedPrivateKeyWrapper(ExtendedPrivateKey &extendedPrivateKey);
 
+        static const size_t EXTENDED_PRIVATE_KEY_SIZE;
+
         static ExtendedPrivateKeyWrapper FromSeed(val seedBuffer);
 
         static ExtendedPrivateKeyWrapper FromBytes(val serializedBuffer);

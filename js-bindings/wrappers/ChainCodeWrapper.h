@@ -24,6 +24,8 @@ using namespace bls;
 namespace js_wrappers {
     class ChainCodeWrapper : public JSWrapper<ChainCode> {
     public:
+        static const size_t CHAIN_CODE_SIZE;
+
         explicit ChainCodeWrapper(ChainCode &chainCode);
 
         static ChainCodeWrapper FromBytes(val jsBuffer);

@@ -18,8 +18,13 @@ namespace js_wrappers {
     ExtendedPublicKeyWrapper::ExtendedPublicKeyWrapper(ExtendedPublicKey &extendedPublicKey) : JSWrapper(
             extendedPublicKey) {};
 
+    const size_t ExtendedPublicKeyWrapper::VERSION = ExtendedPublicKey::VERSION;
+
+
+    const size_t ExtendedPublicKeyWrapper::EXTENDED_PUBLIC_KEY_SIZE = ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE;
+
     ExtendedPublicKeyWrapper ExtendedPublicKeyWrapper::FromBytes(val serializedBuffer) {
-        std::vector<uint8_t> serialized = helpers::toVector(serializedBuffer);
+        std::vector <uint8_t> serialized = helpers::toVector(serializedBuffer);
         ExtendedPublicKey pk = ExtendedPublicKey::FromBytes(serialized.data());
         return ExtendedPublicKeyWrapper(pk);
     };

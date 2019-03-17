@@ -99,9 +99,9 @@ describe('Signature', () => {
     });
     describe('.aggregateSigs', () => {
         it('Should aggregate signature', () => {
-            const sk = PrivateKey.fromSeed(Uint8Array.from([1,2,3]));
-            const sig1 = sk.sign(Uint8Array.from([3,4,5]));
-            const sig2 = sk.sign(Uint8Array.from([6,7,8]));
+            const sk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3]));
+            const sig1 = sk.sign(Uint8Array.from([3, 4, 5]));
+            const sig2 = sk.sign(Uint8Array.from([6, 7, 8]));
             const aggregatedSig = Signature.aggregateSigs([sig1, sig2]);
             assert.strictEqual(aggregatedSig.verify(), true);
 
@@ -159,17 +159,17 @@ describe('Signature', () => {
 describe('InsecureSignature', () => {
     describe('.fromBytes', () => {
         it('Should create sig from bytes', () => {
-           const sig = InsecureSignature.fromBytes(getSignatureBytes());
-           assert(sig instanceof InsecureSignature);
+            const sig = InsecureSignature.fromBytes(getSignatureBytes());
+            assert(sig instanceof InsecureSignature);
 
-           sig.delete();
+            sig.delete();
         });
     });
     describe('.aggregate', () => {
         it('Should aggregate signature', () => {
-            const sk = PrivateKey.fromSeed(Uint8Array.from([1,2,3]));
-            const msg1 = Uint8Array.from([3,4,5]);
-            const msg2 = Uint8Array.from([6,7,8]);
+            const sk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3]));
+            const msg1 = Uint8Array.from([3, 4, 5]);
+            const msg2 = Uint8Array.from([6, 7, 8]);
             const msg1Hash = Uint8Array.from(createHash('sha256').update(msg1).digest());
             const msg2Hash = Uint8Array.from(createHash('sha256').update(msg2).digest());
 
@@ -198,15 +198,15 @@ describe('InsecureSignature', () => {
         it("Should return false if signature can't be verified", () => {
             const sig = InsecureSignature.fromBytes(getSignatureBytes());
             const messageHashes = getAggregationInfo().messageHashes;
-            const pubKeys = [PrivateKey.fromSeed(Uint8Array.from([6,7,8])).getPublicKey()];
+            const pubKeys = [PrivateKey.fromSeed(Uint8Array.from([6, 7, 8])).getPublicKey()];
             assert.strictEqual(sig.verify(messageHashes, pubKeys), false);
         })
     });
     describe('#divideBy', () => {
         it('Should divide signature', () => {
-            const sk = PrivateKey.fromSeed(Uint8Array.from([1,2,3]));
-            const msg1 = Uint8Array.from([3,4,5]);
-            const msg2 = Uint8Array.from([6,7,8]);
+            const sk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3]));
+            const msg1 = Uint8Array.from([3, 4, 5]);
+            const msg2 = Uint8Array.from([6, 7, 8]);
 
             const sig1 = sk.signInsecure(msg1);
             const sig2 = sk.signInsecure(msg2);

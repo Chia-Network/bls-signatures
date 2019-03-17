@@ -17,8 +17,10 @@
 namespace js_wrappers {
     ChainCodeWrapper::ChainCodeWrapper(ChainCode &chainCode) : JSWrapper(chainCode) {};
 
+    const size_t ChainCodeWrapper::CHAIN_CODE_SIZE = ChainCode::CHAIN_CODE_SIZE;
+
     ChainCodeWrapper ChainCodeWrapper::FromBytes(val jsBuffer) {
-        std::vector<uint8_t> bytes = helpers::toVector(jsBuffer);
+        std::vector <uint8_t> bytes = helpers::toVector(jsBuffer);
         ChainCode chainCode = ChainCode::FromBytes(bytes.data());
         return ChainCodeWrapper(chainCode);
     };

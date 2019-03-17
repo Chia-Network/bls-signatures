@@ -1,5 +1,5 @@
 const assert = require('assert');
-const { ExtendedPrivateKey } = require('../');
+const {ExtendedPrivateKey} = require('../');
 
 function getSeed() {
     return Uint8Array.from([1, 50, 6, 244, 24, 199, 1, 25]);

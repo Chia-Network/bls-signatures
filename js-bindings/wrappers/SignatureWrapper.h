@@ -28,7 +28,9 @@ namespace js_wrappers {
     public:
         explicit InsecureSignatureWrapper(InsecureSignature &signature);
 
-        static std::vector<InsecureSignature> Unwrap(std::vector<InsecureSignatureWrapper> sigWrappers);
+        static const size_t SIGNATURE_SIZE;
+
+        static std::vector <InsecureSignature> Unwrap(std::vector <InsecureSignatureWrapper> sigWrappers);
 
         static InsecureSignatureWrapper FromBytes(val buffer);
 
@@ -45,7 +47,9 @@ namespace js_wrappers {
     public:
         explicit SignatureWrapper(Signature &signature);
 
-        static std::vector<Signature> Unwrap(std::vector<SignatureWrapper> sigWrappers);
+        static const size_t SIGNATURE_SIZE;
+
+        static std::vector <Signature> Unwrap(std::vector <SignatureWrapper> sigWrappers);
 
         static SignatureWrapper FromSignature(Signature &signature);
 

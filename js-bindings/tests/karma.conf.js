@@ -35,6 +35,6 @@ const karmaConfig = {
     },
 };
 
-module.exports = function(config) {
+module.exports = function (config) {
     config.set(karmaConfig);
 };
