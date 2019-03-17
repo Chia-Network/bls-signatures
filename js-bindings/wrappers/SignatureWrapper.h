@@ -12,68 +12,63 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLS_SIGNATUREWRAPPER_H
-#define BLS_SIGNATUREWRAPPER_H
+#ifndef JS_BINDINGS_WRAPPERS_SIGNATUREWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_SIGNATUREWRAPPER_H_
 
-#include "emscripten/val.h"
-#include "../../src/signature.hpp"
-#include "AggregationInfoWrapper.h"
 #include "../helpers.h"
-
-using namespace bls;
-using namespace emscripten;
+#include "AggregationInfoWrapper.h"
 
 namespace js_wrappers {
-    class InsecureSignatureWrapper : public JSWrapper<InsecureSignature> {
-    public:
-        explicit InsecureSignatureWrapper(InsecureSignature &signature);
+class InsecureSignatureWrapper : public JSWrapper<InsecureSignature> {
+ public:
+    explicit InsecureSignatureWrapper(const InsecureSignature &signature);
 
-        static const size_t SIGNATURE_SIZE;
+    static const size_t SIGNATURE_SIZE;
 
-        static std::vector <InsecureSignature> Unwrap(std::vector <InsecureSignatureWrapper> sigWrappers);
+    static std::vector <InsecureSignature> Unwrap(std::vector <InsecureSignatureWrapper> sigWrappers);
 
-        static InsecureSignatureWrapper FromBytes(val buffer);
+    static InsecureSignatureWrapper FromBytes(val buffer);
 
-        static InsecureSignatureWrapper Aggregate(val insecureSignatureWrappers);
+    static InsecureSignatureWrapper Aggregate(val insecureSignatureWrappers);
 
-        bool Verify(val hashesBuffers, val pubKeyWrappersArray) const;
+    bool Verify(val hashesBuffers, val pubKeyWrappersArray) const;
 
-        InsecureSignatureWrapper DivideBy(val insecureSignatureWrappers) const;
+    InsecureSignatureWrapper DivideBy(val insecureSignatureWrappers) const;
 
-        val Serialize() const;
-    };
+    val Serialize() const;
+};
 
-    class SignatureWrapper : public JSWrapper<Signature> {
-    public:
-        explicit SignatureWrapper(Signature &signature);
+class SignatureWrapper : public JSWrapper<Signature> {
+ public:
+    explicit SignatureWrapper(const Signature &signature);
 
-        static const size_t SIGNATURE_SIZE;
+    static const size_t SIGNATURE_SIZE;
 
-        static std::vector <Signature> Unwrap(std::vector <SignatureWrapper> sigWrappers);
+    static std::vector <Signature> Unwrap(std::vector <SignatureWrapper> sigWrappers);
 
-        static SignatureWrapper FromSignature(Signature &signature);
+    static SignatureWrapper FromSignature(const Signature &signature);
 
-        static SignatureWrapper FromBytes(val buffer);
+    static SignatureWrapper FromBytes(val buffer);
 
-        static SignatureWrapper AggregateSigs(val signatureWrappers);
+    static SignatureWrapper AggregateSigs(val signatureWrappers);
 
-        static SignatureWrapper FromBytesAndAggregationInfo(val buffer, const AggregationInfoWrapper &infoWrapper);
+    static SignatureWrapper FromBytesAndAggregationInfo(val buffer, const AggregationInfoWrapper &infoWrapper);
 
-        static SignatureWrapper FromInsecureSignature(InsecureSignatureWrapper signature);
+    static SignatureWrapper FromInsecureSignature(InsecureSignatureWrapper signature);
 
-        static SignatureWrapper
-        FromInsecureSignatureAndInfo(InsecureSignatureWrapper signature, AggregationInfoWrapper info);
+    static SignatureWrapper
+    FromInsecureSignatureAndInfo(InsecureSignatureWrapper signature, AggregationInfoWrapper info);
 
-        bool Verify() const;
+    bool Verify() const;
 
-        val Serialize() const;
+    val Serialize() const;
 
-        AggregationInfoWrapper GetAggregationInfo() const;
+    AggregationInfoWrapper GetAggregationInfo() const;
 
-        void SetAggregationInfo(AggregationInfoWrapper &newAggregationInfo);
+    void SetAggregationInfo(const AggregationInfoWrapper &newAggregationInfo);
 
-        SignatureWrapper DivideBy(val signatureWrappers) const;
-    };
-}
+    SignatureWrapper DivideBy(val signatureWrappers) const;
+};
+}  // namespace js_wrappers
 
-#endif //BLS_SIGNATUREWRAPPER_H
+#endif  // JS_BINDINGS_WRAPPERS_SIGNATUREWRAPPER_H_

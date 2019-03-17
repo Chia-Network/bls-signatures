@@ -12,43 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLS_AGGREGATIONINFOWRAPPER_H
-#define BLS_AGGREGATIONINFOWRAPPER_H
+#ifndef JS_BINDINGS_WRAPPERS_AGGREGATIONINFOWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_AGGREGATIONINFOWRAPPER_H_
 
-#include "emscripten/val.h"
-#include "../../src/aggregationinfo.hpp"
-#include "../../src/bls.hpp"
 #include "../helpers.h"
 #include "PublicKeyWrapper.h"
 
-using namespace emscripten;
-using namespace bls;
-
 namespace js_wrappers {
-    class AggregationInfoWrapper : public JSWrapper<AggregationInfo> {
-    public:
-        explicit AggregationInfoWrapper(AggregationInfo &info);
 
-        static AggregationInfoWrapper FromMsgHash(const PublicKeyWrapper &pkw, val messageHashBuffer);
+class AggregationInfoWrapper : public JSWrapper<AggregationInfo> {
+ public:
+    explicit AggregationInfoWrapper(const AggregationInfo &info);
 
-        static AggregationInfoWrapper FromMsg(const PublicKeyWrapper &pkw, val messageBuffer);
+    static AggregationInfoWrapper
+    FromMsgHash(const PublicKeyWrapper &pkw, val messageHashBuffer);
 
-        static AggregationInfoWrapper FromBuffers(val pubKeys, val messageHashes, val exponentBns);
+    static AggregationInfoWrapper
+    FromMsg(const PublicKeyWrapper &pkw, val messageBuffer);
 
-        static AggregationInfo FromBuffersUnwrapped(val pubKeyWrappers, val messageHashes, val exponentBns);
+    static AggregationInfoWrapper
+    FromBuffers(val pubKeys, val messageHashes, val exponentBns);
 
-//
-//        static AggregationInfoWrapper MergeInfos(val infos);
-//
-//        void RemoveEntries(val messageBuffers, val pubKeyBuffers);
-//
-        val GetPubKeys() const;
+    static AggregationInfo
+    FromBuffersUnwrapped(val pubKeyWrappers, val messageHashes,
+                         val exponentBns);
 
-        val GetMessageHashes() const;
+    val GetPubKeys() const;
 
-        val GetExponents() const;
-//        bool Empty() const;
-    };
+    val GetMessageHashes() const;
+
+    val GetExponents() const;
+};
+
 }  // namespace js_wrappers
 
-#endif //BLS_AGGREGATIONINFOWRAPPER_H
+#endif  // JS_BINDINGS_WRAPPERS_AGGREGATIONINFOWRAPPER_H_

@@ -12,53 +12,48 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLS_EXTENDEDPRIVATEKEYWRAPPER_H
-#define BLS_EXTENDEDPRIVATEKEYWRAPPER_H
+#ifndef JS_BINDINGS_WRAPPERS_EXTENDEDPRIVATEKEYWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_EXTENDEDPRIVATEKEYWRAPPER_H_
 
-#include "emscripten/val.h"
 #include "../helpers.h"
-#include "../../src/extendedprivatekey.hpp"
 #include "PrivateKeyWrapper.h"
 #include "ExtendedPublicKeyWrapper.h"
 #include "ChainCodeWrapper.h"
 
-using namespace bls;
-using namespace emscripten;
-
 namespace js_wrappers {
-    class ExtendedPrivateKeyWrapper : public JSWrapper<ExtendedPrivateKey> {
-    public:
-        explicit ExtendedPrivateKeyWrapper(ExtendedPrivateKey &extendedPrivateKey);
+class ExtendedPrivateKeyWrapper : public JSWrapper<ExtendedPrivateKey> {
+ public:
+    explicit ExtendedPrivateKeyWrapper(const ExtendedPrivateKey &extendedPrivateKey);
 
-        static const size_t EXTENDED_PRIVATE_KEY_SIZE;
+    static const size_t EXTENDED_PRIVATE_KEY_SIZE;
 
-        static ExtendedPrivateKeyWrapper FromSeed(val seedBuffer);
+    static ExtendedPrivateKeyWrapper FromSeed(val seedBuffer);
 
-        static ExtendedPrivateKeyWrapper FromBytes(val serializedBuffer);
+    static ExtendedPrivateKeyWrapper FromBytes(val serializedBuffer);
 
-        ExtendedPrivateKeyWrapper PrivateChild(uint32_t i) const;
+    ExtendedPrivateKeyWrapper PrivateChild(uint32_t i) const;
 
-        ExtendedPublicKeyWrapper PublicChild(uint32_t i) const;
+    ExtendedPublicKeyWrapper PublicChild(uint32_t i) const;
 
-        uint32_t GetVersion() const;
+    uint32_t GetVersion() const;
 
-        uint8_t GetDepth() const;
+    uint8_t GetDepth() const;
 
-        uint32_t GetParentFingerprint() const;
+    uint32_t GetParentFingerprint() const;
 
-        uint32_t GetChildNumber() const;
+    uint32_t GetChildNumber() const;
 
-        ChainCodeWrapper GetChainCode() const;
+    ChainCodeWrapper GetChainCode() const;
 
-        PrivateKeyWrapper GetPrivateKey() const;
+    PrivateKeyWrapper GetPrivateKey() const;
 
-        PublicKeyWrapper GetPublicKey() const;
+    PublicKeyWrapper GetPublicKey() const;
 
-        ExtendedPublicKeyWrapper GetExtendedPublicKey() const;
+    ExtendedPublicKeyWrapper GetExtendedPublicKey() const;
 
-        val Serialize() const;
-    };
-}
+    val Serialize() const;
+};
+}  // namespace js_wrappers
 
 
-#endif //BLS_EXTENDEDPRIVATEKEYWRAPPER_H
+#endif  // JS_BINDINGS_WRAPPERS_EXTENDEDPRIVATEKEYWRAPPER_H_

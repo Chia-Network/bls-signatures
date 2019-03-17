@@ -12,21 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLS_ABSTRACTWRAPPER_H
-#define BLS_ABSTRACTWRAPPER_H
+#ifndef JS_BINDINGS_WRAPPERS_JSWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_JSWRAPPER_H_
 
 namespace js_wrappers {
-    template<class T>
-    class JSWrapper {
-    public:
-        inline explicit JSWrapper(T &wrappedInstance) : wrapped(wrappedInstance) {};
+template<class T>
+class JSWrapper {
+ public:
+    inline explicit JSWrapper(const T &wrappedInstance) : wrapped(wrappedInstance) {}
 
-        inline T GetWrappedInstance() const {
-            return wrapped;
-        };
-    protected:
-        T wrapped;
-    };
-}
+    inline T GetWrappedInstance() const {
+        return wrapped;
+    }
+ protected:
+    T wrapped;
+};
+}  // namespace js_wrappers
 
-#endif //BLS_ABSTRACTWRAPPER_H
+#endif  // JS_BINDINGS_WRAPPERS_JSWRAPPER_H_

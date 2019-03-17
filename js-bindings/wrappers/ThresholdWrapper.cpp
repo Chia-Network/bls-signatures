@@ -15,42 +15,42 @@
 #include "ThresholdWrapper.h"
 
 namespace js_wrappers {
-    PrivateKeyWrapper ThresholdWrapper::Create(val pubKeyWrappersArray, val privateKeyWrappers, size_t threshold,
-                                               size_t playersCount) {
-        std::vector <PublicKey> commitment = PublicKeyWrapper::Unwrap(
-                helpers::toVectorFromJSArray<PublicKeyWrapper>(pubKeyWrappersArray));
-        std::vector <PrivateKey> secretFragment = PrivateKeyWrapper::Unwrap(
-                helpers::toVectorFromJSArray<PrivateKeyWrapper>(privateKeyWrappers));
-        PrivateKey result = Threshold::Create(commitment, secretFragment, threshold, playersCount);
-        return PrivateKeyWrapper(result);
-    }
-
-    InsecureSignatureWrapper
-    ThresholdWrapper::SignWithCoefficient(const PrivateKeyWrapper &privateKeyWrapper, val msgBuffer,
-                                          size_t playerIndex, val players) {
-        PrivateKey sk = privateKeyWrapper.GetWrappedInstance();
-        std::vector <uint8_t> message = helpers::toVector(msgBuffer);
-        std::vector <size_t> playersVector = helpers::toVectorFromJSArray<size_t>(players);
-        InsecureSignature sig = Threshold::SignWithCoefficient(sk, message.data(), message.size(), playerIndex,
-                                                               playersVector.data(), playersVector.size());
-        return InsecureSignatureWrapper(sig);
-    }
-
-    InsecureSignatureWrapper ThresholdWrapper::AggregateUnitSigs(val insecureSignatures, val messageBuffer,
-                                                                 val playersArray) {
-        std::vector <InsecureSignature> sigs = InsecureSignatureWrapper::Unwrap(
-                helpers::toVectorFromJSArray<InsecureSignatureWrapper>(insecureSignatures));
-        std::vector <uint8_t> message = helpers::toVector(messageBuffer);
-        std::vector <size_t> players = helpers::toVectorFromJSArray<size_t>(playersArray);
-        InsecureSignature aggregatedSig = Threshold::AggregateUnitSigs(sigs, message.data(), message.size(),
-                                                                       players.data(), players.size());
-        return InsecureSignatureWrapper(aggregatedSig);
-    }
-
-    bool ThresholdWrapper::VerifySecretFragment(size_t playerIndex, const PrivateKeyWrapper &secretFragment,
-                                                val publicKeyWrappers, size_t threshold) {
-        std::vector <PublicKey> commitment = PublicKeyWrapper::Unwrap(
-                helpers::toVectorFromJSArray<PublicKeyWrapper>(publicKeyWrappers));
-        return Threshold::VerifySecretFragment(playerIndex, secretFragment.GetWrappedInstance(), commitment, threshold);
-    }
+PrivateKeyWrapper ThresholdWrapper::Create(val pubKeyWrappersArray, val privateKeyWrappers, size_t threshold,
+                                           size_t playersCount) {
+    std::vector <PublicKey> commitment = PublicKeyWrapper::Unwrap(
+            helpers::toVectorFromJSArray<PublicKeyWrapper>(pubKeyWrappersArray));
+    std::vector <PrivateKey> secretFragment = PrivateKeyWrapper::Unwrap(
+            helpers::toVectorFromJSArray<PrivateKeyWrapper>(privateKeyWrappers));
+    PrivateKey result = Threshold::Create(commitment, secretFragment, threshold, playersCount);
+    return PrivateKeyWrapper(result);
 }
+
+InsecureSignatureWrapper
+ThresholdWrapper::SignWithCoefficient(const PrivateKeyWrapper &privateKeyWrapper, val msgBuffer,
+                                      size_t playerIndex, val players) {
+    PrivateKey sk = privateKeyWrapper.GetWrappedInstance();
+    std::vector <uint8_t> message = helpers::toVector(msgBuffer);
+    std::vector <size_t> playersVector = helpers::toVectorFromJSArray<size_t>(players);
+    InsecureSignature sig = Threshold::SignWithCoefficient(sk, message.data(), message.size(), playerIndex,
+                                                           playersVector.data(), playersVector.size());
+    return InsecureSignatureWrapper(sig);
+}
+
+InsecureSignatureWrapper ThresholdWrapper::AggregateUnitSigs(val insecureSignatures, val messageBuffer,
+                                                             val playersArray) {
+    std::vector <InsecureSignature> sigs = InsecureSignatureWrapper::Unwrap(
+            helpers::toVectorFromJSArray<InsecureSignatureWrapper>(insecureSignatures));
+    std::vector <uint8_t> message = helpers::toVector(messageBuffer);
+    std::vector <size_t> players = helpers::toVectorFromJSArray<size_t>(playersArray);
+    InsecureSignature aggregatedSig = Threshold::AggregateUnitSigs(sigs, message.data(), message.size(),
+                                                                   players.data(), players.size());
+    return InsecureSignatureWrapper(aggregatedSig);
+}
+
+bool ThresholdWrapper::VerifySecretFragment(size_t playerIndex, const PrivateKeyWrapper &secretFragment,
+                                            val publicKeyWrappers, size_t threshold) {
+    std::vector <PublicKey> commitment = PublicKeyWrapper::Unwrap(
+            helpers::toVectorFromJSArray<PublicKeyWrapper>(publicKeyWrappers));
+    return Threshold::VerifySecretFragment(playerIndex, secretFragment.GetWrappedInstance(), commitment, threshold);
+}
+}  // namespace js_wrappers

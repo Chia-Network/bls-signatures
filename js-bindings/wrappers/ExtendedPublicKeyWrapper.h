@@ -12,42 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLS_EXTENDEDPUBLICKEYWRAPPER_H
-#define BLS_EXTENDEDPUBLICKEYWRAPPER_H
+#ifndef JS_BINDINGS_WRAPPERS_EXTENDEDPUBLICKEYWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_EXTENDEDPUBLICKEYWRAPPER_H_
 
 #include "../helpers.h"
 #include "PublicKeyWrapper.h"
-#include "emscripten/val.h"
 #include "ChainCodeWrapper.h"
 
 namespace js_wrappers {
-    class ExtendedPublicKeyWrapper : public JSWrapper<ExtendedPublicKey> {
-    public:
-        explicit ExtendedPublicKeyWrapper(ExtendedPublicKey &extendedPublicKey);
+class ExtendedPublicKeyWrapper : public JSWrapper<ExtendedPublicKey> {
+ public:
+    explicit ExtendedPublicKeyWrapper(const ExtendedPublicKey &extendedPublicKey);
 
-        static const size_t VERSION;
+    static const size_t VERSION;
 
-        static const size_t EXTENDED_PUBLIC_KEY_SIZE;
+    static const size_t EXTENDED_PUBLIC_KEY_SIZE;
 
-        static ExtendedPublicKeyWrapper FromBytes(val serializedBuffer);
+    static ExtendedPublicKeyWrapper FromBytes(val serializedBuffer);
 
-        ExtendedPublicKeyWrapper PublicChild(uint32_t i) const;
+    ExtendedPublicKeyWrapper PublicChild(uint32_t i) const;
 
-        uint32_t GetVersion() const;
+    uint32_t GetVersion() const;
 
-        uint8_t GetDepth() const;
+    uint8_t GetDepth() const;
 
-        uint32_t GetParentFingerprint() const;
+    uint32_t GetParentFingerprint() const;
 
-        uint32_t GetChildNumber() const;
+    uint32_t GetChildNumber() const;
 
-        ChainCodeWrapper GetChainCode() const;
+    ChainCodeWrapper GetChainCode() const;
 
-        PublicKeyWrapper GetPublicKey() const;
+    PublicKeyWrapper GetPublicKey() const;
 
-        val Serialize() const;
-    };
-}
+    val Serialize() const;
+};
+}  // namespace js_wrappers
 
 
-#endif //BLS_EXTENDEDPUBLICKEYWRAPPER_H
+#endif  // JS_BINDINGS_WRAPPERS_EXTENDEDPUBLICKEYWRAPPER_H_

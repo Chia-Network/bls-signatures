@@ -13,10 +13,8 @@
 // limitations under the License.
 
 #include <emscripten/bind.h>
-#include "wrappers/PrivateKeyWrapper.h"
 #include "wrappers/ExtendedPrivateKeyWrapper.h"
 #include "wrappers/ThresholdWrapper.h"
-#include "../src/bls.hpp"
 
 using namespace emscripten;
 

@@ -12,36 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLS_PUBLICKEYWRAPPER_H
-#define BLS_PUBLICKEYWRAPPER_H
+#ifndef JS_BINDINGS_WRAPPERS_PUBLICKEYWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_PUBLICKEYWRAPPER_H_
 
-#include "emscripten/val.h"
-#include "../../src/publickey.hpp"
 #include "../helpers.h"
 #include "JSWrapper.h"
 
-using namespace emscripten;
-using namespace bls;
-
 namespace js_wrappers {
-    class PublicKeyWrapper : public JSWrapper<PublicKey> {
-    public:
-        explicit PublicKeyWrapper(PublicKey &publicKey);
+class PublicKeyWrapper : public JSWrapper<PublicKey> {
+ public:
+    explicit PublicKeyWrapper(const PublicKey &publicKey);
 
-        static const size_t PUBLIC_KEY_SIZE;
+    static const size_t PUBLIC_KEY_SIZE;
 
-        static std::vector <PublicKey> Unwrap(std::vector <PublicKeyWrapper> wrappers);
+    static std::vector <PublicKey> Unwrap(std::vector <PublicKeyWrapper> wrappers);
 
-        static PublicKeyWrapper FromBytes(val buffer);
+    static PublicKeyWrapper FromBytes(val buffer);
 
-        static PublicKeyWrapper Aggregate(val pubKeysWrappers);
+    static PublicKeyWrapper Aggregate(val pubKeysWrappers);
 
-        static PublicKeyWrapper AggregateInsecure(val pubKeysWrappers);
+    static PublicKeyWrapper AggregateInsecure(val pubKeysWrappers);
 
-        val Serialize() const;
+    val Serialize() const;
 
-        uint32_t GetFingerprint() const;
-    };
-}
+    uint32_t GetFingerprint() const;
+};
+}  // namespace js_wrappers
 
-#endif //BLS_PUBLICKEYWRAPPER_H
+#endif  // JS_BINDINGS_WRAPPERS_PUBLICKEYWRAPPER_H_

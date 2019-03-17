@@ -12,27 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLS_CHAINCODEWRAPPER_H
-#define BLS_CHAINCODEWRAPPER_H
+#ifndef JS_BINDINGS_WRAPPERS_CHAINCODEWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_CHAINCODEWRAPPER_H_
 
-#include "../../src/chaincode.hpp"
-#include "emscripten/val.h"
 #include "../helpers.h"
-
-using namespace bls;
+#include "JSWrapper.h"
 
 namespace js_wrappers {
-    class ChainCodeWrapper : public JSWrapper<ChainCode> {
-    public:
-        static const size_t CHAIN_CODE_SIZE;
+class ChainCodeWrapper : public JSWrapper<ChainCode> {
+ public:
+    static const size_t CHAIN_CODE_SIZE;
 
-        explicit ChainCodeWrapper(ChainCode &chainCode);
+    explicit ChainCodeWrapper(const ChainCode &chainCode);
 
-        static ChainCodeWrapper FromBytes(val jsBuffer);
+    static ChainCodeWrapper FromBytes(val jsBuffer);
 
-        val Serialize() const;
-    };
-}
+    val Serialize() const;
+};
+}  // namespace js_wrappers
 
 
-#endif //BLS_CHAINCODEWRAPPER_H
+#endif  // JS_BINDINGS_WRAPPERS_CHAINCODEWRAPPER_H_

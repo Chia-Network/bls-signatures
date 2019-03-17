@@ -22,10 +22,9 @@
 #include "relic.h"
 #include "relic_bn.h"
 #include "../src/bls.hpp"
-#include "wrappers/JSWrapper.h"
 
-using namespace bls;
 using namespace emscripten;
+using namespace bls;
 
 namespace helpers {
     val toUint8Array(uint8_t *pointer, size_t data_size);
@@ -66,6 +65,6 @@ namespace helpers {
     std::vector<bn_t *> jsBuffersArrayToBnVector(val buffersArray);
 
     val byteArraysVectorToJsBuffersArray(std::vector<uint8_t *> arraysVector, size_t element_size);
-}  //namespace helpers
+}  // namespace helpers
 
-#endif  //JS_BINDINGS_HELPERS_H_
+#endif  // JS_BINDINGS_HELPERS_H_

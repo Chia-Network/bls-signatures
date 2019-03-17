@@ -12,46 +12,42 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef BLS_PRIVATEKEYWRAPPER_H
-#define BLS_PRIVATEKEYWRAPPER_H
+#ifndef JS_BINDINGS_WRAPPERS_PRIVATEKEYWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_PRIVATEKEYWRAPPER_H_
 
-#include "emscripten/val.h"
-#include "../../src/privatekey.hpp"
+#include "../helpers.h"
+#include "JSWrapper.h"
 #include "SignatureWrapper.h"
 #include "PublicKeyWrapper.h"
-#include "JSWrapper.h"
-
-using namespace emscripten;
-using namespace bls;
 
 namespace js_wrappers {
-    class PrivateKeyWrapper : public JSWrapper<PrivateKey> {
-    public:
-        explicit PrivateKeyWrapper(PrivateKey &privateKey);
+class PrivateKeyWrapper : public JSWrapper<PrivateKey> {
+ public:
+    explicit PrivateKeyWrapper(const PrivateKey &privateKey);
 
-        static const size_t PRIVATE_KEY_SIZE;
+    static const size_t PRIVATE_KEY_SIZE;
 
-        static std::vector <PrivateKey> Unwrap(std::vector <PrivateKeyWrapper> wrappers);
+    static std::vector<PrivateKey> Unwrap(std::vector<PrivateKeyWrapper> wrappers);
 
-        static PrivateKeyWrapper FromSeed(val buffer);
+    static PrivateKeyWrapper FromSeed(val buffer);
 
-        static PrivateKeyWrapper FromBytes(val buffer, bool modOrder);
+    static PrivateKeyWrapper FromBytes(val buffer, bool modOrder);
 
-        static PrivateKeyWrapper Aggregate(val privateKeysArray, val publicKeysArray);
+    static PrivateKeyWrapper Aggregate(val privateKeysArray, val publicKeysArray);
 
-        static PrivateKeyWrapper AggregateInsecure(val privateKeysArray);
+    static PrivateKeyWrapper AggregateInsecure(val privateKeysArray);
 
-        val Serialize() const;
+    val Serialize() const;
 
-        SignatureWrapper Sign(val messageBuffer) const;
+    SignatureWrapper Sign(val messageBuffer) const;
 
-        InsecureSignatureWrapper SignInsecure(val messageBuffer) const;
+    InsecureSignatureWrapper SignInsecure(val messageBuffer) const;
 
-        SignatureWrapper SignPrehashed(val messageHashBuffer) const;
+    SignatureWrapper SignPrehashed(val messageHashBuffer) const;
 
-        PublicKeyWrapper GetPublicKey() const;
-    };
-}
+    PublicKeyWrapper GetPublicKey() const;
+};
+}  // namespace js_wrappers
 
 
-#endif //BLS_PRIVATEKEYWRAPPER_H
+#endif  // JS_BINDINGS_WRAPPERS_PRIVATEKEYWRAPPER_H_
