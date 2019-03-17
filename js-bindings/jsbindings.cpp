@@ -16,10 +16,13 @@
 #include "wrappers/PrivateKeyWrapper.h"
 #include "wrappers/ExtendedPrivateKeyWrapper.h"
 #include "wrappers/ThresholdWrapper.h"
+#include "../src/bls.hpp"
 
 using namespace emscripten;
 
 namespace js_wrappers {
+    const std::string GROUP_ORDER = BLS::GROUP_ORDER;
+
     EMSCRIPTEN_BINDINGS(blsjs) {
         class_<PrivateKeyWrapper>("PrivateKey")
             .class_property("PRIVATE_KEY_SIZE", &PrivateKeyWrapper::PRIVATE_KEY_SIZE)
@@ -109,5 +112,7 @@ namespace js_wrappers {
             .class_function("signWithCoefficient", &ThresholdWrapper::SignWithCoefficient)
             .class_function("aggregateUnitSigs", &ThresholdWrapper::AggregateUnitSigs)
             .class_function("verifySecretFragment", &ThresholdWrapper::VerifySecretFragment);
+
+        constant("GROUP_ORDER", GROUP_ORDER);
     };
 }  //namespace js_wrappers

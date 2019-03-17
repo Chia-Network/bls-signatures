@@ -27,14 +27,14 @@ function getPublicKeysArray() {
 }
 
 describe('PublicKey', () => {
-    describe(".fromBytes", () => {
+    describe('.fromBytes', () => {
         it('Should create a public key from bytes', () => {
             const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
             assert(pk instanceof PublicKey);
         });
     });
 
-    describe(".aggregate", () => {
+    describe('.aggregate', () => {
         it('Should aggregate keys if keys array contains more than one key', () => {
             const pks = getPublicKeysArray().map(buf => PublicKey.fromBytes(buf));
             const aggregatedKey = PublicKey.aggregate(pks);
@@ -42,7 +42,7 @@ describe('PublicKey', () => {
         });
     });
 
-    describe("#serialize", () => {
+    describe('#serialize', () => {
         it('Should serialize key to the same buffer', () => {
             const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
             const serialized = pk.serialize();
@@ -50,7 +50,7 @@ describe('PublicKey', () => {
         });
     });
 
-    describe("getFingerprint", () => {
+    describe('getFingerprint', () => {
         it('Should get correct fingerprint', () => {
             const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
             const fingerprint = pk.getFingerprint();

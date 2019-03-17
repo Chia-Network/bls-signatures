@@ -4,6 +4,7 @@ import {
     ChainCode,
     ExtendedPrivateKey,
     ExtendedPublicKey,
+    GROUP_ORDER,
     InsecureSignature,
     PrivateKey,
     PublicKey,
@@ -11,7 +12,7 @@ import {
     Threshold
 } from '../';
 import {deepStrictEqual, ok, strictEqual} from 'assert';
-import {createHash} from "crypto";
+import {createHash} from 'crypto';
 
 function getSkSeed(): Uint8Array {
     return Uint8Array.from([1, 2, 3]);
@@ -194,5 +195,9 @@ describe('typings', () => {
         sk.delete();
         sig.delete();
         aggSig.delete();
+    });
+
+    it('GROUP_ORDER', () => {
+        strictEqual(GROUP_ORDER, '73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001');
     });
 });
