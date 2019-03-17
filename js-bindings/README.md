@@ -25,11 +25,11 @@ sig.delete();
 
 Please refer to the library's [typings](../../js-bindings/blsjs.d.ts) for detailed API information. Use cases can be found in the [original lib's readme](../../README.md).
 
-__Important note on usage:__ Since this library is a WebAssembly port of the c++ library, JavaScript's automatic memory management isn't available. Please, delete all objects manually if they don't needed anymore by calling delete method on them, as shown in the example above.
+__Important note on usage:__ Since this library is a WebAssembly port of the c++ library, JavaScript's automatic memory management isn't available. Please, delete all objects manually if they are not needed anymore by calling the delete method on them, as shown in the example above.
 
 ### Build
 
-Building requires Node.js (with npm) and [Emcripten](https://emscripten.org/docs/getting_started/downloads.html) to be installed.
+Building requires Node.js (with npm) and [Emscripten](https://emscripten.org/docs/getting_started/downloads.html) to be installed.
 The build process is the same as for the c++ lib, with one additional step: pass the Emscripten toolchain file as an option to CMake.
 From the project root directory, run:
 ```

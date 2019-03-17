@@ -1,6 +1,6 @@
 {
   "name": "bls-signatures",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "description": "The most advanced BLS library for JavaScript",
   "main": "blsjs.js",
   "directories": {
