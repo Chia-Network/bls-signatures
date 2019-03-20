@@ -18,9 +18,7 @@
 #include <algorithm>
 #include <vector>
 #include "emscripten/val.h"
-#include "relic_conf.h"
 #include "relic.h"
-#include "relic_bn.h"
 #include "../src/bls.hpp"
 
 using namespace emscripten;
