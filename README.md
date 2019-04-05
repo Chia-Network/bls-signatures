@@ -18,6 +18,7 @@ Features:
 * Key and signature serialization
 * Batch verification
 * Signature division (divide an aggregate by a previously verified signature)
+* [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings)
 * [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/master/python-bindings)
 * [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/master/python-impl)
 
