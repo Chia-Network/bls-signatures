@@ -86,7 +86,7 @@ void benchAggregateSigsSecure() {
     }
 
     auto start = startStopwatch();
-    Signature aggSig = Signature::AggregateSigs(sigs);
+    Signature aggSig = Signature::Aggregate(sigs);
     endStopwatch("Generate aggregate signature, same message",
                  start, numIters);
 
@@ -122,7 +122,7 @@ void benchBatchVerification() {
         }
     }
 
-    Signature aggregate = Signature::AggregateSigs(sigs);
+    Signature aggregate = Signature::Aggregate(sigs);
 
     auto start = startStopwatch();
     ASSERT(aggregate.Verify());
@@ -153,7 +153,7 @@ void benchAggregateSigsSimple() {
     }
 
     auto start = startStopwatch();
-    Signature aggSig = Signature::AggregateSigs(sigs);
+    Signature aggSig = Signature::Aggregate(sigs);
     endStopwatch("Generate aggregate signature, distinct messages",
                  start, numIters);
 
@@ -177,7 +177,7 @@ void benchDegenerateTree() {
         PrivateKey sk = PrivateKey::FromSeed(seed, 32);
         Signature sig = sk.Sign(message1, sizeof(message1));
         std::vector<Signature> sigs = {aggSig, sig};
-        aggSig = Signature::AggregateSigs(sigs);
+        aggSig = Signature::Aggregate(sigs);
     }
     endStopwatch("Generate degenerate aggSig tree",
                  start, numIters);

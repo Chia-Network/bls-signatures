@@ -19,6 +19,7 @@
 #include "bls.hpp"
 #include "util.hpp"
 #include "privatekey.hpp"
+
 namespace bls {
 PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
     // "BLS private key seed" in ascii
@@ -234,6 +235,23 @@ Signature PrivateKey::SignPrehashed(const uint8_t *messageHash) const {
             messageHash));
 
     return ret;
+}
+
+PrependSignature PrivateKey::SignPrepend(const uint8_t *msg, size_t len) const {
+    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+    Util::Hash256(messageHash, msg, len);
+    return SignPrependPrehashed(messageHash);
+}
+
+PrependSignature PrivateKey::SignPrependPrehashed(const uint8_t *messageHash) const {
+    uint8_t finalMessage[PublicKey::PUBLIC_KEY_SIZE + BLS::MESSAGE_HASH_LEN];
+    GetPublicKey().Serialize(finalMessage);
+    memcpy(finalMessage + PublicKey::PUBLIC_KEY_SIZE, messageHash, BLS::MESSAGE_HASH_LEN);
+
+    uint8_t finalMessageHash[BLS::MESSAGE_HASH_LEN];
+    Util::Hash256(finalMessageHash, finalMessage, PublicKey::PUBLIC_KEY_SIZE + BLS::MESSAGE_HASH_LEN);
+
+    return PrependSignature::FromInsecureSig(SignInsecurePrehashed(finalMessageHash));
 }
 
 void PrivateKey::AllocateKeyData() {

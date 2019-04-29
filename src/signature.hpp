@@ -30,18 +30,21 @@ namespace bls {
 /**
  * An insecure BLS signature.
  * A Signature is a group element of g2
- * Aggregation of these signatures is not secure on it's own, use Signature instead
+ * Aggregation of these signatures is not secure on it's own, use Signature or PrependSignature instead.
+ * For more documentation of the rogue public key attack, and the insecurity of this class,
+ * see https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html.
  */
 class InsecureSignature {
  friend class Signature;
+ friend class PrependSignature;
  friend class Threshold;
  public:
     static const size_t SIGNATURE_SIZE = 96;
 
-    // Initializes from serialized byte array/
+    // Initializes from serialized byte array.
     static InsecureSignature FromBytes(const uint8_t *data);
 
-    // Initializes from native relic g2 element/
+    // Initializes from native relic g2 element.
     static InsecureSignature FromG2(const g2_t* element);
 
     // Copy constructor. Deep copies contents.
@@ -99,16 +102,16 @@ class Signature {
  public:
     static const size_t SIGNATURE_SIZE = InsecureSignature::SIGNATURE_SIZE;
 
-    // Initializes from serialized byte array/
+    // Initializes from serialized byte array.
     static Signature FromBytes(const uint8_t *data);
 
-    // Initializes from bytes with AggregationInfo/
+    // Initializes from bytes with AggregationInfo.
     static Signature FromBytes(const uint8_t *data, const AggregationInfo &info);
 
-    // Initializes from native relic g2 element/
+    // Initializes from native relic g2 element.
     static Signature FromG2(const g2_t* element);
 
-    // Initializes from native relic g2 element with AggregationInfo/
+    // Initializes from native relic g2 element with AggregationInfo.
     static Signature FromG2(const g2_t* element, const AggregationInfo &info);
 
     // Initializes from insecure signature/
@@ -127,11 +130,9 @@ class Signature {
     bool Verify() const;
 
     // Securely aggregates many signatures on messages, some of
-    // which may be identical. The signature can then be verified
-    // using VerifyAggregate. The returned signature contains
+    // which may be identical. The returned signature contains
     // information on how the aggregation was done (AggragationInfo).
-    static Signature AggregateSigs(
-            std::vector<Signature> const &sigs);
+    static Signature Aggregate(std::vector<Signature> const &sigs);
 
     // Divides the aggregate signature (this) by a list of signatures.
     // These divisors can be single or aggregate signatures, but all
@@ -186,6 +187,56 @@ class Signature {
     // Optional info about how this was aggregated
     AggregationInfo aggregationInfo;
 };
+
+/**
+ * An encapsulated signature.
+ * A Prepend Signature is generated using PrivateKey::SignPrepend. It a secure against rogue
+ * public key attacks, since it signs the signer's public key.
+ */
+class PrependSignature {
+ public:
+    static const size_t SIGNATURE_SIZE = InsecureSignature::SIGNATURE_SIZE;
+
+    // Initializes from serialized byte array.
+    static PrependSignature FromBytes(const uint8_t *data);
+
+    // Initializes from native relic g2 element.
+    static PrependSignature FromG2(const g2_t* element);
+
+    // Initializes from insecure signature.
+    static PrependSignature FromInsecureSig(const InsecureSignature& sig);
+
+    // Copy constructor. Deep copies contents.
+    PrependSignature(const PrependSignature &signature);
+
+    // Verifies a single or aggregate signature.
+    bool Verify(const std::vector<const uint8_t*>& hashes, const std::vector<PublicKey>& pubKeys) const;
+
+    static PrependSignature Aggregate(std::vector<PrependSignature> const &sigs);
+
+    // Divides the aggregate signature (this) by a list of signatures.
+    // These divisors can be single or aggregate signatures, but all
+    // msg/pk pairs in these signatures must be distinct and unique.
+    PrependSignature DivideBy(std::vector<PrependSignature> const &divisorSigs) const;
+
+    void Serialize(uint8_t* buffer) const;
+    std::vector<uint8_t> Serialize() const;
+
+    InsecureSignature GetInsecureSig() const;
+
+    friend bool operator==(PrependSignature const &a, PrependSignature const &b);
+    friend bool operator!=(PrependSignature const &a, PrependSignature const &b);
+    friend std::ostream &operator<<(std::ostream &os, PrependSignature const &s);
+
+ private:
+    // Prevent public construction, force static method
+    PrependSignature() {}
+
+ private:
+    // internal signature
+    InsecureSignature sig;
+};
+
 } // end namespace bls
 
 #endif  // SRC_BLSSIGNATURE_HPP_

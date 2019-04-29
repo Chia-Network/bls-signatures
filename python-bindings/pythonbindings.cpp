@@ -27,11 +27,13 @@ PYBIND11_MODULE(blspy, m) {
 
     py::class_<AggregationInfo>(m, "AggregationInfo")
         .def("from_msg_hash", [](const PublicKey &pk, const py::bytes &b) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
+            std::string str(b);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return AggregationInfo::FromMsgHash(pk, input);
         })
         .def("from_msg", [](const PublicKey &pk, const py::bytes &b) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
+            std::string str(b);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return AggregationInfo::FromMsg(pk, input, len(b));
         })
         .def("merge_infos", &AggregationInfo::MergeInfos)
@@ -58,11 +60,13 @@ PYBIND11_MODULE(blspy, m) {
             return PrivateKey::PRIVATE_KEY_SIZE;
         })
         .def("from_seed", [](const py::bytes &b) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
+            std::string str(b);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return PrivateKey::FromSeed(input, len(b));
         })
         .def("from_bytes", [](const py::bytes &b) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
+            std::string str(b);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return PrivateKey::FromBytes(input);
         })
         .def("serialize", [](const PrivateKey &k) {
@@ -77,12 +81,24 @@ PYBIND11_MODULE(blspy, m) {
         })
         .def("aggregate", &PrivateKey::Aggregate)
         .def("sign", [](const PrivateKey &k, const py::bytes &msg) {
-            uint8_t* input = reinterpret_cast<uint8_t*>(&std::string(msg)[0]);
+            std::string str(msg);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return k.Sign(input, len(msg));
         })
         .def("sign_prehashed", [](const PrivateKey &k, const py::bytes &msg) {
-            uint8_t* input = reinterpret_cast<uint8_t*>(&std::string(msg)[0]);
+            std::string str(msg);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return k.SignPrehashed(input);
+        })
+        .def("sign_prepend", [](const PrivateKey &k, const py::bytes &msg) {
+            std::string str(msg);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
+            return k.SignPrepend(input, len(msg));
+        })
+        .def("sign_prepend_prehashed", [](const PrivateKey &k, const py::bytes &msg) {
+            std::string str(msg);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
+            return k.SignPrependPrehashed(input);
         })
         .def(py::self == py::self)
         .def(py::self != py::self)
@@ -94,14 +110,13 @@ PYBIND11_MODULE(blspy, m) {
             return ret;
         });
 
-
     py::class_<PublicKey>(m, "PublicKey")
         .def_property_readonly_static("PUBLIC_KEY_SIZE", [](py::object self) {
             return PublicKey::PUBLIC_KEY_SIZE;
         })
         .def("from_bytes", [](const py::bytes &b) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
-            return PublicKey::FromBytes(input);
+            std::string str(b);
+            return PublicKey::FromBytes(reinterpret_cast<const uint8_t*>(str.data()));
         })
         .def("aggregate", &PublicKey::Aggregate)
         .def("get_fingerprint", &PublicKey::GetFingerprint)
@@ -120,14 +135,13 @@ PYBIND11_MODULE(blspy, m) {
             return "<PublicKey " + s.str() + ">";
         });
 
-
     py::class_<Signature>(m, "Signature")
         .def_property_readonly_static("SIGNATURE_SIZE", [](py::object self) {
             return Signature::SIGNATURE_SIZE;
         })
         .def("from_bytes", [](const py::bytes &b) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
-            return Signature::FromBytes(input);
+            std::string str(b);
+            return Signature::FromBytes(reinterpret_cast<const uint8_t*>(str.data()));
         })
         .def("serialize", [](const Signature &sig) {
             uint8_t* output = new uint8_t[Signature::SIGNATURE_SIZE];
@@ -137,7 +151,7 @@ PYBIND11_MODULE(blspy, m) {
             return ret;
         })
         .def("verify", &Signature::Verify)
-        .def("aggregate", &Signature::AggregateSigs)
+        .def("aggregate", &Signature::Aggregate)
         .def("divide_by", &Signature::DivideBy)
         .def("set_aggregation_info", &Signature::SetAggregationInfo)
         .def("get_aggregation_info", [](const Signature &sig) {
@@ -151,12 +165,48 @@ PYBIND11_MODULE(blspy, m) {
             return "<Signature " + s.str() + ">";
         });
 
+    py::class_<PrependSignature>(m, "PrependSignature")
+        .def_property_readonly_static("SIGNATURE_SIZE", [](py::object self) {
+            return PrependSignature::SIGNATURE_SIZE;
+        })
+        .def("from_bytes", [](const py::bytes &b) {
+            std::string str(b);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
+            return PrependSignature::FromBytes(input);
+        })
+        .def("serialize", [](const PrependSignature &sig) {
+            uint8_t* output = new uint8_t[PrependSignature::SIGNATURE_SIZE];
+            sig.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), PrependSignature::SIGNATURE_SIZE);
+            delete[] output;
+            return ret;
+        })
+        .def("verify", [](const PrependSignature &sig, std::vector<const py::bytes> &hashes,
+                           std::vector<PublicKey> &pks) {
+            std::vector<const uint8_t*> converted_hashes;
+            for (const py::bytes &h : hashes) {
+               std::string str(h);
+               converted_hashes.push_back((const uint8_t*)(str.data()));
+            }
+            return sig.Verify(converted_hashes, pks);
+        })
+        .def("aggregate", &PrependSignature::Aggregate)
+        .def("divide_by", &PrependSignature::DivideBy)
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+        .def("__repr__", [](const PrependSignature &sig) {
+            std::stringstream s;
+            s << sig;
+            return "<PrependSignature " + s.str() + ">";
+        });
+
     py::class_<ChainCode>(m, "ChainCode")
         .def_property_readonly_static("CHAIN_CODE_KEY_SIZE", [](py::object self) {
             return ChainCode::CHAIN_CODE_SIZE;
         })
         .def("from_bytes", [](const py::bytes &b) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
+            std::string str(b);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return ChainCode::FromBytes(input);
         })
         .def("serialize", [](const ChainCode &cc) {
@@ -176,14 +226,13 @@ PYBIND11_MODULE(blspy, m) {
             return ret;
         });
 
-
-
     py::class_<ExtendedPublicKey>(m, "ExtendedPublicKey")
         .def_property_readonly_static("EXTENDED_PUBLIC_KEY_SIZE", [](py::object self) {
             return ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE;
         })
         .def("from_bytes", [](const py::bytes &b) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
+            std::string str(b);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return ExtendedPublicKey::FromBytes(input);
         })
         .def("public_child", &ExtendedPublicKey::PublicChild)
@@ -219,11 +268,13 @@ PYBIND11_MODULE(blspy, m) {
             return ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE;
         })
         .def("from_seed", [](const py::bytes &seed) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(seed)[0]);
+            std::string str(seed);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return ExtendedPrivateKey::FromSeed(input, len(seed));
         })
         .def("from_bytes", [](const py::bytes &b) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(b)[0]);
+            std::string str(b);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return ExtendedPrivateKey::FromBytes(input);
         })
         .def("private_child", &ExtendedPrivateKey::PrivateChild)
@@ -265,7 +316,8 @@ PYBIND11_MODULE(blspy, m) {
 
     py::class_<Util>(m, "Util")
         .def("hash256", [](const py::bytes &message) {
-            const uint8_t* input = reinterpret_cast<const uint8_t*>(&std::string(message)[0]);
+            std::string str(message);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             uint8_t output[BLS::MESSAGE_HASH_LEN];
             Util::Hash256(output, input, len(message));
             return py::bytes(reinterpret_cast<char*>(output), BLS::MESSAGE_HASH_LEN);

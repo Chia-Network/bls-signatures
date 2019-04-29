@@ -236,12 +236,21 @@ newAggInfo.remove((messageHashesToRemove[i], pubKeysToRemove[i] for i in range(l
 return (aggSig, newAggInfo)
 ```
 
+## Prepend Method
+In order to not have to keep around aggregation info when aggregating, an alternative is to force proof of possession of the pulic key, and aggregate using the simple aggregation scheme (the aggregation tree is flat, and no exponents are used). We can do this by prepending the public key to the message hash:
+
+```python
+prepend_m = hash256(pk + hash256(m)))
+```
+These prepend signatures are incompatible with normal aggregate signatures, and can only be aggregated with other prepend signatures. In the serialization, the second bit of the signature is set to 1 iff the signature is a prepend signature.
+
+
 ## Serialization
 **private key (32 bytes):** Big endian integer.
 
 **pubkey (48 bytes):** 381 bit affine x coordinate, encoded into 48 big-endian bytes. Since we have 3 bits left over in the beginning, the first bit is set to 1 iff y coordinate is the lexicographically largest of the two valid ys. The public key fingerprint is the first 4 bytes of hash256(serialize(pubkey)).
 
-**signature (96 bytes):** Two 381 bit integers (affine x coordinate), encoded into two 48 big-endian byte arrays. Since we have 3 bits left over in the beginning, the first bit is set to 1 iff the y coordinate is the lexicographically largest of the two valid ys. (The term with the i is compared first, i.e 3i + 1 > 2i + 7).
+**signature (96 bytes):** Two 381 bit integers (affine x coordinate), encoded into two 48 big-endian byte arrays. Since we have 3 bits left over in the beginning, the first bit is set to 1 iff the y coordinate is the lexicographically largest of the two valid ys. (The term with the i is compared first, i.e 3i + 1 > 2i + 7). The second bit is set to 1 iff the signature was generated using the prepend method, and should be verified using the prepend method.
 
 
 ## HD keys
@@ -337,3 +346,12 @@ since not all 32 byte sequences are valid BLS private keys
     * 0xff26a31f
 * esk.extendedPublicKey.publicChild(3).publicChild(17).publicKeyFingerprint
     * 0xff26a31f
+
+### Prepend Signatures
+* sign_prepend([7,8,9], sk1)
+    * sig9:  0xd2135ad358405d9f2d4e68dc253d64b6049a821797817cffa5aa804086a8fb7b135175bb7183750e3aa19513db1552180f0b0ffd513c322f1c0c30a0a9c179f6e275e0109d4db7fa3e09694190947b17d890f3d58fe0b1866ec4d4f5a59b16ed
+* sign_prepend([10,11,12], sk2)
+    * sig10: 0xcc58c982f9ee5817d4fbf22d529cfc6792b0fdcf2d2a8001686755868e10eb32b40e464e7fbfe30175a962f1972026f2087f0495ba6e293ac3cf271762cd6979b9413adc0ba7df153cf1f3faab6b893404c2e6d63351e48cd54e06e449965f08
+* aggregate([sig9, sig9, sig10])
+    * prepend_agg: 0xc37077684e735e62e3f1fd17772a236b4115d4b581387733d3b97cab08b90918c7e91c23380c93e54be345544026f93505d41e6000392b82ab3c8af1b2e3954b0ef3f62c52fc89f99e646ff546881120396c449856428e672178e5e0e14ec894
+* verify_prepend(prepend_agg, [pk1, pk1, pk2], [[7,8,9],[7,8,9],[10,11,12]])
