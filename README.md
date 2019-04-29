@@ -157,10 +157,6 @@ aggSigFinal = aggSigFinal.DivideBy(cache);
 ok = aggSigFinal.Verify();
 ```
 
-#### Aggregate signatures using the prepend method
-TODO
-
-
 #### Aggregate private keys
 ```c++
 vector<bls::PrivateKey> privateKeysList = {sk1, sk2};
