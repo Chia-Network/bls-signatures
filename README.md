@@ -11,7 +11,7 @@ Features:
 * Non-interactive signature aggregation on identical or distinct messages
 * Aggregate aggregates (trees)
 * Efficient verification (only one pairing per distinct message)
-* Security against rogue public key attack
+* Security against rogue public key attack, using aggregation info, or proof of possession
 * Aggregate public keys and private keys
 * M/N threshold keys and signatures using Joint-Feldman scheme
 * HD (BIP32) key derivation
@@ -195,6 +195,23 @@ uint8_t buffer2[bls::ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE]; // 77 bytes
 
 pkChild.Serialize(buffer1);
 skChild.Serialize(buffer2);
+```
+
+#### Prepend PK method
+```c++
+// Can use proofs of possession to avoid keeping track of metadata
+PrependSignature prepend1 = sk1.SignPrepend(msg, sizeof(msg));
+PrependSignature prepend2 = sk2.SignPrepend(msg, sizeof(msg));
+
+std::vector<PublicKey> prependPubKeys = {pk1, pk2};
+uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+Util::Hash256(messageHash, msg, sizeof(msg));
+std::vector<const uint8_t*> hashes = {messageHash, messageHash};
+
+std::vector<PrependSignature> prependSigs = {prepend1, prepend2};
+PrependSignature prependAgg = PrependSignature::Aggregate(prependSigs);
+
+prependAgg.Verify(hashes, prependPubKeys);
 ```
 
 ### Build

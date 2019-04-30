@@ -1,7 +1,7 @@
 # flake8: noqa: E501
 from blspy import (PrivateKey, PublicKey,
-                   Signature, AggregationInfo,
-                   ExtendedPrivateKey, BLS)
+                   Signature, PrependSignature, AggregationInfo,
+                   ExtendedPrivateKey, BLS, Util)
 
 
 def test1():
@@ -250,11 +250,37 @@ def test_vectors3():
               .get_public_key()
               .get_fingerprint() == 0xff26a31f)
 
+def test_vectors4():
+    sk1 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
+    sk2 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
+
+    pk1 = sk1.get_public_key()
+    pk2 = sk2.get_public_key()
+
+    m1 = bytes([7, 8, 9])
+    m2 = bytes([10, 11, 12])
+
+    sig9 = sk1.sign_prepend(m1)
+    sig10 = sk2.sign_prepend(m2)
+
+    assert(sig9.serialize() == bytes.fromhex("d2135ad358405d9f2d4e68dc253d64b6049a821797817cffa5aa804086a8fb7b135175bb7183750e3aa19513db1552180f0b0ffd513c322f1c0c30a0a9c179f6e275e0109d4db7fa3e09694190947b17d890f3d58fe0b1866ec4d4f5a59b16ed"))
+    assert(sig10.serialize() == bytes.fromhex("cc58c982f9ee5817d4fbf22d529cfc6792b0fdcf2d2a8001686755868e10eb32b40e464e7fbfe30175a962f1972026f2087f0495ba6e293ac3cf271762cd6979b9413adc0ba7df153cf1f3faab6b893404c2e6d63351e48cd54e06e449965f08"))
+
+    agg_sig = PrependSignature.aggregate([sig9, sig9, sig10])
+    message_hashes =[Util.hash256(m1), Util.hash256(m1), Util.hash256(m2)]
+    pks = [pk1, pk1, pk2]
+    assert(agg_sig.serialize() == bytes.fromhex("c37077684e735e62e3f1fd17772a236b4115d4b581387733d3b97cab08b90918c7e91c23380c93e54be345544026f93505d41e6000392b82ab3c8af1b2e3954b0ef3f62c52fc89f99e646ff546881120396c449856428e672178e5e0e14ec894"))
+    assert(agg_sig.verify(message_hashes, pks))
+
+
 test1()
 test2()
 test_vectors()
 test_vectors2()
 test_vectors3()
+test_vectors4()
+
+print("\nAll tests passed.")
 
 """
 Copyright 2018 Chia Network Inc

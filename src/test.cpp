@@ -62,7 +62,7 @@ TEST_CASE("Test vectors") {
              == "975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e");
 
         vector<Signature> sigs = {sig1, sig2};
-        Signature aggSig1 = Signature::AggregateSigs(sigs);
+        Signature aggSig1 = Signature::Aggregate(sigs);
 
         aggSig1.Serialize(buf);
         REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
@@ -76,7 +76,7 @@ TEST_CASE("Test vectors") {
         Signature sig4 = sk1.Sign(message3, sizeof(message3));
         Signature sig5 = sk2.Sign(message4, sizeof(message4));
         vector<Signature> sigs2 = {sig3, sig4, sig5};
-        Signature aggSig2 = Signature::AggregateSigs(sigs2);
+        Signature aggSig2 = Signature::Aggregate(sigs2);
         REQUIRE(aggSig2.Verify());
         aggSig2.Serialize(buf);
         REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
@@ -106,14 +106,14 @@ TEST_CASE("Test vectors") {
         Signature sig6 = sk1.Sign(message4, sizeof(message4));
 
         std::vector<Signature> const sigsL = {sig1, sig2};
-        const Signature aggSigL = Signature::AggregateSigs(sigsL);
+        const Signature aggSigL = Signature::Aggregate(sigsL);
 
         std::vector<Signature> const sigsR = {sig3, sig4, sig5};
-        const Signature aggSigR = Signature::AggregateSigs(sigsR);
+        const Signature aggSigR = Signature::Aggregate(sigsR);
 
         std::vector<Signature> sigs = {aggSigL, aggSigR, sig6};
 
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
 
         REQUIRE(aggSig.Verify());
 
@@ -147,9 +147,9 @@ TEST_CASE("Test vectors") {
 
         // Divide by aggregate
         std::vector<Signature> sigsR2 = {sig7, sig8};
-        Signature aggSigR2 = Signature::AggregateSigs(sigsR2);
+        Signature aggSigR2 = Signature::Aggregate(sigsR2);
         std::vector<Signature> sigsFinal2 = {aggSig, aggSigR2};
-        Signature aggSig2 = Signature::AggregateSigs(sigsFinal2);
+        Signature aggSig2 = Signature::Aggregate(sigsFinal2);
         std::vector<Signature> divisorFinal2 = {aggSigR2};
         Signature quotient2 = aggSig2.DivideBy(divisorFinal2);
 
@@ -182,6 +182,48 @@ TEST_CASE("Test vectors") {
                    .PublicChild(17)
                    .GetPublicKey()
                    .GetFingerprint() == 0xff26a31f);
+    }
+
+    SECTION("Test vector 4") {
+        uint8_t seed1[5] = {1, 2, 3, 4, 5};
+        uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
+        uint8_t message1[3] = {7, 8, 9};
+        uint8_t message2[3] = {10, 11, 12};
+
+        PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
+        PublicKey pk1 = sk1.GetPublicKey();
+
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
+        PublicKey pk2 = sk2.GetPublicKey();
+
+        PrependSignature sig9 = sk1.SignPrepend(message1, sizeof(message1));
+        PrependSignature sig10 = sk2.SignPrepend(message2, sizeof(message2));
+
+        uint8_t buf[Signature::SIGNATURE_SIZE];
+        sig9.Serialize(buf);
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
+            == "d2135ad358405d9f2d4e68dc253d64b6049a821797817cffa5aa804086a8fb7b135175bb7183750e3aa19513db1552180f0b0ffd513c322f1c0c30a0a9c179f6e275e0109d4db7fa3e09694190947b17d890f3d58fe0b1866ec4d4f5a59b16ed");
+        sig10.Serialize(buf);
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
+            == "cc58c982f9ee5817d4fbf22d529cfc6792b0fdcf2d2a8001686755868e10eb32b40e464e7fbfe30175a962f1972026f2087f0495ba6e293ac3cf271762cd6979b9413adc0ba7df153cf1f3faab6b893404c2e6d63351e48cd54e06e449965f08");
+
+        uint8_t messageHash1[BLS::MESSAGE_HASH_LEN];
+        uint8_t messageHash2[BLS::MESSAGE_HASH_LEN];
+        Util::Hash256(messageHash1, message1, sizeof(message1));
+        Util::Hash256(messageHash2, message2, sizeof(message2));
+        vector<const uint8_t*> messageHashes1 = {messageHash1};
+        vector<const uint8_t*> messageHashes2 = {messageHash2};
+        vector<const uint8_t*> messageHashes = {messageHash1, messageHash1, messageHash2};
+        vector<PublicKey> pks = {pk1, pk1, pk2};
+
+        vector<PrependSignature> sigs = {sig9, sig9, sig10};
+        PrependSignature agg = PrependSignature::Aggregate(sigs);
+
+        agg.Serialize(buf);
+        REQUIRE(Util::HexStr(buf, Signature::SIGNATURE_SIZE)
+            == "c37077684e735e62e3f1fd17772a236b4115d4b581387733d3b97cab08b90918c7e91c23380c93e54be345544026f93505d41e6000392b82ab3c8af1b2e3954b0ef3f62c52fc89f99e646ff546881120396c449856428e672178e5e0e14ec894");
+
+        REQUIRE(agg.Verify(messageHashes, pks));
     }
 }
 
@@ -514,13 +556,13 @@ TEST_CASE("Signatures") {
         Signature sig2 = sk2.Sign(message2, sizeof(message2));
 
         std::vector<Signature> const sigs = {sig1, sig2};
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
 
         Signature sig3 = sk1.Sign(message1, sizeof(message1));
         Signature sig4 = sk2.Sign(message2, sizeof(message2));
 
         std::vector<Signature> const sigs2 = {sig3, sig4};
-        Signature aggSig2 = Signature::AggregateSigs(sigs2);
+        Signature aggSig2 = Signature::Aggregate(sigs2);
         REQUIRE(sig1 == sig3);
         REQUIRE(sig2 == sig4);
         REQUIRE(aggSig == aggSig2);
@@ -552,7 +594,7 @@ TEST_CASE("Signatures") {
             delete[] message;
         }
 
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
 
         REQUIRE(aggSig.Verify());
     }
@@ -623,7 +665,7 @@ TEST_CASE("Signatures") {
 
         std::vector<Signature> const sigs = {sig1, sig2, sig3};
         std::vector<PublicKey> const pubKeys = {pk1, pk2, pk3};
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
 
         const PublicKey aggPubKey = PublicKey::Aggregate(pubKeys);
         aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
@@ -654,7 +696,7 @@ TEST_CASE("Signatures") {
         Signature sig3 = sk3.Sign(message1, sizeof(message1));
 
         std::vector<Signature> sigs = {sig1, sig2, sig3};
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
 
         REQUIRE(sig2.Verify());
         REQUIRE(sig3.Verify());
@@ -706,15 +748,15 @@ TEST_CASE("Signatures") {
         std::vector<Signature> sigsL = {sig1, sig2};
         std::vector<Signature> sigsC = {sig3, sig4};
         std::vector<Signature> sigsR = {sig5, sig6};
-        Signature aggSigL = Signature::AggregateSigs(sigsL);
-        Signature aggSigC = Signature::AggregateSigs(sigsC);
-        Signature aggSigR = Signature::AggregateSigs(sigsR);
+        Signature aggSigL = Signature::Aggregate(sigsL);
+        Signature aggSigC = Signature::Aggregate(sigsC);
+        Signature aggSigR = Signature::Aggregate(sigsR);
 
         std::vector<Signature> sigsL2 = {aggSigL, aggSigC};
-        Signature aggSigL2 = Signature::AggregateSigs(sigsL2);
+        Signature aggSigL2 = Signature::Aggregate(sigsL2);
 
         std::vector<Signature> sigsFinal = {aggSigL2, aggSigR};
-        Signature aggSigFinal = Signature::AggregateSigs(sigsFinal);
+        Signature aggSigFinal = Signature::Aggregate(sigsFinal);
 
         REQUIRE(aggSigFinal.Verify());
         REQUIRE(aggSigFinal.GetAggregationInfo()->GetPubKeys().size() == 6);
@@ -726,7 +768,7 @@ TEST_CASE("Signatures") {
         // Throws when the m/pk pair is not unique within the aggregate (sig1
         // is in both aggSigL2 and sig1.
         std::vector<Signature> sigsFinal2 = {aggSigL2, aggSigR, sig1};
-        Signature aggSigFinal2 = Signature::AggregateSigs(sigsFinal2);
+        Signature aggSigFinal2 = Signature::Aggregate(sigsFinal2);
         std::vector<Signature> divisorSigs2 = {aggSigL};
         std::vector<Signature> divisorSigs3 = {sig6};
         aggSigFinal2 = aggSigFinal2.DivideBy(divisorSigs3);
@@ -775,7 +817,7 @@ TEST_CASE("Signatures") {
             sigs.push_back(sk.Sign(message1, sizeof(message1)));
         }
 
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
         const PublicKey aggPubKey = PublicKey::Aggregate(pks);
         aggSig.SetAggregationInfo(AggregationInfo::FromMsg(
                 aggPubKey, message1, sizeof(message1)));
@@ -792,11 +834,11 @@ TEST_CASE("Signatures") {
         Signature sig1 = sk1.Sign(message1, sizeof(message1));
 
         std::vector<Signature> const sigs = {};
-        REQUIRE_THROWS(Signature::AggregateSigs(sigs));
+        REQUIRE_THROWS(Signature::Aggregate(sigs));
 
         sig1.SetAggregationInfo(AggregationInfo());
         std::vector<Signature> const sigs2 = {sig1};
-        REQUIRE_THROWS(Signature::AggregateSigs(sigs2));
+        REQUIRE_THROWS(Signature::Aggregate(sigs2));
     }
 
     SECTION("Should perform batch verification") {
@@ -846,7 +888,7 @@ TEST_CASE("Signatures") {
                  sizeof(message2)};
 
         // Verifier generates a batch signature for efficiency
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
         REQUIRE(aggSig.Verify());
     }
 
@@ -894,7 +936,7 @@ TEST_CASE("Signatures") {
         std::vector<Signature> cache = {sig1, sig3, sig4, sig7};
 
         // Verifier generates a batch signature for efficiency
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
 
         const Signature aggSig2 = aggSig.DivideBy(cache);
         REQUIRE(aggSig.Verify());
@@ -927,7 +969,7 @@ TEST_CASE("Signatures") {
         std::vector<Signature> const sigs = {sig1, sig2};
         std::vector<uint8_t*> const messages = {message1, message1};
         std::vector<size_t> const messageLens = {sizeof(message1), sizeof(message1)};
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
         ASSERT(aggSig == aggSig2);
 
         const PublicKey aggPubKey = PublicKey::Aggregate(pubKeys);
@@ -1205,16 +1247,16 @@ TEST_CASE("AggregationInfo") {
 
         std::vector<Signature> const sigsL = {sig1, sig2};
         std::vector<PublicKey> const pksL = {pk1, pk2};
-        const Signature aggSigL = Signature::AggregateSigs(sigsL);
+        const Signature aggSigL = Signature::Aggregate(sigsL);
 
         std::vector<Signature> const sigsR = {sig3, sig4, sig6};
-        const Signature aggSigR = Signature::AggregateSigs(sigsR);
+        const Signature aggSigR = Signature::Aggregate(sigsR);
 
         std::vector<PublicKey> pk1Vec = {pk1};
 
         std::vector<Signature> sigs = {aggSigL, aggSigR, sig5};
 
-        const Signature aggSig = Signature::AggregateSigs(sigs);
+        const Signature aggSig = Signature::Aggregate(sigs);
 
         REQUIRE(aggSig.Verify());
     }
@@ -1233,7 +1275,7 @@ TEST_CASE("AggregationInfo") {
             PublicKey pk = sk.GetPublicKey();
             Signature sig = sk.Sign(message1, sizeof(message1));
             std::vector<Signature> sigs = {aggSig, sig};
-            aggSig = Signature::AggregateSigs(sigs);
+            aggSig = Signature::Aggregate(sigs);
         }
         REQUIRE(aggSig.Verify());
         uint8_t sigSerialized[Signature::SIGNATURE_SIZE];
@@ -1270,21 +1312,21 @@ TEST_CASE("AggregationInfo") {
         std::vector<uint8_t*> const messagesL = {message1, message2};
         std::vector<size_t> const messageLensL = {sizeof(message1),
                                              sizeof(message2)};
-        const Signature aggSigL = Signature::AggregateSigs(sigsL);
+        const Signature aggSigL = Signature::Aggregate(sigsL);
 
         std::vector<Signature> const sigsR = {sig3, sig4};
         std::vector<PublicKey> const pksR = {pk2, pk1};
         std::vector<uint8_t*> const messagesR = {message3, message4};
         std::vector<size_t> const messageLensR = {sizeof(message3),
                                              sizeof(message4)};
-        const Signature aggSigR = Signature::AggregateSigs(sigsR);
+        const Signature aggSigR = Signature::Aggregate(sigsR);
 
         std::vector<Signature> sigs = {aggSigL, aggSigR};
         std::vector<std::vector<PublicKey> > pks = {pksL, pksR};
         std::vector<std::vector<uint8_t*> > messages = {messagesL, messagesR};
         std::vector<std::vector<size_t> > messageLens = {messageLensL, messageLensR};
 
-        const Signature aggSig = Signature::AggregateSigs(sigs);
+        const Signature aggSig = Signature::Aggregate(sigs);
 
         std::vector<PublicKey> allPks = {pk1, pk2, pk2, pk1};
         std::vector<uint8_t*> allMessages = {message1, message2,
@@ -1294,6 +1336,83 @@ TEST_CASE("AggregationInfo") {
 
         REQUIRE(aggSig.Verify());
     }
+
+    SECTION("Should sign and verify using prepend method") {
+        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
+        uint8_t seed[32];
+        getRandomSeed(seed);
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PublicKey pk1 = sk1.GetPublicKey();
+        std::cout << "PK: " << pk1 << std::endl;
+
+        uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+        Util::Hash256(messageHash, message1, 7);
+        vector<const uint8_t*> messageHashes = {messageHash};
+        vector<PublicKey> pks = {pk1};
+
+        const PrependSignature sig1 = sk1.SignPrepend(message1, 7);
+        REQUIRE(sig1.Verify(messageHashes, pks));
+
+        uint8_t sigData[PrependSignature::SIGNATURE_SIZE];
+        uint8_t sigData2[PrependSignature::SIGNATURE_SIZE];
+        sig1.Serialize(sigData);
+        sig1.GetInsecureSig().Serialize(sigData2);
+        REQUIRE(memcmp(sigData, sigData2, PrependSignature::SIGNATURE_SIZE) != 0);
+
+        PrependSignature sig2 = PrependSignature::FromBytes(sigData);
+        REQUIRE(sig1 == sig2);
+
+        REQUIRE(sig2.Verify(messageHashes, pks));
+    }
+
+    SECTION("Should aggregate using prepend method") {
+        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
+        uint8_t message2[7] = {192, 29, 2, 0, 0, 45, 23};
+
+        uint8_t seed[32];
+        getRandomSeed(seed);
+        uint8_t seed2[32];
+        getRandomSeed(seed2);
+        uint8_t seed3[32];
+        getRandomSeed(seed3);
+
+        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
+        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
+
+        PublicKey pk1 = sk1.GetPublicKey();
+        PublicKey pk2 = sk2.GetPublicKey();
+        PublicKey pk3 = sk3.GetPublicKey();
+
+        PrependSignature sig1 = sk1.SignPrepend(message1, 7);
+        PrependSignature sig2 = sk2.SignPrepend(message1, 7);
+        PrependSignature sig3 = sk3.SignPrepend(message2, 7);
+
+        uint8_t messageHash1[BLS::MESSAGE_HASH_LEN];
+        uint8_t messageHash2[BLS::MESSAGE_HASH_LEN];
+        Util::Hash256(messageHash1, message1, 7);
+        Util::Hash256(messageHash2, message2, 7);
+        vector<const uint8_t*> messageHashes1 = {messageHash1};
+        vector<const uint8_t*> messageHashes2 = {messageHash2};
+        vector<const uint8_t*> messageHashes = {messageHash1, messageHash1, messageHash2};
+        vector<PublicKey> pks1 = {pk1};
+        vector<PublicKey> pks2 = {pk2};
+        vector<PublicKey> pks3 = {pk3};
+        vector<PublicKey> pks = {pk1, pk2, pk3};
+
+        REQUIRE(sig1.Verify(messageHashes1, pks1));
+        REQUIRE(sig2.Verify(messageHashes1, pks2));
+        REQUIRE(sig3.Verify(messageHashes2, pks3));
+
+        vector<PrependSignature> sigs = {sig1, sig2, sig3};
+
+        PrependSignature agg = PrependSignature::Aggregate(sigs);
+        REQUIRE(agg.Verify(messageHashes, pks));
+
+        vector<PublicKey> pksWrong = {pk1, pk2, pk2};
+        REQUIRE(agg.Verify(messageHashes, pksWrong) == false);
+    }
+
     SECTION("README") {
         // Example seed, used to generate private key. Always use
         // a secure RNG with sufficient entropy to generate a seed.
@@ -1343,7 +1462,7 @@ TEST_CASE("AggregationInfo") {
 
         // Aggregate signatures together
         std::vector<Signature> sigs = {sig1, sig2};
-        Signature aggSig = Signature::AggregateSigs(sigs);
+        Signature aggSig = Signature::Aggregate(sigs);
 
         // For same message, public keys can be aggregated into one.
         // The signature can be verified the same as a single signature,
@@ -1365,11 +1484,11 @@ TEST_CASE("AggregationInfo") {
         // Aggregation below can also be done by the verifier, to
         // make batch verification more efficient
         std::vector<Signature> sigsL = {sig1, sig2};
-        Signature aggSigL = Signature::AggregateSigs(sigsL);
+        Signature aggSigL = Signature::Aggregate(sigsL);
 
         // Arbitrary trees of aggregates
         std::vector<Signature> sigsFinal = {aggSigL, sig3};
-        Signature aggSigFinal = Signature::AggregateSigs(sigsFinal);
+        Signature aggSigFinal = Signature::Aggregate(sigsFinal);
 
         // Serialize the final signature
         aggSigFinal.Serialize(sigBytes);
@@ -1407,11 +1526,21 @@ TEST_CASE("AggregationInfo") {
                 privateKeysList, pubKeysList);
 
         Signature aggSig3 = aggSk.Sign(msg, sizeof(msg));
+
+        PrependSignature prepend1 = sk1.SignPrepend(msg, sizeof(msg));
+        PrependSignature prepend2 = sk2.SignPrepend(msg, sizeof(msg));
+        std::vector<PublicKey> prependPubKeys = {pk1, pk2};
+        uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+        Util::Hash256(messageHash, msg, sizeof(msg));
+        std::vector<const uint8_t*> hashes = {messageHash, messageHash};
+        std::vector<PrependSignature> prependSigs = {prepend1, prepend2};
+        PrependSignature prependAgg = PrependSignature::Aggregate(prependSigs);
+        prependAgg.Verify(hashes, prependPubKeys);
     }
 }
 
 TEST_CASE("Threshold") {
-    SECTION("README") {
+    SECTION("Threshold tests") {
         // To initialize a T of N threshold key under a
         // Joint-Feldman scheme:
         size_t T = 2;

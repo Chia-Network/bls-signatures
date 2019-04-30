@@ -98,9 +98,6 @@ PublicKey PublicKey::Aggregate(std::vector<PublicKey> const& pubKeys) {
     }
     PublicKey aggKey = PublicKey::AggregateInsecure(expKeys);
 
-    for (size_t i = 0; i < pubKeysSorted.size(); i++) {
-        bn_free(computedTs[i]);
-    }
     for (auto p : serPubKeys) {
         delete[] p;
     }

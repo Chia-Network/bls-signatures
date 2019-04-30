@@ -14,12 +14,15 @@ git submodule update
 pip3 install .
 ```
 
+
 Then, to use:
 
 #### Import the library
 ```python
-import blspy
+from blspy import (PrivateKey, PublicKey, Signature, PrependSignature,
+AggregationInfo, ExtendedPrivateKey, Util)
 ```
+
 
 #### Creating keys and signatures
 ```python
@@ -57,7 +60,7 @@ sig = Signature.from_bytes(sig_bytes)
 ```python
 # Add information required for verification, to sig object
 sig.set_aggregation_info(AggregationInfo.from_msg(pk, msg))
-ok = BLS.verify(sig)
+ok = sig.verify()
 ```
 
 #### Aggregate signatures for a single message
@@ -77,13 +80,13 @@ pk2 = sk2.get_public_key()
 sig2 = sk2.sign(msg)
 
 # Aggregate signatures together
-agg_sig = BLS.aggregate_sigs([sig1, sig2])
+agg_sig = Signature.aggregate([sig1, sig2])
 
 
 # For same message, public keys can be aggregated into one.
 # The signature can be verified the same as a single signature,
 # using this public key.
-agg_pubkey = BLS.aggregate_pub_keys([pk1, pk2], True)
+agg_pubkey = PublicKey.aggregate([pk1, pk2])
 ```
 
 #### Aggregate signatures for different messages
@@ -102,10 +105,10 @@ sig3 = sk3.sign(msg2)
 # They can be noninteractively combined by anyone
 # Aggregation below can also be done by the verifier, to
 # make batch verification more efficient
-agg_sig_l = BLS.aggregate_sigs([sig1, sig2])
+agg_sig_l = Signature.aggregate([sig1, sig2])
 
 # Arbitrary trees of aggregates
-agg_sig_final = BLS.aggregate_sigs([agg_sig_l, sig3])
+agg_sig_final = Signature.aggregate([agg_sig_l, sig3])
 
 # Serialize the final signature
 sig_bytes = agg_sig_final.serialize()
@@ -125,21 +128,21 @@ a_final = AggregationInfo.merge_infos([a1a2, a3])
 
 # Verify final signature using the aggregation info
 agg_sig_final.set_aggregation_info(a_final)
-ok = BLS.verify(agg_sig_final)
+ok = agg_sig_final.verify()
 
 # If you previously verified a signature, you can also divide
 # the aggregate signature by the signature you already verified.
-ok = BLS.verify(agg_sig_l)
+ok = agg_sig_l.verify()
 agg_sig_final = agg_sig_final.divide_by([agg_sig_l])
 
-ok = BLS.verify(agg_sig_final)
+ok = agg_sig_final.verify()
 ```
 
 #### Aggregate private keys
 ```python
 # Create an aggregate private key, that can generate
 # aggregate signatures
-agg_sk = BLS.aggregate_priv_keys([sk1, sk2], [pk1, pk2], True)
+agg_sk = PrivateKey.aggregate([sk1, sk2], [pk1, pk2])
 agg_sk.sign(msg)
 ```
 
@@ -160,3 +163,14 @@ buffer1 = pk_child.serialize() # 93 bytes
 buffer2 = sk_child.serialize() # 77 bytes
 ```
 
+#### Prepend PK method
+```python
+# Can use proofs of possession to avoid keeping track of metadata
+prepend1 = sk1.sign_prepend(msg)
+prepend2 = sk2.sign_prepend(msg)
+
+prepend_agg = PrependSignature.aggregate([prepend1, prepend2])
+
+ok = prepend_agg.verify([Util.hash256(msg), Util.hash256(msg)], [pk1, pk2])
+
+```

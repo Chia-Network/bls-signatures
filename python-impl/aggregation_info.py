@@ -1,5 +1,6 @@
 from copy import deepcopy
-from util import hash256, hash_pks
+from util import hash256
+from bls import BLS
 
 
 class AggregationInfo:
@@ -109,7 +110,7 @@ class AggregationInfo:
         sorted_keys.sort()
         sorted_pks = [public_key for (message_hash, public_key)
                       in sorted_keys]
-        computed_Ts = hash_pks(len(colliding_infos), sorted_pks)
+        computed_Ts = BLS.hash_pks(len(colliding_infos), sorted_pks)
 
         # Group order, exponents can be reduced mod the order
         order = sorted_pks[0].value.ec.n

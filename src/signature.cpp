@@ -172,7 +172,7 @@ void InsecureSignature::CompressPoint(uint8_t* result, const g2_t* point) {
     std::memcpy(result, buffer + 1, SIGNATURE_SIZE);
 }
 
-///
+/// Signature
 
 Signature Signature::FromBytes(const uint8_t* data) {
     Signature result;
@@ -181,6 +181,10 @@ Signature Signature::FromBytes(const uint8_t* data) {
 }
 
 Signature Signature::FromBytes(const uint8_t *data, const AggregationInfo &info) {
+    if ((data[0] & 0x40) > 0) {
+        throw std::string("Invalid signature. Second bit is set, so it's a PrependSignature.");
+    }
+
     Signature ret = FromBytes(data);
     ret.SetAggregationInfo(info);
     return ret;
@@ -262,6 +266,7 @@ bool Signature::Verify() const {
     if (GetAggregationInfo()->Empty()) {
         return false;
     }
+
     std::vector<PublicKey> pubKeys = GetAggregationInfo()
             ->GetPubKeys();
     std::vector<uint8_t*> messageHashes = GetAggregationInfo()
@@ -269,6 +274,7 @@ bool Signature::Verify() const {
     if (pubKeys.size() != messageHashes.size()) {
         return false;
     }
+
     // Group all of the messages that are idential, with the
     // pubkeys and signatures, the std::maps's key is the message hash
     std::map<uint8_t*, std::vector<PublicKey>,
@@ -328,7 +334,7 @@ bool Signature::Verify() const {
     return sig.Verify(finalMessageHashes, finalPubKeys);
 }
 
-Signature Signature::AggregateSigs(
+Signature Signature::Aggregate(
         std::vector<Signature> const &sigs) {
     std::vector<std::vector<PublicKey> > pubKeys;
     std::vector<std::vector<uint8_t*> > messageHashes;
@@ -363,8 +369,7 @@ Signature Signature::AggregateSigs(
             throw std::string("Lengths of vectors must match.");
         }
     }
-    Signature ret = AggregateSigsInternal(sigs, pubKeys,
-                                             messageHashes);
+    Signature ret = AggregateSigsInternal(sigs, pubKeys, messageHashes);
     for (std::vector<uint8_t*> group : messageHashes) {
         for (const uint8_t* messageHash : group) {
             delete[] messageHash;
@@ -667,4 +672,101 @@ Signature Signature::DivideBy(std::vector<Signature> const &divisorSigs) const {
 
     return result;
 }
+
+// Prepend Signature
+
+PrependSignature PrependSignature::FromBytes(const uint8_t *data) {
+    PrependSignature result;
+    if ((data[0] & 0x40) == 0) {
+        throw std::string("Invalid prepend signature. Second bit must be set to two");
+    }
+    uint8_t new_data[PrependSignature::SIGNATURE_SIZE];
+    memcpy(new_data, data, SIGNATURE_SIZE);
+    new_data[0] ^= 0x40;
+    result.sig = InsecureSignature::FromBytes(new_data);
+    return result;
+}
+
+PrependSignature PrependSignature::FromG2(const g2_t* element) {
+    PrependSignature ret;
+    ret.sig = InsecureSignature::FromG2(element);
+    return ret;
+}
+
+PrependSignature PrependSignature::FromInsecureSig(const InsecureSignature& sig) {
+    return FromG2(&sig.sig);
+}
+
+PrependSignature::PrependSignature(const PrependSignature &_signature)
+    : sig(_signature.sig) {}
+
+
+bool PrependSignature::Verify(const std::vector<const uint8_t*>& hashes,
+                              const std::vector<PublicKey>& pubKeys) const {
+    if (pubKeys.size() != hashes.size()) {
+        return false;
+    }
+
+    std::vector<const uint8_t*> newHashes;
+    for (uint32_t i = 0; i < hashes.size(); i++) {
+        uint8_t newMessage[PublicKey::PUBLIC_KEY_SIZE + BLS::MESSAGE_HASH_LEN];
+        pubKeys[i].Serialize(newMessage);
+        memcpy(newMessage + PublicKey::PUBLIC_KEY_SIZE, hashes[i], BLS::MESSAGE_HASH_LEN);
+        uint8_t* newHash = new uint8_t[BLS::MESSAGE_HASH_LEN];
+        Util::Hash256(newHash, newMessage, PublicKey::PUBLIC_KEY_SIZE + BLS::MESSAGE_HASH_LEN);
+        newHashes.push_back(newHash);
+    }
+
+    bool res = sig.Verify(newHashes, pubKeys);
+    for (uint32_t i = 0; i < newHashes.size(); i++) {
+        delete[] newHashes[i];
+    }
+    return res;
+}
+
+PrependSignature PrependSignature::Aggregate(std::vector<PrependSignature> const &sigs) {
+    std::vector<InsecureSignature> insecureSignatures;
+    for (PrependSignature sig : sigs) {
+        insecureSignatures.push_back(sig.GetInsecureSig());
+    }
+    return PrependSignature::FromInsecureSig(InsecureSignature::Aggregate(insecureSignatures));
+}
+
+PrependSignature PrependSignature::DivideBy(std::vector<PrependSignature> const &divisorSigs) const {
+    std::vector<InsecureSignature> insecureSignatures;
+    for (PrependSignature sig : divisorSigs) {
+        insecureSignatures.push_back(sig.GetInsecureSig());
+    }
+    return PrependSignature::FromInsecureSig(sig.DivideBy(insecureSignatures));
+}
+
+void PrependSignature::Serialize(uint8_t* buffer) const {
+    sig.Serialize(buffer);
+    buffer[0] |= 0x40;
+}
+
+std::vector<uint8_t> PrependSignature::Serialize() const {
+    std::vector<uint8_t> ret = sig.Serialize();
+    ret[0] |= 0x40;
+    return ret;
+}
+
+InsecureSignature PrependSignature::GetInsecureSig() const {
+    return sig;
+}
+
+bool operator==(PrependSignature const &a, PrependSignature const &b) {
+    return a.sig == b.sig;
+}
+
+bool operator!=(PrependSignature const &a, PrependSignature const &b) {
+    return !(a == b);
+}
+
+std::ostream &operator<<(std::ostream &os, PrependSignature const &s) {
+    uint8_t data[InsecureSignature::SIGNATURE_SIZE];
+    s.Serialize(data);
+    return os << Util::HexStr(data, InsecureSignature::SIGNATURE_SIZE);
+}
+
 } // end namespace bls

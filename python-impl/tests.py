@@ -1,6 +1,5 @@
 # flake8: noqa: E501
 from aggregation_info import AggregationInfo
-from bls import BLS
 from ec import (default_ec, default_ec_twist, generator_Fq, generator_Fq2,
                 hash_to_point_Fq, hash_to_point_Fq2, sw_encode, twist, untwist,
                 y_for_x)
@@ -8,7 +7,7 @@ from fields import Fq, Fq2, Fq6, Fq12
 from itertools import combinations
 from keys import PrivateKey, PublicKey, ExtendedPrivateKey
 import random
-from signature import Signature
+from signature import Signature, PrependSignature
 from sys import setrecursionlimit
 import time
 from threshold import Threshold
@@ -117,29 +116,29 @@ def test_vectors():
     assert(sig1.serialize() == bytes.fromhex("93eb2e1cb5efcfb31f2c08b235e8203a67265bc6a13d9f0ab77727293b74a357ff0459ac210dc851fcb8a60cb7d393a419915cfcf83908ddbeac32039aaa3e8fea82efcb3ba4f740f20c76df5e97109b57370ae32d9b70d256a98942e5806065"))
     assert(sig2.serialize() == bytes.fromhex("975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e"))
 
-    agg_sig = BLS.aggregate_sigs([sig1, sig2])
-    agg_pk = BLS.aggregate_pub_keys([pk1, pk2], True)
-    agg_sk = BLS.aggregate_priv_keys([sk1, sk2], [pk1, pk2], True)
+    agg_sig = Signature.aggregate([sig1, sig2])
+    agg_pk = PublicKey.aggregate([pk1, pk2], True)
+    agg_sk = PrivateKey.aggregate([sk1, sk2], [pk1, pk2], True)
     assert(agg_sig.serialize() == bytes.fromhex("0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658"))
     assert(agg_sk.sign(bytes([7, 8, 9])).serialize() == agg_sig.serialize())
 
 
-    assert(BLS.verify(sig1))
-    assert(BLS.verify(agg_sig))
+    assert(sig1.verify())
+    assert(agg_sig.verify())
 
     agg_sig.set_aggregation_info(AggregationInfo.from_msg(agg_pk, bytes([7, 8, 9])))
-    assert(BLS.verify(agg_sig))
+    assert(agg_sig.verify())
 
     sig1.set_aggregation_info(sig2.aggregation_info)
-    assert(not BLS.verify(sig1))
+    assert(not sig1.verify())
 
     sig3 = sk1.sign(bytes([1, 2, 3]))
     sig4 = sk1.sign(bytes([1, 2, 3, 4]))
     sig5 = sk2.sign(bytes([1, 2]))
 
 
-    agg_sig2 = BLS.aggregate_sigs([sig3, sig4, sig5])
-    assert(BLS.verify(agg_sig2))
+    agg_sig2 = Signature.aggregate([sig3, sig4, sig5])
+    assert(agg_sig2.verify())
     assert(agg_sig2.serialize() == bytes.fromhex("8b11daf73cd05f2fe27809b74a7b4c65b1bb79cc1066bdf839d96b97e073c1a635d2ec048e0801b4a208118fdbbb63a516bab8755cc8d850862eeaa099540cd83621ff9db97b4ada857ef54c50715486217bd2ecb4517e05ab49380c041e159b"))
 
 
@@ -159,17 +158,17 @@ def test_vectors2():
     sig5 = sk1.sign(m1)
     sig6 = sk1.sign(m4)
 
-    sig_L = BLS.aggregate_sigs([sig1, sig2])
-    sig_R = BLS.aggregate_sigs([sig3, sig4, sig5])
-    assert(BLS.verify(sig_L))
-    assert(BLS.verify(sig_R))
+    sig_L = Signature.aggregate([sig1, sig2])
+    sig_R = Signature.aggregate([sig3, sig4, sig5])
+    assert(sig_L.verify())
+    assert(sig_R.verify())
 
-    sig_final = BLS.aggregate_sigs([sig_L, sig_R, sig6])
+    sig_final = Signature.aggregate([sig_L, sig_R, sig6])
     assert(sig_final.serialize() == bytes.fromhex("07969958fbf82e65bd13ba0749990764cac81cf10d923af9fdd2723f1e3910c3fdb874a67f9d511bb7e4920f8c01232b12e2fb5e64a7c2d177a475dab5c3729ca1f580301ccdef809c57a8846890265d195b694fa414a2a3aa55c32837fddd80"))
-    assert(BLS.verify(sig_final))
+    assert(sig_final.verify())
     quotient = sig_final.divide_by([sig2, sig5, sig6])
-    assert(BLS.verify(quotient))
-    assert(BLS.verify(sig_final))
+    assert(quotient.verify())
+    assert(sig_final.verify())
     assert(quotient.serialize() == bytes.fromhex("8ebc8a73a2291e689ce51769ff87e517be6089fd0627b2ce3cd2f0ee1ce134b39c4da40928954175014e9bbe623d845d0bdba8bfd2a85af9507ddf145579480132b676f027381314d983a63842fcc7bf5c8c088461e3ebb04dcf86b431d6238f"))
     assert(quotient.divide_by([]) == quotient)
     try:
@@ -187,25 +186,22 @@ def test_vectors2():
     # Divide by aggregate
     sig7 = sk2.sign(m3)
     sig8 = sk2.sign(m4)
-    sig_R2 = BLS.aggregate_sigs([sig7, sig8])
-    sig_final2 = BLS.aggregate_sigs([sig_final, sig_R2])
+    sig_R2 = Signature.aggregate([sig7, sig8])
+    sig_final2 = Signature.aggregate([sig_final, sig_R2])
     quotient2 = sig_final2.divide_by([sig_R2])
-    assert(BLS.verify(quotient2))
+    assert(quotient2.verify())
     assert(quotient2.serialize() == bytes.fromhex("06af6930bd06838f2e4b00b62911fb290245cce503ccf5bfc2901459897731dd08fc4c56dbde75a11677ccfbfa61ab8b14735fddc66a02b7aeebb54ab9a41488f89f641d83d4515c4dd20dfcf28cbbccb1472c327f0780be3a90c005c58a47d3"))
 
 
 def test_vectors3():
     seed = bytes([1, 50, 6, 244, 24, 199, 1, 25])
     esk =  ExtendedPrivateKey.from_seed(seed)
-    assert(esk.private_key.get_public_key().get_fingerprint() == 0xa4700b27)
-    assert(esk.chain_code.hex() == "d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3")
+    assert(esk.get_public_key().get_fingerprint() == 0xa4700b27)
     esk77 = esk.private_child(77 + 2**31)
-    assert(esk77.chain_code.hex() == "f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b")
-    assert(esk77.private_key.get_public_key().get_fingerprint() == 0xa8063dcf)
+    assert(esk77.get_public_key().get_fingerprint() == 0xa8063dcf)
 
     assert(esk.private_child(3)
               .private_child(17)
-              .private_key
               .get_public_key()
               .get_fingerprint() == 0xff26a31f)
 
@@ -215,6 +211,27 @@ def test_vectors3():
               .get_public_key()
               .get_fingerprint() == 0xff26a31f)
 
+def test_vectors4():
+    sk1 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5]))
+    sk2 = PrivateKey.from_seed(bytes([1, 2, 3, 4, 5, 6]))
+
+    pk1 = sk1.get_public_key()
+    pk2 = sk2.get_public_key()
+
+    m1 = bytes([7, 8, 9])
+    m2 = bytes([10, 11, 12])
+
+    sig9 = sk1.sign_prepend(m1)
+    sig10 = sk2.sign_prepend(m2)
+
+    assert(sig9.serialize() == bytes.fromhex("d2135ad358405d9f2d4e68dc253d64b6049a821797817cffa5aa804086a8fb7b135175bb7183750e3aa19513db1552180f0b0ffd513c322f1c0c30a0a9c179f6e275e0109d4db7fa3e09694190947b17d890f3d58fe0b1866ec4d4f5a59b16ed"))
+    assert(sig10.serialize() == bytes.fromhex("cc58c982f9ee5817d4fbf22d529cfc6792b0fdcf2d2a8001686755868e10eb32b40e464e7fbfe30175a962f1972026f2087f0495ba6e293ac3cf271762cd6979b9413adc0ba7df153cf1f3faab6b893404c2e6d63351e48cd54e06e449965f08"))
+
+    agg_sig = PrependSignature.aggregate([sig9, sig9, sig10])
+    message_hashes =[hash256(m1), hash256(m1), hash256(m2)]
+    pks = [pk1, pk1, pk2]
+    assert(agg_sig.serialize() == bytes.fromhex("c37077684e735e62e3f1fd17772a236b4115d4b581387733d3b97cab08b90918c7e91c23380c93e54be345544026f93505d41e6000392b82ab3c8af1b2e3954b0ef3f62c52fc89f99e646ff546881120396c449856428e672178e5e0e14ec894"))
+    assert(agg_sig.verify(message_hashes, pks))
 
 def test1():
     seed = bytes([0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
@@ -236,7 +253,8 @@ def test1():
     sig = Signature.from_bytes(sig_bytes)
 
     sig.set_aggregation_info(AggregationInfo.from_msg(pk, msg))
-    assert(BLS.verify(sig))
+    ok = sig.verify()
+    assert(ok)
 
     seed = bytes([1]) + seed[1:]
     sk1 = PrivateKey.from_seed(seed)
@@ -249,11 +267,11 @@ def test1():
     pk2 = sk2.get_public_key()
     sig2 = sk2.sign(msg)
 
-    agg_sig = BLS.aggregate_sigs([sig1, sig2])
-    agg_pubkey = BLS.aggregate_pub_keys([pk1, pk2], True)
+    agg_sig = Signature.aggregate([sig1, sig2])
+    agg_pubkey = PublicKey.aggregate([pk1, pk2])
 
     agg_sig.set_aggregation_info(AggregationInfo.from_msg(agg_pubkey, msg))
-    assert(BLS.verify(agg_sig))
+    assert(agg_sig.verify())
 
     seed = bytes([3]) + seed[1:]
     sk3 = PrivateKey.from_seed(seed)
@@ -263,8 +281,8 @@ def test1():
     sig1 = sk1.sign(msg)
     sig2 = sk2.sign(msg)
     sig3 = sk3.sign(msg2)
-    agg_sig_l = BLS.aggregate_sigs([sig1, sig2])
-    agg_sig_final = BLS.aggregate_sigs([agg_sig_l, sig3])
+    agg_sig_l = Signature.aggregate([sig1, sig2])
+    agg_sig_final = Signature.aggregate([agg_sig_l, sig3])
 
     sig_bytes = agg_sig_final.serialize()
 
@@ -276,14 +294,14 @@ def test1():
     a_final = AggregationInfo.merge_infos([a1a2, a3])
     print(a_final)
     agg_sig_final.set_aggregation_info(a_final)
-    assert(BLS.verify(agg_sig_final))
+    ok = agg_sig_final.verify()
 
-    assert(BLS.verify(agg_sig_l))
+    ok = agg_sig_l.verify()
     agg_sig_final = agg_sig_final.divide_by([agg_sig_l])
 
-    assert(BLS.verify(agg_sig_final))
+    ok = agg_sig_final.verify()
 
-    agg_sk = BLS.aggregate_priv_keys([sk1, sk2], [pk1, pk2], True)
+    agg_sk = PrivateKey.aggregate([sk1, sk2], [pk1, pk2])
     agg_sk.sign(msg)
 
     seed = bytes([1, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
@@ -296,6 +314,11 @@ def test1():
     sk_child = esk.private_child(0).private_child(5)
     pk_child = epk.public_child(0).public_child(5)
 
+    buffer1 = pk_child.serialize()
+    buffer2 = sk_child.serialize()
+
+    print(len(buffer1), buffer1)
+    print(len(buffer2), buffer2)
     assert(sk_child.get_extended_public_key() == pk_child)
 
 
@@ -312,12 +335,13 @@ def test2():
     assert(sk != sk2)
     assert(pk.get_fingerprint() == 0xddad59bb)
 
+    sk2_ser = sk2.serialize()
     pk2_ser = pk2.serialize()
     pk2_copy = PublicKey.from_bytes(pk2_ser)
     assert(pk2 == pk2_copy)
     assert(pk != pk2)
-    assert(pk2.size() == 48)
-    assert(sk2.size() == 32)
+    assert(len(pk2_ser) == 48)
+    assert(len(sk2_ser) == 32)
 
     message = bytes("this is the message", "utf-8")
     sig = sk.sign(message)
@@ -329,19 +353,18 @@ def test2():
     assert(a1 == a2)
     sig2 = sk2.sign(message)
 
-    assert(sig.size() == 96)
+    assert(len(sig_ser) == 96)
     assert(sig != sig2)
     assert(sig == sig_cp)
 
-    sig_agg = BLS.aggregate_sigs([sig, sig2])
+    sig_agg = Signature.aggregate([sig, sig2])
 
-    result = BLS.verify(sig_cp)
-    result2 = BLS.verify(sig2)
-    result3 = BLS.verify(sig_agg)
+    result = sig_cp.verify()
+    result2 = sig2.verify()
+    result3 = sig_agg.verify()
     assert(result)
     assert(result2)
     assert(result3)
-
     sk2 = sk
 
 
@@ -367,17 +390,17 @@ def test_threshold_instance(T, N):
                 T, fragments[player_target - 1][player_source - 1],
                 player_target, commitments[player_source - 1])
 
-    # Step 3 : master_pubkey = BLS.aggregate_pub_keys(...)
-    #          secret_share = BLS.aggregate_priv_keys(...)
-    master_pubkey = BLS.aggregate_pub_keys(
+    # Step 3 : master_pubkey = PublicKey.aggregate(...)
+    #          secret_share = PrivateKey.aggregate(...)
+    master_pubkey = PublicKey.aggregate(
            [PublicKey.from_g1(cpoly[0].to_jacobian())
             for cpoly in commitments],
            False)
 
-    secret_shares = [BLS.aggregate_priv_keys(map(PrivateKey, row), None, False)
+    secret_shares = [PrivateKey.aggregate(map(PrivateKey, row), None, False)
                      for row in fragments]
 
-    master_privkey = BLS.aggregate_priv_keys(secrets, None, False)
+    master_privkey = PrivateKey.aggregate(secrets, None, False)
     msg = 'Test'
     signature_actual = master_privkey.sign(msg)
 
@@ -395,13 +418,13 @@ def test_threshold_instance(T, N):
         # Check signatures
         signature_shares = [secret_shares[x-1].sign_threshold(msg, x, X)
                             for x in X]
-        signature_cand = BLS.aggregate_sigs_simple(signature_shares)
+        signature_cand = Signature.aggregate_sigs_simple(signature_shares)
         assert signature_cand == signature_actual
 
     # Check that the signature actually verifies the message
     agg_info = AggregationInfo.from_msg(master_pubkey, msg)
     signature_actual.set_aggregation_info(agg_info)
-    assert BLS.verify(signature_actual)
+    assert signature_actual.verify()
 
     # Step 4b : Alternatively, we can add the lagrange coefficients
     # to 'unit' signatures.
@@ -422,14 +445,18 @@ def test_threshold():
         test_threshold_instance(T, 5)
 
 
-test_threshold()
-test_fields()
-test_ec()
-test_vectors()
-test_vectors2()
+# test_threshold()
+# test_fields()
+# test_ec()
+# test_vectors()
+# test_vectors2()
 test_vectors3()
-test1()
-test2()
+test_vectors4()
+# test1()
+# test2()
+
+print("\nAll tests passed.")
+
 
 """
 Copyright 2018 Chia Network Inc

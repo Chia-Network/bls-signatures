@@ -4,9 +4,10 @@ from ec import (AffinePoint, JacobianPoint, default_ec, generator_Fq,
                 hash_to_point_Fq2, hash_to_point_prehashed_Fq2, y_for_x)
 from fields import Fq
 from secrets import SystemRandom
-from signature import Signature
+from signature import Signature, PrependSignature
 from threshold import Threshold
 from util import hash256, hmac256
+from bls import BLS
 
 RNG = SystemRandom()
 
@@ -69,6 +70,28 @@ class PublicKey:
     def __deepcopy__(self, memo):
         return PublicKey.from_g1(deepcopy(self.value, memo))
 
+    @staticmethod
+    def aggregate(public_keys, secure):
+        """
+        Aggregates public keys together
+        """
+        if len(public_keys) < 1:
+            raise Exception("Invalid number of keys")
+        public_keys.sort()
+
+        computed_Ts = BLS.hash_pks(len(public_keys), public_keys)
+
+        ec = public_keys[0].value.ec
+        sum_keys = JacobianPoint(Fq.one(ec.q), Fq.one(ec.q),
+                                 Fq.zero(ec.q), True, ec)
+        for i in range(len(public_keys)):
+            addend = public_keys[i].value
+            if secure:
+                addend *= computed_Ts[i]
+            sum_keys += addend
+
+        return PublicKey.from_g1(sum_keys)
+
 
 class PrivateKey:
     """
@@ -87,13 +110,13 @@ class PrivateKey:
     def from_seed(seed):
         hashed = hmac256(seed, b"BLS private key seed")
         return PrivateKey(int.from_bytes(hashed, "big") % default_ec.n)
-    
+
     @staticmethod
     def new_threshold(T, N):
         """
         Create a new private key with associated data suitable for
         T of N threshold signatures under a Joint-Feldman scheme.
-        
+
         After the dealing phase, one needs cooperation of T players
         out of N in order to sign a message with the master key pair.
 
@@ -108,14 +131,15 @@ class PrivateKey:
         poly = [Fq(default_ec.n, RNG.randint(1, default_ec.n - 1))
                 for _ in range(T)]
         commitments = [g1 * c for c in poly]
-        secret_fragments = [sum(c * pow(x, i, default_ec.n) for i, c in enumerate(poly))
+        secret_fragments = [sum(c * pow(x, i, default_ec.n)
+                            for i, c in enumerate(poly))
                             for x in range(1, N+1)]
-        
+
         return PrivateKey(poly[0]), commitments, secret_fragments
 
     def get_public_key(self):
         return PublicKey.from_g1((self.value * generator_Fq())
-                                    .to_jacobian())
+                                 .to_jacobian())
 
     def sign(self, m):
         r = hash_to_point_Fq2(m).to_jacobian()
@@ -128,6 +152,14 @@ class PrivateKey:
                                                          h)
         return Signature.from_g2(self.value * r, aggregation_info)
 
+    def sign_prepend(self, m):
+        return self.sign_prepend_prehashed(hash256(m))
+
+    def sign_prepend_prehashed(self, h):
+        final_message = hash256(self.get_public_key().serialize() + h)
+        r = hash_to_point_prehashed_Fq2(final_message).to_jacobian()
+        return PrependSignature(self.value * r)
+
     def sign_threshold(self, m, player, players):
         """
         As the given player out of a list of player indices,
@@ -138,7 +170,7 @@ class PrivateKey:
         i = players.index(player)
         lambs = Threshold.lagrange_coeffs_at_zero(players)
         return Signature.from_g2(self.value * (r * lambs[i]))
-        
+
     def __lt__(self, other):
         return self.value < other.value
 
@@ -159,6 +191,32 @@ class PrivateKey:
 
     def __repr__(self):
         return "PrivateKey(" + hex(self.value) + ")"
+
+    @staticmethod
+    def aggregate(private_keys, public_keys, secure):
+        """
+        Aggregates private keys together
+        """
+        if not secure:
+            sum_keys = sum(pk.value for pk in private_keys) % default_ec.n
+
+        else:
+            if not public_keys:
+                raise Exception("Must include public keys in secure" +
+                                " aggregation")
+            if len(private_keys) != len(public_keys):
+                raise Exception("Invalid number of keys")
+
+            priv_pub_keys = sorted(zip(public_keys, private_keys))
+            computed_Ts = BLS.hash_pks(len(private_keys), public_keys)
+            n = public_keys[0].value.ec.n
+
+            sum_keys = 0
+            for i, (_, privkey) in enumerate(priv_pub_keys):
+                sum_keys += privkey.value * computed_Ts[i]
+                sum_keys %= n
+
+        return PrivateKey.from_bytes(sum_keys.to_bytes(32, "big"))
 
 
 class ExtendedPrivateKey:
@@ -229,6 +287,9 @@ class ExtendedPrivateKey:
     def get_public_key(self):
         return self.private_key.get_public_key()
 
+    def get_chain_code(self):
+        return self.chain_code
+
     def size(self):
         return self.EXTENDED_PRIVATE_KEY_SIZE
 
@@ -287,7 +348,7 @@ class ExtendedPublicKey:
             sk_left_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big"))
 
         new_pk = PublicKey.from_g1(sk_left.get_public_key().value +
-                                      self.public_key.value)
+                                   self.public_key.value)
         return ExtendedPublicKey(self.version, self.depth + 1,
                                  self.public_key.get_fingerprint(), i,
                                  i_right, new_pk)
