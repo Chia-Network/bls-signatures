@@ -181,10 +181,10 @@ PYBIND11_MODULE(blspy, m) {
             delete[] output;
             return ret;
         })
-        .def("verify", [](const PrependSignature &sig, const std::vector<const py::bytes> &hashes,
+        .def("verify", [](const PrependSignature &sig, const std::vector<py::bytes> &hashes,
                            std::vector<PublicKey> &pks) {
             std::vector<const uint8_t*> converted_hashes;
-            std::vector<const std::string> strings;
+            std::vector<std::string> strings;
             for (const py::bytes &h : hashes) {
                std::string str(h);
                strings.push_back(str);
