@@ -157,9 +157,6 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const& privateKeys,
     }
     PrivateKey aggKey = PrivateKey::AggregateInsecure(expKeys);
 
-    for (size_t i = 0; i < keysSorted.size(); i++) {
-        bn_free(p);
-    }
     for (auto p : serPubKeys) {
         delete[] p;
     }

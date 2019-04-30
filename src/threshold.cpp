@@ -67,9 +67,6 @@ PrivateKey Threshold::Create(std::vector<PublicKey> &commitment,
     bn_copy(*k.keydata, poly[0]);
 
     delete[] poly;
-    bn_free(frag);
-    bn_free(w);
-    bn_free(e);
 
     return k;
 }
@@ -89,10 +86,17 @@ InsecureSignature Threshold::SignWithCoefficient(PrivateKey sk, uint8_t *msg,
     g2_map(sig, messageHash, BLS::MESSAGE_HASH_LEN, 0);
 
     bn_t *coeffs = new bn_t[T];
-    Threshold::LagrangeCoeffsAtZero(coeffs, players, T);
+    try {
+        Threshold::LagrangeCoeffsAtZero(coeffs, players, T);
+    } catch (const std::exception& e) {
+        delete[] coeffs;
+        throw e;
+    }
 
     g2_mul(sig, sig, coeffs[index]);
     g2_mul(sig, sig, *sk.keydata);
+
+    delete[] coeffs;
 
     return InsecureSignature::FromG2(&sig);
 }
