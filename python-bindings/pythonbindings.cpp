@@ -323,7 +323,7 @@ PYBIND11_MODULE(blspy, m) {
             std::string str(message);
             const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             uint8_t output[BLS::MESSAGE_HASH_LEN];
-            Util::Hash256(output, input, len(message));
+            Util::Hash256(output, (const uint8_t*)str.data(), str.size());
             return py::bytes(reinterpret_cast<char*>(output), BLS::MESSAGE_HASH_LEN);
         });
 
