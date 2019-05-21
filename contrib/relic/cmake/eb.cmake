@@ -13,7 +13,7 @@ message("   ** Available binary elliptic curve methods (default = PROJC;LWNAF;CO
 
 message("      Point representation:")
 message("      EB_METHD=BASIC    Affine coordinates.")
-message("      EB_METHD=PROJC    Projective coordinates (López-Dahab for ordinary curves).\n")
+message("      EB_METHD=PROJC    Projective coordinates (LÃ³pez-Dahab for ordinary curves).\n")
 
 message("      Variable-base scalar multiplication:")
 message("      EB_METHD=BASIC    Binary double-and-add method.")

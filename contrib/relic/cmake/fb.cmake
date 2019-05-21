@@ -16,7 +16,7 @@ message("      FB_METHD=BASIC    Right-to-left shift-and-add multiplication.")
 message("      FB_METHD=INTEG    Integrated modular multiplication.")
 message("      FB_METHD=RCOMB    Right-to-left comb multiplication.")
 message("      FB_METHD=LCOMB    Left-to-right comb multiplication.")
-message("      FB_METHD=LODAH    López-Dahab comb multiplication with window of width 4.\n")
+message("      FB_METHD=LODAH    LÃ³pez-Dahab comb multiplication with window of width 4.\n")
 
 message("      Field squaring:")
 message("      FB_METHD=BASIC    Bit manipulation squaring.")

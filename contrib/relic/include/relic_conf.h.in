@@ -306,7 +306,7 @@
 
 /** Shift-and-add multiplication. */
 #define BASIC    1
-/** Lopez-Dahab multiplication. */
+/** López-Dahab multiplication. */
 #define LODAH	 2
 /** Integrated modular multiplication. */
 #define INTEG	 3
@@ -470,14 +470,14 @@
 
 /** Affine coordinates. */
 #define BASIC	 1
-/** L�pez-Dahab Projective coordinates. */
+/** López-Dahab Projective coordinates. */
 #define PROJC	 2
 /** Chosen binary elliptic curve coordinate method. */
 #define EB_ADD	 @EB_ADD@
 
 /** Binary point multiplication. */
 #define BASIC	 1
-/** L�pez-Dahab point multiplication. */
+/** López-Dahab point multiplication. */
 #define LODAH	 2
 /** Halving. */
 #define HALVE    3
