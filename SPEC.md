@@ -283,7 +283,7 @@ since not all 32 byte sequences are valid BLS private keys
 
 ### Aggregation
 * aggregate([sig1, sig2])
-    * aggSig: 0x975b5daa64b915be19b5ac6d47bc1c2fc832d2fb8ca3e95c4805d8216f95cf2bdbb36cc23645f52040e381550727db420b523b57d494959e0e8c0c6060c46cf173872897f14d43b2ac2aec52fc7b46c02c5699ff7a10beba24d3ced4e89c821e
+    * aggSig: 0x0a638495c1403b25be391ed44c0ab013390026b5892c796a85ede46310ff7d0e0671f86ebe0e8f56bee80f28eb6d999c0a418c5fc52debac8fc338784cd32b76338d629dc2b4045a5833a357809795ef55ee3e9bee532edfc1d9c443bf5bc658
 * verify(aggSig2, mergeInfos(sig1.aggInfo, sig2.aggInfo))
     * true
 * verify(sig1, AggregationInfo(pk2, [7,8,9]))

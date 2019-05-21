@@ -11,6 +11,7 @@ build/*
 blspy.egg-info
 dist
 python-impl/__pycache__/
+blspy.*.so
 
 main
 .o
