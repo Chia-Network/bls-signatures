@@ -268,7 +268,7 @@ def test1():
     sig2 = sk2.sign(msg)
 
     agg_sig = Signature.aggregate([sig1, sig2])
-    agg_pubkey = PublicKey.aggregate([pk1, pk2])
+    agg_pubkey = PublicKey.aggregate([pk1, pk2], False)
 
     agg_sig.set_aggregation_info(AggregationInfo.from_msg(agg_pubkey, msg))
     assert(agg_sig.verify())
@@ -375,9 +375,9 @@ def test_threshold_instance(T, N):
     fragments = [[None] * N for _ in range(N)]
     secrets = []
 
-    # Step 1 : PrivateKey.new_threshold
+    # Step 1 : Threshold.create
     for player in range(N):
-        secret_key, commi, frags = PrivateKey.new_threshold(T, N)
+        secret_key, commi, frags = Threshold.create(T, N)
         for target, frag in enumerate(frags):
             fragments[target][player] = frag
         commitments.append(commi)
@@ -387,8 +387,8 @@ def test_threshold_instance(T, N):
     for player_source in range(1, N+1):
         for player_target in range(1, N+1):
             assert Threshold.verify_secret_fragment(
-                T, fragments[player_target - 1][player_source - 1],
-                player_target, commitments[player_source - 1])
+                player_target, fragments[player_target - 1][player_source - 1],
+                commitments[player_source - 1], T)
 
     # Step 3 : master_pubkey = PublicKey.aggregate(...)
     #          secret_share = PrivateKey.aggregate(...)
@@ -404,7 +404,7 @@ def test_threshold_instance(T, N):
     msg = 'Test'
     signature_actual = master_privkey.sign(msg)
 
-    # Step 4 : sig_share = secret_share.sign_threshold(...)
+    # Step 4 : sig_share = Threshold.sign_with_coefficient(...)
     # Check every combination of T players
     for X in combinations(range(1, N+1), T):
         # X: a list of T indices like [1, 2, 5]
@@ -416,7 +416,7 @@ def test_threshold_instance(T, N):
         assert secret_cand == master_privkey
 
         # Check signatures
-        signature_shares = [secret_shares[x-1].sign_threshold(msg, x, X)
+        signature_shares = [Threshold.sign_with_coefficient(secret_shares[x-1], msg, x, X)
                             for x in X]
         signature_cand = Signature.aggregate_sigs_simple(signature_shares)
         assert signature_cand == signature_actual
@@ -445,15 +445,15 @@ def test_threshold():
         test_threshold_instance(T, 5)
 
 
-# test_threshold()
-# test_fields()
-# test_ec()
-# test_vectors()
-# test_vectors2()
+test_threshold()
+test_fields()
+test_ec()
+test_vectors()
+test_vectors2()
 test_vectors3()
 test_vectors4()
-# test1()
-# test2()
+test1()
+test2()
 
 print("\nAll tests passed.")
 
