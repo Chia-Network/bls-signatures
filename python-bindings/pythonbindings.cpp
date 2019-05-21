@@ -158,7 +158,7 @@ PYBIND11_MODULE(blspy, m) {
             return ret;
         })
         .def("verify", [](const InsecureSignature &sig,
-                          const std::vector<const py::bytes> hashes,
+                          const std::vector<py::bytes> hashes,
                           const std::vector<PublicKey>& pubKeys) {
             std::vector<const uint8_t*> hashes_pointers;
             for (const py::bytes b : hashes) {
