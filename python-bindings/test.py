@@ -1,7 +1,8 @@
 # flake8: noqa: E501
-from blspy import (PrivateKey, PublicKey,
+from blspy import (PrivateKey, PublicKey, InsecureSignature,
                    Signature, PrependSignature, AggregationInfo,
-                   ExtendedPrivateKey, BLS, Util)
+                   ExtendedPrivateKey, BLS, Util, Threshold)
+from itertools import combinations
 
 
 def test1():
@@ -137,6 +138,69 @@ def test2():
     assert(result2)
     assert(result3)
     sk2 = sk
+
+def test_threshold_instance(T, N):
+    commitments = []
+    # fragments[i][j] = fragment held by player i,
+    #                   received from player j
+    fragments = [[None] * N for _ in range(N)]
+    secrets = []
+
+    # Step 1 : Threshold.create
+    for player in range(N):
+        secret_key, commi, frags = Threshold.create(T, N)
+        for target, frag in enumerate(frags):
+            fragments[target][player] = frag
+        commitments.append(commi)
+        secrets.append(secret_key)
+
+    # Step 2 : Threshold.verify_secret_fragment
+    for player_source in range(1, N+1):
+        for player_target in range(1, N+1):
+            assert Threshold.verify_secret_fragment(
+                player_target, fragments[player_target - 1][player_source - 1],
+                commitments[player_source - 1], T)
+
+    # Step 3 : master_pubkey = PublicKey.aggregate_insecure(...)
+    #          secret_share = PrivateKey.aggregate_insecure(...)
+    master_pubkey = PublicKey.aggregate_insecure([commitments[i][0] for i in range(N)])
+    secret_shares = [PrivateKey.aggregate_insecure(fragment_row) for fragment_row in fragments]
+    master_privkey = PrivateKey.aggregate_insecure(secrets)
+
+    msg = ("Test").encode("utf-8")
+    signature_actual = master_privkey.sign_insecure(msg)
+
+    # Step 4 : sig_share = Threshold.sign_with_coefficient(...)
+    # Check every combination of T players
+    for X in combinations(range(1, N+1), T):
+        # X: a list of T indices like [1, 2, 5]
+
+        # Check signatures
+        signature_shares = [Threshold.sign_with_coefficient(secret_shares[x-1], msg, x, X)
+                            for x in X]
+        signature_cand = InsecureSignature.aggregate(signature_shares)
+        assert signature_cand == signature_actual
+
+    # Check that the signature actually verifies the message
+    assert signature_actual.verify([Util.hash256(msg)], [master_pubkey])
+
+    # Step 4b : Alternatively, we can add the lagrange coefficients
+    # to 'unit' signatures.
+    for X in combinations(range(1, N+1), T):
+        # X: a list of T indices like [1, 2, 5]
+
+        # Check signatures
+        signature_shares = [secret_shares[x-1].sign_insecure(msg) for x in X]
+        signature_cand = Threshold.aggregate_unit_sigs(signature_shares, X)
+        assert signature_cand == signature_actual
+
+
+def test_threshold():
+    test_threshold_instance(1, 1)
+    test_threshold_instance(1, 2)
+    test_threshold_instance(2, 2)
+    for T in range(1, 6):
+        test_threshold_instance(T, 5)
 
 
 def test_vectors():
@@ -275,6 +339,7 @@ def test_vectors4():
 
 test1()
 test2()
+test_threshold()
 test_vectors()
 test_vectors2()
 test_vectors3()

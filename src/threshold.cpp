@@ -71,7 +71,7 @@ PrivateKey Threshold::Create(std::vector<PublicKey> &commitment,
     return k;
 }
 
-InsecureSignature Threshold::SignWithCoefficient(PrivateKey sk, uint8_t *msg,
+InsecureSignature Threshold::SignWithCoefficient(PrivateKey sk, const uint8_t *msg,
         size_t len, size_t player, size_t *players, size_t T) {
     if (player == 0) {
         throw std::string("player must be a positive integer");
@@ -102,7 +102,7 @@ InsecureSignature Threshold::SignWithCoefficient(PrivateKey sk, uint8_t *msg,
 }
 
 InsecureSignature Threshold::AggregateUnitSigs(
-        std::vector<InsecureSignature> sigs, uint8_t *msg, size_t len,
+        std::vector<InsecureSignature> sigs, const uint8_t *msg, size_t len,
         size_t *players, size_t T) {
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
     Util::Hash256(messageHash, msg, len);
@@ -115,7 +115,9 @@ InsecureSignature Threshold::AggregateUnitSigs(
         powers.emplace_back(sigs[i].Exp(coeffs[i]));
     }
 
-    return InsecureSignature::Aggregate(powers);
+    InsecureSignature ret = InsecureSignature::Aggregate(powers);
+    delete[] coeffs;
+    return ret;
 }
 
 void Threshold::LagrangeCoeffsAtZero(bn_t *res, size_t *players, size_t T) {

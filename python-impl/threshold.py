@@ -1,7 +1,12 @@
-from ec import AffinePoint, default_ec, generator_Fq
+from ec import AffinePoint, default_ec, generator_Fq, hash_to_point_Fq2
 from fields import Fq, Fq2
 from signature import Signature
 from typing import List
+from keys import PrivateKey
+from secrets import SystemRandom
+
+
+RNG = SystemRandom()
 
 
 class Threshold:
@@ -18,7 +23,7 @@ class Threshold:
 
     To initialize a T of N threshold key under a Joint-Feldman scheme:
 
-    1. Each player calls PrivateKey.new_threshold(T, N)
+    1. Each player calls Threshold.create(T, N)
        to create a secret key, commitment to a polynomial, and
        secret fragments.
        They send everyone the commitment, and send player j
@@ -43,13 +48,38 @@ class Threshold:
            False)
 
     4. Player P may create a signature share with respect to T players:
-       sig_share = secret_share.sign_threshold(message, P, players),
+       sig_share = Threshold.sign_with_coefficient(sk, message, P, players),
        where 'players' is a list of T different player indices
        participating.
 
        These signature shares can be combined to sign the message:
        signature = BLS.aggregate_sigs_simple(sig_shares).
     """
+    @staticmethod
+    def create(T, N):
+        """
+        Create a new private key with associated data suitable for
+        T of N threshold signatures under a Joint-Feldman scheme.
+
+        After the dealing phase, one needs cooperation of T players
+        out of N in order to sign a message with the master key pair.
+
+        Return:
+          - poly[0] - your share of the master secret key
+          - commitments to your polynomial P
+          - secret_fragments[j] = P(j), to be sent to player j
+            (All N secret_fragments[j] can be combined to make a secret share.)
+        """
+        assert 1 <= T <= N
+        g1 = generator_Fq()
+        poly = [Fq(default_ec.n, RNG.randint(1, default_ec.n - 1))
+                for _ in range(T)]
+        commitments = [g1 * c for c in poly]
+        secret_fragments = [sum(c * pow(x, i, default_ec.n)
+                            for i, c in enumerate(poly))
+                            for x in range(1, N+1)]
+
+        return PrivateKey(poly[0]), commitments, secret_fragments
 
 
     @staticmethod
@@ -101,8 +131,8 @@ class Threshold:
 
 
     @staticmethod
-    def verify_secret_fragment(T: int, secret_fragment: Fq,
-                               player: int, commitment: List[AffinePoint],
+    def verify_secret_fragment(player: int, secret_fragment: Fq,
+                               commitment: List[AffinePoint], T: int,
                                ec=default_ec) -> bool:
         """
         You are player, and have received a secret share fragment,
@@ -133,6 +163,20 @@ class Threshold:
         for i, sig in enumerate(signatures):
             agg += sig.value * lambs[i]
         return Signature.from_g2(agg)
+
+    @staticmethod
+    def sign_with_coefficient(sk, m, player, players):
+        """
+        As the given player out of a list of player indices,
+        return a signature share for the given message.
+        """
+        assert player in players
+        r = hash_to_point_Fq2(m).to_jacobian()
+        i = players.index(player)
+        lambs = Threshold.lagrange_coeffs_at_zero(players)
+        return Signature.from_g2(sk.value * (r * lambs[i]))
+
+
 
 """
 Copyright 2018 Chia Network Inc

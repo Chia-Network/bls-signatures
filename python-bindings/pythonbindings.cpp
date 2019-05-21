@@ -80,6 +80,12 @@ PYBIND11_MODULE(blspy, m) {
             return k.GetPublicKey();
         })
         .def("aggregate", &PrivateKey::Aggregate)
+        .def("aggregate_insecure", &PrivateKey::AggregateInsecure)
+        .def("sign_insecure", [](const PrivateKey &k, const py::bytes &msg) {
+            std::string str(msg);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
+            return k.SignInsecure(input, len(msg));
+        })
         .def("sign", [](const PrivateKey &k, const py::bytes &msg) {
             std::string str(msg);
             const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
@@ -119,6 +125,7 @@ PYBIND11_MODULE(blspy, m) {
             return PublicKey::FromBytes(reinterpret_cast<const uint8_t*>(str.data()));
         })
         .def("aggregate", &PublicKey::Aggregate)
+        .def("aggregate_insecure", &PublicKey::AggregateInsecure)
         .def("get_fingerprint", &PublicKey::GetFingerprint)
         .def("serialize", [](const PublicKey &pk) {
             uint8_t* output = new uint8_t[PublicKey::PUBLIC_KEY_SIZE];
@@ -133,6 +140,41 @@ PYBIND11_MODULE(blspy, m) {
             std::stringstream s;
             s << pk;
             return "<PublicKey " + s.str() + ">";
+        });
+
+    py::class_<InsecureSignature>(m, "InsecureSignature")
+        .def_property_readonly_static("SIGNATURE_SIZE", [](py::object self) {
+            return InsecureSignature::SIGNATURE_SIZE;
+        })
+        .def("from_bytes", [](const py::bytes &b) {
+            std::string str(b);
+            return InsecureSignature::FromBytes(reinterpret_cast<const uint8_t*>(str.data()));
+        })
+        .def("serialize", [](const InsecureSignature &sig) {
+            uint8_t* output = new uint8_t[InsecureSignature::SIGNATURE_SIZE];
+            sig.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), InsecureSignature::SIGNATURE_SIZE);
+            delete[] output;
+            return ret;
+        })
+        .def("verify", [](const InsecureSignature &sig,
+                          const std::vector<py::bytes> hashes,
+                          const std::vector<PublicKey>& pubKeys) {
+            std::vector<const uint8_t*> hashes_pointers;
+            for (const py::bytes b : hashes) {
+                std::string str(b);
+                hashes_pointers.push_back(reinterpret_cast<const uint8_t*>(str.data()));
+            }
+            return sig.Verify(hashes_pointers, pubKeys);
+        })
+        .def("aggregate", &InsecureSignature::Aggregate)
+        .def("divide_by", &InsecureSignature::DivideBy)
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+        .def("__repr__", [](const InsecureSignature &sig) {
+            std::stringstream s;
+            s << sig;
+            return "<InsecureSignature " + s.str() + ">";
         });
 
     py::class_<Signature>(m, "Signature")
@@ -312,6 +354,44 @@ PYBIND11_MODULE(blspy, m) {
             return ret;
         });
 
+    py::class_<Threshold>(m, "Threshold")
+        .def("create", [](size_t T, size_t N) {
+            std::vector<PublicKey> commitments;
+            std::vector<PrivateKey> secret_fragments;
+            g1_t g;
+            bn_t b;
+            bn_new(b);
+            for (size_t i = 0; i < N; i++) {
+                commitments.emplace_back(PublicKey::FromG1(&g));
+                secret_fragments.emplace_back(PrivateKey::FromBN(b));
+            }
+            PrivateKey fragment = Threshold::Create(commitments, secret_fragments, T, N);
+            return py::make_tuple(fragment, commitments, secret_fragments);
+        })
+        .def("sign_with_coefficient", [](const PrivateKey sk, const py::bytes &msg, size_t player_index,
+                                         const std::vector<size_t> players) {
+            std::string str(msg);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
+            size_t* players_pointer = new size_t[players.size()];
+            for (int i=0; i < players.size(); i++) {
+                players_pointer[i] = players[i];
+            }
+            auto ret = Threshold::SignWithCoefficient(sk, input, len(msg), player_index, players_pointer, players.size());
+            delete[] players_pointer;
+            return ret;
+        })
+        .def("aggregate_unit_sigs", [](const std::vector<InsecureSignature> sigs,
+                                       const std::vector<size_t> players) {
+            size_t* players_pointer = new size_t[players.size()];
+            for (int i=0; i < players.size(); i++) {
+                players_pointer[i] = players[i];
+            }
+            uint8_t msg[1];
+            auto ret = Threshold::AggregateUnitSigs(sigs, msg, 1, players_pointer, players.size());
+            delete[] players_pointer;
+            return ret;
+        })
+        .def("verify_secret_fragment", &Threshold::VerifySecretFragment);
 
     py::class_<BLS>(m, "BLS")
         .def_property_readonly_static("MESSAGE_HASH_LEN", [](py::object self) {

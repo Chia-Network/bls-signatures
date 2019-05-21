@@ -10,7 +10,7 @@ describe('Threshold', () => {
         const T = 2;
         const N = 3;
 
-        // 1. Each player calls PrivateKey::NewThreshold.
+        // 1. Each player calls Threshold.create.
         // They send everyone commitment to the polynomial,
         // and send secret share fragments frags[j-1] to
         // the j-th player (All players have index >= 1).

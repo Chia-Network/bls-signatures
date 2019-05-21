@@ -43,7 +43,8 @@ public:
      * @return PrivateKey representing P(0).
      */
     static PrivateKey Create(std::vector<PublicKey> &commitment,
-            std::vector<PrivateKey> &secretFragments, size_t T, size_t N);
+                             std::vector<PrivateKey> &secretFragments,
+                             size_t T, size_t N);
 
     /**
      * Sign a message with lagrange coefficients.  The T signatures signed
@@ -58,7 +59,7 @@ public:
      * @param[in] T               - number of players and threshold parameter
      * @return the partial signature.
      */
-    static InsecureSignature SignWithCoefficient(PrivateKey sk, uint8_t *msg,
+    static InsecureSignature SignWithCoefficient(PrivateKey sk, const uint8_t *msg,
         size_t len, size_t player, size_t *players, size_t T);
 
     /**
@@ -73,7 +74,7 @@ public:
      * @return the final signature.
      */
     static InsecureSignature AggregateUnitSigs(
-        std::vector<InsecureSignature> sigs, uint8_t *msg, size_t len,
+        std::vector<InsecureSignature> sigs, const uint8_t *msg, size_t len,
         size_t *players, size_t T);
 
     /**

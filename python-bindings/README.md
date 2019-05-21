@@ -19,8 +19,9 @@ Then, to use:
 
 #### Import the library
 ```python
-from blspy import (PrivateKey, PublicKey, Signature, PrependSignature,
-AggregationInfo, ExtendedPrivateKey, Util)
+from blspy import (PrivateKey, PublicKey, InsecureSignature, Signature,
+                   PrependSignature, AggregationInfo, ExtendedPrivateKey,
+                   Threshold, Util)
 ```
 
 

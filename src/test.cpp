@@ -1546,15 +1546,15 @@ TEST_CASE("Threshold") {
         size_t T = 2;
         size_t N = 3;
 
-        // 1. Each player calls PrivateKey::NewThreshold.
+        // 1. Each player calls Threshold::Create.
         // They send everyone commitment to the polynomial,
         // and send secret share fragments frags[j-1] to
         // the j-th player (All players have index >= 1).
 
         // PublicKey commits[N][T]
         // PrivateKey frags[N][N]
-        std::vector<std::vector<PublicKey>> commits = {{}};
-        std::vector<std::vector<PrivateKey>> frags = {{}};
+        std::vector<std::vector<PublicKey>> commits;
+        std::vector<std::vector<PrivateKey>> frags;
         for (size_t i = 0; i < N; ++i) {
             commits.emplace_back(std::vector<PublicKey>());
             frags.emplace_back(std::vector<PrivateKey>());
