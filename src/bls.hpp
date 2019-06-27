@@ -18,6 +18,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <stdexcept>
 
 #include "relic_conf.h"
 
@@ -62,6 +63,7 @@ class BLS {
     static PublicKey DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey);
 
     static void CheckRelicErrors();
+    static void CheckRelicErrorsInvalidArgument();
 };
 } // end namespace bls
 

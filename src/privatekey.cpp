@@ -63,7 +63,7 @@ PrivateKey PrivateKey::FromBytes(const uint8_t* bytes, bool modOrder) {
         bn_mod_basic(*k.keydata, *k.keydata, ord);
     } else {
         if (bn_cmp(*k.keydata, ord) > 0) {
-            throw std::string("Key data too large, must be smaller than group order");
+            throw std::invalid_argument("Key data too large, must be smaller than group order");
         }
     }
     return k;
@@ -101,7 +101,7 @@ PublicKey PrivateKey::GetPublicKey() const {
 
 PrivateKey PrivateKey::AggregateInsecure(std::vector<PrivateKey> const& privateKeys) {
     if (privateKeys.empty()) {
-        throw std::string("Number of private keys must be at least 1");
+        throw std::length_error("Number of private keys must be at least 1");
     }
 
     bn_t order;
@@ -117,12 +117,12 @@ PrivateKey PrivateKey::AggregateInsecure(std::vector<PrivateKey> const& privateK
 }
 
 PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const& privateKeys,
-                                       std::vector<PublicKey> const& pubKeys) {
+                                 std::vector<PublicKey> const& pubKeys) {
     if (pubKeys.size() != privateKeys.size()) {
-        throw std::string("Number of public keys must equal number of private keys");
+        throw std::length_error("Number of public keys must equal number of private keys");
     }
     if (privateKeys.empty()) {
-        throw std::string("Number of keys must be at least 1");
+        throw std::length_error("Number of keys must be at least 1");
     }
 
     std::vector<uint8_t*> serPubKeys(pubKeys.size());

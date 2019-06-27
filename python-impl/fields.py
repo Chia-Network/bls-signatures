@@ -71,14 +71,23 @@ class Fq(int):
             return Fq(self.Q, 1)
         elif other == 1:
             return self
-        elif other % 2 == 0:
-            return (self * self) ** (other // 2)
-        else:
-            return (self * self) ** (other // 2) * self
+
+        el = self
+        multiply = []
+        while other > 1:
+            if other % 2 == 1:
+                multiply.append(el)
+            el = el * el
+            other = other // 2
+
+        for m in multiply:
+            el *= m
+
+        return el
 
     def qi_power(self, i):
         return self
-    
+
     def __invert__(self):
         """
         Extended euclidian algorithm for inversion.
@@ -163,7 +172,7 @@ class Fq(int):
     @classmethod
     def from_fq(cls, Q, fq):
         return fq
-    
+
 
 class FieldExtBase(tuple):
     """

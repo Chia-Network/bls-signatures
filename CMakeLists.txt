@@ -70,6 +70,7 @@ set(EP_SUPER "off" CACHE STRING "")
 # Disable relic tests and benchmarks
 set(TESTS 0 CACHE INTEGER "")
 set(BENCH 0 CACHE INTEGER "")
+set(QUIET 1 CACHE INTEGER "")
 
 set(PP_EXT "LAZYR" CACHE STRING "")
 set(PP_METHD "LAZYR;OATEP" CACHE STRING "")

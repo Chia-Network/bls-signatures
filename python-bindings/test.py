@@ -336,14 +336,31 @@ def test_vectors4():
     assert(agg_sig.serialize() == bytes.fromhex("c37077684e735e62e3f1fd17772a236b4115d4b581387733d3b97cab08b90918c7e91c23380c93e54be345544026f93505d41e6000392b82ab3c8af1b2e3954b0ef3f62c52fc89f99e646ff546881120396c449856428e672178e5e0e14ec894"))
     assert(agg_sig.verify(message_hashes, pks))
 
+def no_throw_bad_sig():
+    private_key = ExtendedPrivateKey.from_seed(b"foo").get_private_key()
 
-test1()
-test2()
-test_threshold()
-test_vectors()
-test_vectors2()
-test_vectors3()
-test_vectors4()
+    message_hash = bytes([9] * 32)
+
+    sig = private_key.sign_prepend_prehashed(message_hash).serialize()
+    sig = sig[:-1] + bytes([0])
+
+    public_key = private_key.get_public_key()
+
+    try:
+        bad_signature = PrependSignature.from_bytes(sig)
+    except ValueError:
+        return
+    assert(False)
+
+
+# test1()
+# test2()
+# test_threshold()
+# test_vectors()
+# test_vectors2()
+# test_vectors3()
+# test_vectors4()
+no_throw_bad_sig()
 
 print("\nAll tests passed.")
 

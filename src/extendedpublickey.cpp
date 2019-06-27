@@ -38,10 +38,10 @@ ExtendedPublicKey ExtendedPublicKey::PublicChild(uint32_t i) const {
     // Hardened children have i >= 2^31. Non-hardened have i < 2^31
     uint32_t cmp = (1 << 31);
     if (i >= cmp) {
-        throw std::string("Cannot derive hardened children from public key");
+        throw std::invalid_argument("Cannot derive hardened children from public key");
     }
     if (depth >= 255) {
-        throw std::string("Cannot go further than 255 levels");
+        throw std::logic_error("Cannot go further than 255 levels");
     }
     uint8_t ILeft[PrivateKey::PRIVATE_KEY_SIZE];
     uint8_t IRight[ChainCode::CHAIN_CODE_SIZE];

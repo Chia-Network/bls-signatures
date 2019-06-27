@@ -262,7 +262,7 @@ TEST_CASE("Error handling") {
             try {
                 PublicKey::FromBytes(buf);
                 REQUIRE(invalid.count(i) == 0);
-            } catch (std::string& s) {
+            } catch (std::invalid_argument& s) {
                 REQUIRE(invalid.count(i) != 0);
             }
         }
@@ -277,7 +277,7 @@ TEST_CASE("Error handling") {
             try {
                 Signature::FromBytes(buf);
                 REQUIRE(invalid.count(i) == 0);
-            } catch (std::string& s) {
+            } catch (std::invalid_argument& s) {
                 REQUIRE(invalid.count(i) != 0);
             }
         }

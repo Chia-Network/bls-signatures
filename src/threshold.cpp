@@ -122,7 +122,7 @@ InsecureSignature Threshold::AggregateUnitSigs(
 
 void Threshold::LagrangeCoeffsAtZero(bn_t *res, size_t *players, size_t T) {
     if (T <= 0) {
-        throw std::string("T must be a positive integer");
+        throw std::invalid_argument("T must be a positive integer");
     }
     // n: the order of the curve
     bn_t denominator, n, u, weight, x;
@@ -135,7 +135,7 @@ void Threshold::LagrangeCoeffsAtZero(bn_t *res, size_t *players, size_t T) {
     bn_zero(denominator);
     for (int j = 0; j < T; ++j) {
         if (players[j] <= 0) {
-            throw std::string("Player index must be positive");
+            throw std::invalid_argument("Player index must be positive");
         }
         // weight = (prod (X[j] - X[i])) ** -1
         bn_set_dig(weight, (dig_t) 1);
@@ -146,7 +146,7 @@ void Threshold::LagrangeCoeffsAtZero(bn_t *res, size_t *players, size_t T) {
                 bn_set_dig(x, (dig_t)(players[i] - players[j]));
                 bn_sub(x, n, x);
             } else {
-                throw std::string("Must not have duplicate player indices");
+                throw std::invalid_argument("Must not have duplicate player indices");
             }
             bn_mul(weight, weight, x);
             bn_mod(weight, weight, n);
@@ -154,7 +154,7 @@ void Threshold::LagrangeCoeffsAtZero(bn_t *res, size_t *players, size_t T) {
         // weight = weight ** -1
         // x = (-players[j]) ** -1
         if (bn_is_zero(weight)) {
-            throw std::string("Player indices can't be equiv. mod group order");
+            throw std::invalid_argument("Player indices can't be equiv. mod group order");
         }
         fp_inv_exgcd_bn(weight, weight, n);
         bn_set_dig(x, (dig_t) players[j]);
@@ -177,7 +177,7 @@ void Threshold::LagrangeCoeffsAtZero(bn_t *res, size_t *players, size_t T) {
 
 void Threshold::InterpolateAtZero(bn_t res, size_t *X, bn_t *Y, size_t T) {
     if (T <= 0) {
-        throw std::string("T must be a positive integer");
+        throw std::invalid_argument("T must be a positive integer");
     }
 
     bn_zero(res);
@@ -198,9 +198,9 @@ void Threshold::InterpolateAtZero(bn_t res, size_t *X, bn_t *Y, size_t T) {
 
 bool Threshold::VerifySecretFragment(size_t player, PrivateKey secretFragment, std::vector<PublicKey> const& commitment, size_t T) {
     if (T <= 0) {
-        throw std::string("T must be a positive integer");
+        throw std::invalid_argument("T must be a positive integer");
     } else if (player <= 0) {
-        throw std::string("Player index must be positive");
+        throw std::invalid_argument("Player index must be positive");
     }
 
     g1_t rhs, t;

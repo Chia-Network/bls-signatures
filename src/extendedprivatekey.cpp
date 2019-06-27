@@ -76,7 +76,7 @@ ExtendedPrivateKey ExtendedPrivateKey::FromBytes(const uint8_t* serialized) {
 
 ExtendedPrivateKey ExtendedPrivateKey::PrivateChild(uint32_t i) const {
     if (depth >= 255) {
-        throw std::string("Cannot go further than 255 levels");
+        throw std::logic_error("Cannot go further than 255 levels");
     }
     // Hardened keys have i >= 2^31. Non-hardened have i < 2^31
     uint32_t cmp = (1 << 31);
