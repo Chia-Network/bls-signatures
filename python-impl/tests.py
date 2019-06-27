@@ -13,7 +13,7 @@ import time
 from threshold import Threshold
 from util import hash256
 
-# setrecursionlimit(10**6)
+setrecursionlimit(10**6)
 
 
 def rand_scalar(ec=default_ec):
@@ -445,13 +445,13 @@ def test_threshold():
         test_threshold_instance(T, 5)
 
 
-# test_threshold()
+test_threshold()
 test_fields()
-# test_ec()
-# test_vectors()
-# test_vectors2()
-# test_vectors3()
-# test_vectors4()
+test_ec()
+test_vectors()
+test_vectors2()
+test_vectors3()
+test_vectors4()
 test1()
 test2()
 
