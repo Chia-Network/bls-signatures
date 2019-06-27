@@ -175,3 +175,9 @@ prepend_agg = PrependSignature.aggregate([prepend1, prepend2])
 ok = prepend_agg.verify([Util.hash256(msg), Util.hash256(msg)], [pk1, pk2])
 
 ```
+
+#### Publishing the library
+```bash
+python3 setup.py sdist bdist_wheel
+twine upload  dist/*
+```
