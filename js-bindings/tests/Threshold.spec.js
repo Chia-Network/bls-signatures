@@ -61,7 +61,7 @@ describe('Threshold', () => {
 
         for (let target = 0; target < N; target++) {
             for (let source = 0; source < N; source++) {
-                assert(Threshold.verifySecretFragment(target + 1, fragments[target][source], commitments[source], T));
+                assert(Threshold.verifySecretFragment(target + 1, fragments[source][target], commitments[source], T));
             }
         }
 
@@ -80,7 +80,7 @@ describe('Threshold', () => {
         for (let i = 0; i < N; ++i) {
             receivedSecretFragments.push([]);
             for (let j = 0; j < N; ++j) {
-                receivedSecretFragments[i].push(fragments[i][j]);
+                receivedSecretFragments[i].push(fragments[j][i]);
             }
         }
 
