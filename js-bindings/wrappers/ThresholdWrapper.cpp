@@ -22,6 +22,14 @@ PrivateKeyWrapper ThresholdWrapper::Create(val pubKeyWrappersArray, val privateK
     std::vector <PrivateKey> secretFragment = PrivateKeyWrapper::Unwrap(
             helpers::toVectorFromJSArray<PrivateKeyWrapper>(privateKeyWrappers));
     PrivateKey result = Threshold::Create(commitment, secretFragment, threshold, playersCount);
+    auto cl = commitment.size();
+    for (unsigned i = 0; i < cl; ++i) {
+        pubKeyWrappersArray.set(i, PublicKeyWrapper(commitment.at(i)));
+    }
+    auto fl = secretFragment.size();
+    for (unsigned i = 0; i < fl; ++i) {
+        privateKeyWrappers.set(i, PrivateKeyWrapper(secretFragment.at(i)));
+    }
     return PrivateKeyWrapper(result);
 }
 
