@@ -43,7 +43,7 @@ describe('Signature', () => {
             assert(sig2.verify(), 'Signature 2 is not verifiable');
             assert(sig3.verify(), 'Signature 3 is not verifiable');
 
-            const aggregatedSignature = Signature.aggregateSigs([sig1, sig2, sig3]);
+            const aggregatedSignature = Signature.aggregate([sig1, sig2, sig3]);
             assert(aggregatedSignature.verify(), 'Aggregated sig is not verified');
 
             const aggregatedPubKey = PublicKey.aggregate([publicKey1, publicKey2, publicKey3]);
@@ -102,7 +102,7 @@ describe('Signature', () => {
             const sk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3]));
             const sig1 = sk.sign(Uint8Array.from([3, 4, 5]));
             const sig2 = sk.sign(Uint8Array.from([6, 7, 8]));
-            const aggregatedSig = Signature.aggregateSigs([sig1, sig2]);
+            const aggregatedSig = Signature.aggregate([sig1, sig2]);
             assert.strictEqual(aggregatedSig.verify(), true);
 
             sk.delete();
