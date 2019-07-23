@@ -45,7 +45,7 @@ export class Signature {
 
     static fromBytesAndAggregationInfo(bytes: Uint8Array, aggregationInfo: AggregationInfo): Signature;
 
-    static aggregateSigs(signatures: Signature[]): Signature;
+    static aggregate(signatures: Signature[]): Signature;
 
     serialize(): Uint8Array;
 
