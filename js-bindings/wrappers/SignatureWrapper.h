@@ -50,7 +50,7 @@ class SignatureWrapper : public JSWrapper<Signature> {
 
     static SignatureWrapper FromBytes(val buffer);
 
-    static SignatureWrapper AggregateSigs(val signatureWrappers);
+    static SignatureWrapper Aggregate(val signatureWrappers);
 
     static SignatureWrapper FromBytesAndAggregationInfo(val buffer, const AggregationInfoWrapper &infoWrapper);
 
