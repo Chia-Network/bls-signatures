@@ -98,7 +98,7 @@ SignatureWrapper::FromBytesAndAggregationInfo(val buffer, const AggregationInfoW
     return SignatureWrapper(sig);
 }
 
-SignatureWrapper SignatureWrapper::AggregateSigs(val signatureWrappers) {
+SignatureWrapper SignatureWrapper::Aggregate(val signatureWrappers) {
     std::vector <Signature> signatures = SignatureWrapper::Unwrap(
             helpers::toVectorFromJSArray<SignatureWrapper>(signatureWrappers));
     Signature aggregatedSignature = Signature::Aggregate(signatures);
