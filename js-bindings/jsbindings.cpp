@@ -39,7 +39,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .class_property("SIGNATURE_SIZE", &SignatureWrapper::SIGNATURE_SIZE)
         .class_function("fromBytes", &SignatureWrapper::FromBytes)
         .class_function("fromBytesAndAggregationInfo", &SignatureWrapper::FromBytesAndAggregationInfo)
-        .class_function("aggregateSigs", &SignatureWrapper::AggregateSigs)
+        .class_function("aggregate", &SignatureWrapper::Aggregate)
         .class_function("fromInsecureSignature", &SignatureWrapper::FromInsecureSignature)
         .class_function("FromInsecureSignatureAndInfo", &SignatureWrapper::FromInsecureSignatureAndInfo)
         .function("serialize", &SignatureWrapper::Serialize)
