@@ -89,7 +89,7 @@ describe('typings', () => {
         strictEqual(Signature.SIGNATURE_SIZE, 96);
         const info = AggregationInfo.fromMsg(PublicKey.fromBytes(getPkBytes()), getMessageBytes());
         const sig: Signature = Signature.fromBytesAndAggregationInfo(getSignatureBytes(), info);
-        const aggSig: Signature = Signature.aggregateSigs([sig]);
+        const aggSig: Signature = Signature.aggregate([sig]);
         const sig2: Signature = Signature.fromBytes(getSignatureBytes());
         const isValid: boolean = sig.verify();
         const serialized: Uint8Array = sig.serialize();
