@@ -644,18 +644,17 @@ Signature Signature::DivideBy(std::vector<Signature> const &divisorSigs) const {
                 throw std::logic_error("Signature is not a subset.");
             }
 
-            bn_t inverted;
-            fp_inv_exgcd_bn(inverted, divisor, ord);
-
             if (i == 0) {
+                bn_t inverted;
+                fp_inv_exgcd_bn(inverted, divisor, ord);
                 bn_mul(quotient, dividend, inverted);
                 bn_mod(quotient, quotient, ord);
             } else {
-                bn_t newQuotient;
-                bn_mul(newQuotient, dividend, inverted);
-                bn_mod(newQuotient, newQuotient, ord);
+                bn_t leftHandSide;
+                bn_mul(leftHandSide, quotient, divisor);
+                bn_mod(leftHandSide, leftHandSide, ord);
 
-                if (bn_cmp(quotient, newQuotient) != CMP_EQ) {
+                if (bn_cmp(leftHandSide, dividend) != CMP_EQ) {
                     throw std::logic_error("Cannot divide by aggregate signature,"
                                            "msg/pk pairs are not unique");
                 }
