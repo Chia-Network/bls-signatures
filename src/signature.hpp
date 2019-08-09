@@ -74,7 +74,7 @@ class InsecureSignature {
     InsecureSignature();
 
     // Exponentiate signature with n
-    InsecureSignature Exp(const bn_t n) const;
+    InsecureSignature Exp(const bn_t& n) const;
 
     static void CompressPoint(uint8_t* result, const g2_t* point);
 

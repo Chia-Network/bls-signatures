@@ -9,6 +9,7 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/relic/include
   ${CMAKE_BINARY_DIR}/contrib/relic/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
+  ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/mcl/include
   )
 
 set(C_LIB ${CMAKE_BINARY_DIR}/libbls.a)
@@ -25,7 +26,10 @@ add_library(blstmp ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/aggregationinfo.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/threshold.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/mcl/src/fp.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/mcl/src/bn_c384_256.cpp
 )
+target_link_libraries(blstmp crypto)
 
 set(OPREFIX object_)
 find_library(GMP_NAME NAMES libgmp.a gmp)
@@ -66,11 +70,14 @@ install(FILES ${C_LIB} DESTINATION lib)
 
 add_executable(runtest test.cpp)
 add_executable(runbench test-bench.cpp)
+add_executable(runmcl test-mcl.cpp)
 
 if (SODIUM_FOUND)
   target_link_libraries(runtest blstmp relic_s sodium)
   target_link_libraries(runbench blstmp relic_s sodium)
+  target_link_libraries(runmcl blstmp relic_s sodium)
 else()
   target_link_libraries(runtest blstmp relic_s)
   target_link_libraries(runbench blstmp relic_s)
+  target_link_libraries(runmcl blstmp relic_s)
 endif()

@@ -109,4 +109,72 @@ class Util {
     static SecureFreeCallback secureFreeCallback;
 };
 } // end namespace bls
+
+#include <mcl/bn_c384_256.h>
+#include <assert.h>
+namespace mcl {
+
+inline void byteSwap(uint8_t *buf, size_t n)
+{
+    for (size_t i = 0; i < n/2; i++) {
+        std::swap(buf[i], buf[n - 1 - i]);
+    }
+}
+
+inline void conv(mclBnFr *out, const bn_t *in)
+{
+    assert(in[0]->sign == 0);
+    const int n = in[0]->used;
+    int ret = mclBnFr_setLittleEndianMod(out, in[0]->dp, n * 8);
+    assert(ret == 0);
+}
+
+inline void conv(bn_t *out, const mclBnFr *in)
+{
+    uint8_t buf[256];
+    size_t n = mclBnFr_getLittleEndian(buf, sizeof(buf), in);
+    assert(n > 0);
+    byteSwap(buf, n);
+    bn_read_bin(*out, buf, n);
+}
+
+/*
+    g1_t {
+        fp_st x, y, z;
+        int norm;
+    };
+    fp_st = mclBnFp
+*/
+inline void conv(mclBnG1 *out, const g1_t *in)
+{
+    memcpy(&out->d[MCLBN_FP_UNIT_SIZE * 0], &in[0]->x, MCLBN_FP_UNIT_SIZE * 8);
+    memcpy(&out->d[MCLBN_FP_UNIT_SIZE * 1], &in[0]->y, MCLBN_FP_UNIT_SIZE * 8);
+    memcpy(&out->d[MCLBN_FP_UNIT_SIZE * 2], &in[0]->z, MCLBN_FP_UNIT_SIZE * 8);
+}
+
+inline void conv(g1_t *out, const mclBnG1 *in)
+{
+    memcpy(&out[0]->x, &in->d[MCLBN_FP_UNIT_SIZE * 0], MCLBN_FP_UNIT_SIZE * 8);
+    memcpy(&out[0]->y, &in->d[MCLBN_FP_UNIT_SIZE * 1], MCLBN_FP_UNIT_SIZE * 8);
+    memcpy(&out[0]->z, &in->d[MCLBN_FP_UNIT_SIZE * 2], MCLBN_FP_UNIT_SIZE * 8);
+    out[0]->norm = 0;
+}
+
+inline void conv(mclBnG2 *out, const g2_t *in)
+{
+    memcpy(&out->d[MCLBN_FP_UNIT_SIZE * 0], &in[0]->x, MCLBN_FP_UNIT_SIZE * 8 * 2);
+    memcpy(&out->d[MCLBN_FP_UNIT_SIZE * 2], &in[0]->y, MCLBN_FP_UNIT_SIZE * 8 * 2);
+    memcpy(&out->d[MCLBN_FP_UNIT_SIZE * 4], &in[0]->z, MCLBN_FP_UNIT_SIZE * 8 * 2);
+}
+
+inline void conv(g2_t *out, const mclBnG2 *in)
+{
+    memcpy(&out[0]->x, &in->d[MCLBN_FP_UNIT_SIZE * 0], MCLBN_FP_UNIT_SIZE * 8 * 2);
+    memcpy(&out[0]->y, &in->d[MCLBN_FP_UNIT_SIZE * 2], MCLBN_FP_UNIT_SIZE * 8 * 2);
+    memcpy(&out[0]->z, &in->d[MCLBN_FP_UNIT_SIZE * 4], MCLBN_FP_UNIT_SIZE * 8 * 2);
+    out[0]->norm = 0;
+}
+
+} // mcl
+
 #endif  // SRC_BLSUTIL_HPP_

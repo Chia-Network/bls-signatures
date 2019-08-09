@@ -67,7 +67,7 @@ class PublicKey {
     PublicKey();
 
     // Exponentiate public key with n
-    PublicKey Exp(const bn_t n) const;
+    PublicKey Exp(const bn_t& n) const;
 
     static void CompressPoint(uint8_t* result, const g1_t* point);
 

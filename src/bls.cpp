@@ -22,6 +22,7 @@ namespace bls {
 
 const char BLS::GROUP_ORDER[] =
         "73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001";
+mclBnG1 BLS::mclG1gen;
 
 bool BLSInitResult = BLS::Init();
 
@@ -41,6 +42,20 @@ static void relic_core_initializer(void* ptr) {
         std::cout << "ep_param_set_any_pairf() failed";
         // this will most likely crash the application...but there isn't much we can do
         throw std::string("ep_param_set_any_pairf() failed");
+    }
+    /*
+      SecretKey : keydata : *bn_t
+      PublicKey : q : g1_t
+      InsecureSignature : sig : g2_t
+    */
+    if (mclBn_init(MCL_BLS12_381, MCLBN_COMPILED_TIME_VAR) != 0) {
+        throw std::string("mcl init failed");
+    }
+    {
+        g1_t g1;
+        g1_new(g1);
+        g1_get_gen(g1);
+        mcl::conv(&BLS::mclG1gen, &g1);
     }
 }
 

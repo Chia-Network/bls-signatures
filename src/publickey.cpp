@@ -107,9 +107,18 @@ PublicKey PublicKey::Aggregate(std::vector<PublicKey> const& pubKeys) {
     return aggKey;
 }
 
-PublicKey PublicKey::Exp(bn_t const n) const {
+PublicKey PublicKey::Exp(const bn_t& n) const {
     PublicKey ret;
+#if 1
+    mclBnG1 qq;
+    mclBnFr nn;
+    mcl::conv(&nn, &n);
+    mcl::conv(&qq, &q);
+    mclBnG1_mul(&qq, &qq, &nn);
+    mcl::conv(&ret.q, &qq);
+#else
     g1_mul(ret.q, q, n);
+#endif
     return ret;
 }
 

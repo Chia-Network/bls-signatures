@@ -61,12 +61,18 @@ bool InsecureSignature::Verify(const std::vector<const uint8_t*>& hashes,
     g2_t *mappedHashes = new g2_t[hashes.size() + 1];
 
     g2_copy(mappedHashes[0], *(g2_t*)&sig);
+#if 1
+    mclBnG1 neg;
+    mclBnG1_neg(&neg, &BLS::mclG1gen);
+    mcl::conv(&pubKeysNative[0], &neg);
+#else
     g1_get_gen(pubKeysNative[0]);
     bn_t ordMinus1;
     bn_new(ordMinus1);
     g1_get_ord(ordMinus1);
     bn_sub_dig(ordMinus1, ordMinus1, 1);
     g1_mul(pubKeysNative[0], pubKeysNative[0], ordMinus1);
+#endif
 
     for (size_t i = 0; i < hashes.size(); i++) {
         g2_map(mappedHashes[i + 1], hashes[i], BLS::MESSAGE_HASH_LEN, 0);
@@ -85,6 +91,24 @@ bool InsecureSignature::VerifyNative(
         g1_t* pubKeys,
         g2_t* mappedHashes,
         size_t len) {
+#if 1
+    mclBnG1 g1;
+    mclBnG2 g2;
+    mclBnGT e1, e2;
+    mcl::conv(&g1, &pubKeys[0]);
+    mcl::conv(&g2, &mappedHashes[0]);
+    mclBn_millerLoop(&e1, &g1, &g2);
+    for (size_t i = 1; i < len; i++) {
+        mcl::conv(&g1, &pubKeys[i]);
+        mcl::conv(&g2, &mappedHashes[i]);
+        mclBn_millerLoop(&e2, &g1, &g2);
+        mclBnGT_mul(&e1, &e1, &e2);
+    }
+    mclBn_finalExp(&e1, &e1);
+    if (!mclBnGT_isOne(&e1)) {
+        return false;
+    }
+#else
     gt_t target, candidate;
 
     // Target = 1
@@ -101,6 +125,7 @@ bool InsecureSignature::VerifyNative(
         core_get()->code = STS_OK;
         return false;
     }
+#endif
     BLS::CheckRelicErrors();
     return true;
 }
@@ -127,9 +152,18 @@ InsecureSignature InsecureSignature::DivideBy(const std::vector<InsecureSignatur
     return result;
 }
 
-InsecureSignature InsecureSignature::Exp(const bn_t n) const {
+InsecureSignature InsecureSignature::Exp(const bn_t& n) const {
     InsecureSignature result(*this);
+#if 1
+    mclBnFr n2;
+    mclBnG2 g2;
+    mcl::conv(&n2, &n);
+    mcl::conv(&g2, &result.sig);
+    mclBnG2_mul(&g2, &g2, &n2);
+    mcl::conv(&result.sig, &g2);
+#else
     g2_mul(result.sig, result.sig, n);
+#endif
     return result;
 }
 

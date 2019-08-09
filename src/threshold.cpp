@@ -93,8 +93,19 @@ InsecureSignature Threshold::SignWithCoefficient(PrivateKey sk, const uint8_t *m
         throw e;
     }
 
+#if 1
+    mclBnFr t1, t2;
+    mclBnG2 s;
+    mcl::conv(&t1, &coeffs[index]);
+    mcl::conv(&t2, sk.keydata);
+    mcl::conv(&s, &sig);
+    mclBnFr_mul(&t1, &t1, &t2);
+    mclBnG2_mul(&s, &s, &t1);
+    mcl::conv(&sig, &s);
+#else
     g2_mul(sig, sig, coeffs[index]);
     g2_mul(sig, sig, *sk.keydata);
+#endif
 
     delete[] coeffs;
 

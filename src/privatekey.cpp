@@ -213,7 +213,16 @@ InsecureSignature PrivateKey::SignInsecurePrehashed(const uint8_t *messageHash) 
     g2_t sig, point;
 
     g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN, 0);
+#if 1
+    mclBnG2 sig2;
+    mclBnFr keydata2;
+    mcl::conv(&keydata2, keydata);
+    mcl::conv(&sig2, &point);
+    mclBnG2_mul(&sig2, &sig2, &keydata2);
+    mcl::conv(&sig, &sig2);
+#else
     g2_mul(sig, point, *keydata);
+#endif
 
     return InsecureSignature::FromG2(&sig);
 }

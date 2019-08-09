@@ -47,6 +47,7 @@ class BLS {
     // Order of g1, g2, and gt. Private keys are in {0, GROUP_ORDER}.
     static const char GROUP_ORDER[];
     static const size_t MESSAGE_HASH_LEN = 32;
+    static mclBnG1 mclG1gen;
 
     // Initializes the BLS library (called automatically)
     static bool Init();
