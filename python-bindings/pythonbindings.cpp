@@ -86,6 +86,11 @@ PYBIND11_MODULE(blspy, m) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return k.SignInsecure(input, len(msg));
         })
+        .def("sign_insecure_prehashed", [](const PrivateKey &k, const py::bytes &msg) {
+            std::string str(msg);
+            const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
+            return k.SignInsecurePrehashed(input);
+        })
         .def("sign", [](const PrivateKey &k, const py::bytes &msg) {
             std::string str(msg);
             const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
@@ -199,6 +204,10 @@ PYBIND11_MODULE(blspy, m) {
         .def("get_aggregation_info", [](const Signature &sig) {
             return *sig.GetAggregationInfo();
         })
+        .def("from_insecure_sig", [](const InsecureSignature &s) {
+            return Signature::FromInsecureSig(s);
+        })
+        .def("get_insecure_sig", &Signature::GetInsecureSig)
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("__repr__", [](const Signature &sig) {
@@ -236,6 +245,10 @@ PYBIND11_MODULE(blspy, m) {
             }
             return sig.Verify(converted_hashes, pks);
         })
+        .def("from_insecure_sig", [](const InsecureSignature &s) {
+            return PrependSignature::FromInsecureSig(s);
+        })
+        .def("get_insecure_sig", &PrependSignature::GetInsecureSig)
         .def("aggregate", &PrependSignature::Aggregate)
         .def("divide_by", &PrependSignature::DivideBy)
         .def(py::self == py::self)

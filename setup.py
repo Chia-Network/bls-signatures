@@ -67,7 +67,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='blspy',
-    version='0.1.9',
+    version='0.1.10',
     author='Mariano Sorgente',
     author_email='mariano@chia.net',
     description='BLS signatures in c++ (python bindings)',

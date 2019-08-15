@@ -352,15 +352,30 @@ def no_throw_bad_sig():
         return
     assert(False)
 
+def additional_python_methods():
+    private_key = PrivateKey.from_seed(b'123')
+    s1 = private_key.sign(b'message')
+    s2 = private_key.sign_prepend(b'message')
+    assert s1.get_insecure_sig().verify([Util.hash256(b'message')], [private_key.get_public_key()])
+    assert s2.get_insecure_sig().verify([Util.hash256(private_key.get_public_key().serialize() +
+                                         Util.hash256(b'message'))], [private_key.get_public_key()])
+    s1_b = Signature.from_insecure_sig(s1.get_insecure_sig())
+    s2_b = PrependSignature.from_insecure_sig(s2.get_insecure_sig())
+    assert s1 == s1_b and s2 == s2_b
 
-# test1()
-# test2()
-# test_threshold()
-# test_vectors()
-# test_vectors2()
-# test_vectors3()
-# test_vectors4()
+    s3 = private_key.sign_insecure_prehashed(Util.hash256(b'456'))
+    assert s3.verify([Util.hash256(b'456')], [private_key.get_public_key()])
+
+
+test1()
+test2()
+test_threshold()
+test_vectors()
+test_vectors2()
+test_vectors3()
+test_vectors4()
 no_throw_bad_sig()
+additional_python_methods()
 
 print("\nAll tests passed.")
 
