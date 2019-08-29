@@ -21,7 +21,7 @@ Features:
 * [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings)
 * [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/master/python-bindings)
 * [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/master/python-impl)
-
+* [Pure JS implementation for browsers & node](https://github.com/paulmillr/noble-bls12-381)
 
 #### Import the library
 ```c++
