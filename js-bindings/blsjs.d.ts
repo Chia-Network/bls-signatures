@@ -1,4 +1,4 @@
-export class PrivateKey {
+declare class PrivateKey {
     static PRIVATE_KEY_SIZE: number;
 
     static fromSeed(seed: Uint8Array): PrivateKey;
@@ -22,7 +22,7 @@ export class PrivateKey {
     delete(): void;
 }
 
-export class InsecureSignature {
+declare class InsecureSignature {
     static SIGNATURE_SIZE: number;
 
     static fromBytes(bytes: Uint8Array);
@@ -38,7 +38,7 @@ export class InsecureSignature {
     delete(): void;
 }
 
-export class Signature {
+declare class Signature {
     static SIGNATURE_SIZE: number;
 
     static fromBytes(bytes: Uint8Array): Signature;
@@ -58,7 +58,7 @@ export class Signature {
     delete(): void;
 }
 
-export class PublicKey {
+declare class PublicKey {
     static PUBLIC_KEY_SIZE: number;
 
     static fromBytes(bytes: Uint8Array): PublicKey;
@@ -74,7 +74,7 @@ export class PublicKey {
     delete(): void;
 }
 
-export class AggregationInfo {
+declare class AggregationInfo {
     static fromMsgHash(publicKey: PublicKey, messageHash: Uint8Array): AggregationInfo;
 
     static fromMsg(publicKey: PublicKey, message: Uint8Array): AggregationInfo;
@@ -90,7 +90,7 @@ export class AggregationInfo {
     delete(): void;
 }
 
-export class ExtendedPrivateKey {
+declare class ExtendedPrivateKey {
     static EXTENDED_PRIVATE_KEY_SIZE: number;
 
     static fromSeed(seed: Uint8Array): ExtendedPrivateKey;
@@ -122,7 +122,7 @@ export class ExtendedPrivateKey {
     delete(): void;
 }
 
-export class ExtendedPublicKey {
+declare class ExtendedPublicKey {
     static VERSION: number;
     static EXTENDED_PUBLIC_KEY_SIZE: number;
 
@@ -147,7 +147,7 @@ export class ExtendedPublicKey {
     delete(): void;
 }
 
-export class ChainCode {
+declare class ChainCode {
     static CHAIN_CODE_SIZE: number;
 
     static fromBytes(bytes: Uint8Array);
@@ -157,16 +157,31 @@ export class ChainCode {
     delete(): void;
 }
 
-export namespace Threshold {
-    export function create(commitment: PublicKey[], secretFragments: PrivateKey[], threshold: number, playersCount: number): PrivateKey;
+declare class Threshold {
+    static create(commitment: PublicKey[], secretFragments: PrivateKey[], threshold: number, playersCount: number): PrivateKey;
 
-    export function signWithCoefficient(sk: PrivateKey, message: Uint8Array, playerIndex: number, players: number[]): InsecureSignature;
+    static signWithCoefficient(sk: PrivateKey, message: Uint8Array, playerIndex: number, players: number[]): InsecureSignature;
 
-    export function aggregateUnitSigs(signatures: InsecureSignature[], message: Uint8Array, players: number[]): InsecureSignature;
+    static aggregateUnitSigs(signatures: InsecureSignature[], message: Uint8Array, players: number[]): InsecureSignature;
 
-    export function verifySecretFragment(playerIndex: number, secretFragment: PrivateKey, commitment: PublicKey[], threshold: number): boolean;
+    static verifySecretFragment(playerIndex: number, secretFragment: PrivateKey, commitment: PublicKey[], threshold: number): boolean;
 }
 
-export function DHKeyExchange(privateKey: PrivateKey, publicKey: PublicKey);
+interface ModuleInstance {
+    then: (callback: (moduleInstance: ModuleInstance) => any) => ModuleInstance;
+    PrivateKey: typeof PrivateKey;
+    InsecureSignature: typeof InsecureSignature;
+    Signature: typeof Signature;
+    PublicKey: typeof PublicKey;
+    AggregationInfo: typeof AggregationInfo;
+    ExtendedPrivateKey: typeof ExtendedPrivateKey;
+    ExtendedPublicKey: typeof ExtendedPublicKey;
+    ChainCode: typeof ChainCode;
+    Threshold: typeof Threshold;
+    DHKeyExchange(privateKey: PrivateKey, publicKey: PublicKey);
+    GROUP_ORDER: string;
+}
 
-export const GROUP_ORDER: string;
+declare function createModule(options?: {}): ModuleInstance;
+
+export = createModule;

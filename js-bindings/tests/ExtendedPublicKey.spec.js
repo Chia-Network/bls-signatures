@@ -1,8 +1,16 @@
+const blsSignatures = require('..')();
 const assert = require('assert');
-const {ExtendedPublicKey, ExtendedPrivateKey} = require('../');
+
+before((done) => {
+    blsSignatures.then(() => {
+        done();
+    });
+});
 
 describe('ExtendedPublicKey', () => {
     it('Should return correct data structures', () => {
+        const {ExtendedPrivateKey} = blsSignatures;
+
         const seed = Uint8Array.from([1, 50, 6, 244, 24, 199, 1, 0, 0, 0]);
         const esk = ExtendedPrivateKey.fromSeed(seed);
         const epk = esk.getExtendedPublicKey();

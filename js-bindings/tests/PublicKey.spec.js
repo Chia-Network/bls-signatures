@@ -1,6 +1,5 @@
+const blsSignatures = require('..')();
 const assert = require('assert');
-
-const {PublicKey, PrivateKey} = require('../');
 
 function getPublicKeyFixtureHex() {
     return '1790635de8740e9a6a6b15fb6b72f3a16afa0973d971979b6ba54761d6e2502c50db76f4d26143f05459a42cfd520d44';
@@ -26,9 +25,17 @@ function getPublicKeysArray() {
     })
 }
 
+before((done) => {
+    blsSignatures.then(() => {
+        done();
+    });
+});
+
 describe('PublicKey', () => {
     describe('.fromBytes', () => {
         it('Should create a public key from bytes', () => {
+            const {PublicKey} = blsSignatures;
+
             const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
             assert(pk instanceof PublicKey);
         });
@@ -36,6 +43,8 @@ describe('PublicKey', () => {
 
     describe('.aggregate', () => {
         it('Should aggregate keys if keys array contains more than one key', () => {
+            const {PublicKey} = blsSignatures;
+
             const pks = getPublicKeysArray().map(buf => PublicKey.fromBytes(buf));
             const aggregatedKey = PublicKey.aggregate(pks);
             assert(aggregatedKey instanceof PublicKey);
@@ -44,6 +53,8 @@ describe('PublicKey', () => {
 
     describe('#serialize', () => {
         it('Should serialize key to the same buffer', () => {
+            const {PublicKey} = blsSignatures;
+
             const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
             const serialized = pk.serialize();
             assert.deepStrictEqual(Buffer.from(serialized).toString('hex'), getPublicKeyFixtureHex());
@@ -52,6 +63,8 @@ describe('PublicKey', () => {
 
     describe('getFingerprint', () => {
         it('Should get correct fingerprint', () => {
+            const {PublicKey} = blsSignatures;
+
             const pk = PublicKey.fromBytes(getPublicKeyFixture().buffer);
             const fingerprint = pk.getFingerprint();
             assert.strictEqual(fingerprint, getPublicKeyFixture().fingerprint);

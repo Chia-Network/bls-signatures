@@ -22,7 +22,7 @@
     "type": "git",
     "url": "git@github.com:Chia-Network/bls-signatures.git"
   },
-  "homepage" : "https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings",
+  "homepage": "https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings",
   "author": {
     "name": "Anton Suprunchuk",
     "email": "antouhou@gmail.com",
@@ -44,7 +44,7 @@
     "karma-mocha": "^1.3.0",
     "karma-webpack": "^3.0.5",
     "mocha": "6.0.2",
-    "typescript": "^3.3.3333",
+    "typescript": "^3.6.2",
     "webpack": "^4.29.6"
   }
 }

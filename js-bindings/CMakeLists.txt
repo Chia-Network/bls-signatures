@@ -36,4 +36,4 @@ foreach(file ${JS_BINDINGS_TESTS})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/${file} tests/${file} COPYONLY)
 endforeach()
 
-set_target_properties(blsjs PROPERTIES LINK_FLAGS "--bind -Oz --llvm-lto 1 --closure 1 -s MODULARIZE_INSTANCE=1")
+set_target_properties(blsjs PROPERTIES LINK_FLAGS "--bind -Oz --closure 1 -s MODULARIZE=1")

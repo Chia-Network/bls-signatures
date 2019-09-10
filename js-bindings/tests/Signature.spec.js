@@ -1,6 +1,6 @@
+const blsSignatures = require('..')();
 const assert = require('assert');
 const {createHash} = require('crypto');
-const {Signature, InsecureSignature, PublicKey, PrivateKey, AggregationInfo} = require('../');
 
 function getSignatureHex() {
     return '006d0a8661db762a94be51be85efb1199f62dfc3f8fa8c9f003d02fdc69b281e689a54928b9adce98a8471a889c55af40c9bd7b7339c00f6f8bf871d132cfa5cf4e9b11f7ce05acafbb24c2db82b7f6193ee954f5167a2a46e3daecf4a007609';
@@ -18,9 +18,17 @@ function getAggregationInfo() {
     };
 }
 
+before((done) => {
+    blsSignatures.then(() => {
+        done();
+    });
+});
+
 describe('Signature', () => {
     describe('Integration', () => {
         it('Should verify signatures', function () {
+            const {Signature, PublicKey, PrivateKey, AggregationInfo} = blsSignatures;
+
             this.timeout(10000);
             const message = Uint8Array.from([100, 2, 254, 88, 90, 45, 23]);
             const seed1 = Uint8Array.from([1, 2, 3, 4, 5]);
@@ -66,6 +74,8 @@ describe('Signature', () => {
     });
     describe('.fromBytes', () => {
         it('Should create verifiable signature from bytes', () => {
+            const {Signature} = blsSignatures;
+
             const sig = Signature.fromBytes(getSignatureBytes());
             assert.strictEqual(Buffer.from(sig.serialize()).toString('hex'), getSignatureHex());
             // Since there is no aggregation info, it's impossible to verify sig
@@ -76,6 +86,8 @@ describe('Signature', () => {
     });
     describe('.fromBytesAndAggregationInfo', () => {
         it('Should create verifiable signature', () => {
+            const {Signature, PrivateKey} = blsSignatures;
+
             const pk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3, 4, 5]));
             const sig = pk.sign(Uint8Array.from([100, 2, 254, 88, 90, 45, 23]));
             const info = sig.getAggregationInfo();
@@ -99,6 +111,8 @@ describe('Signature', () => {
     });
     describe('.aggregateSigs', () => {
         it('Should aggregate signature', () => {
+            const {Signature, PrivateKey} = blsSignatures;
+
             const sk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3]));
             const sig1 = sk.sign(Uint8Array.from([3, 4, 5]));
             const sig2 = sk.sign(Uint8Array.from([6, 7, 8]));
@@ -113,6 +127,8 @@ describe('Signature', () => {
     });
     describe('#serialize', () => {
         it('Should serialize signature to Buffer', () => {
+            const {Signature, PrivateKey} = blsSignatures;
+
             const pk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3, 4, 5]));
             const sig = pk.sign(Uint8Array.from([100, 2, 254, 88, 90, 45, 23]));
             assert(sig instanceof Signature);
@@ -124,6 +140,8 @@ describe('Signature', () => {
     });
     describe('#verify', () => {
         it('Should return true if signature can be verified', () => {
+            const {Signature, PublicKey, AggregationInfo} = blsSignatures;
+
             const pks = getAggregationInfo().publicKeys.map(buf => PublicKey.fromBytes(buf));
             const sig = Signature.fromBytesAndAggregationInfo(
                 getSignatureBytes(),
@@ -138,6 +156,8 @@ describe('Signature', () => {
             sig.delete();
         });
         it("Should return false if signature can't be verified", () => {
+            const {PublicKey, PrivateKey, AggregationInfo} = blsSignatures;
+
             const sk = PrivateKey.fromSeed(Buffer.from([1, 2, 3, 4, 5]));
             const pks = getAggregationInfo().publicKeys.map(buf => PublicKey.fromBytes(buf));
             const sig = sk.sign(Uint8Array.from(Buffer.from('Message')));
@@ -159,6 +179,8 @@ describe('Signature', () => {
 describe('InsecureSignature', () => {
     describe('.fromBytes', () => {
         it('Should create sig from bytes', () => {
+            const {InsecureSignature} = blsSignatures;
+
             const sig = InsecureSignature.fromBytes(getSignatureBytes());
             assert(sig instanceof InsecureSignature);
 
@@ -167,6 +189,8 @@ describe('InsecureSignature', () => {
     });
     describe('.aggregate', () => {
         it('Should aggregate signature', () => {
+            const {InsecureSignature, PrivateKey} = blsSignatures;
+
             const sk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3]));
             const msg1 = Uint8Array.from([3, 4, 5]);
             const msg2 = Uint8Array.from([6, 7, 8]);
@@ -188,6 +212,8 @@ describe('InsecureSignature', () => {
     });
     describe('#verify', () => {
         it('Should return true if signature can be verified', () => {
+            const {InsecureSignature, PublicKey} = blsSignatures;
+
             const sig = InsecureSignature.fromBytes(getSignatureBytes());
             const messageHashes = getAggregationInfo().messageHashes;
             const pubKeys = getAggregationInfo().publicKeys.map(buf => PublicKey.fromBytes(buf));
@@ -196,6 +222,8 @@ describe('InsecureSignature', () => {
             sig.delete();
         });
         it("Should return false if signature can't be verified", () => {
+            const {InsecureSignature, PrivateKey} = blsSignatures;
+
             const sig = InsecureSignature.fromBytes(getSignatureBytes());
             const messageHashes = getAggregationInfo().messageHashes;
             const pubKeys = [PrivateKey.fromSeed(Uint8Array.from([6, 7, 8])).getPublicKey()];
@@ -204,6 +232,8 @@ describe('InsecureSignature', () => {
     });
     describe('#divideBy', () => {
         it('Should divide signature', () => {
+            const {InsecureSignature, PrivateKey} = blsSignatures;
+
             const sk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3]));
             const msg1 = Uint8Array.from([3, 4, 5]);
             const msg2 = Uint8Array.from([6, 7, 8]);
@@ -227,6 +257,8 @@ describe('InsecureSignature', () => {
     });
     describe('#serialize', () => {
         it('Should serialize the sig', () => {
+            const {InsecureSignature} = blsSignatures;
+
             const sig = InsecureSignature.fromBytes(getSignatureBytes());
             assert(sig instanceof InsecureSignature);
             assert.strictEqual(Buffer.from(sig.serialize()).toString('hex'), getSignatureHex());

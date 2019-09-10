@@ -1,4 +1,4 @@
-const {PrivateKey, Signature, PublicKey, AggregationInfo} = require('../');
+const blsSignatures = require('..')();
 const assert = require('assert');
 const crypto = require('crypto');
 
@@ -27,8 +27,16 @@ function getPkUint8Array() {
     return new Uint8Array(getPkBuffer());
 }
 
+before((done) => {
+    blsSignatures.then(() => {
+        done();
+    });
+});
+
 describe('PrivateKey', () => {
     it('Should sign and verify', () => {
+        const {PrivateKey, AggregationInfo} = blsSignatures;
+
         const message1 = Uint8Array.from([1, 65, 254, 88, 90, 45, 22]);
 
         const seed = Uint8Array.from([28, 20, 102, 229, 1, 157]);
@@ -51,6 +59,8 @@ describe('PrivateKey', () => {
 
     describe('.fromSeed', () => {
         it('Should create a private key from a seed', () => {
+            const {PrivateKey} = blsSignatures;
+
             const pk = PrivateKey.fromSeed(getPkSeed());
             assert(pk instanceof PrivateKey);
             assert.deepStrictEqual(pk.serialize(), getPkBuffer());
@@ -58,11 +68,15 @@ describe('PrivateKey', () => {
     });
     describe('.fromBytes', () => {
         it('Should create a private key from a Buffer', () => {
+            const {PrivateKey} = blsSignatures;
+
             const pk = PrivateKey.fromBytes(getPkBuffer(), false);
             assert(pk instanceof PrivateKey);
             assert.deepStrictEqual(pk.serialize(), getPkBuffer());
         });
         it('Should create a private key from a Uint8Array', () => {
+            const {PrivateKey} = blsSignatures;
+
             const pk = PrivateKey.fromBytes(getPkUint8Array(), false);
             assert(pk instanceof PrivateKey);
             assert.deepStrictEqual(pk.serialize(), getPkBuffer());
@@ -71,6 +85,8 @@ describe('PrivateKey', () => {
 
     describe('.aggregate', () => {
         it('Should aggregate private keys', () => {
+            const {PrivateKey} = blsSignatures;
+
             const privateKeys = [
                 PrivateKey.fromSeed(Buffer.from([1, 2, 3])),
                 PrivateKey.fromSeed(Buffer.from([3, 4, 5]))
@@ -86,6 +102,8 @@ describe('PrivateKey', () => {
 
     describe('#serialize', () => {
         it('Should serialize key to a Buffer', () => {
+            const {PrivateKey} = blsSignatures;
+
             const pk = PrivateKey.fromSeed(getPkSeed());
             const serialized = pk.serialize();
             assert(serialized instanceof Uint8Array);
@@ -95,6 +113,8 @@ describe('PrivateKey', () => {
 
     describe('#sign', () => {
         it('Should return a verifiable signature', () => {
+            const {PrivateKey, Signature} = blsSignatures;
+
             const pk = PrivateKey.fromBytes(getPkBuffer(), false);
             const message = 'Hello world';
             const signature = pk.sign(Uint8Array.from(Buffer.from(message, 'utf8')));
@@ -105,6 +125,8 @@ describe('PrivateKey', () => {
 
     describe('#signPrehashed', () => {
         it('Should sign a hash and return a signature', () => {
+            const {PrivateKey, Signature} = blsSignatures;
+
             const pk = PrivateKey.fromSeed(Uint8Array.from([1, 2, 3, 4, 5]));
             const messageHash = Uint8Array.from(crypto
                 .createHash('sha256')
@@ -120,6 +142,8 @@ describe('PrivateKey', () => {
 
     describe('#getPublicKey', () => {
         it('Should return a public key with a verifiable fingerprint', () => {
+            const {PrivateKey, PublicKey} = blsSignatures;
+
             const pk = PrivateKey.fromSeed(getSeedAndFinferprint().seed);
             const publicKey = pk.getPublicKey();
             assert(publicKey instanceof PublicKey);
