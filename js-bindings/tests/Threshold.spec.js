@@ -1,9 +1,17 @@
+const blsSignatures = require('..')();
 const assert = require('assert');
-const {Threshold, PublicKey, PrivateKey, InsecureSignature} = require('../');
 const crypto = require('crypto');
+
+before((done) => {
+    blsSignatures.then(() => {
+        done();
+    });
+});
 
 describe('Threshold', () => {
     it('Should be able to verify secret fragment', function () {
+        const {Threshold, PublicKey, PrivateKey, InsecureSignature} = blsSignatures;
+
         this.timeout(10000);
         // To initialize a T of N threshold key under a
         // Joint-Feldman scheme:

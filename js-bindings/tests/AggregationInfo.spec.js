@@ -1,4 +1,4 @@
-const {AggregationInfo, PrivateKey} = require('../');
+const blsSignatures = require('..')();
 const assert = require('assert');
 const crypto = require('crypto');
 
@@ -6,8 +6,16 @@ function getSeed() {
     return Uint8Array.from([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 }
 
+before((done) => {
+    blsSignatures.then(() => {
+        done();
+    });
+});
+
 describe('AggregationInfo', () => {
     it('Should be able to serialize and deserialize data correctly', () => {
+        const {AggregationInfo, PrivateKey} = blsSignatures;
+
         const privateKey = PrivateKey.fromSeed(getSeed());
         const message = Uint8Array.from(Buffer.from('Hello world', 'utf8'));
         const sig = privateKey.sign(message);

@@ -1,12 +1,20 @@
+const blsSignatures = require('..')();
 const assert = require('assert');
-const {ExtendedPrivateKey} = require('../');
 
 function getSeed() {
     return Uint8Array.from([1, 50, 6, 244, 24, 199, 1, 25]);
 }
 
+before((done) => {
+    blsSignatures.then(() => {
+        done();
+    });
+});
+
 describe('ExtendedPrivateKey', () => {
     it('Should derive correctly', () => {
+        const {ExtendedPrivateKey} = blsSignatures;
+
         const seed = getSeed();
         const esk = ExtendedPrivateKey.fromSeed(seed);
         assert.strictEqual(esk.getPublicKey().getFingerprint(), 0xa4700b27);
