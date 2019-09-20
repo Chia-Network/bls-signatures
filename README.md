@@ -264,13 +264,10 @@ keybase team request-access chia_network.public
 * Objects allocate and free their own memory
 * Use cpplint with default rules
 
-### TODO
-* Serialize aggregation info
-* Secure allocation during signing, key derivation
-* Remove unnecessary dependency files
-* Constant time and side channel attacks
-* Adaptor signatures / Blind signatures
-* More tests vectors (failed verifications, etc)
+
+There are three types of signatures: InsecureSignatures (simple signatures which are not secure by themselves, due to rogue public keys),
+Signatures (secure signatures that require AggregationInfo to aggregate),
+and PrependSignatures, which prepend public keys to messages, making them secure.
 
 
 ### Specification and test vectors

@@ -24,6 +24,9 @@ from blspy import (PrivateKey, PublicKey, InsecureSignature, Signature,
                    Threshold, Util)
 ```
 
+There are three types of signatures: InsecureSignatures (simple signatures which are not secure by themselves, due to rogue public keys),
+Signatures (secure signatures that require AggregationInfo to aggregate),
+and PrependSignatures, which prepend public keys to messages, making them secure.
 
 #### Creating keys and signatures
 ```python
