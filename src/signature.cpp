@@ -175,6 +175,9 @@ void InsecureSignature::CompressPoint(uint8_t* result, const g2_t* point) {
 /// Signature
 
 Signature Signature::FromBytes(const uint8_t* data) {
+    if ((data[0] & 0x40) > 0) {
+        throw std::invalid_argument("Invalid signature. Second bit is set, so it's a PrependSignature.");
+    }
     Signature result;
     result.sig = InsecureSignature::FromBytes(data);
     return result;

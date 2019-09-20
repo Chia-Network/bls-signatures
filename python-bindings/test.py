@@ -352,6 +352,25 @@ def no_throw_bad_sig():
         return
     assert(False)
 
+def throw_wrong_type():
+    private_key = ExtendedPrivateKey.from_seed(b"foo").get_private_key()
+
+    message_hash = bytes([10] * 32)
+
+    sig_prepend = private_key.sign_prepend_prehashed(message_hash).serialize()
+    sig_secure = private_key.sign_prehashed(message_hash).serialize()
+
+    try:
+        Signature.from_bytes(sig_prepend)
+    except ValueError:
+        try:
+            PrependSignature.from_bytes(sig_secure)
+        except ValueError:
+            return
+        assert False
+    assert False
+
+
 def additional_python_methods():
     private_key = PrivateKey.from_seed(b'123')
     s1 = private_key.sign(b'message')
@@ -375,7 +394,9 @@ test_vectors2()
 test_vectors3()
 test_vectors4()
 no_throw_bad_sig()
+throw_wrong_type()
 additional_python_methods()
+
 
 print("\nAll tests passed.")
 
