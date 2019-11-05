@@ -3,6 +3,7 @@ from blspy import (PrivateKey, PublicKey, InsecureSignature,
                    Signature, PrependSignature, AggregationInfo,
                    ExtendedPrivateKey, BLS, Util, Threshold)
 from itertools import combinations
+from copy import deepcopy
 
 
 def test1():
@@ -384,6 +385,24 @@ def additional_python_methods():
 
     s3 = private_key.sign_insecure_prehashed(Util.hash256(b'456'))
     assert s3.verify([Util.hash256(b'456')], [private_key.get_public_key()])
+
+    esk =  ExtendedPrivateKey.from_seed(b'789')
+    epk =  esk.get_public_key()
+    s3 = private_key.sign(b'message3')
+    s4 = private_key.sign_insecure(b'message3')
+
+    assert bytes(private_key) == private_key.serialize()
+    assert deepcopy(private_key) == private_key
+    assert deepcopy(s1) == s1
+    assert deepcopy(s2) == s2
+    assert deepcopy(s3) == s3
+    assert deepcopy(s4) == s4
+    assert deepcopy(private_key.get_public_key()) == private_key.get_public_key()
+    assert deepcopy(esk) == esk
+    assert deepcopy(epk) == epk
+    assert deepcopy(esk.get_chain_code()) == esk.get_chain_code()
+
+
 
 
 test1()

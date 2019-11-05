@@ -69,12 +69,22 @@ PYBIND11_MODULE(blspy, m) {
             const uint8_t* input = reinterpret_cast<const uint8_t*>(str.data());
             return PrivateKey::FromBytes(input);
         })
+        .def("__bytes__", [](const PrivateKey &k) {
+            uint8_t* output = Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
+            k.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), PrivateKey::PRIVATE_KEY_SIZE);
+            Util::SecFree(output);
+            return ret;
+        })
         .def("serialize", [](const PrivateKey &k) {
             uint8_t* output = Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
             k.Serialize(output);
             py::bytes ret = py::bytes(reinterpret_cast<char*>(output), PrivateKey::PRIVATE_KEY_SIZE);
             Util::SecFree(output);
             return ret;
+        })
+        .def("__deepcopy__", [](const PrivateKey &k, const py::object& memo) {
+            return PrivateKey(k);
         })
         .def("get_public_key", [](const PrivateKey &k) {
             return k.GetPublicKey();
@@ -139,6 +149,16 @@ PYBIND11_MODULE(blspy, m) {
             delete[] output;
             return ret;
         })
+        .def("__bytes__", [](const PublicKey &pk) {
+            uint8_t* output = new uint8_t[PublicKey::PUBLIC_KEY_SIZE];
+            pk.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), PublicKey::PUBLIC_KEY_SIZE);
+            delete[] output;
+            return ret;
+        })
+        .def("__deepcopy__", [](const PublicKey &k, py::object memo) {
+            return PublicKey(k);
+        })
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("__repr__", [](const PublicKey &pk) {
@@ -161,6 +181,16 @@ PYBIND11_MODULE(blspy, m) {
             py::bytes ret = py::bytes(reinterpret_cast<char*>(output), InsecureSignature::SIGNATURE_SIZE);
             delete[] output;
             return ret;
+        })
+        .def("__bytes__", [](const InsecureSignature &sig) {
+            uint8_t* output = new uint8_t[InsecureSignature::SIGNATURE_SIZE];
+            sig.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), InsecureSignature::SIGNATURE_SIZE);
+            delete[] output;
+            return ret;
+        })
+        .def("__deepcopy__", [](const InsecureSignature &sig, py::object memo) {
+            return InsecureSignature(sig);
         })
         .def("verify", [](const InsecureSignature &sig,
                           const std::vector<py::bytes> hashes,
@@ -197,6 +227,16 @@ PYBIND11_MODULE(blspy, m) {
             delete[] output;
             return ret;
         })
+        .def("__bytes__", [](const Signature &sig) {
+            uint8_t* output = new uint8_t[Signature::SIGNATURE_SIZE];
+            sig.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), Signature::SIGNATURE_SIZE);
+            delete[] output;
+            return ret;
+        })
+        .def("__deepcopy__", [](const Signature &sig, py::object memo) {
+            return Signature(sig);
+        })
         .def("verify", &Signature::Verify)
         .def("aggregate", &Signature::Aggregate)
         .def("divide_by", &Signature::DivideBy)
@@ -231,6 +271,16 @@ PYBIND11_MODULE(blspy, m) {
             py::bytes ret = py::bytes(reinterpret_cast<char*>(output), PrependSignature::SIGNATURE_SIZE);
             delete[] output;
             return ret;
+        })
+        .def("__bytes__", [](const PrependSignature &sig) {
+            uint8_t* output = new uint8_t[PrependSignature::SIGNATURE_SIZE];
+            sig.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output), PrependSignature::SIGNATURE_SIZE);
+            delete[] output;
+            return ret;
+        })
+        .def("__deepcopy__", [](const PrependSignature &sig, py::object memo) {
+            return PrependSignature(sig);
         })
         .def("verify", [](const PrependSignature &sig, const std::vector<py::bytes> &hashes,
                            std::vector<PublicKey> &pks) {
@@ -276,6 +326,17 @@ PYBIND11_MODULE(blspy, m) {
             delete[] output;
             return ret;
         })
+        .def("__bytes__", [](const ChainCode &cc) {
+            uint8_t* output = new uint8_t[ChainCode::CHAIN_CODE_SIZE];
+            cc.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output),
+                    ChainCode::CHAIN_CODE_SIZE);
+            delete[] output;
+            return ret;
+        })
+        .def("__deepcopy__", [](const ChainCode &cc, py::object memo) {
+            return ChainCode(cc);
+        })
         .def("__repr__", [](const ChainCode &cc) {
             uint8_t* output = new uint8_t[ChainCode::CHAIN_CODE_SIZE];
             cc.Serialize(output);
@@ -283,7 +344,9 @@ PYBIND11_MODULE(blspy, m) {
                     ChainCode::CHAIN_CODE_SIZE) + ">";
             Util::SecFree(output);
             return ret;
-        });
+        })
+        .def(py::self == py::self)
+        .def(py::self != py::self);
 
     py::class_<ExtendedPublicKey>(m, "ExtendedPublicKey")
         .def_property_readonly_static("EXTENDED_PUBLIC_KEY_SIZE", [](py::object self) {
@@ -309,6 +372,23 @@ PYBIND11_MODULE(blspy, m) {
             pk.Serialize(output);
             py::bytes ret = py::bytes(reinterpret_cast<char*>(output),
                     ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE);
+            delete[] output;
+            return ret;
+        })
+        .def("__bytes__", [](const ExtendedPublicKey &pk) {
+            uint8_t* output = new uint8_t[
+                    ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
+            pk.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output),
+                    ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE);
+            delete[] output;
+            return ret;
+        })
+        .def("__deepcopy__", [](const ExtendedPublicKey &pk, py::object memo) {
+            uint8_t* output = new uint8_t[
+                    ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
+            pk.Serialize(output);
+            ExtendedPublicKey ret = ExtendedPublicKey::FromBytes(output);
             delete[] output;
             return ret;
         })
@@ -354,6 +434,23 @@ PYBIND11_MODULE(blspy, m) {
             k.Serialize(output);
             py::bytes ret = py::bytes(reinterpret_cast<char*>(output),
                     ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE);
+            Util::SecFree(output);
+            return ret;
+        })
+        .def("__bytes__", [](const ExtendedPrivateKey &k) {
+            uint8_t* output = Util::SecAlloc<uint8_t>(
+                    ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE);
+            k.Serialize(output);
+            py::bytes ret = py::bytes(reinterpret_cast<char*>(output),
+                    ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE);
+            Util::SecFree(output);
+            return ret;
+        })
+        .def("__deepcopy__", [](const ExtendedPrivateKey &k, py::object memo) {
+            uint8_t* output = Util::SecAlloc<uint8_t>(
+                    ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE);
+            k.Serialize(output);
+            ExtendedPrivateKey ret = ExtendedPrivateKey::FromBytes(output);
             Util::SecFree(output);
             return ret;
         })
