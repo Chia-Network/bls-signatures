@@ -65,6 +65,8 @@ if (UNIX)
         if (sodium_PKG_STATIC_LIBRARIES)
             list(REMOVE_DUPLICATES sodium_PKG_STATIC_LIBRARIES)
         endif()
+        # Remove "sodium" which can pull in dynamic lib
+        list(REMOVE_ITEM sodium_PKG_STATIC_LIBRARIES "sodium")
 
         # if pkgconfig for libsodium doesn't provide
         # static lib info, then override PKG_STATIC here..
