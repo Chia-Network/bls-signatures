@@ -60,7 +60,11 @@ if (UNIX)
                 list(INSERT sodium_PKG_STATIC_LIBRARIES 0 "lib${_libname}.a")
             endif()
         endforeach()
-        list(REMOVE_DUPLICATES sodium_PKG_STATIC_LIBRARIES)
+
+        # If the list is empty, don't remove duplicates
+        if (sodium_PKG_STATIC_LIBRARIES)
+            list(REMOVE_DUPLICATES sodium_PKG_STATIC_LIBRARIES)
+        endif()
 
         # if pkgconfig for libsodium doesn't provide
         # static lib info, then override PKG_STATIC here..
