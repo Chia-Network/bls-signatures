@@ -14,7 +14,7 @@ set(CMAKE_MODULE_PATH
 	${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules
 )
 
-set(STBIN sodium_USE_STATIC_LIBS)
+set(sodium_USE_STATIC_LIBS TRUE)
 find_package(sodium)
 if (SODIUM_FOUND)
   message(STATUS "Found libsodium")
