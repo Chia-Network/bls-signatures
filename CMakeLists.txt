@@ -14,6 +14,7 @@ set(CMAKE_MODULE_PATH
 	${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules
 )
 
+set(sodium_USE_STATIC_LIBS TRUE)
 find_package(sodium)
 if (SODIUM_FOUND)
   message(STATUS "Found libsodium")
@@ -22,6 +23,7 @@ if (SODIUM_FOUND)
   include_directories(${sodium_INCLUDE_DIR})
 endif()
 
+set(STBIN TRUE)
 find_package(gmp)
 if (GMP_FOUND)
   message(STATUS "Found libgmp")

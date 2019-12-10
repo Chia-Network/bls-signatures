@@ -38,7 +38,7 @@ endif (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
 
 find_path(GMP_INCLUDE_DIR NAMES gmp.h)
 if(STBIN)
-	find_library(GMP_LIBRARIES NAMES libgmp.a gmp)
+	find_library(GMP_LIBRARIES NAMES libgmp.a)
 else(STBIN)
 	find_library(GMP_LIBRARIES NAMES libgmp.so gmp)
 endif(STBIN)
