@@ -67,11 +67,12 @@ class CMakeBuild(build_ext):
 
 setup(
     name='blspy',
-    version='0.1.13',
+    version='0.1.14',
     author='Mariano Sorgente',
     author_email='mariano@chia.net',
     description='BLS signatures in c++ (python bindings)',
     python_requires='>3.1',
+    install_requires=["wheel"],
     long_description='BLS signatures with aggregation. Uses fast c++ implementation. See https://github.com/Chia-Network/bls-signatures for more details',
     ext_modules=[CMakeExtension('blspy', '.')],
     cmdclass=dict(build_ext=CMakeBuild),
