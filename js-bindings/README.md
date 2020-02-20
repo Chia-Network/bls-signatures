@@ -27,7 +27,7 @@ blsSignatures.then(() => {
 })
 ```
 
-Please refer to the library's [typings](../../js-bindings/blsjs.d.ts) for detailed API information. Use cases can be found in the [original lib's readme](../../README.md).
+Please refer to the library's [typings](./blsjs.d.ts) for detailed API information. Use cases can be found in the [original lib's readme](../README.md).
 
 __Important note on usage:__ Since this library is a WebAssembly port of the c++ library, JavaScript's automatic memory management isn't available. Please, delete all objects manually if they are not needed anymore by calling the delete method on them, as shown in the example above.
 
