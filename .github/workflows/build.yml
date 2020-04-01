@@ -1,0 +1,92 @@
+name: Build
+
+on: [push, pull_request]
+
+jobs:
+  build_wheels:
+    name: Build wheel on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-18.04, windows-latest] # windows-latest doesn't work yet
+#        os: [windows-latest] # windows-latest doesn't work yet
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 0
+        # we need fetch-depth 0 so setuptools_scm can resolve tags
+    - name: Checkout submodules
+      uses: snickerbockers/submodules-init@v4
+    - uses: actions/setup-python@v1
+      if: "!startsWith(matrix.os, 'windows')"
+      name: Install Python
+      with:
+        python-version: '3.7'
+
+    - name: Install cibuildwheel
+      if: "!startsWith(matrix.os, 'windows')"
+      run: |
+        python -m pip install cibuildwheel==1.3.0
+
+    - name: Prepare Windows Build environment
+      if: startsWith(matrix.os, 'windows')
+      uses: numworks/setup-msys2@v1
+      with:
+        update: true
+
+    - name: Windows install dependencies and build
+      if: startsWith(matrix.os, 'windows')
+      run: |
+        msys2do pacman -S --noconfirm mingw-w64-x86_64-toolchain make mingw-w64-x86_64-cmake mingw-w64-x86_64-boost mingw-w64-x86_64-openssl mingw-w64-x86_64-gmp mingw-w64-x86_64-dlib mingw-w64-x86_64-python-pep517 mingw-w64-x86_64-python-pytest mingw-w64-x86_64-python-pip git
+        msys2do ./windows-build.sh
+
+    - name: Build source distribution with MacOS
+      if: startsWith(matrix.os, 'mac')
+      run: |
+        pip install pep517
+        python -m pep517.build --source --out-dir dist .
+
+    - name: Build wheel
+      if: "!startsWith(matrix.os, 'windows')"
+      run: |
+        python -m cibuildwheel --output-dir dist
+      env:
+        # build just python 3.7
+        CIBW_BUILD: cp37-*
+        # don't build i686 targets, can't seem to find cmake for these
+        CIBW_SKIP: '*-manylinux_i686'
+        # we need boost
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
+        CIBW_BEFORE_BUILD_LINUX: curl -L https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-`uname -m`.sh > cmake.sh && yes | sh cmake.sh | cat && rm -f /usr/bin/cmake && yum -y install boost-devel gmp-devel && python -m pip install --upgrade pip && which cmake && cmake --version
+        CIBW_BEFORE_BUILD_MACOS: brew install boost && python -m pip install --upgrade pip
+        #CIBW_BEFORE_BUILD_WINDOWS: python -m pip install --upgrade pip
+        #CIBW_TEST_REQUIRES: pytest
+        CIBW_TEST_COMMAND: pip3 install {project} && python3 {project}/python-bindings/test.py
+        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH BUILD_VDF_CLIENT=N"
+
+    - name: Upload artifacts
+      if: "!startsWith(matrix.os, 'windows')"
+      uses: actions/upload-artifact@v1
+      with:
+        name: wheels
+        path: ./dist
+    - name: Install twine
+      if: "!startsWith(matrix.os, 'windows')"
+      run: pip install twine
+    - name: Publish distribution to Test PyPI
+      if: "!startsWith(matrix.os, 'windows')"
+      env:
+        TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+        TWINE_USERNAME: __token__
+        TWINE_NON_INTERACTIVE: 1
+        TWINE_PASSWORD: ${{ secrets.test_pypi_password }}
+      run: twine upload --non-interactive --skip-existing --verbose 'dist/*'
+    - name: Publish distribution to PyPI
+      if: startsWith(github.event.ref, 'refs/tags') && !startsWith(matrix.os, 'windows')
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_NON_INTERACTIVE: 1
+        TWINE_PASSWORD: ${{ secrets.pypi_password }}
+      run: twine upload --non-interactive --skip-existing --verbose 'dist/*'
