@@ -18,9 +18,7 @@ jobs:
         fetch-depth: 0
         # we need fetch-depth 0 so setuptools_scm can resolve tags
     - name: Checkout submodules
-      uses: srt32/git-actions@v0.0.3
-      with:
-        args: git submodule update --init --recursive
+      uses: snickerbockers/submodules-init@v4
     - uses: actions/setup-python@v1
       if: "!startsWith(matrix.os, 'windows')"
       name: Install Python
