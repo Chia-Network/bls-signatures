@@ -21,12 +21,12 @@ cmake -G "MSYS Makefiles" --build .
 make
 
 #echo "Running RunTests.exe"
-#$PWD/RunTests.exe
+$PWD/src/runtest.exe
 
-echo "Running py.test -v tests/"
-py.test -v $PWD/python-bindings/
-
+echo "Not Running py.test!!!!"
+#py.test -v $PWD/python-bindings/
 echo "Testing Windows Complete"
-#echo "Trying to build a wheel"
-pip wheel $PWD --build-option --wheel-dir=dist/
+
+echo "Not trying to build a wheel"
+#pip wheel $PWD --build-option --wheel-dir=dist/
 #--prefer-binary?
