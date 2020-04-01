@@ -63,7 +63,7 @@ jobs:
         CIBW_BEFORE_BUILD_MACOS: brew install boost && python -m pip install --upgrade pip
         #CIBW_BEFORE_BUILD_WINDOWS: python -m pip install --upgrade pip
         CIBW_TEST_REQUIRES: pytest
-        CIBW_TEST_COMMAND: py.test -v {project}/tests
+        CIBW_TEST_COMMAND: py.test -v python-bindings/
         CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH BUILD_VDF_CLIENT=N"
 
     - name: Upload artifacts
