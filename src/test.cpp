@@ -33,7 +33,7 @@ TEST_CASE("Test vectors") {
         uint8_t seed1[5] = {1, 2, 3, 4, 5};
         uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
         uint8_t message1[3] = {7, 8, 9};
-
+        
         PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
         PublicKey pk1 = sk1.GetPublicKey();
         Signature sig1 = sk1.Sign(message1, sizeof(message1));

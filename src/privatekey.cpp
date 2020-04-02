@@ -31,10 +31,11 @@ PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
 
     // Hash the seed into sk
     md_hmac(hash, seed, seedLen, hmacKey, sizeof(hmacKey));
-
+    
     bn_t order;
     bn_new(order);
     g1_get_ord(order);
+    bn_free(order);
 
     // Make sure private key is less than the curve order
     bn_t* skBn = Util::SecAlloc<bn_t>(1);
@@ -48,6 +49,7 @@ PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
 
     Util::SecFree(skBn);
     Util::SecFree(hash);
+
     return k;
 }
 
