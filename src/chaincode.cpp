@@ -32,7 +32,7 @@ ChainCode::ChainCode(const ChainCode &cc) {
 
 // Comparator implementation.
 bool operator==(ChainCode const &a,  ChainCode const &b) {
-    return bn_cmp(a.chainCode, b.chainCode) == CMP_EQ;
+    return bn_cmp(a.chainCode, b.chainCode) == RLC_EQ;
 }
 
 bool operator!=(ChainCode const &a,  ChainCode const &b) {

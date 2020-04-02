@@ -234,7 +234,7 @@ TEST_CASE("Key generation") {
 
         PrivateKey sk = PrivateKey::FromSeed(seed, sizeof(seed));
         PublicKey pk = sk.GetPublicKey();
-        REQUIRE(core_get()->code == STS_OK);
+        REQUIRE(core_get()->code == RLC_OK);
         REQUIRE(pk.GetFingerprint() == 0xddad59bb);
     }
 }
@@ -295,7 +295,7 @@ TEST_CASE("Error handling") {
             if (ctx1 == core_get()) {
                 ctxError = true;
             }
-            if (core_get()->code != STS_OK) {
+            if (core_get()->code != RLC_OK) {
                 ctxError = true;
             }
             // this should not modify the code of the main thread
@@ -308,7 +308,7 @@ TEST_CASE("Error handling") {
         REQUIRE(core_get()->code == 10);
 
         // reset so that future test cases don't fail
-        core_get()->code = STS_OK;
+        core_get()->code = RLC_OK;
     }
 }
 

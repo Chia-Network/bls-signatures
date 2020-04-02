@@ -69,7 +69,7 @@ bool InsecureSignature::Verify(const std::vector<const uint8_t*>& hashes,
     g1_mul(pubKeysNative[0], pubKeysNative[0], ordMinus1);
 
     for (size_t i = 0; i < hashes.size(); i++) {
-        g2_map(mappedHashes[i + 1], hashes[i], BLS::MESSAGE_HASH_LEN, 0);
+        g2_map(mappedHashes[i + 1], hashes[i], BLS::MESSAGE_HASH_LEN);
         g1_copy(pubKeysNative[i + 1], pubKeys[i].q);
     }
 
@@ -96,9 +96,9 @@ bool InsecureSignature::VerifyNative(
     pc_map_sim(candidate, pubKeys, mappedHashes, len);
 
     // 1 =? prod e(pubkey[i], hash[i]) * e(g1, aggSig)
-    if (gt_cmp(target, candidate) != CMP_EQ ||
-        core_get()->code != STS_OK) {
-        core_get()->code = STS_OK;
+    if (gt_cmp(target, candidate) != RLC_EQ ||
+        core_get()->code != RLC_OK) {
+        core_get()->code = RLC_OK;
         return false;
     }
     BLS::CheckRelicErrors();
@@ -129,7 +129,7 @@ InsecureSignature InsecureSignature::DivideBy(const std::vector<InsecureSignatur
 
 InsecureSignature InsecureSignature::Exp(const bn_t n) const {
     InsecureSignature result(*this);
-    g2_mul(result.sig, result.sig, n);
+    g2_mul(result.sig, result.sig, const_cast<bn_st*>(n));
     return result;
 }
 
@@ -144,7 +144,7 @@ std::vector<uint8_t> InsecureSignature::Serialize() const {
 }
 
 bool operator==(InsecureSignature const &a, InsecureSignature const &b) {
-    return g2_cmp(*(g2_t*)&a.sig, *(g2_t*)b.sig) == CMP_EQ;
+    return g2_cmp(*(g2_t*)&a.sig, *(g2_t*)b.sig) == RLC_EQ;
 }
 
 bool operator!=(InsecureSignature const &a, InsecureSignature const &b) {
@@ -657,7 +657,7 @@ Signature Signature::DivideBy(std::vector<Signature> const &divisorSigs) const {
                 bn_mul(leftHandSide, quotient, divisor);
                 bn_mod(leftHandSide, leftHandSide, ord);
 
-                if (bn_cmp(leftHandSide, dividend) != CMP_EQ) {
+                if (bn_cmp(leftHandSide, dividend) != RLC_EQ) {
                     throw std::logic_error("Cannot divide by aggregate signature,"
                                            "msg/pk pairs are not unique");
                 }

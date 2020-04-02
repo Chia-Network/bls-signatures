@@ -35,6 +35,7 @@ message("      FP_METHD=BASIC    Inversion by Fermat's Little Theorem.")
 message("      FP_METHD=BINAR    Binary Inversion algorithm.")
 message("      FP_METHD=MONTY    Montgomery inversion.")
 message("      FP_METHD=EXGCD    Inversion by the Extended Euclidean algorithm.")
+message("      FP_METHD=DIVST    Constant-time inversion by division steps.")
 message("      FP_METHD=LOWER    Pass inversion to the lower level.\n")
 
 message("      Field exponentiation")
@@ -64,7 +65,7 @@ option(FP_QNRES "Use -1 as quadratic non-residue." off)
 
 # Choose the arithmetic methods.
 if (NOT FP_METHD)
-	set(FP_METHD "BASIC;COMBA;COMBA;MONTY;MONTY;SLIDE")
+	set(FP_METHD "INTEG;INTEG;INTEG;MONTY;MONTY;SLIDE")
 endif(NOT FP_METHD)
 list(LENGTH FP_METHD FP_LEN)
 if (FP_LEN LESS 6)

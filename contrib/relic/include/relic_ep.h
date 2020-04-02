@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -32,8 +33,8 @@
  * @ingroup ep
  */
 
-#ifndef RELIC_EP_H
-#define RELIC_EP_H
+#ifndef RLC_EP_H
+#define RLC_EP_H
 
 #include "relic_fp.h"
 #include "relic_bn.h"
@@ -90,22 +91,58 @@ enum {
 	BN_P254,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P256,
-	/** Barreto-Lynn-Scott curve with embedding degree 12. */
+	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
 	B12_P381,
 	/** Barreto-Naehrig curve with negative x. */
 	BN_P382,
+	/** Barreto-Naehrig curve with embedding degree 12. */
+	BN_P446,
+	/** Barreto-Lynn-Scott curve with embedding degree 12. */
+	B12_P446,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P455,
 	/** Barreto-Lynn-Scott curve with embedding degree 24. */
 	B24_P477,
 	/** Kachisa-Schafer-Scott with negative x. */
 	KSS_P508,
+	/** Optimal TNFS-secure curve with embedding degree 8. */
+	OT8_P511,
+	/** Cocks-pinch curve with embedding degree 8. */
+	CP8_P544,
+	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
+	K54_P569,
+	/** Barreto-Lynn-Scott curve with embedding degree 48. */
+	B48_P575,
 	/** Barreto-Naehrig curve with positive x. */
 	BN_P638,
 	/** Barreto-Lynn-Scott curve with embedding degree 12. */
 	B12_P638,
 	/** 1536-bit supersingular curve. */
 	SS_P1536,
+};
+
+/**
+ * Pairing-friendly elliptic curve identifiers.
+ */
+enum {
+	/** Supersingular curves with embedding degree 2. */
+	EP_SS2 = 1,
+	/** Barreto-Naehrig. */
+	EP_BN,
+	/* Optimal TNFS-secure. */
+	EP_OT8,
+	/* Cocks-Pinch curve. */
+	EP_CP8,
+	/* Barreto-Lynn-Scott with embedding degree 12. */
+	EP_B12,
+	/* Kachisa-Schafer-Scott with embedding degree 16. */
+	EP_K16,
+	/* Barreto-Lynn-Scott with embedding degree 24. */
+	EP_B24,
+	/* Barreto-Lynn-Scott with embedding degree 48. */
+	EP_B48,
+	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
+	EP_K54,
 };
 
 /*============================================================================*/
@@ -125,58 +162,50 @@ enum {
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RELIC_EP_TABLE_BASIC		(FP_BITS + 1)
-
-/**
- * Size of a precomputation table using Yao's windowing method.
- */
-#define RELIC_EP_TABLE_YAOWI      (FP_BITS / EP_DEPTH + 1)
-
-/**
- * Size of a precomputation table using the NAF windowing method.
- */
-#define RELIC_EP_TABLE_NAFWI      (FP_BITS / EP_DEPTH + 1)
+#define RLC_EP_TABLE_BASIC		(RLC_FP_BITS + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RELIC_EP_TABLE_COMBS      (1 << EP_DEPTH)
+#define RLC_EP_TABLE_COMBS      (1 << EP_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RELIC_EP_TABLE_COMBD		(1 << (EP_DEPTH + 1))
+#define RLC_EP_TABLE_COMBD		(1 << (EP_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RELIC_EP_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
+#define RLC_EP_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EP_FIX == BASIC
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_BASIC
-#elif EP_FIX == YAOWI
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_YAOWI
-#elif EP_FIX == NAFWI
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_NAFWI
+#define RLC_EP_TABLE			RLC_EP_TABLE_BASIC
 #elif EP_FIX == COMBS
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_COMBS
+#define RLC_EP_TABLE			RLC_EP_TABLE_COMBS
 #elif EP_FIX == COMBD
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_COMBD
+#define RLC_EP_TABLE			RLC_EP_TABLE_COMBD
 #elif EP_FIX == LWNAF
-#define RELIC_EP_TABLE			RELIC_EP_TABLE_LWNAF
+#define RLC_EP_TABLE			RLC_EP_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RELIC_EP_TABLE_MAX RELIC_EP_TABLE
+#define RLC_EP_TABLE_MAX 	RLC_EP_TABLE
 #else
-#define RELIC_EP_TABLE_MAX MAX(RELIC_EP_TABLE_BASIC, RELIC_EP_TABLE_COMBD)
+#define RLC_EP_TABLE_MAX 	RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
 #endif
+
+/**
+ * Maximum number of coefficients of an isogeny map polynomial.
+ * RLC_TERMS of value 16 is sufficient for a degree-11 isogeny polynomial.
+ */
+#define RLC_EP_CTMAP_MAX   16
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -186,24 +215,16 @@ enum {
  * Represents an elliptic curve point over a prime field.
  */
 typedef struct {
-#if ALLOC == STATIC
-	/** The first coordinate. */
-	fp_t x;
-	/** The second coordinate. */
-	fp_t y;
-	/** The third coordinate (projective representation). */
-	fp_t z;
-#elif ALLOC == DYNAMIC || ALLOC == STACK || ALLOC == AUTO
 	/** The first coordinate. */
 	fp_st x;
 	/** The second coordinate. */
 	fp_st y;
 	/** The third coordinate (projective representation). */
 	fp_st z;
-#endif
 	/** Flag to indicate that this point is normalized. */
 	int norm;
 } ep_st;
+
 
 /**
  * Pointer to an elliptic curve point.
@@ -213,6 +234,37 @@ typedef ep_st ep_t[1];
 #else
 typedef ep_st *ep_t;
 #endif
+
+/**
+ * Data structure representing an isogeny map.
+ */
+typedef struct {
+	/** The a-coefficient of the isogenous curve used for SSWU mapping. */
+	fp_st a;
+	/** The b-coefficient of the isogenous curve used for SSWU mapping. */
+	fp_st b;
+	/** Degree of x numerator */
+	int deg_xn;
+	/** Degree of x denominator */
+	int deg_xd;
+	/** Degree of y numerator */
+	int deg_yn;
+	/** Degree of y denominator */
+	int deg_yd;
+	/** x numerator coefficients */
+	fp_st xn[RLC_EP_CTMAP_MAX];
+	/** x denominator coefficients */
+	fp_st xd[RLC_EP_CTMAP_MAX];
+	/** y numerator coefficients */
+	fp_st yn[RLC_EP_CTMAP_MAX];
+	/** y denominator coefficients */
+	fp_st yd[RLC_EP_CTMAP_MAX];
+} iso_st;
+
+/**
+ * Pointer to isogeny map coefficients.
+ */
+typedef iso_st *iso_t;
 
 /*============================================================================*/
 /* Macro definitions                                                          */
@@ -242,19 +294,6 @@ typedef ep_st *ep_t;
 		THROW(ERR_NO_MEMORY);												\
 	}																		\
 
-#elif ALLOC == STATIC
-#define ep_new(A)															\
-	A = (ep_t)alloca(sizeof(ep_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
-	fp_null((A)->x);														\
-	fp_null((A)->y);														\
-	fp_null((A)->z);														\
-	fp_new((A)->x);															\
-	fp_new((A)->y);															\
-	fp_new((A)->z);															\
-
 #elif ALLOC == AUTO
 #define ep_new(A)				/* empty */
 
@@ -275,15 +314,6 @@ typedef ep_st *ep_t;
 		free(A);															\
 		A = NULL;															\
 	}
-
-#elif ALLOC == STATIC
-#define ep_free(A)															\
-	if (A != NULL) {														\
-		fp_free((A)->x);													\
-		fp_free((A)->y);													\
-		fp_free((A)->z);													\
-		A = NULL;															\
-	}																		\
 
 #elif ALLOC == AUTO
 #define ep_free(A)				/* empty */
@@ -314,9 +344,9 @@ typedef ep_st *ep_t;
  * @param[in] Q				- the second point to add.
  */
 #if EP_ADD == BASIC
-#define ep_add(R, P, Q)		ep_add_basic(R, P, Q);
+#define ep_add(R, P, Q)		ep_add_basic(R, P, Q)
 #elif EP_ADD == PROJC
-#define ep_add(R, P, Q)		ep_add_projc(R, P, Q);
+#define ep_add(R, P, Q)		ep_add_projc(R, P, Q)
 #endif
 
 /**
@@ -339,9 +369,9 @@ typedef ep_st *ep_t;
  * @param[in] P				- the point to double.
  */
 #if EP_ADD == BASIC
-#define ep_dbl(R, P)		ep_dbl_basic(R, P);
+#define ep_dbl(R, P)		ep_dbl_basic(R, P)
 #elif EP_ADD == PROJC
-#define ep_dbl(R, P)		ep_dbl_projc(R, P);
+#define ep_dbl(R, P)		ep_dbl_projc(R, P)
 #endif
 
 /**
@@ -359,6 +389,8 @@ typedef ep_st *ep_t;
 #define ep_mul(R, P, K)		ep_mul_monty(R, P, K)
 #elif EP_MUL == LWNAF
 #define ep_mul(R, P, K)		ep_mul_lwnaf(R, P, K)
+#elif EP_MUL == LWREG
+#define ep_mul(R, P, K)		ep_mul_lwreg(R, P, K)
 #endif
 
 /**
@@ -369,10 +401,6 @@ typedef ep_st *ep_t;
  */
 #if EP_FIX == BASIC
 #define ep_mul_pre(T, P)		ep_mul_pre_basic(T, P)
-#elif EP_FIX == YAOWI
-#define ep_mul_pre(T, P)		ep_mul_pre_yaowi(T, P)
-#elif EP_FIX == NAFWI
-#define ep_mul_pre(T, P)		ep_mul_pre_nafwi(T, P)
 #elif EP_FIX == COMBS
 #define ep_mul_pre(T, P)		ep_mul_pre_combs(T, P)
 #elif EP_FIX == COMBD
@@ -391,10 +419,6 @@ typedef ep_st *ep_t;
  */
 #if EP_FIX == BASIC
 #define ep_mul_fix(R, T, K)		ep_mul_fix_basic(R, T, K)
-#elif EP_FIX == YAOWI
-#define ep_mul_fix(R, T, K)		ep_mul_fix_yaowi(R, T, K)
-#elif EP_FIX == NAFWI
-#define ep_mul_fix(R, T, K)		ep_mul_fix_nafwi(R, T, K)
 #elif EP_FIX == COMBS
 #define ep_mul_fix(R, T, K)		ep_mul_fix_combs(R, T, K)
 #elif EP_FIX == COMBD
@@ -495,6 +519,21 @@ int ep_curve_is_endom(void);
 int ep_curve_is_super(void);
 
 /**
+ * Tests if the configured prime elliptic curve is pairing-friendly.
+ *
+ * @return 0 if the prime elliptic curve is not pairing-friendly, and the
+ * family identifier otherwise.
+ */
+int ep_curve_is_pairf(void);
+
+/**
+ * Tests if the current curve should use an isogeny map for the SSWU map.
+ *
+ * @return 1 if the curve uses an isogeny, and 0 otherwise.
+ */
+int ep_curve_is_ctmap(void);
+
+/**
  * Returns the generator of the group of points in the prime elliptic curve.
  *
  * @param[out] g			- the returned generator.
@@ -523,6 +562,11 @@ void ep_curve_get_ord(bn_t n);
 void ep_curve_get_cof(bn_t h);
 
 /**
+ * Returns the isogeny map coefficients for use with the SSWU map.
+ */
+iso_t ep_curve_get_iso(void);
+
+/**
  * Configures a prime elliptic curve without endomorphisms by its coefficients
  * and generator.
  *
@@ -531,9 +575,11 @@ void ep_curve_get_cof(bn_t h);
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
+ * @param[in] u			- the non-square used for hashing to this curve.
+ * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
 void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h);
+		const bn_t h, const fp_t u, int ctmap);
 
 /**
  * Configures a supersingular prime elliptic curve by its coefficients and
@@ -544,23 +590,28 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] h			- the cofactor of the group order.
+ * @param[in] u			- the non-square used for hashing to this curve.
+ * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
 void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h);
+		const bn_t h, const fp_t u, int ctmap);
 
 /**
  * Configures a prime elliptic curve with endomorphisms by its coefficients and
  * generator.
  *
+ * @param[in] a			- the 'a' coefficient of the curve.
  * @param[in] b			- the 'b' coefficient of the curve.
  * @param[in] g			- the generator.
  * @param[in] r			- the order of the group of points.
  * @param[in] beta		- the constant associated with the endomorphism.
  * @param[in] l			- the exponent corresponding to the endomorphism.
  * @param[in] h			- the cofactor of the group order.
+ * @param[in] u			- the non-square used for hashing to this curve.
+ * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
-void ep_curve_set_endom(const fp_t b, const ep_t g, const bn_t r, const bn_t h,
-		const fp_t beta, const bn_t l);
+void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
+		const bn_t h, const fp_t beta, const bn_t l, const fp_t u, int ctmap);
 
 /**
  * Configures a prime elliptic curve by its parameter identifier.
@@ -578,7 +629,7 @@ int ep_param_set_any(void);
  * Configures some set of ordinary curve parameters for the current security
  * level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int ep_param_set_any_plain(void);
 
@@ -586,7 +637,7 @@ int ep_param_set_any_plain(void);
  * Configures some set of Koblitz curve parameters for the current security
  * level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int ep_param_set_any_endom(void);
 
@@ -594,7 +645,7 @@ int ep_param_set_any_endom(void);
  * Configures some set of supersingular curve parameters for the current
  * security level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int ep_param_set_any_super(void);
 
@@ -602,7 +653,7 @@ int ep_param_set_any_super(void);
  * Configures some set of pairing-friendly curve parameters for the current
  * security level.
  *
- * @return STS_OK if there is a curve at this security level, STS_ERR otherwise.
+ * @return RLC_OK if there is a curve at this security level, RLC_ERR otherwise.
  */
 int ep_param_set_any_pairf(void);
 
@@ -657,7 +708,7 @@ void ep_copy(ep_t r, const ep_t p);
  *
  * @param[in] p				- the first prime elliptic curve point.
  * @param[in] q				- the second prime elliptic curve point.
- * @return CMP_EQ if p == q and CMP_NE if p != q.
+ * @return RLC_EQ if p == q and RLC_NE if p != q.
  */
 int ep_cmp(const ep_t p, const ep_t q);
 
@@ -670,7 +721,7 @@ void ep_rand(ep_t p);
 
 /**
  * Computes the right-hand side of the elliptic curve equation at a certain
- * elliptic curve point.
+ * prime elliptic curve point.
  *
  * @param[out] rhs			- the result.
  * @param[in] p				- the point.
@@ -780,7 +831,7 @@ void ep_add_projc(ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Subtracts a prime elliptic curve point from another, both points represented
- * by affine coordinates..
+ * in affine coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point.
@@ -790,7 +841,7 @@ void ep_sub_basic(ep_t r, const ep_t p, const ep_t q);
 
 /**
  * Subtracts a prime elliptic curve point from another, both points represented
- * by projective coordinates..
+ * in projective coordinates.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the first point.
@@ -880,7 +931,7 @@ void ep_mul_lwreg(ep_t r, const ep_t p, const bn_t k);
 void ep_mul_gen(ep_t r, const bn_t k);
 
 /**
- * Multiplies a prime elliptic point by a small integer.
+ * Multiplies a prime elliptic point by a small positive integer.
  *
  * @param[out] r			- the result.
  * @param[in] p				- the point to multiply.
@@ -1066,6 +1117,17 @@ void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
 void ep_mul_sim_gen(ep_t r, const bn_t k, const ep_t q, const bn_t m);
 
 /**
+ * Multiplies prime elliptic curve points by small scalars.
+ * Computes R = \sum k_iP_i.
+ *
+ * @param[out] r			- the result.
+ * @param[in] p				- the points to multiply.
+ * @param[in] k				- the small scalars.
+ * @param[in] len			- the number of points to multiply.
+ */
+void ep_mul_sim_dig(ep_t r, const ep_t p[], const dig_t k[], int len);
+
+/**
  * Converts a point to affine coordinates.
  *
  * @param[out] r			- the result.
@@ -1083,16 +1145,25 @@ void ep_norm(ep_t r, const ep_t p);
 void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 
 /**
- * Maps a byte array to a point in a prime elliptic curve. The
- * algorithm implemented is the Fouque-Tibouchi algorithm from the
- * paper "Indifferentiable Hashing to Barreto-Naehrig curves" for
- * the BLS12-381 curve.
+ * Maps a byte array to a point in a prime elliptic curve.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
 void ep_map(ep_t p, const uint8_t *msg, int len);
+
+/**
+ * Maps a byte array to a point in a prime elliptic curve with specified
+ * domain separation tag (aka personalization string).
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the domain separation tag length in bytes.
+ */
+void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
 
 /**
  * Compresses a point.
@@ -1111,4 +1182,4 @@ void ep_pck(ep_t r, const ep_t p);
  */
 int ep_upk(ep_t r, const ep_t p);
 
-#endif /* !RELIC_EP_H */
+#endif /* !RLC_EP_H */
