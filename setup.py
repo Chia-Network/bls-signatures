@@ -74,6 +74,7 @@ setup(
     python_requires='>3.1',
     install_requires=["wheel"],
     long_description='BLS signatures with aggregation. Uses fast c++ implementation. See https://github.com/Chia-Network/bls-signatures for more details',
+    packages=["blspy_py"],
     ext_modules=[CMakeExtension('blspy', '.')],
     cmdclass=dict(build_ext=CMakeBuild),
     zip_safe=False,
