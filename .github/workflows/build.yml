@@ -63,7 +63,7 @@ jobs:
         CIBW_BEFORE_BUILD_MACOS: brew install boost && python -m pip install --upgrade pip
         #CIBW_BEFORE_BUILD_WINDOWS: python -m pip install --upgrade pip
         #CIBW_TEST_REQUIRES: pytest
-        CIBW_TEST_COMMAND: 
+        CIBW_TEST_COMMAND: python3 {project}/python-bindings/test.py
         CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH BUILD_VDF_CLIENT=N"
         CIBW_REPAIR_WHEEL_COMMAND_MACOS: "pip uninstall -y delocate && pip install git+https://github.com/Chia-Network/delocate.git && delocate-listdeps {wheel} && delocate-wheel -v {wheel} && cp {wheel} {dest_dir} && ls -l {dest_dir} && pwd && ls -l dist"
 
