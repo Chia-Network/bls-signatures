@@ -65,7 +65,7 @@ jobs:
         #CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: 
         CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH BUILD_VDF_CLIENT=N"
-        CIBW_REPAIR_WHEEL_COMMAND_MACOS: "pip uninstall -y delocate && pip install git+https://github.com/Chia-Network/delocate.git && delocate-listdeps {wheel} && delocate-wheel -v {wheel} && cp {wheel} {dest_dir}"
+        CIBW_REPAIR_WHEEL_COMMAND_MACOS: "pip uninstall -y delocate && pip install git+https://github.com/Chia-Network/delocate.git && delocate-listdeps {wheel} && delocate-wheel -v {wheel} && cp {wheel} {dest_dir} && ls -l {dest_dir} && pwd && ls -l dist"
 
     - name: Upload artifacts
       if: "!startsWith(matrix.os, 'windows')"
