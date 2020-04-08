@@ -53,8 +53,8 @@ jobs:
       run: |
         python -m cibuildwheel --output-dir dist
       env:
-        # build just python 3.7
-        CIBW_BUILD: cp37-*
+        # Python 3.7 and 3.8
+        CIBW_BUILD: cp37-* cp38-*
         # don't build i686 targets, can't seem to find cmake for these
         CIBW_SKIP: '*-manylinux_i686'
         # we need boost
