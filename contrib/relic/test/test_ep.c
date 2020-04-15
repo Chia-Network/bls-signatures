@@ -1124,7 +1124,7 @@ static int hashing(void) {
 
 		TEST_BEGIN("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
-			ep_map(a, msg, sizeof(msg));
+			ep_map_ft(a, msg, sizeof(msg));
 			TEST_ASSERT(ep_is_infty(a) == 0, end);
 			ep_mul(a, a, n);
 			TEST_ASSERT(ep_is_infty(a) == 1, end);

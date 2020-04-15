@@ -69,7 +69,7 @@ bool InsecureSignature::Verify(const std::vector<const uint8_t*>& hashes,
     g1_mul(pubKeysNative[0], pubKeysNative[0], ordMinus1);
 
     for (size_t i = 0; i < hashes.size(); i++) {
-        g2_map(mappedHashes[i + 1], hashes[i], BLS::MESSAGE_HASH_LEN);
+        g2_map_ft(mappedHashes[i + 1], hashes[i], BLS::MESSAGE_HASH_LEN);
         g1_copy(pubKeysNative[i + 1], pubKeys[i].q);
     }
 

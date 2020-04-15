@@ -102,6 +102,8 @@
 #define B12_P381_X1		"13E02B6052719F607DACD3A088274F65596BD0D09920B61AB5DA61BBDC7F5049334CF11213945D57E5AC7D055D042B7E"
 #define B12_P381_Y0		"0CE5D527727D6E118CC9CDC6DA2E351AADFD9BAA8CBDD3A76D429A695160D12C923AC9CC3BACA289E193548608B82801"
 #define B12_P381_Y1		"0606C4A02EA734CC32ACD2B02BC28B99CB3E287E85A763AF267492AB572E99AB3F370D275CEC1DA1AAA9075FF05F79BE"
+#define B12_P381_S3		"BE32CE5FBEED9CA374D38C0ED41EEFD5BB675277CDF12D11BC2FB026C41400045C03FFFFFFFDFFFD"
+#define B12_P381_S32 	"5F19672FDF76CE51BA69C6076A0F77EADDB3A93BE6F89688DE17D813620A00022E01FFFFFFFEFFFE"
 #define B12_P381_R		"73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001"
 #define B12_P381_H		"5D543A95414E7F1091D50792876A202CD91DE4547085ABAA68A205B2E5A7DDFA628F1CB4D9E82EF21537E293A6691AE1616EC6E786F0C70CF1C38E31C7238E5"
 #if defined(EP_CTMAP)
@@ -282,6 +284,10 @@
 	fp_read_str(g->y[1], str, strlen(str), 16);								\
 	RLC_GET(str, CURVE##_R, sizeof(CURVE##_R));								\
 	bn_read_str(r, str, strlen(str), 16);									\
+	RLC_GET(str, CURVE##_S3, sizeof(CURVE##_S3));							\
+	bn_read_str(s3, str, strlen(str), 16);									\
+	RLC_GET(str, CURVE##_S32, sizeof(CURVE##_S32));							\
+	bn_read_str(s32, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_H, sizeof(CURVE##_H));								\
 	bn_read_str(h, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_MAPU0, sizeof(CURVE##_MAPU0));						\
@@ -540,6 +546,8 @@ void ep2_curve_init(void) {
 	ep2_set_infty(ctx->ep2_g);
 	bn_init(&(ctx->ep2_r), RLC_FP_DIGS);
 	bn_init(&(ctx->ep2_h), RLC_FP_DIGS);
+	bn_init(&(ctx->ep2_s3), RLC_FP_DIGS);
+	bn_init(&(ctx->ep2_s32), RLC_FP_DIGS);
 
 #ifdef EP_CTMAP
 	iso2_t iso = ep2_curve_get_iso();
@@ -582,6 +590,8 @@ void ep2_curve_clean(void) {
 #endif
 	bn_clean(&(ctx->ep2_r));
 	bn_clean(&(ctx->ep2_h));
+	bn_clean(&(ctx->ep2_s3));
+	bn_clean(&(ctx->ep2_s32));
 
 #ifdef EP_CTMAP
 	iso2_t iso = ep2_curve_get_iso();
@@ -607,6 +617,14 @@ int ep2_curve_opt_b(void) {
 
 int ep2_curve_is_twist(void) {
 	return core_get()->ep2_is_twist;
+}
+
+void ep2_curve_get_s3(bn_t s3) {
+	bn_copy(s3, &(core_get()->ep2_s3));
+}
+
+void ep2_curve_get_s32(bn_t s32) {
+	bn_copy(s32, &(core_get()->ep2_s32));
 }
 
 int ep2_curve_is_ctmap(void) {
@@ -712,7 +730,7 @@ void ep2_curve_set_twist(int type) {
 	ep2_t g;
 	fp2_t a;
 	fp2_t b, u;
-	bn_t r, h;
+	bn_t r, h, s3, s32;
 
 	ep2_null(g);
 	fp2_null(a);
@@ -720,6 +738,8 @@ void ep2_curve_set_twist(int type) {
 	fp2_null(u);
 	bn_null(r);
 	bn_null(h);
+	bn_null(s3);
+	bn_null(s32);
 
 	ctx->ep2_is_twist = 0;
 	if (type == EP_MTYPE || type == EP_DTYPE) {
@@ -735,6 +755,8 @@ void ep2_curve_set_twist(int type) {
 		fp2_new(u);
 		bn_new(r);
 		bn_new(h);
+		bn_new(s3);
+		bn_new(s32);
 
 		switch (ep_param_get()) {
 #if FP_PRIME == 158
@@ -808,6 +830,8 @@ void ep2_curve_set_twist(int type) {
 		fp2_copy(ctx->ep2_map_u, u);
 		bn_copy(&(ctx->ep2_r), r);
 		bn_copy(&(ctx->ep2_h), h);
+        bn_copy(&(ctx->ep2_s3), s3);
+		bn_copy(&(ctx->ep2_s32), s32);
 		ctx->ep2_is_ctmap = ctmap;
 		/* I don't have a better place for this. */
 		fp_prime_calc();
@@ -829,6 +853,8 @@ void ep2_curve_set_twist(int type) {
 		fp2_free(u);
 		bn_free(r);
 		bn_free(h);
+		bn_free(s3);
+		bn_free(s32);
 	}
 }
 

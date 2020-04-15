@@ -360,7 +360,7 @@ TEST_CASE("Signatures") {
         uint8_t mapMsg[0] = {};
         g1_t result;
         uint8_t buf[49];
-        ep_map(result, mapMsg, 0);
+        ep_map_ft(result, mapMsg, 0);
         g1_write_bin(buf, 49, result, 1);
         REQUIRE(Util::HexStr(buf + 1, 48) == "12fc5ad5a2fbe9d4b6eb0bc16d530e5f263b6d59cbaf26c3f2831962924aa588ab84d46cc80d3a433ce064adb307f256");
     }

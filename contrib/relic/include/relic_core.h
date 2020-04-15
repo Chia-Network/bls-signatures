@@ -317,6 +317,10 @@ typedef struct _ctx_t {
 	bn_st ep2_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep2_h;
+	/** sqrt(-3) in the field for this curve */
+	bn_st ep2_s3;
+	/** (sqrt(-3) - 1) / 2 in the field for this curve */
+	bn_st ep2_s32;
 	/** The distinguished non-square used by the mapping function */
 	fp2_t ep2_map_u;
 	/** The constants needed for hashing. */
