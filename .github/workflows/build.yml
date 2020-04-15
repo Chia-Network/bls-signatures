@@ -61,7 +61,7 @@ jobs:
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
         CIBW_BEFORE_BUILD_LINUX: curl -L https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-`uname -m`.sh > cmake.sh && yes | sh cmake.sh | cat && rm -f /usr/bin/cmake && yum -y install boost-devel gmp-devel && python -m pip install --upgrade pip && which cmake && cmake --version
         CIBW_BEFORE_BUILD_MACOS: brew install boost && python -m pip install --upgrade pip
-        CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.13
+        CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.14
         CIBW_BUILD_VERBOSITY_MACOS: 0
         #CIBW_BEFORE_BUILD_WINDOWS: python -m pip install --upgrade pip
         #CIBW_TEST_REQUIRES: pytest
