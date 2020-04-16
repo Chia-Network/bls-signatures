@@ -42,6 +42,7 @@ ext_modules = [
             'src/bls.cpp',
             'src/aggregationinfo.cpp',
             'src/threshold.cpp',
+            'python-bindings/pythonbindings.cpp',
         ],
         include_dirs=[
             # Path to pybind11 headers
@@ -49,8 +50,6 @@ ext_modules = [
             get_pybind_include(user=True),
             'mpir_gc_x64',
             'relic_x64/include',
-            'contrib/relic/include',
-            'contrib/catch',
         ],
         library_dirs=['mpir_gc_x64','relic_x64/lib/Release'],
         libraries=['mpir'],
