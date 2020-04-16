@@ -231,6 +231,8 @@ bool operator!=(AggregationInfo const&a, AggregationInfo const&b) {
     return (a < b) || (b < a);
 }
 
+#define RLC_BN_BYTES 1000
+
 std::ostream &operator<<(std::ostream &os, AggregationInfo const &a) {
     for (auto &kv : a.tree) {
         os << Util::HexStr(kv.first, 80) << ".." << ":" << std::endl;

@@ -59,7 +59,7 @@ bool BLS::Init() {
     SetSecureAllocator(malloc, free);
 #endif
 
-    core_set_thread_initializer(relic_core_initializer, nullptr);
+//    core_set_thread_initializer(relic_core_initializer, nullptr);
 
     return true;
 }
