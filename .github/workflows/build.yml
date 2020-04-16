@@ -7,6 +7,7 @@ jobs:
     name: Build wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-18.04, windows-latest]
 
@@ -15,6 +16,8 @@ jobs:
       with:
         fetch-depth: 0
         # we need fetch-depth 0 so setuptools_scm can resolve tags
+    - name: Checkout submodules	
+      uses: snickerbockers/submodules-init@v4
     - uses: actions/setup-python@v1
       name: Install Python
       with:
