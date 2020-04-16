@@ -317,6 +317,10 @@ typedef struct _ctx_t {
 	bn_st ep2_r;
 	/** The cofactor of the group order in the elliptic curve. */
 	bn_st ep2_h;
+	/** sqrt(-3) in the field for this curve */
+	bn_st ep2_s3;
+	/** (sqrt(-3) - 1) / 2 in the field for this curve */
+	bn_st ep2_s32;
 	/** The distinguished non-square used by the mapping function */
 	fp2_t ep2_map_u;
 	/** The constants needed for hashing. */
@@ -445,5 +449,16 @@ ctx_t *core_get(void);
  * @param[in] ctx					- the new library context.
  */
 void core_set(ctx_t *ctx);
+
+#if MULTI != RELIC_NONE
+/**
+ * Set an initializer function which is called when the context
+ * is uninitialized. This function is called for every thread.
+ *
+ * @param[in] init function to call when the current context is not initialized
+ * @param[in] init_ptr a pointer which is passed to the initialized
+ */
+void core_set_thread_initializer(void(*init)(void *init_ptr), void* init_ptr);
+#endif
 
 #endif /* !RLC_CORE_H */

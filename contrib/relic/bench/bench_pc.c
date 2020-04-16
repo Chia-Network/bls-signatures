@@ -522,7 +522,7 @@ static void arith2(void) {
 	BENCH_BEGIN("g2_map") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
-		BENCH_ADD(g2_map(p, msg, 5));
+		BENCH_ADD(g2_map(p, msg, 5, 1));
 	} BENCH_END;
 
 	g2_free(p);

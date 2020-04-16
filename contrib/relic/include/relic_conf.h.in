@@ -476,7 +476,7 @@
 
 /** Binary point multiplication. */
 #define BASIC	 1
-/** L�pez-Dahab point multiplication. */
+/** López-Dahab point multiplication. */
 #define LODAH	 2
 /** Halving. */
 #define HALVE    3

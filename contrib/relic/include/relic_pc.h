@@ -781,8 +781,9 @@ typedef RLC_CAT(GT_LOWER, t) gt_t;
  * @param[out] P			- the result.
  * @param[in] M				- the byte array to map.
  * @param[in] L				- the array length in bytes.
+ * @param[in] H				- whether to hash internally.
  */
-#define g2_map(P, M, L);	RLC_CAT(G2_LOWER, map)(P, M, L)
+#define g2_map(P, M, L, H);	RLC_CAT(G2_LOWER, map)(P, M, L, H)
 
 /**
  * Computes the bilinear pairing of a G_1 element and a G_2 element. Computes

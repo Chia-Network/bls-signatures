@@ -395,6 +395,8 @@
 #define B12_P381_H		"396C8C005555E1568C00AAAB0000AAAB"
 #define B12_P381_BETA	"5F19672FDF76CE51BA69C6076A0F77EADDB3A93BE6F89688DE17D813620A00022E01FFFFFFFEFFFE"
 #define B12_P381_LAMB	"73EDA753299D7D483339D80809A1D804A7780001FFFCB7FCFFFFFFFE00000001"
+#define B12_P381_S3		"BE32CE5FBEED9CA374D38C0ED41EEFD5BB675277CDF12D11BC2FB026C41400045C03FFFFFFFDFFFD"
+#define B12_P381_S32 	"5F19672FDF76CE51BA69C6076A0F77EADDB3A93BE6F89688DE17D813620A00022E01FFFFFFFEFFFE"
 #if defined(EP_CTMAP)
 #define B12_P381_ISO_A  "144698A3B8E9433D693A02C96D4982B0EA985383EE66A8D8E8981AEFD881AC98936F8DA0E0F97F5CF428082D584C1D"
 #define B12_P381_ISO_B  "12E2908D11688030018B12E8753EEE3B2016C1F0F24F4070A0B9C14FCEF35EF55A23215A316CEAA5D1CC48E98E172BE0"
@@ -647,6 +649,10 @@
 	bn_read_str(h, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_MAPU, sizeof(CURVE##_MAPU));						\
 	fp_read_str(u, str, strlen(str), 16);									\
+	RLC_GET(str, CURVE##_S3, sizeof(CURVE##_S3));							\
+	bn_read_str(s3, str, strlen(str), 16);									\
+	RLC_GET(str, CURVE##_S32, sizeof(CURVE##_S32));							\
+	bn_read_str(s32, str, strlen(str), 16);									\
 
 /**
  * Assigns a set of parameters for an elliptic curve with endomorphisms.
@@ -751,7 +757,7 @@ void ep_param_set(int param) {
 	char str[2 * RLC_FP_BYTES + 2];
 	fp_t a, b, beta, u;
 	ep_t g;
-	bn_t r, h, lamb;
+	bn_t r, h, lamb, s3, s32;
 
 	fp_null(a);
 	fp_null(b);
@@ -761,6 +767,8 @@ void ep_param_set(int param) {
 	ep_null(g);
 	bn_null(r);
 	bn_null(h);
+	bn_null(s3);
+	bn_null(s32);
 
 	TRY {
 		fp_new(a);
@@ -771,6 +779,8 @@ void ep_param_set(int param) {
 		ep_new(g);
 		bn_new(r);
 		bn_new(h);
+		bn_new(s3);
+		bn_new(s32);
 
 		core_get()->ep_id = 0;
 
@@ -1044,6 +1054,8 @@ void ep_param_set(int param) {
 		ep_free(g);
 		bn_free(r);
 		bn_free(h);
+		bn_free(s3);
+		bn_free(s32);
 	}
 }
 

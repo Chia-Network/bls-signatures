@@ -473,6 +473,20 @@ void ep2_curve_get_ord(bn_t n);
 void ep2_curve_get_cof(bn_t h);
 
 /**
+ * Returns the sqrt(-3) mod q in the curve, where q is the prime.
+ *
+ * @param[out] h			- the returned cofactor.
+ */
+void ep2_curve_get_s3(bn_t s3);
+
+/**
+ * Returns the (sqrt(-3) - 1) / 2 mod q in the curve, where q is the prime.
+ *
+ * @param[out] h			- the returned cofactor.
+ */
+void ep2_curve_get_s32(bn_t s32);
+
+/**
  * Returns the isogeny map coefficients for use with the SSWU map.
  */
 iso2_t ep2_curve_get_iso(void);
@@ -963,13 +977,16 @@ void ep2_norm(ep2_t r, ep2_t p);
 void ep2_norm_sim(ep2_t *r, ep2_t *t, int n);
 
 /**
- * Maps a byte array to a point in an elliptic curve over a quadratic extension.
+ * Maps a byte array to a point in a prime elliptic curve. The
+ * algorithm implemented is the Fouque-Tibouchi algorithm from the
+ * paper "Indifferentiable Hashing to Barreto-Naehrig curves" for
+ * the BLS12-381 curve.
  *
  * @param[out] p			- the result.
  * @param[in] msg			- the byte array to map.
  * @param[in] len			- the array length in bytes.
  */
-void ep2_map(ep2_t p, const uint8_t *msg, int len);
+void ep2_map(ep2_t p, const uint8_t *msg, int len, int performHash);
 
 /**
  * Computes a power of the Gailbraith-Lin-Scott homomorphism of a point

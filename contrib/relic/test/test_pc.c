@@ -1152,7 +1152,7 @@ static int hashing2(void) {
 
 		TEST_BEGIN("point hashing is correct") {
 			rand_bytes(msg, sizeof(msg));
-			g2_map(a, msg, sizeof(msg));
+			g2_map(a, msg, sizeof(msg), 1);
 			TEST_ASSERT(g2_is_valid(a) == 1, end);
 		}
 		TEST_END;

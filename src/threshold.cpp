@@ -83,7 +83,7 @@ InsecureSignature Threshold::SignWithCoefficient(PrivateKey sk, const uint8_t *m
     Util::Hash256(messageHash, msg, len);
 
     g2_t sig;
-    g2_map(sig, messageHash, BLS::MESSAGE_HASH_LEN);
+    g2_map(sig, messageHash, BLS::MESSAGE_HASH_LEN, 0);
 
     bn_t *coeffs = new bn_t[T];
     try {

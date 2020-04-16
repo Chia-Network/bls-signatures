@@ -31,7 +31,7 @@ PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
 
     // Hash the seed into sk
     md_hmac(hash, seed, seedLen, hmacKey, sizeof(hmacKey));
-    
+
     bn_t order;
     bn_new(order);
     g1_get_ord(order);
@@ -214,7 +214,9 @@ InsecureSignature PrivateKey::SignInsecure(const uint8_t *msg, size_t len) const
 InsecureSignature PrivateKey::SignInsecurePrehashed(const uint8_t *messageHash) const {
     g2_t sig, point;
 
-    g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN);
+    // std::cout << "Msg: " << Util::HexStr(messageHash, 32) << std::endl;
+    g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN, 0);
+    // std::cout << "Mapped" << InsecureSignature::FromG2(&point) << std::endl;
     g2_mul(sig, point, *keydata);
 
     return InsecureSignature::FromG2(&sig);

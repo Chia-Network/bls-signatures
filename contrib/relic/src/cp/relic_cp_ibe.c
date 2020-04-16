@@ -62,7 +62,7 @@ int cp_ibe_gen(bn_t master, g1_t pub) {
 }
 
 int cp_ibe_gen_prv(g2_t prv, char *id, int len, bn_t master) {
-	g2_map(prv, (uint8_t *)id, len);
+	g2_map(prv, (uint8_t *)id, len, 1);
 	g2_mul(prv, prv, master);
 	return RLC_OK;
 }
@@ -109,7 +109,7 @@ int cp_ibe_enc(uint8_t *out, int *out_len, uint8_t *in, int in_len,
 		g1_get_ord(n);
 
 		/* q = H_1(ID). */
-		g2_map(q, (uint8_t *)id, len);
+		g2_map(q, (uint8_t *)id, len, 1);
 
 		/* e = e(K_pub, q). */
 		pc_map(e, pub, q);

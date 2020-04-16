@@ -13,11 +13,11 @@ message("   ** Available binary elliptic curve methods (default = PROJC;LWNAF;CO
 
 message("      Point representation:")
 message("      EB_METHD=BASIC    Affine coordinates.")
-message("      EB_METHD=PROJC    Projective coordinates (L�pez-Dahab for ordinary curves).\n")
+message("      EB_METHD=PROJC    Projective coordinates (López-Dahab for ordinary curves).\n")
 
 message("      Variable-base scalar multiplication:")
 message("      EB_METHD=BASIC    Binary double-and-add method.")
-message("      EB_METHD=LODAH    Lopez-Dahab constant-time point multiplication.")
+message("      EB_METHD=LODAH    López-Dahab constant-time point multiplication.")
 message("      EB_METHD=LWNAF    Left-to-right window (T)NAF method.")
 message("      EB_METHD=RWNAF    Right-to-left window (T)NAF method.")
 message("      EB_METHD=HALVE    Halving method.\n")

@@ -553,14 +553,15 @@ void fp_inv_sim(fp_t *c, const fp_t *a, int n) {
 	}
 }
 
-void fp_inv_exgcd_bn(bn_t c, const bn_t u, const bn_t p) {
-	bn_t v, g1, g2, q, r;
+void fp_inv_exgcd_bn(bn_t c, const bn_t u1, const bn_t p) {
+	bn_t v, g1, g2, q, r, u;
 
 	bn_null(v);
 	bn_null(g1);
 	bn_null(g2);
 	bn_null(q);
 	bn_null(r);
+	bn_null(u);
 
 	TRY {
 		bn_new(v);
@@ -568,6 +569,7 @@ void fp_inv_exgcd_bn(bn_t c, const bn_t u, const bn_t p) {
 		bn_new(g2);
 		bn_new(q);
 		bn_new(r);
+		bn_new(u);
 
 		/* u = a, v = p, g1 = 1, g2 = 0. */
 		bn_copy(v, p);
@@ -603,5 +605,6 @@ void fp_inv_exgcd_bn(bn_t c, const bn_t u, const bn_t p) {
 		bn_free(g2);
 		bn_free(q);
 		bn_free(r);
+		bn_free(u);
 	};
 }

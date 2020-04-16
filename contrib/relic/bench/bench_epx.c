@@ -583,7 +583,7 @@ static void arith(void) {
 	BENCH_BEGIN("ep2_map") {
 		uint8_t msg[5];
 		rand_bytes(msg, 5);
-		BENCH_ADD(ep2_map(p, msg, 5));
+		BENCH_ADD(ep2_map(p, msg, 5, 1));
 	} BENCH_END;
 
 	BENCH_BEGIN("ep2_pck") {
