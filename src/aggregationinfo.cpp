@@ -231,14 +231,12 @@ bool operator!=(AggregationInfo const&a, AggregationInfo const&b) {
     return (a < b) || (b < a);
 }
 
-#define RLC_BN_BYTES 1000
-
 std::ostream &operator<<(std::ostream &os, AggregationInfo const &a) {
     for (auto &kv : a.tree) {
         os << Util::HexStr(kv.first, 80) << ".." << ":" << std::endl;
-        uint8_t str[RLC_BN_BYTES * 3 + 1];
+        uint8_t str[RLC_BN_SIZE * 3 + 1];
         bn_write_bin(str, sizeof(str), *kv.second);
-        os << Util::HexStr(str + RLC_BN_BYTES * 3 + 1 - 5, 5)
+        os << Util::HexStr(str + RLC_BN_SIZE * 3 + 1 - 5, 5)
            << std::endl;
     }
     return os;
