@@ -1154,18 +1154,6 @@ void ep_norm_sim(ep_t *r, const ep_t *t, int n);
 void ep_map(ep_t p, const uint8_t *msg, int len);
 
 /**
- * Maps a byte array to a point in a prime elliptic curve. The
- * algorithm implemented is the Fouque-Tibouchi algorithm from the
- * paper "Indifferentiable Hashing to Barreto-Naehrig curves" for
- * the BLS12-381 curve.
- *
- * @param[out] p			- the result.
- * @param[in] msg			- the byte array to map.
- * @param[in] len			- the array length in bytes.
- */
-void ep_map_ft(ep_t p, const uint8_t *msg, int len);
-
-/**
  * Maps a byte array to a point in a prime elliptic curve with specified
  * domain separation tag (aka personalization string).
  *

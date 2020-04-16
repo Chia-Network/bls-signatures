@@ -61,11 +61,6 @@
 #define RLC_BN_DIGS		((int)RLC_CEIL(BN_PRECI, RLC_DIG))
 
 /**
- * Size in bytes of a block sufficient to store the required precision.
- */
-#define RLC_BN_BYTES 	((int)((RLC_BN_BITS)/8 + ((RLC_BN_BITS % 8) > 0)))
-
-/**
  * Size in digits of a block sufficient to store a multiple precision integer.
  */
 #if BN_MAGNI == DOUBLE

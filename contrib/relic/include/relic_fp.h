@@ -1011,7 +1011,7 @@ void fp_inv_exgcd(fp_t c, const fp_t a);
 
 /**
  * Inverts a prime field element using the Euclidean Extended Algorithm,
- * using bns and a custom prime modulus.
+ * using bns and a custum prime modulus.
  *
  * @param[out] c			- the result.
  * @param[in] a				- the prime field element to invert.
