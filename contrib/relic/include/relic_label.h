@@ -42,6 +42,7 @@
 /* Macro definitions                                                          */
 /*============================================================================*/
 
+#ifdef LABEL
 
 #undef first_ctx
 #define first_ctx     PREFIX(first_ctx)
@@ -2661,6 +2662,6 @@
 #define md_xmd_sh384 	PREFIX(md_xmd_sh384)
 #define md_xmd_sh512 	PREFIX(md_xmd_sh512)
 
-// #endif /* LABEL */
+#endif /* LABEL */
 
 #endif /* !RLC_LABEL_H */

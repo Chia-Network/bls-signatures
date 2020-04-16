@@ -562,7 +562,6 @@ void fp_inv_exgcd_bn(bn_t c, const bn_t u1, const bn_t p) {
 	bn_null(q);
 	bn_null(r);
 	bn_null(u);
-
 	TRY {
 		bn_new(v);
 		bn_new(g1);
@@ -570,6 +569,7 @@ void fp_inv_exgcd_bn(bn_t c, const bn_t u1, const bn_t p) {
 		bn_new(q);
 		bn_new(r);
 		bn_new(u);
+		bn_copy(u, u1);
 
 		/* u = a, v = p, g1 = 1, g2 = 0. */
 		bn_copy(v, p);

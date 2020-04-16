@@ -652,7 +652,7 @@
 	RLC_GET(str, CURVE##_S3, sizeof(CURVE##_S3));							\
 	bn_read_str(s3, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_S32, sizeof(CURVE##_S32));							\
-	bn_read_str(s32, str, strlen(str), 16);									\
+	bn_read_str(s32, str, strlen(str), 16);
 
 /**
  * Assigns a set of parameters for an elliptic curve with endomorphisms.

@@ -214,9 +214,7 @@ InsecureSignature PrivateKey::SignInsecure(const uint8_t *msg, size_t len) const
 InsecureSignature PrivateKey::SignInsecurePrehashed(const uint8_t *messageHash) const {
     g2_t sig, point;
 
-    // std::cout << "Msg: " << Util::HexStr(messageHash, 32) << std::endl;
     g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN, 0);
-    // std::cout << "Mapped" << InsecureSignature::FromG2(&point) << std::endl;
     g2_mul(sig, point, *keydata);
 
     return InsecureSignature::FromG2(&sig);

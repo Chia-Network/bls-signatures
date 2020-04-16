@@ -286,6 +286,10 @@
 	bn_read_str(r, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_H, sizeof(CURVE##_H));								\
 	bn_read_str(h, str, strlen(str), 16);									\
+	RLC_GET(str, CURVE##_S3, sizeof(CURVE##_S3));							\
+	bn_read_str(s3, str, strlen(str), 16);									\
+	RLC_GET(str, CURVE##_S32, sizeof(CURVE##_S32));							\
+	bn_read_str(s32, str, strlen(str), 16);									\
 	RLC_GET(str, CURVE##_MAPU0, sizeof(CURVE##_MAPU0));						\
 	fp_read_str(u[0], str, strlen(str), 16);								\
 	RLC_GET(str, CURVE##_MAPU1, sizeof(CURVE##_MAPU1));						\
