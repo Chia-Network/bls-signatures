@@ -35,7 +35,7 @@ jobs:
         CIBW_BEFORE_BUILD_LINUX: yum -y install boost-devel && python -m pip install --upgrade pip && pip install pybind11
         CIBW_BEFORE_BUILD_MACOS: brew install boost && python -m pip install --upgrade pip && pip install pybind11
         CIBW_BEFORE_BUILD_WINDOWS: python -m pip install --upgrade pip && pwd && git clone https://github.com/Chia-Network/relic_x64.git && ls -l relic_x64 && git clone https://github.com/Chia-Network/mpir_gc_x64.git && ls -l mpir_gc_x64 && cp setupwin.py setup.py
-        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "ls -l mpir_gc_x64 && pip uninstall -y delocate && pip install git+https://github.com/Chia-Network/delocate.git && delocate-wheel -v -i mpir_gc_x64/mpir.dll {wheel} && cp {wheel} {dest_dir} && ls -l {dest_dir} && pwd && ls -l dist && rm -fr mpir_gc_x64 && rm -fr relic_x64"
+        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "ls -l mpir_gc_x64 && pip uninstall -y delocate && pip install git+https://github.com/Chia-Network/delocate.git && delocate-wheel -v -i mpir_gc_x64/mpir.dll {wheel} && delocate-wheel -v -i relic_x64/lib/Release/relic.dll {wheel} && cp {wheel} {dest_dir} && ls -l {dest_dir} && pwd && ls -l dist && rm -fr mpir_gc_x64 && rm -fr relic_x64"
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: py.test -v {project}/tests
     - name: Upload artifacts

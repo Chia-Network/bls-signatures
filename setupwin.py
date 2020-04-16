@@ -52,7 +52,7 @@ ext_modules = [
             'contrib/relic/include',
             'contrib/catch',
         ],
-        library_dirs=['mpir_gc_x64','relic_x64/lib'],
+        library_dirs=['mpir_gc_x64','relic_x64/lib/Release'],
         libraries=['mpir'],
         language='c++'
     ),
