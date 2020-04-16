@@ -23,21 +23,27 @@ jobs:
     - name: Install cibuildwheel
       run: |
         python -m pip install cibuildwheel==1.3.0
+    - name: Build source distribution with MacOS	
+      if: startsWith(matrix.os, 'mac')
+      run: |
+        pip install pep517
+        python -m pep517.build --source --out-dir dist .
     - name: Build wheel
       run: |
         python -m cibuildwheel --output-dir dist
       env:
         # build just python 3.7
-        CIBW_BUILD: cp37-*
-        CIBW_SKIP: '*-win32'
+        CIBW_BUILD: cp37-* cp38-*
+        CIBW_SKIP: '*-manylinux_i686 *-win32'
         # we need boost
-        # we need pybind11 to be globally available for cibuildwheel
-        CIBW_BEFORE_BUILD_LINUX: yum -y install boost-devel && python -m pip install --upgrade pip && pip install pybind11
-        CIBW_BEFORE_BUILD_MACOS: brew install boost && python -m pip install --upgrade pip && pip install pybind11
+        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
+        CIBW_BEFORE_BUILD_LINUX: curl -L https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-`uname -m`.sh > cmake.sh && yes | sh cmake.sh | cat && rm -f /usr/bin/cmake && yum -y install boost-devel gmp-devel && python -m pip install --upgrade pip && which cmake && cmake --version
+        CIBW_BEFORE_BUILD_MACOS: brew install boost && python -m pip install --upgrade pip
         CIBW_BEFORE_BUILD_WINDOWS: python -m pip install --upgrade pip && pwd && git clone https://github.com/Chia-Network/relic_x64.git && ls -l relic_x64 && git clone https://github.com/Chia-Network/mpir_gc_x64.git && ls -l mpir_gc_x64 && cp setupwin.py setup.py
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "ls -l mpir_gc_x64 && pip uninstall -y delocate && pip install git+https://github.com/Chia-Network/delocate.git && delocate-wheel -v -i mpir_gc_x64/mpir.dll {wheel} && delocate-wheel -v -i relic_x64/lib/Release/relic.dll {wheel} && cp {wheel} {dest_dir} && ls -l {dest_dir} && pwd && ls -l dist && rm -fr mpir_gc_x64 && rm -fr relic_x64"
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: py.test -v {project}/python-bindings
+        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH BUILD_VDF_CLIENT=N"
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
       with:
