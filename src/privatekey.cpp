@@ -35,6 +35,7 @@ PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
     bn_t order;
     bn_new(order);
     g1_get_ord(order);
+    bn_free(order);
 
     // Make sure private key is less than the curve order
     bn_t* skBn = Util::SecAlloc<bn_t>(1);
@@ -48,6 +49,7 @@ PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
 
     Util::SecFree(skBn);
     Util::SecFree(hash);
+
     return k;
 }
 
@@ -179,7 +181,7 @@ PrivateKey PrivateKey::Mul(const bn_t n) const {
 }
 
 bool operator==(const PrivateKey& a, const PrivateKey& b) {
-    return bn_cmp(*a.keydata, *b.keydata) == CMP_EQ;
+    return bn_cmp(*a.keydata, *b.keydata) == RLC_EQ;
 }
 
 bool operator!=(const PrivateKey& a, const PrivateKey& b) {

@@ -1,23 +1,24 @@
 /*
  * RELIC is an Efficient LIbrary for Cryptography
- * Copyright (C) 2007-2017 RELIC Authors
+ * Copyright (C) 2007-2019 RELIC Authors
  *
  * This file is part of RELIC. RELIC is legal property of its developers,
  * whose names are not listed here. Please refer to the COPYRIGHT file
  * for contact information.
  *
- * RELIC is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * RELIC is free software; you can redistribute it and/or modify it under the
+ * terms of the version 2.1 (or later) of the GNU Lesser General Public License
+ * as published by the Free Software Foundation; or version 2.0 of the Apache
+ * License as published by the Apache Software Foundation. See the LICENSE files
+ * for more details.
  *
- * RELIC is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
+ * RELIC is distributed in the hope that it will be useful, but WITHOUT ANY
+ * WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR
+ * A PARTICULAR PURPOSE. See the LICENSE files for more details.
  *
- * You should have received a copy of the GNU Lesser General Public License
- * along with RELIC. If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU Lesser General Public or the
+ * Apache License along with RELIC. If not, see <https://www.gnu.org/licenses/>
+ * or <https://www.apache.org/licenses/>.
  */
 
 /**
@@ -199,14 +200,14 @@ int bn_is_prime_basic(const bn_t a) {
 
 	result = 1;
 
-	if (bn_cmp_dig(a, 1) == CMP_EQ) {
+	if (bn_cmp_dig(a, 1) == RLC_EQ) {
 		return 0;
 	}
 
 	/* Trial division. */
 	for (i = 0; i < BASIC_TESTS; i++) {
 		bn_mod_dig(&t, a, primes[i]);
-		if (t == 0 && bn_cmp_dig(a, primes[i]) != CMP_EQ) {
+		if (t == 0 && bn_cmp_dig(a, primes[i]) != RLC_EQ) {
 			result = 0;
 			break;
 		}
@@ -216,7 +217,7 @@ int bn_is_prime_basic(const bn_t a) {
 
 int bn_is_prime_rabin(const bn_t a) {
 	bn_t t, n1, y, r;
-	int i, s, j, result, b, tests = 0;
+	int i, s, j, result, b, tests = 0, cmp2;
 
 	tests = 0;
 	result = 1;
@@ -226,7 +227,18 @@ int bn_is_prime_rabin(const bn_t a) {
 	bn_null(y);
 	bn_null(r);
 
-	if (bn_cmp_dig(a, 1) == CMP_EQ) {
+	cmp2 = bn_cmp_dig(a, 2);
+	if (cmp2 == RLC_LT) {
+		/* Numbers 1 or smaller are not prime */
+		return 0;
+	}
+	if (cmp2 == RLC_EQ) {
+		/* The number 2 is prime */
+		return 1;
+	}
+
+	if (bn_is_even(a) == 1) {
+		/* Even numbers > 2 are not prime */
 		return 0;
 	}
 
@@ -269,16 +281,22 @@ int bn_is_prime_rabin(const bn_t a) {
 
 		/* r = (n - 1)/2^s. */
 		bn_sub_dig(n1, a, 1);
+		bn_copy(r, n1);
 		s = 0;
-		while (bn_is_even(n1)) {
+		while (bn_is_even(r)) {
 			s++;
-			bn_rsh(n1, n1, 1);
+			bn_rsh(r, r, 1);
 		}
-		bn_lsh(r, n1, s);
 
 		for (i = 0; i < tests; i++) {
 			/* Fix the basis as the first few primes. */
 			bn_set_dig(t, primes[i]);
+
+			/* Ensure t <= n - 2 as per HAC */
+			if( bn_cmp(t, n1) != RLC_LT ) {
+				result = 1;
+				break;
+			}
 
 			/* y = b^r mod a. */
 #if BN_MOD != PMERS
@@ -287,14 +305,14 @@ int bn_is_prime_rabin(const bn_t a) {
 			bn_exp(y, t, r, a);
 #endif
 
-			if (bn_cmp_dig(y, 1) != CMP_EQ && bn_cmp(y, n1) != CMP_EQ) {
+			if (bn_cmp_dig(y, 1) != RLC_EQ && bn_cmp(y, n1) != RLC_EQ) {
 				j = 1;
-				while ((j <= (s - 1)) && bn_cmp(y, n1) != CMP_EQ) {
+				while ((j <= (s - 1)) && bn_cmp(y, n1) != RLC_EQ) {
 					bn_sqr(y, y);
 					bn_mod(y, y, a);
 
 					/* If y == 1 then composite. */
-					if (bn_cmp_dig(y, 1) == CMP_EQ) {
+					if (bn_cmp_dig(y, 1) == RLC_EQ) {
 						result = 0;
 						break;
 					}
@@ -302,7 +320,7 @@ int bn_is_prime_rabin(const bn_t a) {
 				}
 
 				/* If y != n1 then composite. */
-				if (bn_cmp(y, n1) != CMP_EQ) {
+				if (bn_cmp(y, n1) != RLC_EQ) {
 					result = 0;
 					break;
 				}
@@ -340,9 +358,9 @@ int bn_is_prime_solov(const bn_t a) {
 		for (i = 0; i < 100; i++) {
 			/* Generate t0, 2 <= t0, <= a - 2. */
 			do {
-				bn_rand(t0, BN_POS, bn_bits(a));
+				bn_rand(t0, RLC_POS, bn_bits(a));
 				bn_mod(t0, t0, a);
-			} while (bn_cmp_dig(t0, 2) == CMP_LT);
+			} while (bn_cmp_dig(t0, 2) == RLC_LT);
 			/* t2 = a - 1. */
 			bn_copy(t2, a);
 			bn_sub_dig(t2, t2, 1);
@@ -355,20 +373,20 @@ int bn_is_prime_solov(const bn_t a) {
 			bn_exp(t1, t0, t1, a);
 #endif
 			/* If t1 != 1 and t1 != n - 1 return 0 */
-			if (bn_cmp_dig(t1, 1) != CMP_EQ && bn_cmp(t1, t2) != CMP_EQ) {
+			if (bn_cmp_dig(t1, 1) != RLC_EQ && bn_cmp(t1, t2) != RLC_EQ) {
 				result = 0;
 				break;
 			}
 
 			/* t2 = (t0|a). */
 			bn_smb_jac(t2, t0, a);
-			if (bn_sign(t2) == BN_NEG) {
+			if (bn_sign(t2) == RLC_NEG) {
 				bn_add(t2, t2, a);
 			}
 			/* If t1 != t2 (mod a) return 0. */
 			bn_mod(t1, t1, a);
 			bn_mod(t2, t2, a);
-			if (bn_cmp(t1, t2) != CMP_EQ) {
+			if (bn_cmp(t1, t2) != RLC_EQ) {
 				result = 0;
 				break;
 			}
@@ -391,7 +409,7 @@ int bn_is_prime_solov(const bn_t a) {
 void bn_gen_prime_basic(bn_t a, int bits) {
 	while (1) {
 		do {
-			bn_rand(a, BN_POS, bits);
+			bn_rand(a, RLC_POS, bits);
 		} while (bn_bits(a) != bits);
 		if (bn_is_prime(a)) {
 			return;
@@ -406,7 +424,7 @@ void bn_gen_prime_basic(bn_t a, int bits) {
 void bn_gen_prime_safep(bn_t a, int bits) {
 	while (1) {
 		do {
-			bn_rand(a, BN_POS, bits);
+			bn_rand(a, RLC_POS, bits);
 		} while (bn_bits(a) != bits);
 		/* Check if (a - 1)/2 is prime. */
 		bn_sub_dig(a, a, 1);
@@ -444,11 +462,11 @@ void bn_gen_prime_stron(bn_t a, int bits) {
 		do {
 			do {
 				/* Generate two large primes r and s. */
-				bn_rand(s, BN_POS, bits / 2 - BN_DIGIT / 2);
-				bn_rand(t, BN_POS, bits / 2 - BN_DIGIT / 2);
+				bn_rand(s, RLC_POS, bits / 2 - RLC_DIG / 2);
+				bn_rand(t, RLC_POS, bits / 2 - RLC_DIG / 2);
 			} while (!bn_is_prime(s) || !bn_is_prime(t));
 			found = 1;
-			bn_rand(a, BN_POS, bits / 2 - bn_bits(t) - 1);
+			bn_rand(a, RLC_POS, bits / 2 - bn_bits(t) - 1);
 			i = a->dp[0];
 			bn_dbl(t, t);
 			do {
@@ -478,7 +496,7 @@ void bn_gen_prime_stron(bn_t a, int bits) {
 
 			k = bits - bn_bits(r);
 			k -= bn_bits(s);
-			bn_rand(a, BN_POS, k);
+			bn_rand(a, RLC_POS, k);
 			j = a->dp[0];
 			do {
 				/* Find first prime a = t + 2 * j * r * s. */

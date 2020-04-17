@@ -30,14 +30,14 @@ Util::SecureFreeCallback Util::secureFreeCallback;
 
 static void relic_core_initializer(void* ptr) {
     core_init();
-    if (err_get_code() != STS_OK) {
+    if (err_get_code() != RLC_OK) {
         std::cout << "core_init() failed";
         // this will most likely crash the application...but there isn't much we can do
         throw std::string("core_init() failed");
     }
 
     const int r = ep_param_set_any_pairf();
-    if (r != STS_OK) {
+    if (r != RLC_OK) {
         std::cout << "ep_param_set_any_pairf() failed";
         // this will most likely crash the application...but there isn't much we can do
         throw std::string("ep_param_set_any_pairf() failed");
@@ -117,8 +117,8 @@ void BLS::CheckRelicErrors() {
     if (!core_get()) {
         throw std::string("Library not initialized properly. Call BLS::Init()");
     }
-    if (core_get()->code != STS_OK) {
-        core_get()->code = STS_OK;
+    if (core_get()->code != RLC_OK) {
+        core_get()->code = RLC_OK;
         throw std::string("Relic library error");
     }
 }
@@ -127,8 +127,8 @@ void BLS::CheckRelicErrorsInvalidArgument() {
     if (!core_get()) {
         throw std::string("Library not initialized properly. Call BLS::Init()");
     }
-    if (core_get()->code != STS_OK) {
-        core_get()->code = STS_OK;
+    if (core_get()->code != RLC_OK) {
+        core_get()->code = RLC_OK;
         throw std::invalid_argument("Relic library error");
     }
 }

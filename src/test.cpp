@@ -33,7 +33,7 @@ TEST_CASE("Test vectors") {
         uint8_t seed1[5] = {1, 2, 3, 4, 5};
         uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
         uint8_t message1[3] = {7, 8, 9};
-
+        
         PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
         PublicKey pk1 = sk1.GetPublicKey();
         Signature sig1 = sk1.Sign(message1, sizeof(message1));
@@ -234,7 +234,7 @@ TEST_CASE("Key generation") {
 
         PrivateKey sk = PrivateKey::FromSeed(seed, sizeof(seed));
         PublicKey pk = sk.GetPublicKey();
-        REQUIRE(core_get()->code == STS_OK);
+        REQUIRE(core_get()->code == RLC_OK);
         REQUIRE(pk.GetFingerprint() == 0xddad59bb);
     }
 }
@@ -295,7 +295,7 @@ TEST_CASE("Error handling") {
             if (ctx1 == core_get()) {
                 ctxError = true;
             }
-            if (core_get()->code != STS_OK) {
+            if (core_get()->code != RLC_OK) {
                 ctxError = true;
             }
             // this should not modify the code of the main thread
@@ -308,7 +308,7 @@ TEST_CASE("Error handling") {
         REQUIRE(core_get()->code == 10);
 
         // reset so that future test cases don't fail
-        core_get()->code = STS_OK;
+        core_get()->code = RLC_OK;
     }
 }
 

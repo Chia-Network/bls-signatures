@@ -109,7 +109,7 @@ PublicKey PublicKey::Aggregate(std::vector<PublicKey> const& pubKeys) {
 
 PublicKey PublicKey::Exp(bn_t const n) const {
     PublicKey ret;
-    g1_mul(ret.q, q, n);
+    g1_mul(ret.q, const_cast<ep_st*>(q), const_cast<bn_st*>(n));
     return ret;
 }
 
@@ -125,7 +125,7 @@ std::vector<uint8_t> PublicKey::Serialize() const {
 
 // Comparator implementation.
 bool operator==(PublicKey const &a,  PublicKey const &b) {
-    return g1_cmp(a.q, b.q) == CMP_EQ;
+    return g1_cmp(a.q, b.q) == RLC_EQ;
 }
 
 bool operator!=(PublicKey const&a,  PublicKey const&b) {
