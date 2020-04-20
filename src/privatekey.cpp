@@ -19,6 +19,7 @@
 #include "bls.hpp"
 #include "util.hpp"
 #include "privatekey.hpp"
+#include "elements.hpp"
 
 namespace bls {
 PrivateKey PrivateKey::FromSeed(const uint8_t* seed, size_t seedLen) {
@@ -90,6 +91,34 @@ PrivateKey::PrivateKey(PrivateKey&& k) {
 
 PrivateKey::~PrivateKey() {
     Util::SecFree(keydata);
+}
+
+G1Element PrivateKey::GetG1Element() const { 
+    g1_t *q = Util::SecAlloc<g1_t>(1);
+    g1_mul_gen(*q, *keydata);
+
+    const G1Element ret = G1Element::FromNative(q);
+    Util::SecFree(*q);
+    return ret;
+}
+
+G2Element PrivateKey::GetG2Element() const { 
+    g2_t *q = Util::SecAlloc<g2_t>(1);
+    g2_mul_gen(*q, *keydata);
+
+    const G2Element ret = G2Element::FromNative(q);
+    Util::SecFree(*q);
+    return ret;
+}
+
+// Calling this can expose the key with base 1
+G2Element PrivateKey::GetG2Power(g2_t base) const { 
+    g2_t *q = Util::SecAlloc<g2_t>(1);
+    g2_mul(*q, base, *keydata);
+
+    const G2Element ret = G2Element::FromNative(q);
+    Util::SecFree(*q);
+    return ret;
 }
 
 PublicKey PrivateKey::GetPublicKey() const {
@@ -203,6 +232,31 @@ std::vector<uint8_t> PrivateKey::Serialize() const {
     std::vector<uint8_t> data(PRIVATE_KEY_SIZE);
     Serialize(data.data());
     return data;
+}
+
+G2Element PrivateKey::SignG2(
+    const uint8_t *msg,
+    size_t len,
+    const uint8_t *dst,
+    size_t dst_len
+) const {
+    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
+    Util::Hash256(messageHash, msg, len);
+    return SignG2Prehashed(messageHash, dst, dst_len);
+}
+
+G2Element PrivateKey::SignG2Prehashed(
+    const uint8_t *messageHash,
+    const uint8_t *dst,
+    size_t dst_len
+) const {
+    g2_t sig, point;
+
+    //g2_map(point, messageHash, BLS::MESSAGE_HASH_LEN, 0);
+    ep2_map_impl(point, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
+    g2_mul(sig, point, *keydata);
+
+    return G2Element::FromNative(&sig);
 }
 
 InsecureSignature PrivateKey::SignInsecure(const uint8_t *msg, size_t len) const {

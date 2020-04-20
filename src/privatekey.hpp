@@ -23,6 +23,8 @@
 
 #include "publickey.hpp"
 #include "signature.hpp"
+#include "elements.hpp"
+
 namespace bls {
 class PrivateKey {
 friend class BLS;
@@ -52,6 +54,9 @@ friend class Threshold;
     ~PrivateKey();
 
     PublicKey GetPublicKey() const;
+    G1Element GetG1Element() const;
+    G2Element GetG2Element() const;
+    G2Element GetG2Power(g2_t base) const;
 
     // Insecurely aggregate multiple private keys into one
     static PrivateKey AggregateInsecure(std::vector<PrivateKey> const& privateKeys);
@@ -68,6 +73,19 @@ friend class Threshold;
     // Serialize the key into bytes
     void Serialize(uint8_t* buffer) const;
     std::vector<uint8_t> Serialize() const;
+
+    G2Element SignG2(
+        const uint8_t *msg,
+        size_t len,
+        const uint8_t *dst,
+        size_t dst_len
+    ) const;
+
+    G2Element SignG2Prehashed(
+        const uint8_t *messageHash,
+        const uint8_t *dst,
+        size_t dst_len
+    ) const;
 
     // Sign a message without setting aggreagation info.
     InsecureSignature SignInsecure(const uint8_t *msg, size_t len) const;

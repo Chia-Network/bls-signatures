@@ -986,6 +986,18 @@ void ep2_norm_sim(ep2_t *r, ep2_t *t, int n);
 void ep2_map(ep2_t p, const uint8_t *msg, int len);
 
 /**
+ * Maps a byte array to a point in an elliptic curve over a quadratic extension,
+ * using a domain separation tag.
+ *
+ * @param[out] p			- the result.
+ * @param[in] msg			- the byte array to map.
+ * @param[in] len			- the array length in bytes.
+ * @param[in] dst			- the domain separation tag.
+ * @param[in] dst_len		- the domain separation tag length, in bytes.
+ */
+void ep2_map_impl(ep2_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
+
+/**
  * Maps a byte array to a point in an elliptic curve over a quadratic extension.
  * The algorithm implemented is the Fouque-Tibouchi algorithm from the
  * paper "Indifferentiable Hashing to Barreto-Naehrig curves" for
