@@ -50,7 +50,7 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
-        sudo apt-get install valgrind libgmp-dev libsodium-dev -y
+        sudo apt-get install valgrind libsodium-dev -y
         mkdir build
         cd build
         cmake ../
