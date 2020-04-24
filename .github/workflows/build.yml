@@ -32,6 +32,7 @@ jobs:
     - name: Mac OS build C++ and test
       if: startsWith(matrix.os, 'macos')
       run: |
+        brew install libsodium boost
         mkdir build
         cd build
         cmake ../
