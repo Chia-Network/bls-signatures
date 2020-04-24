@@ -32,13 +32,13 @@ jobs:
     - name: Mac OS build C++ and test
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-      brew install gmp
-      mkdir build
-      cd build
-      cmake ../
-      cmake --build . -- -j 6
-      echo "Running ./src/runtest"
-      ./src/runtest
+        brew install gmp
+        mkdir build
+        cd build
+        cmake ../
+        cmake --build . -- -j 6
+        echo "Running ./src/runtest"
+        ./src/runtest
 
     - name: Build source distribution with MacOS
       if: startsWith(matrix.os, 'mac')
