@@ -38,7 +38,7 @@ jobs:
     - name: Build C++ and test with valgrind on Ubuntu
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        sudo apt-install valgrind
+        sudo apt-get install valgrind
         mkdir build
         cd build
         cmake ../
