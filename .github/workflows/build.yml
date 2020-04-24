@@ -32,7 +32,6 @@ jobs:
     - name: Mac OS build C++ and test
       if: startsWith(matrix.os, 'macos')
       run: |
-        brew install gmp
         mkdir build
         cd build
         cmake ../
