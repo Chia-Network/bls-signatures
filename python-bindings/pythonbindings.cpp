@@ -196,8 +196,12 @@ PYBIND11_MODULE(blspy, m) {
                           const std::vector<py::bytes> hashes,
                           const std::vector<PublicKey>& pubKeys) {
             std::vector<const uint8_t*> hashes_pointers;
+            std::vector<std::string> str_hashes;
             for (const py::bytes b : hashes) {
                 std::string str(b);
+                str_hashes.push_back(str);
+            }
+            for (std::string& str : str_hashes) {
                 hashes_pointers.push_back(reinterpret_cast<const uint8_t*>(str.data()));
             }
             return sig.Verify(hashes_pointers, pubKeys);
