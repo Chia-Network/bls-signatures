@@ -32,7 +32,6 @@ jobs:
     - name: Mac OS build C++ and test
       if: startsWith(matrix.os, 'macos')
       run: |
-        brew install boost
         mkdir build
         cd build
         cmake ../
@@ -50,7 +49,7 @@ jobs:
       if: startsWith(matrix.os, 'ubuntu')
       run: |
         sudo apt-get update
-        sudo apt-get install valgrind libgmp-dev libsodium-dev libboost-all-dev  -y
+        sudo apt-get install valgrind libgmp-dev libsodium-dev -y
         mkdir build
         cd build
         cmake ../
