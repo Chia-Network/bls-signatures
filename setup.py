@@ -107,14 +107,10 @@ ext_modules = [
             get_pybind_include(),
             get_pybind_include(user=True),
             'relic_gmp_64/include',
-            'mpir_gc_x64'
-         ],
-         library_dirs=['relic_gmp_64','mpir_gc_x64'],
-         libraries=['relic_s','Advapi32','mpir'],
-         language='c++'
+            'mpir_gc_x64',
         ],
-        library_dirs=['relic_x64/lib/Release'],
-        libraries=['relic_s','Advapi32'],
+        library_dirs=['relic_gmp_64','mpir_gc_x64'],
+        libraries=['relic_s','Advapi32','mpir'],
         language='c++'
     ),
 ]
