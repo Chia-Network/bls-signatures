@@ -179,7 +179,7 @@ int util_bits_dig(dig_t a) {
 	if (bLZCChecked == 0)
 	{
 		bLZCHasHW = has_lzcnt_hard();
-		printf("Hardware LZCNT %d\n", bLZCHasHW);
+		// printf("Hardware LZCNT %d\n", bLZCHasHW);
 		bLZCChecked = 1;
 	}
 
