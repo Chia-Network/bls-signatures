@@ -39,12 +39,15 @@
 #include "relic_util.h"
 #include "relic_types.h"
 
+int has_lzcnt_hard();
+unsigned int lzcnt64_soft(unsigned long long x);
+unsigned int lzcnt64_hard(unsigned long long x);
+
+int bLZCChecked = 0;
+int bLZCHasHW = 0;
+
 #if ARCH == ARM && OPSYS == DROID
 #include <android/log.h>
-#endif
-
-#ifdef _MSC_VER
-#include <intrin.h>
 #endif
 
 /*============================================================================*/
@@ -173,11 +176,17 @@ int util_bits_dig(dig_t a) {
 	return RLC_DIG - __builtin_clz(a);
 #endif
 #elif WSIZE == 64
-#ifdef _MSC_VER
-    return RLC_DIG - __lzcnt64(a);
-#else
-	return RLC_DIG - __builtin_clzll(a);
-#endif
+	if (bLZCChecked == 0)
+	{
+		bLZCHasHW = has_lzcnt_hard();
+		// printf("Hardware LZCNT %d\n", bLZCHasHW);
+		bLZCChecked = 1;
+	}
+
+	if (bLZCHasHW!=0)
+		return RLC_DIG - lzcnt64_hard(a);
+	
+	return RLC_DIG - lzcnt64_soft(a);
 #endif
 }
 

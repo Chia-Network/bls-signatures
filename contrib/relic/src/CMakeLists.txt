@@ -40,6 +40,7 @@ file(GLOB BC_SRCS bc/*.c)
 file(GLOB MD_SRCS md/*.c)
 file(GLOB EC_SRCS ec/*.c)
 file(GLOB PC_SRCS pc/*.c)
+file(GLOB REFCODE_SRCS refcode/*.c)
 
 set(RELIC_SRCS ${CORE_SRCS})
 
@@ -106,6 +107,8 @@ endif(WITH_PP)
 if (WITH_PC)
 	list(APPEND RELIC_SRCS ${PC_SRCS})
 endif(WITH_PC)
+
+list(APPEND RELIC_SRCS ${REFCODE_SRCS})
 
 if (WITH_CP)
 	if (WITH_BN)
