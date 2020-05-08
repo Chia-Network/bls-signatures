@@ -12,6 +12,7 @@ blspy.egg-info
 dist
 python-impl/__pycache__/
 blspy.*.so
+.mypy_cache/
 
 js_build
 node_modules
