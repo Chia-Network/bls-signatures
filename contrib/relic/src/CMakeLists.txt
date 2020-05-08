@@ -8,7 +8,7 @@ if (NOT INHERIT)
 endif(NOT INHERIT)
 string(TOLOWER ${INHERIT} INHERIT_PATH)
 
-set(CORE_SRCS relic_err.c relic_core.c relic_conf.c relic_util.c)
+set(CORE_SRCS relic_err.c relic_core.c relic_conf.c relic_util.c relic_lzcnt.c)
 
 if (ARCH)
 	string(TOLOWER ${ARCH} ARCH_PATH)
@@ -40,7 +40,6 @@ file(GLOB BC_SRCS bc/*.c)
 file(GLOB MD_SRCS md/*.c)
 file(GLOB EC_SRCS ec/*.c)
 file(GLOB PC_SRCS pc/*.c)
-file(GLOB REFCODE_SRCS refcode/*.c)
 
 set(RELIC_SRCS ${CORE_SRCS})
 
@@ -107,8 +106,6 @@ endif(WITH_PP)
 if (WITH_PC)
 	list(APPEND RELIC_SRCS ${PC_SRCS})
 endif(WITH_PC)
-
-list(APPEND RELIC_SRCS ${REFCODE_SRCS})
 
 if (WITH_CP)
 	if (WITH_BN)

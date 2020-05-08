@@ -39,13 +39,6 @@
 #include "relic_util.h"
 #include "relic_types.h"
 
-int has_lzcnt_hard();
-unsigned int lzcnt64_soft(unsigned long long x);
-unsigned int lzcnt64_hard(unsigned long long x);
-
-int bLZCChecked = 0;
-int bLZCHasHW = 0;
-
 #if ARCH == ARM && OPSYS == DROID
 #include <android/log.h>
 #endif
@@ -141,6 +134,14 @@ char util_conv_char(dig_t i) {
 #endif
 }
 
+int hasLZCHW = 0;
+int checkedLZC = 0;
+int has_lzcnt_hard();
+unsigned int lzcnt32_soft(unsigned int x);
+unsigned int lzcnt32_hard(unsigned int x);
+unsigned int lzcnt64_soft(unsigned long long x);
+unsigned int lzcnt64_hard(unsigned long long x);
+
 int util_bits_dig(dig_t a) {
 #if WSIZE == 8 || WSIZE == 16
 	static const uint8_t table[16] = {
@@ -169,24 +170,20 @@ int util_bits_dig(dig_t a) {
 		return table[a >> 4] + 4 + offset;
 	}
 	return 0;
-#elif WSIZE == 32
-#ifdef _MSC_VER
-    return RLC_DIG - __lzcnt(a);
-#else
-	return RLC_DIG - __builtin_clz(a);
+#else // WSIZE == 32 or WSIZE == 64
+    if (checkedLZC == 0) {
+        hasLZCHW = has_lzcnt_hard();
+        checkedLZC = 1;
+    }
+#if WSIZE == 32
+    if (hasLZCHW!=0)
+        return RLC_DIG - lzcnt32_hard(a);
+    return RLC_DIG - lzcnt32_soft(a);
+#else // WSIZE == 64
+    if (hasLZCHW!=0)
+        return RLC_DIG - lzcnt64_hard(a);
+    return RLC_DIG - lzcnt64_soft(a);
 #endif
-#elif WSIZE == 64
-	if (bLZCChecked == 0)
-	{
-		bLZCHasHW = has_lzcnt_hard();
-		// printf("Hardware LZCNT %d\n", bLZCHasHW);
-		bLZCChecked = 1;
-	}
-
-	if (bLZCHasHW!=0)
-		return RLC_DIG - lzcnt64_hard(a);
-	
-	return RLC_DIG - lzcnt64_soft(a);
 #endif
 }
 

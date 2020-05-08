@@ -1,5 +1,5 @@
 /*
-Count leading zero bits. Choice of public domain or MIT-0.
+Count leading zero bits.
 
 David Reid - mackron@gmail.com
 
@@ -8,6 +8,35 @@ total size in bits will be returned (32 for lzcnt32 and 64 for lzcnt64).
 
 For x86/64 platforms, this will use the LZCNT instruction if available. On ARM it will try the CLZ instruction. If these are unavailable it
 will fall back to compiler-specific built-ins. If these are unavailable it'll fall back to the generic implementation.
+
+
+License
+=======
+
+Public Domain (www.unlicense.org)
+-------------------------------------------------
+This is free and unencumbered software released into the public domain.
+
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means.
+
+In jurisdictions that recognize copyright laws, the author or authors of this
+software dedicate any and all copyright interest in the software to the public
+domain. We make this dedication for the benefit of the public at large and to
+the detriment of our heirs and successors. We intend this dedication to be an
+overt act of relinquishment in perpetuity of all present and future rights to
+this software under copyright law.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+For more information, please refer to <http://unlicense.org/>
+
 
 Functions
 ---------
@@ -401,6 +430,7 @@ unsigned int lzcnt64_soft(unsigned long long x)
 #endif
 }
 
+#if 0
 
 unsigned int lzcnt32(unsigned int x)
 {
@@ -414,7 +444,7 @@ unsigned int lzcnt32(unsigned int x)
     }
 }
 
-unsigned int lzcnt64(unsigned int x)
+unsigned int lzcnt64(unsigned long long x)
 {
 #if defined(HAS_LZCNT64_HARD)
     if (has_lzcnt_hard()) {
@@ -426,7 +456,6 @@ unsigned int lzcnt64(unsigned int x)
     }
 }
 
-/*
 #include <stdio.h>
 int do_test32(unsigned int (* lzcnt32proc)(unsigned int), const char* procName)
 {
@@ -589,4 +618,6 @@ int main(int argc, char** argv)
     (void)argv;
     return exitCode;
 }
-*/
+
+#endif // 0
+
