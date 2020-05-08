@@ -26,7 +26,7 @@ class Signature:
         use_big_y = buffer[0] & 0x80
         prepend = buffer[0] & 0x40
         if prepend:
-            raise "Should not have prepend bit set"
+            raise Exception("Should not have prepend bit set")
 
         buffer = bytes([buffer[0] & 0x1f]) + buffer[1:]
 
@@ -338,7 +338,7 @@ class PrependSignature:
         use_big_y = buffer[0] & 0x80
         prepend = buffer[0] & 0x40
         if not prepend:
-            raise "Should have prepend bit set"
+            raise Exception("Should have prepend bit set")
 
         buffer = bytes([buffer[0] & 0x1f]) + buffer[1:]
 
