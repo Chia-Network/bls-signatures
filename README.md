@@ -232,7 +232,7 @@ prependAgg.Verify(hashes, prependPubKeys);
 ```
 
 ### Build
-Cmake, a c++ compiler, and python3 (for bindings) are required for building.
+Cmake 3.14+, a c++ compiler, and python3 (for bindings) are required for building.
 ```bash
 git submodule update --init --recursive
 
@@ -306,14 +306,15 @@ Contributions are welcome and more details are available in chia-blockchain's
 [CONTRIBUTING.md](https://github.com/Chia-Network/chia-blockchain/blob/master/CONTRIBUTING.md).
 
 The master branch is usually the currently released latest version on PyPI.
-Note that at times bls-signatures/blspy will be ahead of the release version that
-chia-blockchain requires in it's master/release version in preparation for a
-new chia-blockchain release. Please branch or fork master and then create a
-pull request to the master branch. Linear merging is enforced on master and
+Note that at times bls-signatures/blspy will be ahead of the release version
+that chia-blockchain requires in it's master/release version in preparation
+for a new chia-blockchain release. Please branch or fork master and then create
+a pull request to the master branch. Linear merging is enforced on master and
 merging requires a completed review. PRs will kick off a GitHub actions ci build
 and analysis of bls-signatures at
-[lgtm.com](https://lgtm.com/projects/g/Chia-Network/bls-signatures/?mode=list). Please
-make sure your build is passing and that it does not increase alerts at lgtm.
+[lgtm.com](https://lgtm.com/projects/g/Chia-Network/bls-signatures/?mode=list).
+Please make sure your build is passing and that it does not increase alerts
+at lgtm.
 
 ### Specification and test vectors
 The specification and test vectors can be found
