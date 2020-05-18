@@ -5,7 +5,7 @@ import sys
 import platform
 import subprocess
 
-from setuptools import setup, Extension
+from setuptools import setup, setuptools, Extension
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
@@ -21,22 +21,33 @@ class CMakeBuild(build_ext):
         try:
             out = subprocess.check_output(['cmake', '--version'])
         except OSError:
-            raise RuntimeError("CMake must be installed to build" +
-                               " the following extensions: " +
-                               ", ".join(e.name for e in self.extensions))
+            raise RuntimeError("CMake must be installed to build"
+                               + " the following extensions: "
+                               + ", ".join(e.name for e in self.extensions))
 
         if platform.system() == "Windows":
             cmake_version = LooseVersion(
-                    re.search(r'version\s*([\d.]+)', out.decode()).group(1))
+                re.search(r'version\s*([\d.]+)', out.decode()).group(1))
             if cmake_version < '3.1.0':
                 raise RuntimeError("CMake >= 3.1.0 is required on Windows")
+
+        """
+        Work around pybind11's need to be on the filesystem
+        """
+        if os.path.exists('.gitmodules'):
+            try:
+                subprocess.run(['git', 'submodule', 'update', '--init', '--recursive'])
+            except OSError:
+                raise RuntimeError("git is not available"
+                                   + ", ".join(e.name for e in self.extensions))
 
         for ext in self.extensions:
             self.build_extension(ext)
 
     def build_extension(self, ext):
         extdir = os.path.abspath(os.path.dirname(
-                    self.get_ext_fullpath(ext.name)))
+            self.get_ext_fullpath(ext.name))
+        )
         cmake_args = ['-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=' + extdir,
                       '-DPYTHON_EXECUTABLE=' + sys.executable]
 
@@ -55,14 +66,14 @@ class CMakeBuild(build_ext):
 
         env = os.environ.copy()
         env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(
-                env.get('CXXFLAGS', ''),
-                self.distribution.get_version())
+            env.get('CXXFLAGS', ''),
+            self.distribution.get_version())
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
-        subprocess.check_call(['cmake', ext.sourcedir] +
-                              cmake_args, cwd=self.build_temp, env=env)
-        subprocess.check_call(['cmake', '--build', '.'] +
-                              build_args, cwd=self.build_temp)
+        subprocess.check_call(['cmake', ext.sourcedir]
+                              + cmake_args, cwd=self.build_temp, env=env)
+        subprocess.check_call(['cmake', '--build', '.']
+                              + build_args, cwd=self.build_temp)
 
 
 class get_pybind_include(object):
@@ -73,12 +84,6 @@ class get_pybind_include(object):
     method can be invoked. """
 
     def __init__(self, user=False):
-        import subprocess
-        try:
-            import pybind11
-        except ImportError:
-            if subprocess.call([sys.executable, '-m', 'pip', 'install', 'pybind11']):
-                raise RuntimeError('pybind11 install failed.')
         self.user = user
 
     def __str__(self):
@@ -109,8 +114,8 @@ ext_modules = [
             'relic_gmp_64/include',
             'mpir_gc_x64',
         ],
-        library_dirs=['relic_gmp_64','mpir_gc_x64'],
-        libraries=['relic_s','Advapi32','mpir'],
+        library_dirs=['relic_gmp_64', 'mpir_gc_x64'],
+        libraries=['relic_s', 'Advapi32', 'mpir'],
         language='c++'
     ),
 ]
@@ -140,7 +145,8 @@ def cpp_flag(compiler):
     flags = ['-std=c++17', '-std=c++14', '-std=c++11']
 
     for flag in flags:
-        if has_flag(compiler, flag): return flag
+        if has_flag(compiler, flag):
+            return flag
 
     raise RuntimeError('Unsupported compiler -- at least C++11 support '
                        'is needed!')
@@ -149,7 +155,7 @@ def cpp_flag(compiler):
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
     c_opts = {
-        'msvc': ['/EHsc','/std:c++17'],
+        'msvc': ['/EHsc', '/std:c++17'],
         'unix': [],
     }
     l_opts = {
@@ -178,20 +184,20 @@ class BuildExt(build_ext):
             ext.extra_link_args = link_opts
         build_ext.build_extensions(self)
 
-import platform
 
-if platform.system()=="Windows":
+if platform.system() == "Windows":
     setup(
         name='blspy',
         author='Mariano Sorgente',
         author_email='mariano@chia.net',
-        description='BLS signatures in c++ (python bindings)',
-        long_description='BLS signatures with aggregation. Uses fast c++ implementation. See https://github.com/Chia-Network/bls-signatures for more details',
-        license='Apache License',
+        description='BLS signatures in c++ (with python bindings)',
+        long_description=open('README.md').read(),
+        long_description_content_type="text/markdown",
+        url="https://github.com/Chia-Network/bls-signatures",
         python_requires='>=3.7',
-        setup_requires=['pybind11>=2.4'],
-        install_requires=['pybind11>=2.4'],
-        build_requires=["pybind11>=2.4"],
+        setup_requires=['pybind11>=2.5.0'],
+        install_requires=['pybind11>=2.5.0'],
+        build_requires=["pybind11>=2.5.0"],
         ext_modules=ext_modules,
         cmdclass={'build_ext': BuildExt},
         zip_safe=False,
@@ -205,7 +211,9 @@ else:
         description='BLS signatures in c++ (python bindings)',
         python_requires='>3.1',
         install_requires=["wheel"],
-        long_description='BLS signatures with aggregation. Uses fast c++ implementation. See https://github.com/Chia-Network/bls-signatures for more details',
+        long_description=open('README.md').read(),
+        long_description_content_type="text/markdown",
+        url="https://github.com/Chia-Network/bls-signatures",
         ext_modules=[CMakeExtension('blspy', '.')],
         cmdclass=dict(build_ext=CMakeBuild),
         zip_safe=False,
