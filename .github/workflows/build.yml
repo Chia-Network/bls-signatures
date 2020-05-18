@@ -36,8 +36,7 @@ jobs:
       run: |
         pip install mypy
         mypy --config-file mypi.ini python-impl python-bindings
-        
-    # pip will 'git submodule update --init --recursive' so subsequent steps don't have to
+
     - name: Build source distribution with MacOS
       if: startsWith(matrix.os, 'mac')
       run: |
@@ -90,6 +89,9 @@ jobs:
           && delocate-listdeps {wheel}
           && delocate-wheel -v {wheel}
           && cp {wheel} {dest_dir}
+
+    - name: Checkout submodules
+      uses: snickerbockers/submodules-init@v4
 
     - name: Mac OS build C++ and test
       if: startsWith(matrix.os, 'macos')
