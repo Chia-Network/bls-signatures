@@ -24,9 +24,9 @@
 #include <gmp.h>
 #endif
 
-#include "util.hpp"
-#include "privatekey.hpp"
 #include "elements.hpp"
+#include "privatekey.hpp"
+#include "util.hpp"
 // #include "publickey.hpp"
 
 using std::vector;
@@ -35,281 +35,259 @@ using std::vector;
 namespace bls {
 
 class Core {
-public:
-    //static PrivateKey KeyGen(... ikm);  TODO
-    static vector<uint8_t> SkToPk(
-        const PrivateKey& seckey
-    );
+    friend class BasicScheme;
+    friend class AugScheme;
+    friend class PopScheme;
 
-    static G1Element SkToG1(
-        const PrivateKey& seckey
-    );
+public:
+    // static PrivateKey KeyGen(... ikm);  TODO
+    static vector<uint8_t> SkToPk(const PrivateKey &seckey);
+
+    static G1Element SkToG1(const PrivateKey &seckey);
 
     static vector<uint8_t> Sign(
-        const PrivateKey& seckey,
+        const PrivateKey &seckey,
         const vector<uint8_t> &message,
         const uint8_t *dst,
-        int dst_len
-    );
+        int dst_len);
 
     static G2Element SignNative(
-        const PrivateKey& seckey,
+        const PrivateKey &seckey,
         const vector<uint8_t> &message,
         const uint8_t *dst,
-        int dst_len
-    );
+        int dst_len);
 
     static bool Verify(
         const vector<uint8_t> &pubkey,
         const vector<uint8_t> &message,
         const vector<uint8_t> &signature,
         const uint8_t *dst,
-        int dst_len
-    );
+        int dst_len);
 
     static bool Verify(
         const G1Element &pubkey,
         const vector<uint8_t> &message,
         const G2Element &signature,
         const uint8_t *dst,
-        int dst_len
-    );
+        int dst_len);
 
-    static vector<uint8_t> Aggregate(
-        vector<vector<uint8_t>> const &signatures
-    );
+    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures);
 
-    static G2Element Aggregate(
-        vector<G2Element> const &signatures
-    );
+    static G2Element Aggregate(vector<G2Element> const &signatures);
 
     static bool AggregateVerify(
         const vector<vector<uint8_t>> &pubkeys,
         const vector<vector<uint8_t>> &messages,
         const vector<uint8_t> &signature,
         const uint8_t *dst,
-        int dst_len
-    );
+        int dst_len);
 
     static bool AggregateVerify(
         const vector<G1Element> &pubkeys,
         const vector<vector<uint8_t>> &messages,
         const G2Element &signature,
         const uint8_t *dst,
-        int dst_len
-    );
+        int dst_len);
 
 private:
-    static bool NativeVerify(
-        g1_t* pubKeys,
-        g2_t* mappedHashes,
-        size_t length
-    );
+    static bool NativeVerify(g1_t *pubKeys, g2_t *mappedHashes, size_t length);
 };
-
 
 class BasicScheme {
-friend class Core;
+    friend class Core;
+
 public:
-    static const uint8_t* CIPHERSUITE_ID;
+    static const uint8_t *CIPHERSUITE_ID;
     static const int CIPHERSUITE_ID_LEN;
 
-    static vector<uint8_t> SkToPk(const PrivateKey& seckey) {
+    static vector<uint8_t> SkToPk(const PrivateKey &seckey)
+    {
         return Core::SkToPk(seckey);
     }
 
-    static G1Element SkToG1(const PrivateKey& seckey) {
+    static G1Element SkToG1(const PrivateKey &seckey)
+    {
         return Core::SkToG1(seckey);
     }
 
-    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures) {
+    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures)
+    {
         return Core::Aggregate(signatures);
     }
 
-    static G2Element Aggregate(vector<G2Element> const &signatures) {
+    static G2Element Aggregate(vector<G2Element> const &signatures)
+    {
         return Core::Aggregate(signatures);
     }
 
-//
+    //
 
     static vector<uint8_t> Sign(
-        const PrivateKey& seckey, 
-        const vector<uint8_t> &message
-    );
+        const PrivateKey &seckey,
+        const vector<uint8_t> &message);
 
     static G2Element SignNative(
-        const PrivateKey& seckey, 
-        const vector<uint8_t> &message
-    );
+        const PrivateKey &seckey,
+        const vector<uint8_t> &message);
 
     static bool Verify(
         const vector<uint8_t> &pubkey,
         const vector<uint8_t> &message,
-        const vector<uint8_t> &signature
-    );
+        const vector<uint8_t> &signature);
 
     static bool Verify(
         const G1Element &pubkey,
         const vector<uint8_t> &message,
-        const G2Element &signature
-    );
+        const G2Element &signature);
 
     static bool AggregateVerify(
         const vector<vector<uint8_t>> &pubkeys,
         const vector<vector<uint8_t>> &messages,
-        const vector<uint8_t> &signature
-    );
+        const vector<uint8_t> &signature);
 
     static bool AggregateVerify(
         const vector<G1Element> &pubkeys,
         const vector<vector<uint8_t>> &messages,
-        const G2Element &signature
-    );
+        const G2Element &signature);
 };
-
 
 class AugScheme {
+    friend class Core;
+
 public:
-    static const uint8_t* CIPHERSUITE_ID;
+    static const uint8_t *CIPHERSUITE_ID;
     static const int CIPHERSUITE_ID_LEN;
 
-    static vector<uint8_t> SkToPk(const PrivateKey& seckey) {
+    static vector<uint8_t> SkToPk(const PrivateKey &seckey)
+    {
         return Core::SkToPk(seckey);
     }
 
-    static G1Element SkToG1(const PrivateKey& seckey) {
+    static G1Element SkToG1(const PrivateKey &seckey)
+    {
         return Core::SkToG1(seckey);
     }
 
-    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures) {
+    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures)
+    {
         return Core::Aggregate(signatures);
     }
 
-    static G2Element Aggregate(vector<G2Element> const &signatures) {
+    static G2Element Aggregate(vector<G2Element> const &signatures)
+    {
         return Core::Aggregate(signatures);
     }
 
-//
+    //
 
     static vector<uint8_t> Sign(
-        const PrivateKey& seckey, 
-        const vector<uint8_t> &message
-    );
+        const PrivateKey &seckey,
+        const vector<uint8_t> &message);
 
     static G2Element SignNative(
-        const PrivateKey& seckey,
-        const vector<uint8_t> &message
-    );
-
-    static bool Verify(const vector<uint8_t> &pubkey,
-        const vector<uint8_t> &message,
-        const vector<uint8_t> &signature
-    );
-
-    static bool Verify(
-        const G1Element &pubkey,
-        const vector<uint8_t> &message,
-        const G2Element &signature
-    );
-
-    static bool AggregateVerify(
-        const vector<vector<uint8_t>> &pubkeys,
-        const vector<vector<uint8_t>> &messages,
-        const vector<uint8_t> &signature
-    );
-
-    static bool AggregateVerify(
-        const vector<G1Element> &pubkeys,
-        const vector<vector<uint8_t>> &messages,
-        const G2Element &signature
-    );
-};
-
-
-class PopScheme {
-public:
-    static const uint8_t* CIPHERSUITE_ID;
-    static const int CIPHERSUITE_ID_LEN;
-
-    static vector<uint8_t> SkToPk(const PrivateKey& seckey) {
-        return Core::SkToPk(seckey);
-    }
-
-    static G1Element SkToG1(const PrivateKey& seckey) {
-        return Core::SkToG1(seckey);
-    }
-
-    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures) {
-        return Core::Aggregate(signatures);
-    }
-
-    static G2Element Aggregate(vector<G2Element> const &signatures) {
-        return Core::Aggregate(signatures);
-    }
-
-//
-
-    static vector<uint8_t> Sign(
-        const PrivateKey& seckey, 
-        const vector<uint8_t> &message
-    );
-
-    static G2Element SignNative(
-        const PrivateKey& seckey,
-        const vector<uint8_t> &message
-    );
+        const PrivateKey &seckey,
+        const vector<uint8_t> &message);
 
     static bool Verify(
         const vector<uint8_t> &pubkey,
         const vector<uint8_t> &message,
-        const vector<uint8_t> &signature
-    );
+        const vector<uint8_t> &signature);
 
     static bool Verify(
         const G1Element &pubkey,
         const vector<uint8_t> &message,
-        const G2Element &signature
-    );
+        const G2Element &signature);
 
     static bool AggregateVerify(
         const vector<vector<uint8_t>> &pubkeys,
         const vector<vector<uint8_t>> &messages,
-        const vector<uint8_t> &signature
-    );
+        const vector<uint8_t> &signature);
 
     static bool AggregateVerify(
         const vector<G1Element> &pubkeys,
         const vector<vector<uint8_t>> &messages,
-        const G2Element &signature
-    );
-
-    static vector<uint8_t> PopProve(const PrivateKey& seckey);
-    static G2Element PopProveNative(const PrivateKey& seckey);
-
-    static bool PopVerify(
-        const G1Element& pubkey,
-        const G2Element& signature_proof
-    );
-
-    static bool PopVerify(
-        const vector<uint8_t>& pubkey,
-        const vector<uint8_t>& proof
-    );
-
-    static bool FastAggregateVerify(
-        const vector<G1Element> &pubkeys,
-        const vector<uint8_t> &message,
-        const G2Element &signature
-    );
-
-    static bool FastAggregateVerify(
-        const vector<vector<uint8_t>> &pubkeys,
-        const vector<uint8_t> &message,
-        const vector<uint8_t> &signature
-    );
-
+        const G2Element &signature);
 };
 
-} // end namespace bls
+class PopScheme {
+    friend class Core;
+
+public:
+    static const uint8_t *CIPHERSUITE_ID;
+    static const int CIPHERSUITE_ID_LEN;
+
+    static vector<uint8_t> SkToPk(const PrivateKey &seckey)
+    {
+        return Core::SkToPk(seckey);
+    }
+
+    static G1Element SkToG1(const PrivateKey &seckey)
+    {
+        return Core::SkToG1(seckey);
+    }
+
+    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures)
+    {
+        return Core::Aggregate(signatures);
+    }
+
+    static G2Element Aggregate(vector<G2Element> const &signatures)
+    {
+        return Core::Aggregate(signatures);
+    }
+
+    //
+
+    static vector<uint8_t> Sign(
+        const PrivateKey &seckey,
+        const vector<uint8_t> &message);
+
+    static G2Element SignNative(
+        const PrivateKey &seckey,
+        const vector<uint8_t> &message);
+
+    static bool Verify(
+        const vector<uint8_t> &pubkey,
+        const vector<uint8_t> &message,
+        const vector<uint8_t> &signature);
+
+    static bool Verify(
+        const G1Element &pubkey,
+        const vector<uint8_t> &message,
+        const G2Element &signature);
+
+    static bool AggregateVerify(
+        const vector<vector<uint8_t>> &pubkeys,
+        const vector<vector<uint8_t>> &messages,
+        const vector<uint8_t> &signature);
+
+    static bool AggregateVerify(
+        const vector<G1Element> &pubkeys,
+        const vector<vector<uint8_t>> &messages,
+        const G2Element &signature);
+
+    static vector<uint8_t> PopProve(const PrivateKey &seckey);
+    static G2Element PopProveNative(const PrivateKey &seckey);
+
+    static bool PopVerify(
+        const G1Element &pubkey,
+        const G2Element &signature_proof);
+
+    static bool PopVerify(
+        const vector<uint8_t> &pubkey,
+        const vector<uint8_t> &proof);
+
+    static bool FastAggregateVerify(
+        const vector<G1Element> &pubkeys,
+        const vector<uint8_t> &message,
+        const G2Element &signature);
+
+    static bool FastAggregateVerify(
+        const vector<vector<uint8_t>> &pubkeys,
+        const vector<uint8_t> &message,
+        const vector<uint8_t> &signature);
+};
+
+}  // end namespace bls
 
 #endif  // SRC_BLSSCHEMES_HPP_

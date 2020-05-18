@@ -36,10 +36,10 @@
 #ifndef RLC_EP_H
 #define RLC_EP_H
 
-#include "relic_fp.h"
 #include "relic_bn.h"
-#include "relic_types.h"
+#include "relic_fp.h"
 #include "relic_label.h"
+#include "relic_types.h"
 
 /*============================================================================*/
 /* Constant definitions                                                       */
@@ -49,100 +49,100 @@
  * Prime elliptic curve identifiers.
  */
 enum {
-	/** SECG P-160 prime curve. */
-	SECG_P160 = 1,
-	/** SECG K-160 prime curve. */
-	SECG_K160,
-	/** NIST P-192 prime curve. */
-	NIST_P192,
-	/** SECG K-192 prime curve. */
-	SECG_K192,
-	/** Curve22103 prime curve. */
-	CURVE_22103,
-	/** NIST P-224 prime curve. */
-	NIST_P224,
-	/** SECG K-224 prime curve. */
-	SECG_K224,
-	/** Curve4417 prime curve. */
-	CURVE_4417,
-	/** Curve1147 prime curve. */
-	CURVE_1174,
-	/** Curve25519 prime curve. */
-	CURVE_25519,
-	/** NIST P-256 prime curve. */
-	NIST_P256,
-	/** Brainpool P256r1 curve. */
-	BSI_P256,
-	/** SECG K-256 prime curve. */
-	SECG_K256,
-	/** Curve67254 prime curve. */
-	CURVE_67254,
-	/** Curve383187 prime curve. */
-	CURVE_383187,
-	/** NIST P-384 prime curve. */
-	NIST_P384,
-	/** Curve 511187 prime curve. */
-	CURVE_511187,
-	/** NIST P-521 prime curve. */
-	NIST_P521,
-	/** Barreto-Naehrig curve with positive x */
-	BN_P158,
-	/** Barreto-Naehrig curve with negative x (found by Nogami et al.). */
-	BN_P254,
-	/** Barreto-Naehrig curve with negative x. */
-	BN_P256,
-	/** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
-	B12_P381,
-	/** Barreto-Naehrig curve with negative x. */
-	BN_P382,
-	/** Barreto-Naehrig curve with embedding degree 12. */
-	BN_P446,
-	/** Barreto-Lynn-Scott curve with embedding degree 12. */
-	B12_P446,
-	/** Barreto-Lynn-Scott curve with embedding degree 12. */
-	B12_P455,
-	/** Barreto-Lynn-Scott curve with embedding degree 24. */
-	B24_P477,
-	/** Kachisa-Schafer-Scott with negative x. */
-	KSS_P508,
-	/** Optimal TNFS-secure curve with embedding degree 8. */
-	OT8_P511,
-	/** Cocks-pinch curve with embedding degree 8. */
-	CP8_P544,
-	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
-	K54_P569,
-	/** Barreto-Lynn-Scott curve with embedding degree 48. */
-	B48_P575,
-	/** Barreto-Naehrig curve with positive x. */
-	BN_P638,
-	/** Barreto-Lynn-Scott curve with embedding degree 12. */
-	B12_P638,
-	/** 1536-bit supersingular curve. */
-	SS_P1536,
+    /** SECG P-160 prime curve. */
+    SECG_P160 = 1,
+    /** SECG K-160 prime curve. */
+    SECG_K160,
+    /** NIST P-192 prime curve. */
+    NIST_P192,
+    /** SECG K-192 prime curve. */
+    SECG_K192,
+    /** Curve22103 prime curve. */
+    CURVE_22103,
+    /** NIST P-224 prime curve. */
+    NIST_P224,
+    /** SECG K-224 prime curve. */
+    SECG_K224,
+    /** Curve4417 prime curve. */
+    CURVE_4417,
+    /** Curve1147 prime curve. */
+    CURVE_1174,
+    /** Curve25519 prime curve. */
+    CURVE_25519,
+    /** NIST P-256 prime curve. */
+    NIST_P256,
+    /** Brainpool P256r1 curve. */
+    BSI_P256,
+    /** SECG K-256 prime curve. */
+    SECG_K256,
+    /** Curve67254 prime curve. */
+    CURVE_67254,
+    /** Curve383187 prime curve. */
+    CURVE_383187,
+    /** NIST P-384 prime curve. */
+    NIST_P384,
+    /** Curve 511187 prime curve. */
+    CURVE_511187,
+    /** NIST P-521 prime curve. */
+    NIST_P521,
+    /** Barreto-Naehrig curve with positive x */
+    BN_P158,
+    /** Barreto-Naehrig curve with negative x (found by Nogami et al.). */
+    BN_P254,
+    /** Barreto-Naehrig curve with negative x. */
+    BN_P256,
+    /** Barreto-Lynn-Scott curve with embedding degree 12 (ZCash curve). */
+    B12_P381,
+    /** Barreto-Naehrig curve with negative x. */
+    BN_P382,
+    /** Barreto-Naehrig curve with embedding degree 12. */
+    BN_P446,
+    /** Barreto-Lynn-Scott curve with embedding degree 12. */
+    B12_P446,
+    /** Barreto-Lynn-Scott curve with embedding degree 12. */
+    B12_P455,
+    /** Barreto-Lynn-Scott curve with embedding degree 24. */
+    B24_P477,
+    /** Kachisa-Schafer-Scott with negative x. */
+    KSS_P508,
+    /** Optimal TNFS-secure curve with embedding degree 8. */
+    OT8_P511,
+    /** Cocks-pinch curve with embedding degree 8. */
+    CP8_P544,
+    /** Kachisa-Scott-Schaefer curve with embedding degree 54. */
+    K54_P569,
+    /** Barreto-Lynn-Scott curve with embedding degree 48. */
+    B48_P575,
+    /** Barreto-Naehrig curve with positive x. */
+    BN_P638,
+    /** Barreto-Lynn-Scott curve with embedding degree 12. */
+    B12_P638,
+    /** 1536-bit supersingular curve. */
+    SS_P1536,
 };
 
 /**
  * Pairing-friendly elliptic curve identifiers.
  */
 enum {
-	/** Supersingular curves with embedding degree 2. */
-	EP_SS2 = 1,
-	/** Barreto-Naehrig. */
-	EP_BN,
-	/* Optimal TNFS-secure. */
-	EP_OT8,
-	/* Cocks-Pinch curve. */
-	EP_CP8,
-	/* Barreto-Lynn-Scott with embedding degree 12. */
-	EP_B12,
-	/* Kachisa-Schafer-Scott with embedding degree 16. */
-	EP_K16,
-	/* Barreto-Lynn-Scott with embedding degree 24. */
-	EP_B24,
-	/* Barreto-Lynn-Scott with embedding degree 48. */
-	EP_B48,
-	/** Kachisa-Scott-Schaefer curve with embedding degree 54. */
-	EP_K54,
+    /** Supersingular curves with embedding degree 2. */
+    EP_SS2 = 1,
+    /** Barreto-Naehrig. */
+    EP_BN,
+    /* Optimal TNFS-secure. */
+    EP_OT8,
+    /* Cocks-Pinch curve. */
+    EP_CP8,
+    /* Barreto-Lynn-Scott with embedding degree 12. */
+    EP_B12,
+    /* Kachisa-Schafer-Scott with embedding degree 16. */
+    EP_K16,
+    /* Barreto-Lynn-Scott with embedding degree 24. */
+    EP_B24,
+    /* Barreto-Lynn-Scott with embedding degree 48. */
+    EP_B48,
+    /** Kachisa-Scott-Schaefer curve with embedding degree 54. */
+    EP_K54,
 };
 
 /*============================================================================*/
@@ -152,60 +152,60 @@ enum {
 /**
  * Denotes a divisive twist.
  */
-#define EP_DTYPE		1
+#define EP_DTYPE 1
 
 /**
  * Denotes a multiplicative twist.
  */
-#define EP_MTYPE		2
+#define EP_MTYPE 2
 
 /**
  * Size of a precomputation table using the binary method.
  */
-#define RLC_EP_TABLE_BASIC		(RLC_FP_BITS + 1)
+#define RLC_EP_TABLE_BASIC (RLC_FP_BITS + 1)
 
 /**
  * Size of a precomputation table using the single-table comb method.
  */
-#define RLC_EP_TABLE_COMBS      (1 << EP_DEPTH)
+#define RLC_EP_TABLE_COMBS (1 << EP_DEPTH)
 
 /**
  * Size of a precomputation table using the double-table comb method.
  */
-#define RLC_EP_TABLE_COMBD		(1 << (EP_DEPTH + 1))
+#define RLC_EP_TABLE_COMBD (1 << (EP_DEPTH + 1))
 
 /**
  * Size of a precomputation table using the w-(T)NAF method.
  */
-#define RLC_EP_TABLE_LWNAF		(1 << (EP_DEPTH - 2))
+#define RLC_EP_TABLE_LWNAF (1 << (EP_DEPTH - 2))
 
 /**
  * Size of a precomputation table using the chosen algorithm.
  */
 #if EP_FIX == BASIC
-#define RLC_EP_TABLE			RLC_EP_TABLE_BASIC
+#define RLC_EP_TABLE RLC_EP_TABLE_BASIC
 #elif EP_FIX == COMBS
-#define RLC_EP_TABLE			RLC_EP_TABLE_COMBS
+#define RLC_EP_TABLE RLC_EP_TABLE_COMBS
 #elif EP_FIX == COMBD
-#define RLC_EP_TABLE			RLC_EP_TABLE_COMBD
+#define RLC_EP_TABLE RLC_EP_TABLE_COMBD
 #elif EP_FIX == LWNAF
-#define RLC_EP_TABLE			RLC_EP_TABLE_LWNAF
+#define RLC_EP_TABLE RLC_EP_TABLE_LWNAF
 #endif
 
 /**
  * Maximum size of a precomputation table.
  */
 #ifdef STRIP
-#define RLC_EP_TABLE_MAX 	RLC_EP_TABLE
+#define RLC_EP_TABLE_MAX RLC_EP_TABLE
 #else
-#define RLC_EP_TABLE_MAX 	RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
+#define RLC_EP_TABLE_MAX RLC_MAX(RLC_EP_TABLE_BASIC, RLC_EP_TABLE_COMBD)
 #endif
 
 /**
  * Maximum number of coefficients of an isogeny map polynomial.
  * RLC_TERMS of value 16 is sufficient for a degree-11 isogeny polynomial.
  */
-#define RLC_EP_CTMAP_MAX   16
+#define RLC_EP_CTMAP_MAX 16
 
 /*============================================================================*/
 /* Type definitions                                                           */
@@ -215,16 +215,15 @@ enum {
  * Represents an elliptic curve point over a prime field.
  */
 typedef struct {
-	/** The first coordinate. */
-	fp_st x;
-	/** The second coordinate. */
-	fp_st y;
-	/** The third coordinate (projective representation). */
-	fp_st z;
-	/** Flag to indicate that this point is normalized. */
-	int norm;
+    /** The first coordinate. */
+    fp_st x;
+    /** The second coordinate. */
+    fp_st y;
+    /** The third coordinate (projective representation). */
+    fp_st z;
+    /** Flag to indicate that this point is normalized. */
+    int norm;
 } ep_st;
-
 
 /**
  * Pointer to an elliptic curve point.
@@ -239,26 +238,26 @@ typedef ep_st *ep_t;
  * Data structure representing an isogeny map.
  */
 typedef struct {
-	/** The a-coefficient of the isogenous curve used for SSWU mapping. */
-	fp_st a;
-	/** The b-coefficient of the isogenous curve used for SSWU mapping. */
-	fp_st b;
-	/** Degree of x numerator */
-	int deg_xn;
-	/** Degree of x denominator */
-	int deg_xd;
-	/** Degree of y numerator */
-	int deg_yn;
-	/** Degree of y denominator */
-	int deg_yd;
-	/** x numerator coefficients */
-	fp_st xn[RLC_EP_CTMAP_MAX];
-	/** x denominator coefficients */
-	fp_st xd[RLC_EP_CTMAP_MAX];
-	/** y numerator coefficients */
-	fp_st yn[RLC_EP_CTMAP_MAX];
-	/** y denominator coefficients */
-	fp_st yd[RLC_EP_CTMAP_MAX];
+    /** The a-coefficient of the isogenous curve used for SSWU mapping. */
+    fp_st a;
+    /** The b-coefficient of the isogenous curve used for SSWU mapping. */
+    fp_st b;
+    /** Degree of x numerator */
+    int deg_xn;
+    /** Degree of x denominator */
+    int deg_xd;
+    /** Degree of y numerator */
+    int deg_yn;
+    /** Degree of y denominator */
+    int deg_yd;
+    /** x numerator coefficients */
+    fp_st xn[RLC_EP_CTMAP_MAX];
+    /** x denominator coefficients */
+    fp_st xd[RLC_EP_CTMAP_MAX];
+    /** y numerator coefficients */
+    fp_st yn[RLC_EP_CTMAP_MAX];
+    /** y denominator coefficients */
+    fp_st yd[RLC_EP_CTMAP_MAX];
 } iso_st;
 
 /**
@@ -276,9 +275,9 @@ typedef iso_st *iso_t;
  * @param[out] A			- the point to initialize.
  */
 #if ALLOC == AUTO
-#define ep_null(A)				/* empty */
+#define ep_null(A) /* empty */
 #else
-#define ep_null(A)		A = NULL;
+#define ep_null(A) A = NULL;
 #endif
 
 /**
@@ -288,18 +287,17 @@ typedef iso_st *iso_t;
  * @throw ERR_NO_MEMORY		- if there is no available memory.
  */
 #if ALLOC == DYNAMIC
-#define ep_new(A)															\
-	A = (ep_t)calloc(1, sizeof(ep_st));										\
-	if (A == NULL) {														\
-		THROW(ERR_NO_MEMORY);												\
-	}																		\
+#define ep_new(A)                       \
+    A = (ep_t)calloc(1, sizeof(ep_st)); \
+    if (A == NULL) {                    \
+        THROW(ERR_NO_MEMORY);           \
+    }
 
 #elif ALLOC == AUTO
-#define ep_new(A)				/* empty */
+#define ep_new(A) /* empty */
 
 #elif ALLOC == STACK
-#define ep_new(A)															\
-	A = (ep_t)alloca(sizeof(ep_st));										\
+#define ep_new(A) A = (ep_t)alloca(sizeof(ep_st));
 
 #endif
 
@@ -309,18 +307,17 @@ typedef iso_st *iso_t;
  * @param[out] A			- the point to free.
  */
 #if ALLOC == DYNAMIC
-#define ep_free(A)															\
-	if (A != NULL) {														\
-		free(A);															\
-		A = NULL;															\
-	}
+#define ep_free(A)   \
+    if (A != NULL) { \
+        free(A);     \
+        A = NULL;    \
+    }
 
 #elif ALLOC == AUTO
-#define ep_free(A)				/* empty */
+#define ep_free(A) /* empty */
 
 #elif ALLOC == STACK
-#define ep_free(A)															\
-	A = NULL;																\
+#define ep_free(A) A = NULL;
 
 #endif
 
@@ -331,9 +328,9 @@ typedef iso_st *iso_t;
  * @param[in] P				- the point to negate.
  */
 #if EP_ADD == BASIC
-#define ep_neg(R, P)		ep_neg_basic(R, P)
+#define ep_neg(R, P) ep_neg_basic(R, P)
 #elif EP_ADD == PROJC
-#define ep_neg(R, P)		ep_neg_projc(R, P)
+#define ep_neg(R, P) ep_neg_projc(R, P)
 #endif
 
 /**
@@ -344,9 +341,9 @@ typedef iso_st *iso_t;
  * @param[in] Q				- the second point to add.
  */
 #if EP_ADD == BASIC
-#define ep_add(R, P, Q)		ep_add_basic(R, P, Q)
+#define ep_add(R, P, Q) ep_add_basic(R, P, Q)
 #elif EP_ADD == PROJC
-#define ep_add(R, P, Q)		ep_add_projc(R, P, Q)
+#define ep_add(R, P, Q) ep_add_projc(R, P, Q)
 #endif
 
 /**
@@ -357,9 +354,9 @@ typedef iso_st *iso_t;
  * @param[in] Q				- the second point.
  */
 #if EP_ADD == BASIC
-#define ep_sub(R, P, Q)		ep_sub_basic(R, P, Q)
+#define ep_sub(R, P, Q) ep_sub_basic(R, P, Q)
 #elif EP_ADD == PROJC
-#define ep_sub(R, P, Q)		ep_sub_projc(R, P, Q)
+#define ep_sub(R, P, Q) ep_sub_projc(R, P, Q)
 #endif
 
 /**
@@ -369,9 +366,9 @@ typedef iso_st *iso_t;
  * @param[in] P				- the point to double.
  */
 #if EP_ADD == BASIC
-#define ep_dbl(R, P)		ep_dbl_basic(R, P)
+#define ep_dbl(R, P) ep_dbl_basic(R, P)
 #elif EP_ADD == PROJC
-#define ep_dbl(R, P)		ep_dbl_projc(R, P)
+#define ep_dbl(R, P) ep_dbl_projc(R, P)
 #endif
 
 /**
@@ -382,15 +379,15 @@ typedef iso_st *iso_t;
  * @param[in] K				- the integer.
  */
 #if EP_MUL == BASIC
-#define ep_mul(R, P, K)		ep_mul_basic(R, P, K)
+#define ep_mul(R, P, K) ep_mul_basic(R, P, K)
 #elif EP_MUL == SLIDE
-#define ep_mul(R, P, K)		ep_mul_slide(R, P, K)
+#define ep_mul(R, P, K) ep_mul_slide(R, P, K)
 #elif EP_MUL == MONTY
-#define ep_mul(R, P, K)		ep_mul_monty(R, P, K)
+#define ep_mul(R, P, K) ep_mul_monty(R, P, K)
 #elif EP_MUL == LWNAF
-#define ep_mul(R, P, K)		ep_mul_lwnaf(R, P, K)
+#define ep_mul(R, P, K) ep_mul_lwnaf(R, P, K)
 #elif EP_MUL == LWREG
-#define ep_mul(R, P, K)		ep_mul_lwreg(R, P, K)
+#define ep_mul(R, P, K) ep_mul_lwreg(R, P, K)
 #endif
 
 /**
@@ -400,13 +397,13 @@ typedef iso_st *iso_t;
  * @param[in] P				- the point to multiply.
  */
 #if EP_FIX == BASIC
-#define ep_mul_pre(T, P)		ep_mul_pre_basic(T, P)
+#define ep_mul_pre(T, P) ep_mul_pre_basic(T, P)
 #elif EP_FIX == COMBS
-#define ep_mul_pre(T, P)		ep_mul_pre_combs(T, P)
+#define ep_mul_pre(T, P) ep_mul_pre_combs(T, P)
 #elif EP_FIX == COMBD
-#define ep_mul_pre(T, P)		ep_mul_pre_combd(T, P)
+#define ep_mul_pre(T, P) ep_mul_pre_combd(T, P)
 #elif EP_FIX == LWNAF
-#define ep_mul_pre(T, P)		ep_mul_pre_lwnaf(T, P)
+#define ep_mul_pre(T, P) ep_mul_pre_lwnaf(T, P)
 #endif
 
 /**
@@ -418,13 +415,13 @@ typedef iso_st *iso_t;
  * @param[in] K				- the integer.
  */
 #if EP_FIX == BASIC
-#define ep_mul_fix(R, T, K)		ep_mul_fix_basic(R, T, K)
+#define ep_mul_fix(R, T, K) ep_mul_fix_basic(R, T, K)
 #elif EP_FIX == COMBS
-#define ep_mul_fix(R, T, K)		ep_mul_fix_combs(R, T, K)
+#define ep_mul_fix(R, T, K) ep_mul_fix_combs(R, T, K)
 #elif EP_FIX == COMBD
-#define ep_mul_fix(R, T, K)		ep_mul_fix_combd(R, T, K)
+#define ep_mul_fix(R, T, K) ep_mul_fix_combd(R, T, K)
 #elif EP_FIX == LWNAF
-#define ep_mul_fix(R, T, K)		ep_mul_fix_lwnaf(R, T, K)
+#define ep_mul_fix(R, T, K) ep_mul_fix_lwnaf(R, T, K)
 #endif
 
 /**
@@ -438,13 +435,13 @@ typedef iso_st *iso_t;
  * @param[in] M				- the second integer,
  */
 #if EP_SIM == BASIC
-#define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_basic(R, P, K, Q, M)
+#define ep_mul_sim(R, P, K, Q, M) ep_mul_sim_basic(R, P, K, Q, M)
 #elif EP_SIM == TRICK
-#define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_trick(R, P, K, Q, M)
+#define ep_mul_sim(R, P, K, Q, M) ep_mul_sim_trick(R, P, K, Q, M)
 #elif EP_SIM == INTER
-#define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_inter(R, P, K, Q, M)
+#define ep_mul_sim(R, P, K, Q, M) ep_mul_sim_inter(R, P, K, Q, M)
 #elif EP_SIM == JOINT
-#define ep_mul_sim(R, P, K, Q, M)	ep_mul_sim_joint(R, P, K, Q, M)
+#define ep_mul_sim(R, P, K, Q, M) ep_mul_sim_joint(R, P, K, Q, M)
 #endif
 
 /*============================================================================*/
@@ -578,8 +575,14 @@ iso_t ep_curve_get_iso(void);
  * @param[in] u			- the non-square used for hashing to this curve.
  * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
-void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t u, int ctmap);
+void ep_curve_set_plain(
+    const fp_t a,
+    const fp_t b,
+    const ep_t g,
+    const bn_t r,
+    const bn_t h,
+    const fp_t u,
+    int ctmap);
 
 /**
  * Configures a supersingular prime elliptic curve by its coefficients and
@@ -593,8 +596,14 @@ void ep_curve_set_plain(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] u			- the non-square used for hashing to this curve.
  * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
-void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t u, int ctmap);
+void ep_curve_set_super(
+    const fp_t a,
+    const fp_t b,
+    const ep_t g,
+    const bn_t r,
+    const bn_t h,
+    const fp_t u,
+    int ctmap);
 
 /**
  * Configures a prime elliptic curve with endomorphisms by its coefficients and
@@ -610,8 +619,16 @@ void ep_curve_set_super(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
  * @param[in] u			- the non-square used for hashing to this curve.
  * @param[in] ctmap	- true if this curve will use an isogeny for mapping.
  */
-void ep_curve_set_endom(const fp_t a, const fp_t b, const ep_t g, const bn_t r,
-		const bn_t h, const fp_t beta, const bn_t l, const fp_t u, int ctmap);
+void ep_curve_set_endom(
+    const fp_t a,
+    const fp_t b,
+    const ep_t g,
+    const bn_t r,
+    const bn_t h,
+    const fp_t beta,
+    const bn_t l,
+    const fp_t u,
+    int ctmap);
 
 /**
  * Configures a prime elliptic curve by its parameter identifier.
@@ -1063,8 +1080,12 @@ void ep_mul_fix_lwnaf(ep_t r, const ep_t *t, const bn_t k);
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void ep_mul_sim_basic(ep_t r, const ep_t p, const bn_t k, const ep_t q,
-		const bn_t m);
+void ep_mul_sim_basic(
+    ep_t r,
+    const ep_t p,
+    const bn_t k,
+    const ep_t q,
+    const bn_t m);
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously using
@@ -1076,8 +1097,12 @@ void ep_mul_sim_basic(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
-		const bn_t m);
+void ep_mul_sim_trick(
+    ep_t r,
+    const ep_t p,
+    const bn_t k,
+    const ep_t q,
+    const bn_t m);
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously using
@@ -1089,8 +1114,12 @@ void ep_mul_sim_trick(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void ep_mul_sim_inter(ep_t r, const ep_t p, const bn_t k, const ep_t q,
-		const bn_t m);
+void ep_mul_sim_inter(
+    ep_t r,
+    const ep_t p,
+    const bn_t k,
+    const ep_t q,
+    const bn_t m);
 
 /**
  * Multiplies and adds two prime elliptic curve points simultaneously using
@@ -1102,8 +1131,12 @@ void ep_mul_sim_inter(ep_t r, const ep_t p, const bn_t k, const ep_t q,
  * @param[in] q				- the second point to multiply.
  * @param[in] m				- the second integer,
  */
-void ep_mul_sim_joint(ep_t r, const ep_t p, const bn_t k, const ep_t q,
-		const bn_t m);
+void ep_mul_sim_joint(
+    ep_t r,
+    const ep_t p,
+    const bn_t k,
+    const ep_t q,
+    const bn_t m);
 
 /**
  * Multiplies and adds the generator and a prime elliptic curve point
@@ -1175,7 +1208,12 @@ void ep_map_ft(ep_t p, const uint8_t *msg, int len);
  * @param[in] dst			- the domain separation tag.
  * @param[in] dst_len		- the domain separation tag length in bytes.
  */
-void ep_map_dst(ep_t p, const uint8_t *msg, int len, const uint8_t *dst, int dst_len);
+void ep_map_impl(
+    ep_t p,
+    const uint8_t *msg,
+    int len,
+    const uint8_t *dst,
+    int dst_len);
 
 /**
  * Compresses a point.
