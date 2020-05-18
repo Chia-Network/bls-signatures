@@ -27,17 +27,6 @@ jobs:
        python -m pip install --upgrade pip
        python -m pip install cibuildwheel==1.3.0
 
-    - name: Mac OS build C++ and test
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        brew install pkg-config
-        mkdir build
-        cd build
-        cmake ../
-        cmake --build . -- -j 6
-        echo "Running ./src/runtest"
-        ./src/runtest
-
     - name: Lint source with flake8
       run: |
         pip install flake8
@@ -47,25 +36,13 @@ jobs:
       run: |
         pip install mypy
         mypy --config-file mypi.ini python-impl python-bindings
-
+        
+    # pip will 'git submodule update --init --recursive' so subsequent steps don't have to
     - name: Build source distribution with MacOS
       if: startsWith(matrix.os, 'mac')
       run: |
         pip install pep517
         python -m pep517.build --source --out-dir dist .
-
-    - name: Ubuntu build C++ and test with valgrind
-      if: startsWith(matrix.os, 'ubuntu')
-      run: |
-        sudo apt-get update
-        sudo apt-get install valgrind libsodium-dev -y
-        mkdir build
-        cd build
-        cmake ../
-        cmake --build . -- -j 6
-        echo "Running ./src/runtest"
-        ./src/runtest
-        valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all  ./src/runtest
 
     - name: Build wheel and test
       run: |
@@ -113,6 +90,31 @@ jobs:
           && delocate-listdeps {wheel}
           && delocate-wheel -v {wheel}
           && cp {wheel} {dest_dir}
+
+    - name: Mac OS build C++ and test
+      if: startsWith(matrix.os, 'macos')
+      run: |
+        brew install pkg-config
+
+        mkdir build
+        cd build
+        cmake ../
+        cmake --build . -- -j 6
+        echo "Running ./src/runtest"
+        ./src/runtest
+
+    - name: Ubuntu build C++ and test with valgrind
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get update
+        sudo apt-get install valgrind libsodium-dev -y
+        mkdir build
+        cd build
+        cmake ../
+        cmake --build . -- -j 6
+        echo "Running ./src/runtest"
+        ./src/runtest
+        valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all  ./src/runtest
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
