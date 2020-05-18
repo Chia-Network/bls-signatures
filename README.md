@@ -235,6 +235,7 @@ prependAgg.Verify(hashes, prependPubKeys);
 Cmake, a c++ compiler, and python3 (for bindings) are required for building.
 ```bash
 git submodule update --init --recursive
+
 mkdir build
 cd build
 cmake ../
@@ -292,11 +293,12 @@ PrependSignatures, which prepend public keys to messages, making them secure.
 ### ci Building
 The primary build process for this repository is to use GitHub Actions to
 build binary wheels for MacOS, Linux, and Windows and publish them with
-a source wheel on PyPi. See `.github/workflows/build.yml`. setup.py adds
-a dependency on [pybind11](https://github.com/pybind/pybind11) by invoking git
-to check out the pybind submodules. Building is then managed by
+a source wheel on PyPi. See `.github/workflows/build.yml`. CMake uses
+[FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)
+to download [pybind11](https://github.com/pybind/pybind11) for the Python
+bindings. Building is then managed by
 [cibuildwheel](https://github.com/joerick/cibuildwheel). Further installation
-is then available via `pip install chiapos` e.g. The ci builds include GMP and
+is then available via `pip install blspy` e.g. The ci builds include GMP and
 libsoduium.
 
 ### Contributing and workflow
@@ -310,7 +312,7 @@ new chia-blockchain release. Please branch or fork master and then create a
 pull request to the master branch. Linear merging is enforced on master and
 merging requires a completed review. PRs will kick off a GitHub actions ci build
 and analysis of bls-signatures at
-[lgtm.com](https://lgtm.com/projects/g/Chia-Network/chiapos/?mode=list). Please
+[lgtm.com](https://lgtm.com/projects/g/Chia-Network/bls-signatures/?mode=list). Please
 make sure your build is passing and that it does not increase alerts at lgtm.
 
 ### Specification and test vectors

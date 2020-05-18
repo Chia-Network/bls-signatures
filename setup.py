@@ -31,16 +31,6 @@ class CMakeBuild(build_ext):
             if cmake_version < '3.1.0':
                 raise RuntimeError("CMake >= 3.1.0 is required on Windows")
 
-        """
-        Work around pybind11's need to be on the filesystem
-        """
-        if os.path.exists('.gitmodules'):
-            try:
-                subprocess.run(['git', 'submodule', 'update', '--init', '--recursive'])
-            except OSError:
-                raise RuntimeError("git is not available"
-                                   + ", ".join(e.name for e in self.extensions))
-
         for ext in self.extensions:
             self.build_extension(ext)
 
