@@ -36,7 +36,7 @@ class CMakeBuild(build_ext):
         """
         if os.path.exists('.gitmodules'):
             try:
-                out = subprocess.run(['git', 'submodule', 'update', '--init', '--recursive'])
+                subprocess.run(['git', 'submodule', 'update', '--init', '--recursive'])
             except OSError:
                 raise RuntimeError("git is not available"
                                    + ", ".join(e.name for e in self.extensions))
