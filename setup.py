@@ -31,6 +31,12 @@ class CMakeBuild(build_ext):
             if cmake_version < '3.1.0':
                 raise RuntimeError("CMake >= 3.1.0 is required on Windows")
 
+        """
+        Work around pybind11's need to be on the filesystem
+        """
+        if os.path.exists('.gitmodules'):
+            out = subprocess.run(['git', 'submodule', 'update', '--init', '--recursive'])
+
         for ext in self.extensions:
             self.build_extension(ext)
 
@@ -185,13 +191,14 @@ if platform.system()=="Windows":
         name='blspy',
         author='Mariano Sorgente',
         author_email='mariano@chia.net',
-        description='BLS signatures in c++ (python bindings)',
-        long_description='BLS signatures with aggregation. Uses fast c++ implementation. See https://github.com/Chia-Network/bls-signatures for more details',
+        description='BLS signatures in c++ (with python bindings)',
+        long_description=open('README.md').read(),
+        long_description_content_type="text/markdown",
         license='Apache License',
         python_requires='>=3.7',
-        setup_requires=['pybind11>=2.4'],
-        install_requires=['pybind11>=2.4'],
-        build_requires=["pybind11>=2.4"],
+        setup_requires=['pybind11>=2.5.0'],
+        install_requires=['pybind11>=2.5.0'],
+        build_requires=["pybind11>=2.5.0"],
         ext_modules=ext_modules,
         cmdclass={'build_ext': BuildExt},
         zip_safe=False,
@@ -205,7 +212,8 @@ else:
         description='BLS signatures in c++ (python bindings)',
         python_requires='>3.1',
         install_requires=["wheel"],
-        long_description='BLS signatures with aggregation. Uses fast c++ implementation. See https://github.com/Chia-Network/bls-signatures for more details',
+        long_description=open('README.md').read(),
+        long_description_content_type="text/markdown",
         ext_modules=[CMakeExtension('blspy', '.')],
         cmdclass=dict(build_ext=CMakeBuild),
         zip_safe=False,
