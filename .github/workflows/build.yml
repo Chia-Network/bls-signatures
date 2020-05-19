@@ -90,8 +90,8 @@ jobs:
           && delocate-wheel -v {wheel}
           && cp {wheel} {dest_dir}
 
-    - name: Checkout submodules
-      uses: snickerbockers/submodules-init@v4
+#    - name: Checkout submodules
+#      uses: snickerbockers/submodules-init@v4
 
     - name: Mac OS build C++ and test
       if: startsWith(matrix.os, 'macos')

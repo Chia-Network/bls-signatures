@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14 FATAL_ERROR)
 set (CMAKE_CXX_STANDARD 11)
 
 include_directories(
@@ -7,6 +7,16 @@ include_directories(
   ${CMAKE_BINARY_DIR}/contrib/relic/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
   )
+
+# CMake 3.14+
+include(FetchContent)
+
+FetchContent_Declare(
+  pybind11-src
+  GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  GIT_TAG        v2.5.0
+)
+FetchContent_MakeAvailable(pybind11-src)
 
 pybind11_add_module(blspy ${CMAKE_CURRENT_SOURCE_DIR}/pythonbindings.cpp)
 
