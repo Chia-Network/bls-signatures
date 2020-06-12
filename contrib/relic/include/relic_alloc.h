@@ -52,7 +52,7 @@
 
 #else /* _MSC_VER */
 
-#if defined(__OpenBSD__)
+#if defined(__OpenBSD__) || defined(__FreeBSD__)
 #include <stdlib.h>
 #else
 #include <alloca.h>
