@@ -21,14 +21,14 @@
 #include <gmp.h>
 #endif
 
-#include "publickey.hpp"
-#include "signature.hpp"
+// #include "publickey.hpp"
+// #include "signature.hpp"
 #include "elements.hpp"
 
 namespace bls {
 class PrivateKey {
 friend class BLS;
-friend class Threshold;
+// friend class Threshold;
 friend class G1Element;
 friend class G2Element;
  public:
@@ -55,18 +55,20 @@ friend class G2Element;
 
     ~PrivateKey();
 
-    PublicKey GetPublicKey() const;
+    // PublicKey GetPublicKey() const;
     G1Element GetG1Element() const;
     G2Element GetG2Element() const;
 
     G2Element GetG2Power(g2_t base) const;
 
+    /*
     // Insecurely aggregate multiple private keys into one
     static PrivateKey AggregateInsecure(std::vector<PrivateKey> const& privateKeys);
 
     // Securely aggregate multiple private keys into one by exponentiating the keys with the pubKey hashes first
     static PrivateKey Aggregate(std::vector<PrivateKey> const& privateKeys,
                                    std::vector<PublicKey> const& pubKeys);
+    */
 
     // Compare to different private key
     friend bool operator==(const PrivateKey& a, const PrivateKey& b);
@@ -101,6 +103,7 @@ friend class G2Element;
         size_t dst_len
     ) const;
 
+    /*
     // Sign a message without setting aggreagation info.
     InsecureSignature SignInsecure(const uint8_t *msg, size_t len) const;
     InsecureSignature SignInsecurePrehashed(const uint8_t *hash) const;
@@ -115,6 +118,7 @@ friend class G2Element;
     // and verified by prepending the pulic keys: Sign(H(pk + H(m))).
     PrependSignature SignPrepend(const uint8_t *msg, size_t len) const;
     PrependSignature SignPrependPrehashed(const uint8_t *msg) const;
+    */
 
  private:
     // Don't allow public construction, force static methods

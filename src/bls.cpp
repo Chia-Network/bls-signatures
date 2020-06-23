@@ -12,39 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <algorithm>
+#include <cstring>
 #include <set>
 #include <string>
-#include <cstring>
-#include <algorithm>
 
 #include "bls.hpp"
 namespace bls {
 
 const char BLS::GROUP_ORDER[] =
-        "73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001";
+    "73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001";
 
 bool BLSInitResult = BLS::Init();
 
 Util::SecureAllocCallback Util::secureAllocCallback;
 Util::SecureFreeCallback Util::secureFreeCallback;
 
-static void relic_core_initializer(void* ptr) {
+static void relic_core_initializer(void* ptr)
+{
     core_init();
     if (err_get_code() != RLC_OK) {
         std::cout << "core_init() failed";
-        // this will most likely crash the application...but there isn't much we can do
+        // this will most likely crash the application...but there isn't much we
+        // can do
         throw std::string("core_init() failed");
     }
 
     const int r = ep_param_set_any_pairf();
     if (r != RLC_OK) {
         std::cout << "ep_param_set_any_pairf() failed";
-        // this will most likely crash the application...but there isn't much we can do
+        // this will most likely crash the application...but there isn't much we
+        // can do
         throw std::string("ep_param_set_any_pairf() failed");
     }
 }
 
-bool BLS::Init() {
+bool BLS::Init()
+{
     if (ALLOC != AUTO) {
         std::cout << "Must have ALLOC == AUTO";
         throw std::string("Must have ALLOC == AUTO");
@@ -60,15 +64,18 @@ bool BLS::Init() {
 #endif
 
     core_set_thread_initializer(relic_core_initializer, nullptr);
-
     return true;
 }
 
-void BLS::SetSecureAllocator(Util::SecureAllocCallback allocCb, Util::SecureFreeCallback freeCb) {
+void BLS::SetSecureAllocator(
+    Util::SecureAllocCallback allocCb,
+    Util::SecureFreeCallback freeCb)
+{
     Util::secureAllocCallback = allocCb;
     Util::secureFreeCallback = freeCb;
 }
 
+/*
 void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
                       std::vector<uint8_t*> const &serPubKeys,
                       std::vector<size_t> const& sortedIndices) {
@@ -77,18 +84,18 @@ void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
     bn_new(order);
     g2_get_ord(order);
 
-    uint8_t *pkBuffer = new uint8_t[serPubKeys.size() * PublicKey::PUBLIC_KEY_SIZE];
+    uint8_t *pkBuffer = new uint8_t[serPubKeys.size() *
+PublicKey::PUBLIC_KEY_SIZE];
 
     for (size_t i = 0; i < serPubKeys.size(); i++) {
-        memcpy(pkBuffer + i * PublicKey::PUBLIC_KEY_SIZE, serPubKeys[sortedIndices[i]], PublicKey::PUBLIC_KEY_SIZE);
+        memcpy(pkBuffer + i * PublicKey::PUBLIC_KEY_SIZE,
+serPubKeys[sortedIndices[i]], PublicKey::PUBLIC_KEY_SIZE);
     }
 
     uint8_t pkHash[32];
-    Util::Hash256(pkHash, pkBuffer, serPubKeys.size() * PublicKey::PUBLIC_KEY_SIZE);
-    for (size_t i = 0; i < numOutputs; i++) {
-        uint8_t hash[32];
-        uint8_t buffer[4 + 32];
-        memset(buffer, 0, 4);
+    Util::Hash256(pkHash, pkBuffer, serPubKeys.size() *
+PublicKey::PUBLIC_KEY_SIZE); for (size_t i = 0; i < numOutputs; i++) { uint8_t
+hash[32]; uint8_t buffer[4 + 32]; memset(buffer, 0, 4);
         // Set first 4 bytes to index, to generate different ts
         Util::IntToFourBytes(buffer, i);
         // Set next 32 bytes as the hash of all the public keys
@@ -104,16 +111,17 @@ void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
     CheckRelicErrors();
 }
 
-PublicKey BLS::DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey) {
-    if (!privKey.keydata) {
-        throw std::string("keydata not initialized");
+PublicKey BLS::DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey)
+{ if (!privKey.keydata) { throw std::string("keydata not initialized");
     }
     PublicKey ret = pubKey.Exp(*privKey.keydata);
     CheckRelicErrors();
     return ret;
 }
+*/
 
-void BLS::CheckRelicErrors() {
+void BLS::CheckRelicErrors()
+{
     if (!core_get()) {
         throw std::string("Library not initialized properly. Call BLS::Init()");
     }
@@ -123,7 +131,8 @@ void BLS::CheckRelicErrors() {
     }
 }
 
-void BLS::CheckRelicErrorsInvalidArgument() {
+void BLS::CheckRelicErrorsInvalidArgument()
+{
     if (!core_get()) {
         throw std::string("Library not initialized properly. Call BLS::Init()");
     }
@@ -132,4 +141,4 @@ void BLS::CheckRelicErrorsInvalidArgument() {
         throw std::invalid_argument("Relic library error");
     }
 }
-} // end namespace bls
+}  // end namespace bls

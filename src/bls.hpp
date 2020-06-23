@@ -26,12 +26,8 @@
 #include <gmp.h>
 #endif
 
-#include "publickey.hpp"
 #include "privatekey.hpp"
-#include "signature.hpp"
-#include "extendedprivatekey.hpp"
-#include "aggregationinfo.hpp"
-#include "threshold.hpp"
+#include "util.hpp"
 
 #include "relic.h"
 #include "relic_test.h"
@@ -52,7 +48,8 @@ class BLS {
     static bool Init();
 
     static void SetSecureAllocator(Util::SecureAllocCallback allocCb, Util::SecureFreeCallback freeCb);
-
+    
+    /*
     // Used for secure aggregation
     static void HashPubKeys(
             bn_t* output,
@@ -61,6 +58,7 @@ class BLS {
             std::vector<size_t> const &sortedIndices);
 
     static PublicKey DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey);
+    */
 
     static void CheckRelicErrors();
     static void CheckRelicErrorsInvalidArgument();

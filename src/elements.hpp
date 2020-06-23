@@ -15,7 +15,9 @@
 #ifndef SRC_BLSELEMENTS_HPP_
 #define SRC_BLSELEMENTS_HPP_
 
+#include "relic.h"
 #include "relic_conf.h"
+#include "util.hpp"
 
 #if defined GMP && ARITH == GMP
 #include <gmp.h>
@@ -25,13 +27,16 @@ namespace bls {
 class G1Element;
 class G2Element;
 class GTElement;
+class BNWrapper;
 
 class G1Element {
 public:
     static const size_t SIZE = 48;
     static G1Element FromBytes(const uint8_t *bytes);
+    static G1Element FromByteVector(const std::vector<uint8_t>& bytevec);
     static G1Element FromNative(const g1_t *element);
     static G1Element Generator();
+    static G1Element Unity();
     static G1Element FromMessage(
         const std::vector<uint8_t> &message,
         const uint8_t *dst,
@@ -70,6 +75,7 @@ class G2Element {
 public:
     static const size_t SIZE = 96;
     static G2Element FromBytes(const uint8_t *data);
+    static G2Element FromByteVector(const std::vector<uint8_t>& bytevec);
     static G2Element FromNative(const g2_t *element);
     static G2Element Generator();
     static G2Element FromMessage(
@@ -96,6 +102,7 @@ public:
     friend G2Element operator*(G2Element &a, bn_t &k);
     friend G2Element operator*(bn_t &k, G2Element &a);
 
+    G2Element Inverse();
     GTElement pair(G1Element &a);
     // friend GTElement operator&(G1Element &a, G2Element &b);
     G2Element &operator=(const G2Element &rhs);
@@ -108,7 +115,8 @@ private:
 class GTElement {
 public:
     static const size_t SIZE = 384;
-    static GTElement FromBytes(const uint8_t *data);
+    static GTElement FromBytes(const uint8_t *bytes);
+    static GTElement FromByteVector(const std::vector<uint8_t>& bytevec);
     static GTElement FromNative(const gt_t *element);
     GTElement(const GTElement &element);
 
@@ -126,6 +134,29 @@ public:
 private:
     static void CompressPoint(uint8_t *result, const gt_t *point);
 };
+
+class BNWrapper {
+public:
+    bn_t *b;
+    static BNWrapper FromByteVector(std::vector<uint8_t> &bytes)
+    {
+        BNWrapper bnw;
+        bnw.b = Util::SecAlloc<bn_t>(1);
+        bn_new(*bnw.b);
+        bn_zero(*bnw.b);
+        bn_read_bin(*bnw.b, bytes.data(), bytes.size());
+        return bnw;
+    }
+
+    friend std::ostream &operator<<(std::ostream &os, BNWrapper const &bnw)
+    {
+        int length = bn_size_bin(*bnw.b);
+        uint8_t data[length];
+        bn_write_bin(data, length, *bnw.b);
+        return os << Util::HexStr(data, length);
+    }
+};
+
 }  // end namespace bls
 
 #endif  // SRC_BLSELEMENTS_HPP_

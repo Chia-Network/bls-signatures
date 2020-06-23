@@ -29,6 +29,7 @@ using std::vector;
 
 using namespace bls;
 
+/*
 TEST_CASE("Test vectors")
 {
     SECTION("Test vectors 1")
@@ -1755,6 +1756,7 @@ TEST_CASE("Threshold")
         REQUIRE(signature2.Verify({hash}, {masterPubkey}));
     }
 }
+*/
 
 TEST_CASE("Schemes")
 {
@@ -1892,6 +1894,7 @@ TEST_CASE("Schemes")
             PopScheme::FastAggregateVerify({pk1v, pk2v}, msg1, aggsigv_same));
     }
 }
+
 
 int main(int argc, char* argv[])
 {

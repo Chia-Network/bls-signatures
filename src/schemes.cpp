@@ -20,7 +20,7 @@
 #include "bls.hpp"
 #include "elements.hpp"
 #include "schemes.hpp"
-#include "signature.hpp"
+// #include "signature.hpp"
 
 using std::string;
 using std::vector;
@@ -144,9 +144,9 @@ bool Core::AggregateVerify(
     int n = pubkeys.size();
     if (n != messages.size() || n <= 0)
         return false;
-    vector<G1Element> pubkeyElements(n);
+    vector<G1Element> pubkeyElements;
     for (int i = 0; i < n; ++i) {
-        pubkeyElements[i] = G1Element::FromBytes(pubkeys[i].data());
+        pubkeyElements.push_back(G1Element::FromBytes(pubkeys[i].data()));
     }
     G2Element signatureElement = G2Element::FromBytes(signature.data());
     return Core::AggregateVerify(
@@ -524,7 +524,7 @@ bool PopScheme::FastAggregateVerify(
     if (n <= 0)
         return false;
 
-    G1Element pkagg = G1Element();
+    G1Element pkagg = G1Element::Unity();
     for (G1Element pk : pubkeys) pkagg += pk;
 
     return Core::Verify(
@@ -544,9 +544,9 @@ bool PopScheme::FastAggregateVerify(
     if (n <= 0) {
         return false;
     }
-    vector<G1Element> pkelements(n);
+    vector<G1Element> pkelements;
     for (int i = 0; i < n; ++i) {
-        pkelements[i] = G1Element::FromBytes(pubkeys[i].data());
+        pkelements.push_back(G1Element::FromBytes(pubkeys[i].data()));
     }
 
     return PopScheme::FastAggregateVerify(

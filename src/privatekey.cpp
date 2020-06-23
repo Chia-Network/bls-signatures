@@ -167,6 +167,7 @@ G2Element PrivateKey::GetG2Power(g2_t base) const
     return ret;
 }
 
+/*
 PublicKey PrivateKey::GetPublicKey() const
 {
     g1_t *q = Util::SecAlloc<g1_t>(1);
@@ -254,6 +255,7 @@ PrivateKey PrivateKey::Aggregate(
     BLS::CheckRelicErrors();
     return aggKey;
 }
+*/
 
 PrivateKey PrivateKey::Mul(const bn_t n) const
 {
@@ -313,13 +315,14 @@ G2Element PrivateKey::SignG2Prehashed(
 {
     g2_t sig, point;
 
-    g2_map_ft(point, messageHash, BLS::MESSAGE_HASH_LEN);
-    // ep2_map_impl(point, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
+    // ep2_map(point, messageHash, BLS::MESSAGE_HASH_LEN);
+    ep2_map_dst(point, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
     g2_mul(sig, point, *keydata);
 
     return G2Element::FromNative(&sig);
 }
 
+/*
 InsecureSignature PrivateKey::SignInsecure(const uint8_t *msg, size_t len) const
 {
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
@@ -332,7 +335,7 @@ InsecureSignature PrivateKey::SignInsecurePrehashed(
 {
     g2_t sig, point;
 
-    g2_map_ft(point, messageHash, BLS::MESSAGE_HASH_LEN);
+    ep2_map(point, messageHash, BLS::MESSAGE_HASH_LEN);
     g2_mul(sig, point, *keydata);
 
     return InsecureSignature::FromG2(&sig);
@@ -382,6 +385,7 @@ PrependSignature PrivateKey::SignPrependPrehashed(
     return PrependSignature::FromInsecureSig(
         SignInsecurePrehashed(finalMessageHash));
 }
+*/
 
 void PrivateKey::AllocateKeyData()
 {

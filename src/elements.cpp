@@ -22,20 +22,31 @@
 #include "util.hpp"
 
 namespace bls {
-G1Element G1Element::FromBytes(const uint8_t* key)
+G1Element G1Element::FromBytes(const uint8_t* bytes)
 {
     G1Element ele = G1Element();
+
+    // convert bytes to relic form
     uint8_t uncompressed[G1Element::SIZE + 1];
-    std::memcpy(uncompressed + 1, key, G1Element::SIZE);
-    if (key[0] & 0x80) {
+    std::memcpy(uncompressed + 1, bytes, G1Element::SIZE);
+    if (bytes[0] == 0xc0) {  // representing infinity
+        // enforce that infinity must be 0xc0000..00
+        for (int i = 1; i < G1Element::SIZE; ++i) {
+            if (bytes[i] != 0x00) {
+                throw("Given G1 infinity element must be canonical");
+            }
+        }
+        return ele;
+    } else if (bytes[0] & 0x80) {
         uncompressed[0] = 0x03;   // Insert extra byte for Y=1
         uncompressed[1] &= 0x7f;  // Remove initial Y bit
     } else {
         uncompressed[0] = 0x02;  // Insert extra byte for Y=0
     }
     g1_read_bin(ele.p, uncompressed, G1Element::SIZE + 1);
+
     if (g1_is_valid(*(g1_t*)&ele) == 0)
-        throw;
+        throw("Given G1 element failed g1_is_valid check");
 
     // check if inside subgroup
     g1_t point, unity;
@@ -49,9 +60,19 @@ G1Element G1Element::FromBytes(const uint8_t* key)
     g1_mul(point, ele.p, order);
     ep_set_infty(unity);
     if (g1_cmp(point, unity) != RLC_EQ)
-        throw;
-    BLS::CheckRelicErrorsInvalidArgument();
+        throw("Given G1 element failed in_subgroup check");
+    try {
+        BLS::CheckRelicErrorsInvalidArgument();
+    } catch (...) {
+        throw("Relic reports invalid argument given");
+    }
+
     return ele;
+}
+
+G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
+{
+    return G1Element::FromBytes(bytevec.data());
 }
 
 G1Element G1Element::FromNative(const g1_t* element)
@@ -68,6 +89,19 @@ G1Element G1Element::Generator()
     return ele;
 }
 
+G1Element G1Element::Unity()
+{
+    G1Element ele = G1Element();
+    return ele;
+}
+
+G1Element::G1Element()
+{
+    g1_null(p);
+    g1_new(p);
+    g1_set_infty(p);
+}
+
 G1Element G1Element::FromMessage(
     const std::vector<uint8_t>& message,
     const uint8_t* dst,
@@ -78,8 +112,7 @@ G1Element G1Element::FromMessage(
     g1_new(ans);
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
     Util::Hash256(messageHash, message.data(), message.size());
-    g1_map_ft(ans, messageHash, BLS::MESSAGE_HASH_LEN);
-    // ep_map_impl(ans, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
+    ep_map_dst(ans, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
     return G1Element::FromNative(&ans);
 }
 
@@ -91,13 +124,9 @@ G1Element G1Element::FromMessageHash(
     g1_t ans;
     g1_null(ans);
     g1_new(ans);
-    g1_map_ft(ans, messageHash.data(), BLS::MESSAGE_HASH_LEN);
-    // ep_map_impl(ans, messageHash.data(), BLS::MESSAGE_HASH_LEN, dst,
-    // dst_len);
+    ep_map_dst(ans, messageHash.data(), BLS::MESSAGE_HASH_LEN, dst, dst_len);
     return G1Element::FromNative(&ans);
 }
-
-G1Element::G1Element() { g1_set_infty(p); }
 
 G1Element::G1Element(const G1Element& pubKey) { g1_copy(p, pubKey.p); }
 
@@ -190,18 +219,30 @@ void G1Element::CompressPoint(uint8_t* result, const g1_t* point)
 
     if (buffer[0] == 0x03) {
         buffer[1] |= 0x80;
+    } else if (buffer[0] == 0x00) {  // infinity
+        std::memset(result, 0, G1Element::SIZE);
+        result[0] = 0xc0;
+        return;
     }
     std::memcpy(result, buffer + 1, G1Element::SIZE);
 }
 
 // G2Element definitions below
 
-G2Element G2Element::FromBytes(const uint8_t* data)
+G2Element G2Element::FromBytes(const uint8_t* bytes)
 {
     G2Element ele = G2Element();
     uint8_t uncompressed[G2Element::SIZE + 1];
-    std::memcpy(uncompressed + 1, data, G2Element::SIZE);
-    if (data[0] & 0x80) {
+    std::memcpy(uncompressed + 1, bytes, G2Element::SIZE);
+    if (bytes[0] == 0xc0 && bytes[48] == 0xc0) {  // representing infinity
+        // enforce that infinity must be 0xc0000..00c0000..00
+        for (int i = 1; i < G2Element::SIZE; ++i) {
+            if (i != 48 && bytes[i] != 0x00) {
+                throw("Given G2 infinity element must be canonical");
+            }
+        }
+        return ele;
+    } else if (bytes[0] & 0x80) {
         uncompressed[0] = 0x03;   // Insert extra byte for Y=1
         uncompressed[1] &= 0x7f;  // Remove initial Y bit
     } else {
@@ -209,7 +250,7 @@ G2Element G2Element::FromBytes(const uint8_t* data)
     }
     g2_read_bin(ele.q, uncompressed, G2Element::SIZE + 1);
     if (g2_is_valid(*(g2_t*)&ele) == 0)
-        throw;
+        throw("Given G2 element failed g1_is_valid check");
 
     // check if inside subgroup
     g2_t point, unity;
@@ -220,9 +261,18 @@ G2Element G2Element::FromBytes(const uint8_t* data)
     g2_mul(point, ele.q, order);
     ep2_set_infty(unity);
     if (g2_cmp(point, unity) != RLC_EQ)
-        throw;
-    BLS::CheckRelicErrorsInvalidArgument();
+        throw("Given G2 element failed in_subgroup check");
+    try {
+        BLS::CheckRelicErrorsInvalidArgument();
+    } catch (...) {
+        throw("Relic reports invalid argument given");
+    }
     return ele;
+}
+
+G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
+{
+    return G2Element::FromBytes(bytevec.data());
 }
 
 G2Element G2Element::FromNative(const g2_t* element)
@@ -239,6 +289,17 @@ G2Element G2Element::Generator()
     return ele;
 }
 
+G2Element G2Element::Inverse()
+{
+    G2Element ans = G2Element();
+    bn_t ordMinus1;
+    bn_new(ordMinus1);
+    g2_get_ord(ordMinus1);
+    bn_sub_dig(ordMinus1, ordMinus1, 1);
+    g2_mul(ans.q, this->q, ordMinus1);
+    return ans;
+}
+
 G2Element G2Element::FromMessage(
     const std::vector<uint8_t>& message,
     const uint8_t* dst,
@@ -249,8 +310,7 @@ G2Element G2Element::FromMessage(
     g2_new(ans);
     uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
     Util::Hash256(messageHash, message.data(), message.size());
-    g2_map_ft(ans, messageHash, BLS::MESSAGE_HASH_LEN);
-    // ep2_map_impl(ans, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
+    ep2_map_dst(ans, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
     return G2Element::FromNative(&ans);
 }
 
@@ -262,9 +322,7 @@ G2Element G2Element::FromMessageHash(
     g2_t ans;
     g2_null(ans);
     g2_new(ans);
-    g2_map_ft(ans, messageHash.data(), BLS::MESSAGE_HASH_LEN);
-    // ep2_map_impl(ans, messageHash.data(), BLS::MESSAGE_HASH_LEN, dst,
-    // dst_len);
+    ep2_map_dst(ans, messageHash.data(), BLS::MESSAGE_HASH_LEN, dst, dst_len);
     return G2Element::FromNative(&ans);
 }
 
@@ -347,6 +405,11 @@ void G2Element::CompressPoint(uint8_t* result, const g2_t* point)
 
     if (buffer[0] == 0x03) {
         buffer[1] |= 0x80;
+    } else if (buffer[0] == 0x00) {  // infinity
+        std::memset(result, 0, G2Element::SIZE);
+        result[0] = 0xc0;
+        result[48] = 0xc0;
+        return;
     }
     std::memcpy(result, buffer + 1, G2Element::SIZE);
 }
@@ -355,14 +418,20 @@ void G2Element::CompressPoint(uint8_t* result, const g2_t* point)
 
 GTElement::GTElement() { gt_set_unity(r); }
 
-GTElement GTElement::FromBytes(const uint8_t* data)
+GTElement::GTElement(const GTElement& ele) { gt_copy(r, *(gt_t*)&ele.r); }
+
+GTElement GTElement::FromBytes(const uint8_t* bytes)
 {
     GTElement ele = GTElement();
-    gt_read_bin(ele.r, data, GTElement::SIZE);
+    gt_read_bin(ele.r, bytes, GTElement::SIZE);
     if (gt_is_valid(*(gt_t*)&ele) == 0)
         throw;
     BLS::CheckRelicErrorsInvalidArgument();
     return ele;
+}
+
+GTElement GTElement::FromByteVector(const std::vector<uint8_t>& bytevec) {
+    return GTElement::FromBytes(bytevec.data());
 }
 
 GTElement GTElement::FromNative(const gt_t* element)
