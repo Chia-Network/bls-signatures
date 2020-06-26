@@ -292,8 +292,8 @@ PrependSignatures, which prepend public keys to messages, making them secure.
 
 ### ci Building
 The primary build process for this repository is to use GitHub Actions to
-build binary wheels for MacOS, Linux, and Windows and publish them with
-a source wheel on PyPi. See `.github/workflows/build.yml`. CMake uses
+build binary wheels for MacOS, Linux (x64 and aarch64), and Windows and publish
+them with a source wheel on PyPi. See `.github/workflows/build.yml`. CMake uses
 [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)
 to download [pybind11](https://github.com/pybind/pybind11) for the Python
 bindings. Building is then managed by
