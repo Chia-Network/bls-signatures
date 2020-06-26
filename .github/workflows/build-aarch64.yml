@@ -73,7 +73,7 @@ jobs:
           && uname -a
         CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_TEST_REQUIRES: pytest
-        CIBW_TEST_COMMAND: py.test -v {project}/tests -s
+        CIBW_TEST_COMMAND: python {project}/python-bindings/test.py
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
