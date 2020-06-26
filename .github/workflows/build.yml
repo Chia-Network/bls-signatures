@@ -22,7 +22,7 @@ jobs:
         fetch-depth: 0
         # we need fetch-depth 0 so setuptools_scm can resolve tags
 
-    - uses: actions/setup-python@v1
+    - uses: actions/setup-python@v2
       name: Install Python
       with:
         python-version: '3.7'
@@ -40,7 +40,7 @@ jobs:
     - name: Install cibuildwheel
       run: |
        python -m pip install --upgrade pip
-       python -m pip install cibuildwheel==1.3.0
+       python -m pip install cibuildwheel==1.5.1
 
     - name: Lint source with flake8
       run: |
@@ -69,7 +69,13 @@ jobs:
         # we need boost
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
-        CIBW_BEFORE_BUILD_LINUX: curl -L https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-`uname -m`.sh > cmake.sh && yes | sh cmake.sh | cat && rm -f /usr/bin/cmake && python -m pip install --upgrade pip && which cmake && cmake --version
+        CIBW_BEFORE_BUILD_LINUX: >
+          curl -L https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-`uname -m`.sh > cmake.sh
+          && yes | sh cmake.sh | cat
+          && rm -f /usr/bin/cmake
+          && python -m pip install --upgrade pip
+          && which cmake
+          && cmake --version
         CIBW_BEFORE_BUILD_MACOS: python -m pip install --upgrade pip
         CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.14
         CIBW_BUILD_VERBOSITY_MACOS: 0
@@ -97,7 +103,7 @@ jobs:
         # The pure python implementation, is not used anywhere and will be replaced
         # pytest {project}/python-impl/tests.py
         CIBW_TEST_COMMAND: python {project}/python-bindings/test.py
-        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH BUILD_VDF_CLIENT=N"
+        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH"
         CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
           pip uninstall -y delocate
           && pip install git+https://github.com/Chia-Network/delocate.git
