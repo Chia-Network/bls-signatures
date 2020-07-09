@@ -29,7 +29,6 @@ namespace bls {
 /* These are all for the min-pubkey-size variant.
    TODO : analogs for min-signature-size
 */
-
 const uint8_t *BasicScheme::CIPHERSUITE_ID =
     (const uint8_t *)"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
 const int BasicScheme::CIPHERSUITE_ID_LEN = 43;

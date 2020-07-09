@@ -1760,6 +1760,30 @@ TEST_CASE("Threshold")
 
 TEST_CASE("Schemes")
 {
+    SECTION("Debug") {
+        vector<uint8_t> msg0 = {};
+        vector<uint8_t> msg1 = {1, 2, 3};
+        uint8_t seed1[32] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
+                            0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,3};
+        PrivateKey sk1 = PrivateKey::FromBytes(seed1, true);
+        vector<uint8_t> sk1ser = sk1.Serialize();
+        std::stringstream ss;
+        ss << std::hex;
+
+        for( int i = 0 ; i < 32; ++i )
+            ss << std::setw(2) << std::setfill('0') << (int)sk1ser[i];
+
+        std::cout << "sk1: " << ss.str() << "\n";
+        G1Element pk1 = BasicScheme::SkToG1(sk1);
+        vector<uint8_t> pk1v = BasicScheme::SkToPk(sk1);
+        G2Element sig1 = BasicScheme::SignNative(sk1, msg1);
+        vector<uint8_t> sig1v = BasicScheme::Sign(sk1, msg1);
+        std::cout << "PK1: " << pk1 << "\n";
+        std::cout << "SIG1: " << sig1 << "\n";
+        G2Element sig0 = BasicScheme::SignNative(sk1, msg0);
+        std::cout << "SIG0: " <<  sig0 << "\n";
+    }
+    /*
     SECTION("Basic Scheme")
     {
         uint8_t seed1[5] = {1, 2, 3, 4, 5};
@@ -1893,7 +1917,9 @@ TEST_CASE("Schemes")
         REQUIRE(
             PopScheme::FastAggregateVerify({pk1v, pk2v}, msg1, aggsigv_same));
     }
+    */
 }
+
 
 
 int main(int argc, char* argv[])

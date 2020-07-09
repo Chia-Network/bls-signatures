@@ -82,6 +82,13 @@ G1Element G1Element::FromNative(const g1_t* element)
     return ele;
 }
 
+G1Element G1Element::FromBN(const bn_t n)
+{
+    G1Element ele = G1Element::Generator();
+    g1_mul(ele.p, ele.p, const_cast<bn_st*>(n));
+    return ele;
+}
+
 G1Element G1Element::Generator()
 {
     G1Element ele = G1Element();
@@ -110,32 +117,11 @@ G1Element G1Element::FromMessage(
     g1_t ans;
     g1_null(ans);
     g1_new(ans);
-    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-    Util::Hash256(messageHash, message.data(), message.size());
-    ep_map_dst(ans, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
-    return G1Element::FromNative(&ans);
-}
-
-G1Element G1Element::FromMessageHash(
-    const std::vector<uint8_t>& messageHash,
-    const uint8_t* dst,
-    int dst_len)
-{
-    g1_t ans;
-    g1_null(ans);
-    g1_new(ans);
-    ep_map_dst(ans, messageHash.data(), BLS::MESSAGE_HASH_LEN, dst, dst_len);
+    ep_map_dst(ans, message.data(), (int) message.size(), dst, dst_len);
     return G1Element::FromNative(&ans);
 }
 
 G1Element::G1Element(const G1Element& pubKey) { g1_copy(p, pubKey.p); }
-
-G1Element G1Element::Exp(bn_t const n) const
-{
-    G1Element ret;
-    g1_mul(ret.p, const_cast<ep_st*>(p), const_cast<bn_st*>(n));
-    return ret;
-}
 
 G1Element G1Element::Inverse()
 {
@@ -282,6 +268,13 @@ G2Element G2Element::FromNative(const g2_t* element)
     return ele;
 }
 
+G2Element G2Element::FromBN(const bn_t n)
+{
+    G2Element ele = G2Element::Generator();
+    g2_mul(ele.q, ele.q, const_cast<bn_st*>(n));
+    return ele;
+}
+
 G2Element G2Element::Generator()
 {
     G2Element ele = G2Element();
@@ -308,34 +301,13 @@ G2Element G2Element::FromMessage(
     g2_t ans;
     g2_null(ans);
     g2_new(ans);
-    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-    Util::Hash256(messageHash, message.data(), message.size());
-    ep2_map_dst(ans, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
-    return G2Element::FromNative(&ans);
-}
-
-G2Element G2Element::FromMessageHash(
-    const std::vector<uint8_t>& messageHash,
-    const uint8_t* dst,
-    int dst_len)
-{
-    g2_t ans;
-    g2_null(ans);
-    g2_new(ans);
-    ep2_map_dst(ans, messageHash.data(), BLS::MESSAGE_HASH_LEN, dst, dst_len);
+    ep2_map_dst(ans, message.data(), (int) message.size(), dst, dst_len);
     return G2Element::FromNative(&ans);
 }
 
 G2Element::G2Element() { g2_set_infty(q); }
 
 G2Element::G2Element(const G2Element& ele) { g2_copy(q, *(g2_t*)&ele.q); }
-
-G2Element G2Element::Exp(const bn_t n) const
-{
-    G2Element result(*this);
-    g2_mul(result.q, result.q, const_cast<bn_st*>(n));
-    return result;
-}
 
 void G2Element::Serialize(uint8_t* buffer) const { CompressPoint(buffer, &q); }
 
@@ -430,7 +402,8 @@ GTElement GTElement::FromBytes(const uint8_t* bytes)
     return ele;
 }
 
-GTElement GTElement::FromByteVector(const std::vector<uint8_t>& bytevec) {
+GTElement GTElement::FromByteVector(const std::vector<uint8_t>& bytevec)
+{
     return GTElement::FromBytes(bytevec.data());
 }
 

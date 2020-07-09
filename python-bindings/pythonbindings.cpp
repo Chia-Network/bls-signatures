@@ -18,6 +18,7 @@
 
 #include "../src/bls.hpp"
 #include "../src/elements.hpp"
+#include "../src/hdckd.hpp"
 #include "../src/privatekey.hpp"
 #include "../src/schemes.hpp"
 
@@ -50,11 +51,19 @@ PYBIND11_MODULE(blspy, m)
                 s << b;
                 return "<BNWrapper " + s.str() + ">";
             })
-        .def("__str__", [](const BNWrapper &b) {
+        .def(
+            "__str__",
+            [](const BNWrapper &b) {
+                std::stringstream s;
+                s << b;
+                return s.str();
+            })
+        .def("__bytes__", [](const BNWrapper &b) {
             std::stringstream s;
             s << b;
-            return s.str();
+            return py::bytes(s.str());
         });
+
     py::implicitly_convertible<py::int_, BNWrapper>();
 
     /*
@@ -113,11 +122,18 @@ PYBIND11_MODULE(blspy, m)
             })
         .def(
             "from_bytes",
-            [](const py::bytes &b) {
-                std::string str(b);
-                const uint8_t *input =
-                    reinterpret_cast<const uint8_t *>(str.data());
-                return PrivateKey::FromBytes(input);
+            [](py::buffer const b, int modOrder = true) {
+                py::buffer_info info = b.request();
+                if (info.format != py::format_descriptor<uint8_t>::format() ||
+                    info.ndim != 1)
+                    throw std::runtime_error("Incompatible buffer format!");
+
+                if ((int)info.size != PrivateKey::PRIVATE_KEY_SIZE) {
+                    throw std::invalid_argument(
+                        "Length of bytes object not equal to PrivateKey::SIZE");
+                }
+                auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
+                return PrivateKey::FromBytes(data_ptr, modOrder);
             })
         .def(
             "__bytes__",
@@ -729,6 +745,7 @@ PYBIND11_MODULE(blspy, m)
         return py::bytes(
             reinterpret_cast<char *>(output), BLS::MESSAGE_HASH_LEN);
     });
+
     py::class_<BasicScheme>(m, "BasicScheme")
         //.def("sk_to_pk", &BasicScheme::SkToPk)
         .def("sk_to_g1", &BasicScheme::SkToG1)
@@ -886,13 +903,12 @@ PYBIND11_MODULE(blspy, m)
                 throw std::invalid_argument(
                     "Length of bytes object not equal to G1Element::SIZE");
             }
-            auto data_ptr = static_cast<uint8_t*>(info.ptr);
+            auto data_ptr = static_cast<uint8_t *>(info.ptr);
             std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
             return G1Element::FromByteVector(data);
         }))
         .def("generator", &G1Element::Generator)
         .def("from_message", &G1Element::FromMessage)
-        .def("from_message_hash", &G1Element::FromMessageHash)
         .def("pair", &G1Element::pair)
         .def("inverse", &G1Element::Inverse)
 
@@ -962,7 +978,7 @@ PYBIND11_MODULE(blspy, m)
                 s << ele;
                 return s.str();
             })
-        .def("to_bytes", [](const G1Element &ele) {
+        .def("__bytes__", [](const G1Element &ele) {
             std::stringstream s;
             s << ele;
             return py::bytes(s.str());
@@ -983,7 +999,7 @@ PYBIND11_MODULE(blspy, m)
                 throw std::invalid_argument(
                     "Length of bytes object not equal to G2Element::SIZE");
             }
-            auto data_ptr = static_cast<uint8_t*>(info.ptr);
+            auto data_ptr = static_cast<uint8_t *>(info.ptr);
             std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
             return G2Element::FromByteVector(data);
         }))
@@ -1001,7 +1017,6 @@ PYBIND11_MODULE(blspy, m)
         }))
         .def("generator", &G2Element::Generator)
         .def("from_message", &G2Element::FromMessage)
-        .def("from_message_hash", &G2Element::FromMessageHash)
         .def("pair", &G2Element::pair)
         .def("inverse", &G2Element::Inverse)
 
@@ -1062,10 +1077,17 @@ PYBIND11_MODULE(blspy, m)
                 s << ele;
                 return "<G2Element " + s.str() + ">";
             })
-        .def("__str__", [](const G2Element &ele) {
+        .def(
+            "__str__",
+            [](const G2Element &ele) {
+                std::stringstream s;
+                s << ele;
+                return s.str();
+            })
+        .def("__bytes__", [](const G2Element &ele) {
             std::stringstream s;
             s << ele;
-            return s.str();
+            return py::bytes(s.str());
         });
 
     py::class_<GTElement>(m, "GTElement")
@@ -1081,7 +1103,7 @@ PYBIND11_MODULE(blspy, m)
                 throw std::invalid_argument(
                     "Length of bytes object not equal to G2Element::SIZE");
             }
-            auto data_ptr = static_cast<uint8_t*>(info.ptr);
+            auto data_ptr = static_cast<uint8_t *>(info.ptr);
             std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
             return GTElement::FromByteVector(data);
         }))
@@ -1108,11 +1130,23 @@ PYBIND11_MODULE(blspy, m)
                 s << ele;
                 return "<GTElement " + s.str() + ">";
             })
-        .def("__str__", [](const GTElement &ele) {
+        .def(
+            "__str__",
+            [](const GTElement &ele) {
+                std::stringstream s;
+                s << ele;
+                return s.str();
+            })
+        .def("__bytes__", [](const GTElement &ele) {
             std::stringstream s;
             s << ele;
-            return s.str();
+            return py::bytes(s.str());
         });
+
+    py::class_<HDCKD>(m, "HDCKD")
+        //.def("sk_to_pk", &BasicScheme::SkToPk)
+        .def("sk_to_sk_MPS", &HDCKD::sk_to_sk_MPS)
+        .def("g1_to_g1", &HDCKD::g1_to_g1);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;

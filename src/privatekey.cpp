@@ -67,8 +67,7 @@ PrivateKey PrivateKey::FromBytes(const uint8_t *bytes, bool modOrder)
         bn_mod_basic(*k.keydata, *k.keydata, ord);
     } else {
         if (bn_cmp(*k.keydata, ord) > 0) {
-            throw std::invalid_argument(
-                "Key data too large, must be smaller than group order");
+            throw std::invalid_argument("PrivateKey byte data must be less than the group order");
         }
     }
     return k;
@@ -167,19 +166,7 @@ G2Element PrivateKey::GetG2Power(g2_t base) const
     return ret;
 }
 
-/*
-PublicKey PrivateKey::GetPublicKey() const
-{
-    g1_t *q = Util::SecAlloc<g1_t>(1);
-    g1_mul_gen(*q, *keydata);
-
-    const PublicKey ret = PublicKey::FromG1(q);
-    Util::SecFree(*q);
-    return ret;
-}
-
-PrivateKey PrivateKey::AggregateInsecure(
-    std::vector<PrivateKey> const &privateKeys)
+PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
 {
     if (privateKeys.empty()) {
         throw std::length_error("Number of private keys must be at least 1");
@@ -197,65 +184,8 @@ PrivateKey PrivateKey::AggregateInsecure(
     return ret;
 }
 
-PrivateKey PrivateKey::Aggregate(
-    std::vector<PrivateKey> const &privateKeys,
-    std::vector<PublicKey> const &pubKeys)
-{
-    if (pubKeys.size() != privateKeys.size()) {
-        throw std::length_error(
-            "Number of public keys must equal number of private keys");
-    }
-    if (privateKeys.empty()) {
-        throw std::length_error("Number of keys must be at least 1");
-    }
+bool PrivateKey::IsZero() { return (bn_is_zero(*keydata)); }
 
-    std::vector<uint8_t *> serPubKeys(pubKeys.size());
-    for (size_t i = 0; i < pubKeys.size(); i++) {
-        serPubKeys[i] = new uint8_t[PublicKey::PUBLIC_KEY_SIZE];
-        pubKeys[i].Serialize(serPubKeys[i]);
-    }
-
-    // Sort the public keys and private keys by public key
-    std::vector<size_t> keysSorted(privateKeys.size());
-    for (size_t i = 0; i < privateKeys.size(); i++) {
-        keysSorted[i] = i;
-    }
-
-    std::sort(
-        keysSorted.begin(),
-        keysSorted.end(),
-        [&serPubKeys](size_t a, size_t b) {
-            return memcmp(
-                       serPubKeys[a],
-                       serPubKeys[b],
-                       PublicKey::PUBLIC_KEY_SIZE) < 0;
-        });
-
-    bn_t *computedTs = new bn_t[keysSorted.size()];
-    for (size_t i = 0; i < keysSorted.size(); i++) {
-        bn_new(computedTs[i]);
-    }
-    BLS::HashPubKeys(computedTs, keysSorted.size(), serPubKeys, keysSorted);
-
-    // Raise all keys to power of the corresponding t's and aggregate the
-    // results into aggKey
-    std::vector<PrivateKey> expKeys;
-    expKeys.reserve(keysSorted.size());
-    for (size_t i = 0; i < keysSorted.size(); i++) {
-        auto &k = privateKeys[keysSorted[i]];
-        expKeys.emplace_back(k.Mul(computedTs[i]));
-    }
-    PrivateKey aggKey = PrivateKey::AggregateInsecure(expKeys);
-
-    for (auto p : serPubKeys) {
-        delete[] p;
-    }
-    delete[] computedTs;
-
-    BLS::CheckRelicErrors();
-    return aggKey;
-}
-*/
 
 PrivateKey PrivateKey::Mul(const bn_t n) const
 {
@@ -303,89 +233,13 @@ G2Element PrivateKey::SignG2(
     const uint8_t *dst,
     size_t dst_len) const
 {
-    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-    Util::Hash256(messageHash, msg, len);
-    return SignG2Prehashed(messageHash, dst, dst_len);
+    g2_t pt;
+    g2_new(pt);
+    
+    ep2_map_dst(pt, msg, len, dst, dst_len);
+    g2_mul(pt, pt, *keydata);
+    return G2Element::FromNative(&pt);
 }
-
-G2Element PrivateKey::SignG2Prehashed(
-    const uint8_t *messageHash,
-    const uint8_t *dst,
-    size_t dst_len) const
-{
-    g2_t sig, point;
-
-    // ep2_map(point, messageHash, BLS::MESSAGE_HASH_LEN);
-    ep2_map_dst(point, messageHash, BLS::MESSAGE_HASH_LEN, dst, dst_len);
-    g2_mul(sig, point, *keydata);
-
-    return G2Element::FromNative(&sig);
-}
-
-/*
-InsecureSignature PrivateKey::SignInsecure(const uint8_t *msg, size_t len) const
-{
-    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-    Util::Hash256(messageHash, msg, len);
-    return SignInsecurePrehashed(messageHash);
-}
-
-InsecureSignature PrivateKey::SignInsecurePrehashed(
-    const uint8_t *messageHash) const
-{
-    g2_t sig, point;
-
-    ep2_map(point, messageHash, BLS::MESSAGE_HASH_LEN);
-    g2_mul(sig, point, *keydata);
-
-    return InsecureSignature::FromG2(&sig);
-}
-
-Signature PrivateKey::Sign(const uint8_t *msg, size_t len) const
-{
-    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-    Util::Hash256(messageHash, msg, len);
-    return SignPrehashed(messageHash);
-}
-
-Signature PrivateKey::SignPrehashed(const uint8_t *messageHash) const
-{
-    InsecureSignature insecureSig = SignInsecurePrehashed(messageHash);
-    Signature ret = Signature::FromInsecureSig(insecureSig);
-
-    ret.SetAggregationInfo(
-        AggregationInfo::FromMsgHash(GetPublicKey(), messageHash));
-
-    return ret;
-}
-
-PrependSignature PrivateKey::SignPrepend(const uint8_t *msg, size_t len) const
-{
-    uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-    Util::Hash256(messageHash, msg, len);
-    return SignPrependPrehashed(messageHash);
-}
-
-PrependSignature PrivateKey::SignPrependPrehashed(
-    const uint8_t *messageHash) const
-{
-    uint8_t finalMessage[PublicKey::PUBLIC_KEY_SIZE + BLS::MESSAGE_HASH_LEN];
-    GetPublicKey().Serialize(finalMessage);
-    memcpy(
-        finalMessage + PublicKey::PUBLIC_KEY_SIZE,
-        messageHash,
-        BLS::MESSAGE_HASH_LEN);
-
-    uint8_t finalMessageHash[BLS::MESSAGE_HASH_LEN];
-    Util::Hash256(
-        finalMessageHash,
-        finalMessage,
-        PublicKey::PUBLIC_KEY_SIZE + BLS::MESSAGE_HASH_LEN);
-
-    return PrependSignature::FromInsecureSig(
-        SignInsecurePrehashed(finalMessageHash));
-}
-*/
 
 void PrivateKey::AllocateKeyData()
 {

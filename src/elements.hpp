@@ -33,8 +33,9 @@ class G1Element {
 public:
     static const size_t SIZE = 48;
     static G1Element FromBytes(const uint8_t *bytes);
-    static G1Element FromByteVector(const std::vector<uint8_t>& bytevec);
+    static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G1Element FromNative(const g1_t *element);
+    static G1Element FromBN(const bn_t n);
     static G1Element Generator();
     static G1Element Unity();
     static G1Element FromMessage(
@@ -67,7 +68,6 @@ public:
     uint32_t GetFingerprint() const;
 
 private:
-    G1Element Exp(const bn_t n) const;
     static void CompressPoint(uint8_t *result, const g1_t *point);
 };
 
@@ -75,15 +75,12 @@ class G2Element {
 public:
     static const size_t SIZE = 96;
     static G2Element FromBytes(const uint8_t *data);
-    static G2Element FromByteVector(const std::vector<uint8_t>& bytevec);
+    static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G2Element FromNative(const g2_t *element);
+    static G2Element FromBN(const bn_t n);
     static G2Element Generator();
     static G2Element FromMessage(
         const std::vector<uint8_t> &message,
-        const uint8_t *dst,
-        int dst_len);
-    static G2Element FromMessageHash(
-        const std::vector<uint8_t> &messageHash,
         const uint8_t *dst,
         int dst_len);
 
@@ -108,7 +105,6 @@ public:
     G2Element &operator=(const G2Element &rhs);
 
 private:
-    G2Element Exp(const bn_t n) const;
     static void CompressPoint(uint8_t *result, const g2_t *point);
 };
 
@@ -116,7 +112,7 @@ class GTElement {
 public:
     static const size_t SIZE = 384;
     static GTElement FromBytes(const uint8_t *bytes);
-    static GTElement FromByteVector(const std::vector<uint8_t>& bytevec);
+    static GTElement FromByteVector(const std::vector<uint8_t> &bytevec);
     static GTElement FromNative(const gt_t *element);
     GTElement(const GTElement &element);
 
