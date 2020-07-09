@@ -32,7 +32,7 @@ G1Element G1Element::FromBytes(const uint8_t* bytes)
     buffer[0] = 0x00;
     buffer[1] &= 0x1f;  // erase 3 msbs from given input
 
-    if (bytes[0] & 0xc0 == 0xc0) {  // representing infinity
+    if ((bytes[0] & 0xc0) == 0xc0) {  // representing infinity
         // enforce that infinity must be 0xc0000..00
         if (bytes[0] != 0xc0) {
             throw std::invalid_argument(
@@ -46,7 +46,7 @@ G1Element G1Element::FromBytes(const uint8_t* bytes)
         }
         return ele;
     } else {
-        if (bytes[0] & 0xc0 != 0x80) {
+        if ((bytes[0] & 0xc0) != 0x80) {
             throw std::invalid_argument(
                 "Given G1 non-infinity element must start with 0b10");
         }
@@ -240,7 +240,7 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
     buffer[1] &= 0x1f;  // erase 3 msbs from input
     buffer[49] &= 0x1f;
 
-    if (bytes[0] & 0xc0 == 0xc0 && bytes[48] & 0xc0 == 0xc0) {  // infinity
+    if (((bytes[0] & 0xc0) == 0xc0) && ((bytes[48] & 0xc0) == 0xc0)) {  // infinity
         // enforce that infinity must be 0xc0000..00c0000..00
         if (bytes[0] != 0xc0 || bytes[48] != 0xc0) {
             throw std::invalid_argument(
@@ -254,7 +254,7 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
         }
         return ele;
     } else {
-        if ((bytes[0] & 0xc0 != 0x80) || (bytes[48] & 0xc0 != 0x80)) {
+        if (((bytes[0] & 0xc0) != 0x80) || ((bytes[48] & 0xc0) != 0x80)) {
             throw std::invalid_argument(
                 "G2 non-inf element must have 0th and 48th byte "
                 "start with 0b10");
