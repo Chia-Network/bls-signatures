@@ -409,17 +409,40 @@ G2Element& G2Element::operator=(const G2Element& rhs)
 
 void G2Element::CompressPoint(uint8_t* result, const g2_t* point)
 {
+    /*
+        uint8_t buffer[G1Element::SIZE + 1];
+    g1_write_bin(buffer, G1Element::SIZE + 1, *point, 1);
+
+    if (buffer[0] == 0x03) {  // sign bit set
+        buffer[1] |= 0x20;
+    } else if (buffer[0] == 0x00) {  // infinity
+        std::memset(result, 0, G1Element::SIZE);
+        result[0] = 0xc0;
+        return;
+    }
+    buffer[1] |= 0x80;  // indicate compression
+    std::memcpy(result, buffer + 1, G1Element::SIZE);
+    */
     uint8_t buffer[G2Element::SIZE + 1];
     g2_write_bin(buffer, G2Element::SIZE + 1, *(g2_t*)point, 1);
 
-    if (buffer[0] == 0x03) {
-        buffer[1] |= 0x80;
-    } else if (buffer[0] == 0x00) {  // infinity
+    if (buffer[0] == 0x00) {  // infinity
         std::memset(result, 0, G2Element::SIZE);
         result[0] = 0xc0;
         result[48] = 0xc0;
         return;
     }
+    // remove leading 3 bits
+    buffer[1] &= 0x1f;
+    buffer[49] &= 0x1f;
+    if (buffer[0] == 0x03) {
+        buffer[1] |= 0xa0;
+        buffer[49] |= 0xa0;
+    } else {
+        buffer[1] |= 0x80;
+        buffer[49] |= 0x80;
+    }
+
     std::memcpy(result, buffer + 1, G2Element::SIZE);
 }
 
