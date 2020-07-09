@@ -9,13 +9,16 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/pybind/pybind11.git
   GIT_TAG        v2.5.0
 )
+FetchContent_Declare(
+  chia-relic-src
+  GIT_REPOSITORY https://github.com/Chia-Network/relic
+  GIT_TAG        origin/master
+)
 FetchContent_MakeAvailable(pybind11-src)
+FetchContent_MakeAvailable(chia-relic-src)
 
 include_directories(
   ${INCLUDE_DIRECTORIES}
-  ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/relic/include
-  ${CMAKE_BINARY_DIR}/contrib/relic/include
-  ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
   )
 
 pybind11_add_module(blspy ${CMAKE_CURRENT_SOURCE_DIR}/pythonbindings.cpp)
