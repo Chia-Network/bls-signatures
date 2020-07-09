@@ -50,7 +50,8 @@ jobs:
     - name: Lint source with mypy
       run: |
         pip install mypy
-        mypy --config-file mypi.ini python-impl python-bindings
+        mypy --config-file mypi.ini python-impl
+#        mypy --config-file mypi.ini python-impl python-bindings
 
     - name: Build source distribution with MacOS
       if: startsWith(matrix.os, 'mac')
