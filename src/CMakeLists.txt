@@ -1,13 +1,27 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.11 FATAL_ERROR)
 set (CMAKE_CXX_STANDARD 11)
+
+# CMake 3.11+
+include(FetchContent)
+
+FetchContent_Declare(
+  chia-relic
+  GIT_REPOSITORY https://github.com/Chia-Network/relic.git
+  GIT_TAG        origin/master
+)
+FetchContent_MakeAvailable(chia-relic)
+
+#message(STATUS "chia-relic_BINARY_DIR: ${chia-relic_BINARY_DIR}/include")
+#message(STATUS "chia-relic_SOURCE_DIR: ${chia-relic_SOURCE_DIR}")
+
 
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 source_group("SrcHeaders" FILES ${HEADERS})
 
 include_directories(
   ${INCLUDE_DIRECTORIES}
-  ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/relic/include
-  ${CMAKE_BINARY_DIR}/contrib/relic/include
+  ${chia-relic_SOURCE_DIR}/include
+  ${chia-relic_BINARY_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
   )
 
