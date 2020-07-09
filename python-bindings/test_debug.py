@@ -30,14 +30,15 @@ for secret in range(50):
     # print(str(pk2.hex()))
     A = str(pk1)
     B = str(pk2.hex())
-    if A != B:
+    if 1:  # A != B:
         X = int(A[:1], 16)
-        X = bin(X)[2:].zfill(4)
+        X = bin(X)[2:].zfill(4)[:3]
         Y = int(B[:1], 16)
-        Y = bin(Y)[2:].zfill(4)
-        M.add((X, Y))
-        # print(X, Y)
-for X, Y in M:
-    print(X, Y)
+        Y = bin(Y)[2:].zfill(4)[:3]
+        # M.add((X, Y))
+        print(X, Y, X == Y)
+# for X, Y in M:
+#    if X != Y:
+#        print(X, Y)
 print("done")
 
