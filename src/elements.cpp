@@ -254,7 +254,7 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
         }
         return ele;
     } else {
-        if (((bytes[0] & 0xc0) != 0x80) || ((bytes[48] & 0xc0) != 0x80)) {
+/*        if (((bytes[0] & 0xc0) != 0x80) || ((bytes[48] & 0xc0) != 0x80)) {
             throw std::invalid_argument(
                 "G2 non-inf element must have 0th and 48th byte "
                 "start with 0b10");
@@ -263,7 +263,7 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
             throw std::invalid_argument(
                 "G2 element must have the same leading 3 bits at byte 0 "
                 "and 48");
-        }
+        }*/
         if (bytes[0] & 0x20) {
             buffer[0] = 0x03;
         } else {
