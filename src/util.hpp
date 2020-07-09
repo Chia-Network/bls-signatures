@@ -82,6 +82,38 @@ class Util {
     }
 
     /*
+     * Converts one hex character to an int.
+     */
+    static uint8_t char2int(const char input) {
+        if(input >= '0' && input <= '9')
+            return input - '0';
+        if(input >= 'A' && input <= 'F')
+            return input - 'A' + 10;
+        if(input >= 'a' && input <= 'f')
+            return input - 'a' + 10;
+        throw std::invalid_argument("Invalid input string");
+    }
+
+    /*
+     * Converts a hex string into a vector of bytes.
+     */
+    static std::vector<uint8_t> HexToBytes(const std::string hex) {
+        if (hex.size() % 2 != 0) {
+            throw std::invalid_argument("Invalid input string, length must be multple of 2");
+        }
+        std::vector<uint8_t> ret = std::vector<uint8_t>();
+        size_t start_at = 0;
+        if (hex.rfind("0x", 0) == 0 || hex.rfind("0x", 0) == 0) {
+            start_at = 2;
+        }
+
+        for (size_t i = start_at; i < hex.size(); i += 2) {
+            ret.push_back(char2int(hex[i]) * 16 + char2int(hex[i+1]));
+        }
+        return ret;
+    }
+
+    /*
      * Converts a 32 bit int to bytes.
      */
     static void IntToFourBytes(uint8_t* result,

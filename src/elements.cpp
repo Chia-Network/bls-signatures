@@ -27,26 +27,41 @@ G1Element G1Element::FromBytes(const uint8_t* bytes)
     G1Element ele = G1Element();
 
     // convert bytes to relic form
-    uint8_t uncompressed[G1Element::SIZE + 1];
-    std::memcpy(uncompressed + 1, bytes, G1Element::SIZE);
-    if (bytes[0] == 0xc0) {  // representing infinity
+    uint8_t buffer[G1Element::SIZE + 1];
+    std::memcpy(buffer + 1, bytes, G1Element::SIZE);
+    buffer[0] = 0x00;
+    buffer[1] &= 0x1f;  // erase 3 msbs from given input
+
+    if (bytes[0] & 0xc0 == 0xc0) {  // representing infinity
         // enforce that infinity must be 0xc0000..00
+        if (bytes[0] != 0xc0) {
+            throw std::invalid_argument(
+                "Given G1 infinity element must be canonical");
+        }
         for (int i = 1; i < G1Element::SIZE; ++i) {
             if (bytes[i] != 0x00) {
-                throw("Given G1 infinity element must be canonical");
+                throw std::invalid_argument(
+                    "Given G1 infinity element must be canonical");
             }
         }
         return ele;
-    } else if (bytes[0] & 0x80) {
-        uncompressed[0] = 0x03;   // Insert extra byte for Y=1
-        uncompressed[1] &= 0x7f;  // Remove initial Y bit
     } else {
-        uncompressed[0] = 0x02;  // Insert extra byte for Y=0
+        if (bytes[0] & 0xc0 != 0x80) {
+            throw std::invalid_argument(
+                "Given G1 non-infinity element must start with 0b10");
+        }
+
+        if (bytes[0] & 0x20) {  // sign bit
+            buffer[0] = 0x03;
+        } else {
+            buffer[0] = 0x02;
+        }
     }
-    g1_read_bin(ele.p, uncompressed, G1Element::SIZE + 1);
+    g1_read_bin(ele.p, buffer, G1Element::SIZE + 1);
 
     if (g1_is_valid(*(g1_t*)&ele) == 0)
-        throw("Given G1 element failed g1_is_valid check");
+        throw std::invalid_argument(
+            "Given G1 element failed g1_is_valid check");
 
     // check if inside subgroup
     g1_t point, unity;
@@ -117,7 +132,7 @@ G1Element G1Element::FromMessage(
     g1_t ans;
     g1_null(ans);
     g1_new(ans);
-    ep_map_dst(ans, message.data(), (int) message.size(), dst, dst_len);
+    ep_map_dst(ans, message.data(), (int)message.size(), dst, dst_len);
     return G1Element::FromNative(&ans);
 }
 
@@ -203,13 +218,14 @@ void G1Element::CompressPoint(uint8_t* result, const g1_t* point)
     uint8_t buffer[G1Element::SIZE + 1];
     g1_write_bin(buffer, G1Element::SIZE + 1, *point, 1);
 
-    if (buffer[0] == 0x03) {
-        buffer[1] |= 0x80;
+    if (buffer[0] == 0x03) {  // sign bit set
+        buffer[1] |= 0x20;
     } else if (buffer[0] == 0x00) {  // infinity
         std::memset(result, 0, G1Element::SIZE);
         result[0] = 0xc0;
         return;
     }
+    buffer[1] |= 0x80;  // indicate compression
     std::memcpy(result, buffer + 1, G1Element::SIZE);
 }
 
@@ -218,25 +234,46 @@ void G1Element::CompressPoint(uint8_t* result, const g1_t* point)
 G2Element G2Element::FromBytes(const uint8_t* bytes)
 {
     G2Element ele = G2Element();
-    uint8_t uncompressed[G2Element::SIZE + 1];
-    std::memcpy(uncompressed + 1, bytes, G2Element::SIZE);
-    if (bytes[0] == 0xc0 && bytes[48] == 0xc0) {  // representing infinity
+    uint8_t buffer[G2Element::SIZE + 1];
+    std::memcpy(buffer + 1, bytes, G2Element::SIZE);
+    buffer[0] = 0x00;
+    buffer[1] &= 0x1f;  // erase 3 msbs from input
+    buffer[49] &= 0x1f;
+
+    if (bytes[0] & 0xc0 == 0xc0 && bytes[48] & 0xc0 == 0xc0) {  // infinity
         // enforce that infinity must be 0xc0000..00c0000..00
+        if (bytes[0] != 0xc0 || bytes[48] != 0xc0) {
+            throw std::invalid_argument(
+                "Given G2 infinity element must be canonical");
+        }
         for (int i = 1; i < G2Element::SIZE; ++i) {
             if (i != 48 && bytes[i] != 0x00) {
-                throw("Given G2 infinity element must be canonical");
+                throw std::invalid_argument(
+                    "Given G2 infinity element must be canonical");
             }
         }
         return ele;
-    } else if (bytes[0] & 0x80) {
-        uncompressed[0] = 0x03;   // Insert extra byte for Y=1
-        uncompressed[1] &= 0x7f;  // Remove initial Y bit
     } else {
-        uncompressed[0] = 0x02;  // Insert extra byte for Y=0
+        if ((bytes[0] & 0xc0 != 0x80) || (bytes[48] & 0xc0 != 0x80)) {
+            throw std::invalid_argument(
+                "G2 non-inf element must have 0th and 48th byte "
+                "start with 0b10");
+        }
+        if ((bytes[0] & 0xe0) != (bytes[48] & 0xe0)) {
+            throw std::invalid_argument(
+                "G2 element must have the same leading 3 bits at byte 0 "
+                "and 48");
+        }
+        if (bytes[0] & 0x20) {
+            buffer[0] = 0x03;
+        } else {
+            buffer[0] = 0x02;
+        }
     }
-    g2_read_bin(ele.q, uncompressed, G2Element::SIZE + 1);
+
+    g2_read_bin(ele.q, buffer, G2Element::SIZE + 1);
     if (g2_is_valid(*(g2_t*)&ele) == 0)
-        throw("Given G2 element failed g1_is_valid check");
+        throw("Given G2 element failed g2_is_valid check");
 
     // check if inside subgroup
     g2_t point, unity;
@@ -301,7 +338,7 @@ G2Element G2Element::FromMessage(
     g2_t ans;
     g2_null(ans);
     g2_new(ans);
-    ep2_map_dst(ans, message.data(), (int) message.size(), dst, dst_len);
+    ep2_map_dst(ans, message.data(), (int)message.size(), dst, dst_len);
     return G2Element::FromNative(&ans);
 }
 

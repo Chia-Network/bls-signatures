@@ -13,43 +13,80 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <string>
 
 #include "bls.hpp"
 #include "elements.hpp"
+#include "hkdf.hpp"
 #include "privatekey.hpp"
 #include "util.hpp"
 
 namespace bls {
 PrivateKey PrivateKey::FromSeed(const uint8_t *seed, size_t seedLen)
 {
-    // "BLS private key seed" in ascii
-    const uint8_t hmacKey[] = {66,  76, 83,  32,  112, 114, 105, 118, 97,  116,
-                               101, 32, 107, 101, 121, 32,  115, 101, 101, 100};
+    // KeyGen
+    // 1. PRK = HKDF-Extract("BLS-SIG-KEYGEN-SALT-", IKM || I2OSP(0, 1))
+    // 2. OKM = HKDF-Expand(PRK, keyInfo || I2OSP(L, 2), L)
+    // 3. SK = OS2IP(OKM) mod r
+    // 4. return SK
 
-    uint8_t *hash = Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
+    const uint8_t info[1] = {0};
+    const size_t infoLen = 0;
 
-    // Hash the seed into sk
-    md_hmac(hash, seed, seedLen, hmacKey, sizeof(hmacKey));
+    // Required by the ietf spec to be at least 32 bytes
+    assert(seedLen >= 32);
+
+    // "BLS-SIG-KEYGEN-SALT-" in ascii
+    const uint8_t saltHkdf[20] = {66, 76, 83, 45, 83, 73, 71, 45, 75, 69,
+                                  89, 71, 69, 78, 45, 83, 65, 76, 84, 45};
+
+    uint8_t *prk = Util::SecAlloc<uint8_t>(32);
+    uint8_t *ikmHkdf = Util::SecAlloc<uint8_t>(seedLen + 1);
+    memcpy(ikmHkdf, seed, seedLen);
+    ikmHkdf[seedLen] = 0;
+
+    const uint8_t L = 48;  // `ceil((3 * ceil(log2(r))) / 16)`, where `r` is the
+                           // order of the BLS 12-381 curve
+
+    uint8_t *okmHkdf = Util::SecAlloc<uint8_t>(L);
+
+    uint8_t keyInfoHkdf[infoLen + 2];
+    memcpy(keyInfoHkdf, info, infoLen);
+    keyInfoHkdf[infoLen] = 0;  // Two bytes for L, 0 and 48
+    keyInfoHkdf[infoLen + 1] = L;
+
+    HKDF256::ExtractExpand(
+        okmHkdf,
+        L,
+        ikmHkdf,
+        seedLen + 1,
+        saltHkdf,
+        20,
+        keyInfoHkdf,
+        infoLen + 2);
 
     bn_t order;
     bn_new(order);
     g1_get_ord(order);
-    bn_free(order);
 
     // Make sure private key is less than the curve order
     bn_t *skBn = Util::SecAlloc<bn_t>(1);
     bn_new(*skBn);
-    bn_read_bin(*skBn, hash, PrivateKey::PRIVATE_KEY_SIZE);
+    bn_read_bin(*skBn, okmHkdf, L);
     bn_mod_basic(*skBn, *skBn, order);
 
     PrivateKey k;
     k.AllocateKeyData();
     bn_copy(*k.keydata, *skBn);
 
+    bn_free(order);
+    bn_free(skBn);
+    Util::SecFree(prk);
+    Util::SecFree(ikmHkdf);
     Util::SecFree(skBn);
-    Util::SecFree(hash);
+    Util::SecFree(okmHkdf);
 
     return k;
 }
@@ -67,7 +104,8 @@ PrivateKey PrivateKey::FromBytes(const uint8_t *bytes, bool modOrder)
         bn_mod_basic(*k.keydata, *k.keydata, ord);
     } else {
         if (bn_cmp(*k.keydata, ord) > 0) {
-            throw std::invalid_argument("PrivateKey byte data must be less than the group order");
+            throw std::invalid_argument(
+                "PrivateKey byte data must be less than the group order");
         }
     }
     return k;
@@ -186,7 +224,6 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
 
 bool PrivateKey::IsZero() { return (bn_is_zero(*keydata)); }
 
-
 PrivateKey PrivateKey::Mul(const bn_t n) const
 {
     bn_t order;
@@ -235,7 +272,7 @@ G2Element PrivateKey::SignG2(
 {
     g2_t pt;
     g2_new(pt);
-    
+
     ep2_map_dst(pt, msg, len, dst, dst_len);
     g2_mul(pt, pt, *keydata);
     return G2Element::FromNative(&pt);

@@ -18,7 +18,6 @@
 
 #include "../src/bls.hpp"
 #include "../src/elements.hpp"
-#include "../src/hdckd.hpp"
 #include "../src/privatekey.hpp"
 #include "../src/schemes.hpp"
 
@@ -1142,11 +1141,6 @@ PYBIND11_MODULE(blspy, m)
             s << ele;
             return py::bytes(s.str());
         });
-
-    py::class_<HDCKD>(m, "HDCKD")
-        //.def("sk_to_pk", &BasicScheme::SkToPk)
-        .def("sk_to_sk_MPS", &HDCKD::sk_to_sk_MPS)
-        .def("g1_to_g1", &HDCKD::g1_to_g1);
 
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;
