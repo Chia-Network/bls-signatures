@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -73,17 +73,18 @@ set(EP_SUPER "off" CACHE STRING "")
 set(TESTS 0 CACHE INTEGER "")
 set(BENCH 0 CACHE INTEGER "")
 set(QUIET 1 CACHE INTEGER "")
+set(DOCUM "off")
 
 set(PP_EXT "LAZYR" CACHE STRING "")
 set(PP_METHD "LAZYR;OATEP" CACHE STRING "")
 
-add_subdirectory(contrib/relic)
+#add_subdirectory(contrib/relic)
 add_subdirectory(src)
 
 if (EMSCRIPTEN)
   add_subdirectory(js-bindings)
 else()
   # emscripten can't build python bindings, it produces only javascript
-  add_subdirectory(contrib/pybind11)
+  # add_subdirectory(contrib/pybind11)
   add_subdirectory(python-bindings)
 endif()
