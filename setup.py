@@ -187,7 +187,6 @@ if platform.system() == "Windows":
         python_requires='>=3.7',
         setup_requires=['pybind11>=2.5.0'],
         install_requires=['pybind11>=2.5.0'],
-        build_requires=["pybind11>=2.5.0"],
         ext_modules=ext_modules,
         cmdclass={'build_ext': BuildExt},
         zip_safe=False,
