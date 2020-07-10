@@ -85,16 +85,11 @@ ext_modules = [
     Extension(
         'blspy',
         [
+            'src/elements.cpp',
             'src/chaincode.cpp',
-            'src/extendedpublickey.cpp',
-            'src/extendedprivatekey.cpp',
-            'src/chaincode.cpp',
-            'src/signature.cpp',
-            'src/publickey.cpp',
+            'src/schemes.cpp',
             'src/privatekey.cpp',
             'src/bls.cpp',
-            'src/aggregationinfo.cpp',
-            'src/threshold.cpp',
             'python-bindings/pythonbindings.cpp',
         ],
         include_dirs=[

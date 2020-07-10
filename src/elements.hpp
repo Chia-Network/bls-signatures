@@ -148,9 +148,11 @@ public:
     friend std::ostream &operator<<(std::ostream &os, BNWrapper const &bnw)
     {
         int length = bn_size_bin(*bnw.b);
-        uint8_t data[length];
+        uint8_t *data = new uint8_t[length];
         bn_write_bin(data, length, *bnw.b);
-        return os << Util::HexStr(data, length);
+        std::string rst = Util::HexStr(data, length);
+        delete[] data;
+        return os << rst;
     }
 };
 
