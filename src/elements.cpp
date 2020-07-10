@@ -137,6 +137,11 @@ G1Element G1Element::FromMessage(
 }
 
 G1Element::G1Element(const G1Element& pubKey) { g1_copy(p, pubKey.p); }
+G1Element& G1Element::operator=(const G1Element& pubKey) 
+{ 
+    g1_copy(p, pubKey.p);
+    return *this;
+}
 
 G1Element G1Element::Inverse()
 {

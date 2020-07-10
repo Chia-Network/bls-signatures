@@ -58,6 +58,7 @@ public:
     friend G1Element &operator*=(G1Element &a, bn_t &k);
     friend G1Element operator*(G1Element &a, bn_t &k);
     friend G1Element operator*(bn_t &k, G1Element &a);
+    G1Element &operator=(const G1Element &pubKey);
 
     GTElement pair(G2Element &b);
     friend GTElement operator&(G1Element &a, G2Element &b);
