@@ -47,13 +47,13 @@ jobs:
       run: |
         source venv/bin/activate
         pip install flake8
-        flake8 src setup.py
+        flake8 src setup.py python-bindings python-impl
 
     - name: Lint source with mypy
       run: |
         source venv/bin/activate
         pip install mypy
-        mypy --config-file mypi.ini python-impl python-bindings
+        mypy --config-file mypi.ini python-bindings python-impl
 
     - name: Build wheel and test
       run: |

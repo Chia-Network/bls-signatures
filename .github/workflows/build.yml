@@ -46,13 +46,12 @@ jobs:
     - name: Lint source with flake8
       run: |
         pip install flake8
-        flake8 src setup.py
+        flake8 src setup.py python-bindings python-impl
 
     - name: Lint source with mypy
       run: |
         pip install mypy
-        mypy --config-file mypi.ini python-impl
-#        mypy --config-file mypi.ini python-impl python-bindings
+        mypy --config-file mypi.ini python-bindings python-impl 
 
     - name: Build source distribution with MacOS
       if: startsWith(matrix.os, 'mac')

@@ -17,10 +17,14 @@ class AffinePoint:
     Elliptic curve point, can represent any curve, and use Fq or Fq2
     coordinates.
     """
+
     def __init__(self, x, y, infinity, ec=default_ec):
-        if (not isinstance(x, Fq) and not isinstance(x, FieldExtBase) or
-           (not isinstance(y, Fq) and not isinstance(y, FieldExtBase)) or
-           type(x) != type(y)):
+        if (
+            not isinstance(x, Fq)
+            and not isinstance(x, FieldExtBase)
+            or (not isinstance(y, Fq) and not isinstance(y, FieldExtBase))
+            or type(x) != type(y)
+        ):
             raise Exception("x,y should be field elements")
         self.FE = type(x)
         self.x = x
@@ -57,21 +61,33 @@ class AffinePoint:
         return self.negate().__add__(other)
 
     def __str__(self):
-        return ("AffinePoint(x=" + self.x.__str__() +
-                ", y=" + self.y.__str__() +
-                ", i=" + str(self.infinity) + ")\n")
+        return (
+            "AffinePoint(x="
+            + self.x.__str__()
+            + ", y="
+            + self.y.__str__()
+            + ", i="
+            + str(self.infinity)
+            + ")\n"
+        )
 
     def __repr__(self):
-        return ("AffinePoint(x=" + self.x.__repr__() +
-                ", y=" + self.y.__repr__() +
-                ", i=" + str(self.infinity) + ")\n")
+        return (
+            "AffinePoint(x="
+            + self.x.__repr__()
+            + ", y="
+            + self.y.__repr__()
+            + ", i="
+            + str(self.infinity)
+            + ")\n"
+        )
 
     def __eq__(self, other):
         if not isinstance(other, AffinePoint):
             return False
-        return (self.x == other.x and
-                self.y == other.y and
-                self.infinity == other.infinity)
+        return (
+            self.x == other.x and self.y == other.y and self.infinity == other.infinity
+        )
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -88,8 +104,9 @@ class AffinePoint:
         return self.__mul__(c)
 
     def to_jacobian(self):
-        return JacobianPoint(self.x, self.y, self.FE.one(self.ec.q),
-                             self.infinity, self.ec)
+        return JacobianPoint(
+            self.x, self.y, self.FE.one(self.ec.q), self.infinity, self.ec
+        )
 
     # Lexicographically greater than the negation
     def lex_gt_neg(self):
@@ -112,10 +129,9 @@ class AffinePoint:
         return bytes(output)
 
     def __deepcopy__(self, memo):
-        return AffinePoint(deepcopy(self.x, memo),
-                           deepcopy(self.y, memo),
-                           self.infinity,
-                           self.ec)
+        return AffinePoint(
+            deepcopy(self.x, memo), deepcopy(self.y, memo), self.infinity, self.ec
+        )
 
 
 class JacobianPoint:
@@ -124,10 +140,14 @@ class JacobianPoint:
     coordinates. Uses Jacobian coordinates so that point addition
     does not require slow inversion.
     """
+
     def __init__(self, x, y, z, infinity, ec=default_ec):
-        if (not isinstance(x, Fq) and not isinstance(x, FieldExtBase) or
-           (not isinstance(y, Fq) and not isinstance(y, FieldExtBase)) or
-           (not isinstance(z, Fq) and not isinstance(z, FieldExtBase))):
+        if (
+            not isinstance(x, Fq)
+            and not isinstance(x, FieldExtBase)
+            or (not isinstance(y, Fq) and not isinstance(y, FieldExtBase))
+            or (not isinstance(z, Fq) and not isinstance(z, FieldExtBase))
+        ):
             raise Exception("x,y should be field elements")
         self.FE = type(x)
         self.x = x
@@ -153,10 +173,17 @@ class JacobianPoint:
         return self.__add__(other)
 
     def __str__(self):
-        return ("JacobianPoint(x=" + self.x.__str__() +
-                ", y=" + self.y.__str__() +
-                "z=" + self.z.__str__() +
-                ", i=" + str(self.infinity) + ")\n")
+        return (
+            "JacobianPoint(x="
+            + self.x.__str__()
+            + ", y="
+            + self.y.__str__()
+            + "z="
+            + self.z.__str__()
+            + ", i="
+            + str(self.infinity)
+            + ")\n"
+        )
 
     def __eq__(self, other):
         if not isinstance(other, JacobianPoint):
@@ -176,8 +203,9 @@ class JacobianPoint:
 
     def to_affine(self):
         if self.infinity:
-            return AffinePoint(Fq.zero(self.ec.q), Fq.zero(self.ec.q),
-                               self.infinity, self.ec)
+            return AffinePoint(
+                Fq.zero(self.ec.q), Fq.zero(self.ec.q), self.infinity, self.ec
+            )
         new_x = self.x / pow(self.z, 2)
         new_y = self.y / pow(self.z, 3)
         return AffinePoint(new_x, new_y, self.infinity, self.ec)
@@ -186,11 +214,13 @@ class JacobianPoint:
         return self.to_affine().serialize()
 
     def __deepcopy__(self, memo):
-        return JacobianPoint(deepcopy(self.x, memo),
-                             deepcopy(self.y, memo),
-                             deepcopy(self.z, memo),
-                             self.infinity,
-                             self.ec)
+        return JacobianPoint(
+            deepcopy(self.x, memo),
+            deepcopy(self.y, memo),
+            deepcopy(self.z, memo),
+            self.infinity,
+            self.ec,
+        )
 
 
 def y_for_x(x, ec=default_ec, FE=Fq):
@@ -225,8 +255,8 @@ def add_points(p1, p2, ec=default_ec, FE=Fq):
     """
     Basic elliptic curve point addition
     """
-    assert(p1.is_on_curve())
-    assert(p2.is_on_curve())
+    assert p1.is_on_curve()
+    assert p2.is_on_curve()
     if p1.infinity:
         return p2
     if p2.infinity:
@@ -251,8 +281,7 @@ def double_point_jacobian(p1, ec=default_ec, FE=Fq):
     """
     X, Y, Z = p1.x, p1.y, p1.z
     if Y == FE.zero(ec.q) or p1.infinity:
-        return JacobianPoint(FE.one(ec.q), FE.one(ec.q),
-                             FE.zero(ec.q), True, ec)
+        return JacobianPoint(FE.one(ec.q), FE.one(ec.q), FE.zero(ec.q), True, ec)
 
     # S = 4*X*Y^2
     S = 4 * X * Y * Y
@@ -294,8 +323,7 @@ def add_points_jacobian(p1, p2, ec=default_ec, FE=Fq):
     S2 = p2.y * pow(p1.z, 3)
     if U1 == U2:
         if S1 != S2:
-            return JacobianPoint(FE.one(ec.q), FE.one(ec.q),
-                                 FE.zero(ec.q), True, ec)
+            return JacobianPoint(FE.one(ec.q), FE.one(ec.q), FE.zero(ec.q), True, ec)
         else:
             return double_point_jacobian(p1, ec, FE)
 
@@ -340,12 +368,10 @@ def scalar_mult_jacobian(c, p1, ec=default_ec, FE=Fq):
     https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication
     """
     if p1.infinity or c % ec.q == 0:
-        return JacobianPoint(FE.one(ec.q), FE.one(ec.q),
-                             FE.zero(ec.q), True, ec)
+        return JacobianPoint(FE.one(ec.q), FE.one(ec.q), FE.zero(ec.q), True, ec)
     if isinstance(c, FE):
         c = int(c)
-    result = JacobianPoint(FE.one(ec.q), FE.one(ec.q),
-                           FE.zero(ec.q), True, ec)
+    result = JacobianPoint(FE.one(ec.q), FE.one(ec.q), FE.zero(ec.q), True, ec)
     addend = p1
     while c > 0:
         if c & 1:
@@ -385,8 +411,8 @@ def twist(point, ec=default_ec_twist):
     f = Fq12.one(ec.q)
     wsq = Fq12(ec.q, f.root, Fq6.zero(ec.q))
     wcu = Fq12(ec.q, Fq6.zero(ec.q), f.root)
-    new_x = (point.x * wsq)
-    new_y = (point.y * wcu)
+    new_x = point.x * wsq
+    new_y = point.y * wcu
     return AffinePoint(new_x, new_y, False, ec)
 
 
@@ -401,8 +427,7 @@ def psi(P, ec=default_ec):
 # https://www.di.ens.fr/~fouque/pub/latincrypt12.pdf
 def sw_encode(t, ec=default_ec, FE=Fq):
     if t == 0:  # Maps t=0 to the point at infinity
-        return JacobianPoint(FE.one(ec.q), FE.one(ec.q),
-                             FE.zero(ec.q), True, ec)
+        return JacobianPoint(FE.one(ec.q), FE.one(ec.q), FE.zero(ec.q), True, ec)
     # Parity will ensure that sw_encode(t) = -sw_encode(-t)
     parity = False
     if FE == Fq:
@@ -443,14 +468,14 @@ def sw_encode(t, ec=default_ec, FE=Fq):
     Xx2 = 1
     try:
         y_for_x(x1, ec, FE)
-    except:  # noqa: E772
+    except AssertionError:  # noqa: E772
         Xx1 = -1
     try:
         y_for_x(x2, ec, FE)
-    except:  # noqa: E772
+    except AssertionError:  # noqa: E772
         Xx2 = -1
 
-    index = (((Xx1 - 1) * Xx2) % 3)
+    index = ((Xx1 - 1) * Xx2) % 3
 
     xs = [x1, x2, x3]
     ys = y_for_x(xs[index], ec, FE)
@@ -495,11 +520,11 @@ def hash_to_point_prehashed_Fq2(m, ec=default_ec_twist):
     # efficient way. See page 11 of "Efficient hash maps
     # to G2 on BLS curves" by Budrioni and Pintore.
     x = -ec.x
-    psi2P = psi(psi(2*P, ec), ec)
-    t0 = x*P
-    t1 = x*t0
+    psi2P = psi(psi(2 * P, ec), ec)
+    t0 = x * P
+    t1 = x * t0
     t2 = (t1 + t0) - P
-    t3 = psi((x+1) * P, ec)
+    t3 = psi((x + 1) * P, ec)
     return t2 - t3 + psi2P
 
 

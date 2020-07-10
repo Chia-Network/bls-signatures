@@ -84,7 +84,7 @@ def final_exponentiation(element, ec=default_ec):
     loop to a unique element of Fq12.
     """
     if ec.k == 12:
-        ans = pow(element, (pow(ec.q,4) - pow(ec.q,2) + 1) // ec.n)
+        ans = pow(element, (pow(ec.q, 4) - pow(ec.q, 2) + 1) // ec.n)
         ans = ans.qi_power(2) * ans
         ans = ans.qi_power(6) / ans
         return ans

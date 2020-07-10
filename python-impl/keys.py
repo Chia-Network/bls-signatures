@@ -1,7 +1,14 @@
 from aggregation_info import AggregationInfo
 from copy import deepcopy
-from ec import (AffinePoint, JacobianPoint, default_ec, generator_Fq,
-                hash_to_point_Fq2, hash_to_point_prehashed_Fq2, y_for_x)
+from ec import (
+    AffinePoint,
+    JacobianPoint,
+    default_ec,
+    generator_Fq,
+    hash_to_point_Fq2,
+    hash_to_point_prehashed_Fq2,
+    y_for_x,
+)
 from fields import Fq
 from signature import Signature, PrependSignature
 from util import hash256, hmac256
@@ -14,6 +21,7 @@ class PublicKey:
     each x, y is a 381 bit Fq element. The serialized represenentation is just
     the x value, and thus 48 bytes. (With the 1st bit determining the valid y).
     """
+
     PUBLIC_KEY_SIZE = 48
 
     def __init__(self, value):
@@ -22,7 +30,7 @@ class PublicKey:
     @staticmethod
     def from_bytes(buffer):
         bit1 = buffer[0] & 0x80
-        buffer = bytes([buffer[0] & 0x1f]) + buffer[1:]
+        buffer = bytes([buffer[0] & 0x1F]) + buffer[1:]
         x = Fq(default_ec.q, int.from_bytes(buffer, "big"))
         y_values = y_for_x(Fq(default_ec.q, x))
         y_values.sort()
@@ -78,8 +86,7 @@ class PublicKey:
         computed_Ts = BLS.hash_pks(len(public_keys), public_keys)
 
         ec = public_keys[0].value.ec
-        sum_keys = JacobianPoint(Fq.one(ec.q), Fq.one(ec.q),
-                                 Fq.zero(ec.q), True, ec)
+        sum_keys = JacobianPoint(Fq.one(ec.q), Fq.one(ec.q), Fq.zero(ec.q), True, ec)
         for i in range(len(public_keys)):
             addend = public_keys[i].value
             if secure:
@@ -93,6 +100,7 @@ class PrivateKey:
     """
     Private keys are just random integers between 1 and the group order.
     """
+
     PRIVATE_KEY_SIZE = 32
 
     def __init__(self, value):
@@ -108,8 +116,7 @@ class PrivateKey:
         return PrivateKey(int.from_bytes(hashed, "big") % default_ec.n)
 
     def get_public_key(self):
-        return PublicKey.from_g1((self.value * generator_Fq())
-                                 .to_jacobian())
+        return PublicKey.from_g1((self.value * generator_Fq()).to_jacobian())
 
     def sign(self, m):
         r = hash_to_point_Fq2(m).to_jacobian()
@@ -118,8 +125,7 @@ class PrivateKey:
 
     def sign_prehashed(self, h):
         r = hash_to_point_prehashed_Fq2(h).to_jacobian()
-        aggregation_info = AggregationInfo.from_msg_hash(self.get_public_key(),
-                                                         h)
+        aggregation_info = AggregationInfo.from_msg_hash(self.get_public_key(), h)
         return Signature.from_g2(self.value * r, aggregation_info)
 
     def sign_prepend(self, m):
@@ -161,8 +167,7 @@ class PrivateKey:
 
         else:
             if not public_keys:
-                raise Exception("Must include public keys in secure" +
-                                " aggregation")
+                raise Exception("Must include public keys in secure" + " aggregation")
             if len(private_keys) != len(public_keys):
                 raise Exception("Invalid number of keys")
 
@@ -182,8 +187,9 @@ class ExtendedPrivateKey:
     version = 1
     EXTENDED_PRIVATE_KEY_SIZE = 77
 
-    def __init__(self, version, depth, parent_fingerprint,
-                 child_number, chain_code, private_key):
+    def __init__(
+        self, version, depth, parent_fingerprint, child_number, chain_code, private_key
+    ):
         self.version = version
         self.depth = depth
         self.parent_fingerprint = parent_fingerprint
@@ -197,19 +203,17 @@ class ExtendedPrivateKey:
         i_right = hmac256(seed + bytes([1]), b"BLS HD seed")
 
         sk_int = int.from_bytes(i_left, "big") % default_ec.n
-        sk = PrivateKey.from_bytes(
-            sk_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big"))
-        return ExtendedPrivateKey(ExtendedPrivateKey.version, 0, 0,
-                                  0, i_right, sk)
+        sk = PrivateKey.from_bytes(sk_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big"))
+        return ExtendedPrivateKey(ExtendedPrivateKey.version, 0, 0, 0, i_right, sk)
 
     def private_child(self, i):
-        if (self.depth >= 255):
+        if self.depth >= 255:
             raise Exception("Cannot go further than 255 levels")
 
         # Hardened keys have i >= 2^31. Non-hardened have i < 2^31
-        hardened = (i >= (2 ** 31))
+        hardened = i >= (2 ** 31)
 
-        if (hardened):
+        if hardened:
             hmac_input = self.private_key.serialize()
         else:
             hmac_input = self.private_key.get_public_key().serialize()
@@ -218,26 +222,30 @@ class ExtendedPrivateKey:
         i_left = hmac256(hmac_input + bytes([0]), self.chain_code)
         i_right = hmac256(hmac_input + bytes([1]), self.chain_code)
 
-        sk_int = ((int.from_bytes(i_left, "big") + self.private_key.value)
-                  % default_ec.n)
-        sk = PrivateKey.from_bytes(
-            sk_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big"))
+        sk_int = (int.from_bytes(i_left, "big") + self.private_key.value) % default_ec.n
+        sk = PrivateKey.from_bytes(sk_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big"))
 
-        return ExtendedPrivateKey(ExtendedPrivateKey.version, self.depth + 1,
-                                  self.private_key.get_public_key()
-                                      .get_fingerprint(), i,
-                                  i_right, sk)
+        return ExtendedPrivateKey(
+            ExtendedPrivateKey.version,
+            self.depth + 1,
+            self.private_key.get_public_key().get_fingerprint(),
+            i,
+            i_right,
+            sk,
+        )
 
     def public_child(self, i):
         return self.private_child(i).get_extended_public_key()
 
     def get_extended_public_key(self):
-        serialized = (self.version.to_bytes(4, "big") +
-                      bytes([self.depth]) +
-                      self.parent_fingerprint.to_bytes(4, "big") +
-                      self.child_number.to_bytes(4, "big") +
-                      self.chain_code +
-                      self.private_key.get_public_key().serialize())
+        serialized = (
+            self.version.to_bytes(4, "big")
+            + bytes([self.depth])
+            + self.parent_fingerprint.to_bytes(4, "big")
+            + self.child_number.to_bytes(4, "big")
+            + self.chain_code
+            + self.private_key.get_public_key().serialize()
+        )
         return ExtendedPublicKey.from_bytes(serialized)
 
     def get_private_key(self):
@@ -253,12 +261,14 @@ class ExtendedPrivateKey:
         return self.EXTENDED_PRIVATE_KEY_SIZE
 
     def serialize(self):
-        return (self.version.to_bytes(4, "big") +
-                bytes([self.depth]) +
-                self.parent_fingerprint.to_bytes(4, "big") +
-                self.child_number.to_bytes(4, "big") +
-                self.chain_code +
-                self.private_key.serialize())
+        return (
+            self.version.to_bytes(4, "big")
+            + bytes([self.depth])
+            + self.parent_fingerprint.to_bytes(4, "big")
+            + self.child_number.to_bytes(4, "big")
+            + self.chain_code
+            + self.private_key.serialize()
+        )
 
     def __eq__(self, other):
         return self.serialize() == other.serialize()
@@ -270,8 +280,9 @@ class ExtendedPrivateKey:
 class ExtendedPublicKey:
     EXTENDED_PUBLIC_KEY_SIZE = 93
 
-    def __init__(self, version, depth, parent_fingerprint,
-                 child_number, chain_code, public_key):
+    def __init__(
+        self, version, depth, parent_fingerprint, child_number, chain_code, public_key
+    ):
         self.version = version
         self.depth = depth
         self.parent_fingerprint = parent_fingerprint
@@ -287,11 +298,12 @@ class ExtendedPublicKey:
         child_number = int.from_bytes(serialized[9:13], "big")
         chain_code = serialized[13:45]
         public_key = PublicKey.from_bytes(serialized[45:])
-        return ExtendedPublicKey(version, depth, parent_fingerprint,
-                                 child_number, chain_code, public_key)
+        return ExtendedPublicKey(
+            version, depth, parent_fingerprint, child_number, chain_code, public_key
+        )
 
     def public_child(self, i):
-        if (self.depth >= 255):
+        if self.depth >= 255:
             raise Exception("Cannot go further than 255 levels")
 
         # Hardened keys have i >= 2^31. Non-hardened have i < 2^31
@@ -302,15 +314,22 @@ class ExtendedPublicKey:
         i_left = hmac256(hmac_input + bytes([0]), self.chain_code)
         i_right = hmac256(hmac_input + bytes([1]), self.chain_code)
 
-        sk_left_int = (int.from_bytes(i_left, "big") % default_ec.n)
+        sk_left_int = int.from_bytes(i_left, "big") % default_ec.n
         sk_left = PrivateKey.from_bytes(
-            sk_left_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big"))
+            sk_left_int.to_bytes(PrivateKey.PRIVATE_KEY_SIZE, "big")
+        )
 
-        new_pk = PublicKey.from_g1(sk_left.get_public_key().value +
-                                   self.public_key.value)
-        return ExtendedPublicKey(self.version, self.depth + 1,
-                                 self.public_key.get_fingerprint(), i,
-                                 i_right, new_pk)
+        new_pk = PublicKey.from_g1(
+            sk_left.get_public_key().value + self.public_key.value
+        )
+        return ExtendedPublicKey(
+            self.version,
+            self.depth + 1,
+            self.public_key.get_fingerprint(),
+            i,
+            i_right,
+            new_pk,
+        )
 
     def get_public_key(self):
         return self.public_key
@@ -319,12 +338,14 @@ class ExtendedPublicKey:
         return self.EXTENDED_PUBLIC_KEY_SIZE
 
     def serialize(self):
-        return (self.version.to_bytes(4, "big") +
-                bytes([self.depth]) +
-                self.parent_fingerprint.to_bytes(4, "big") +
-                self.child_number.to_bytes(4, "big") +
-                self.chain_code +
-                self.public_key.serialize())
+        return (
+            self.version.to_bytes(4, "big")
+            + bytes([self.depth])
+            + self.parent_fingerprint.to_bytes(4, "big")
+            + self.child_number.to_bytes(4, "big")
+            + self.chain_code
+            + self.public_key.serialize()
+        )
 
     def __eq__(self, other):
         return self.serialize() == other.serialize()

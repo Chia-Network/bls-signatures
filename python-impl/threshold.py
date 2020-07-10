@@ -55,6 +55,7 @@ class Threshold:
        These signature shares can be combined to sign the message:
        signature = BLS.aggregate_sigs_simple(sig_shares).
     """
+
     @staticmethod
     def create(T, N):
         """
@@ -72,15 +73,14 @@ class Threshold:
         """
         assert 1 <= T <= N
         g1 = generator_Fq()
-        poly = [Fq(default_ec.n, RNG.randint(1, default_ec.n - 1))
-                for _ in range(T)]
+        poly = [Fq(default_ec.n, RNG.randint(1, default_ec.n - 1)) for _ in range(T)]
         commitments = [g1 * c for c in poly]
-        secret_fragments = [sum(c * pow(x, i, default_ec.n)
-                            for i, c in enumerate(poly))
-                            for x in range(1, N+1)]
+        secret_fragments = [
+            sum(c * pow(x, i, default_ec.n) for i, c in enumerate(poly))
+            for x in range(1, N + 1)
+        ]
 
         return PrivateKey(poly[0]), commitments, secret_fragments
-
 
     @staticmethod
     def lagrange_coeffs_at_zero(X: List[int], ec=default_ec) -> List[Fq]:
@@ -116,7 +116,6 @@ class Threshold:
             ans[i] *= denominator
         return ans
 
-
     @staticmethod
     def interpolate_at_zero(X: List[int], Y: List[Fq], ec=default_ec) -> Fq:
         """
@@ -129,11 +128,14 @@ class Threshold:
             ans += lamb * y
         return ans
 
-
     @staticmethod
-    def verify_secret_fragment(player: int, secret_fragment: Fq,
-                               commitment: List[AffinePoint], T: int,
-                               ec=default_ec) -> bool:
+    def verify_secret_fragment(
+        player: int,
+        secret_fragment: Fq,
+        commitment: List[AffinePoint],
+        T: int,
+        ec=default_ec,
+    ) -> bool:
         """
         You are player, and have received a secret share fragment,
         claimed to be shares[i] = P(player) from a polynomial P
@@ -154,12 +156,12 @@ class Threshold:
         return lhs == rhs
 
     @staticmethod
-    def aggregate_unit_sigs(signatures: List[Signature], players: List[int],
-            T: int, ec=default_ec) -> Signature:
+    def aggregate_unit_sigs(
+        signatures: List[Signature], players: List[int], T: int, ec=default_ec
+    ) -> Signature:
 
         lambs = Threshold.lagrange_coeffs_at_zero(players, ec)
-        agg = (AffinePoint(Fq2.zero(ec.q), Fq2.zero(ec.q), True, ec)
-               .to_jacobian())
+        agg = AffinePoint(Fq2.zero(ec.q), Fq2.zero(ec.q), True, ec).to_jacobian()
         for i, sig in enumerate(signatures):
             agg += sig.value * lambs[i]
         return Signature.from_g2(agg)
@@ -175,7 +177,6 @@ class Threshold:
         i = players.index(player)
         lambs = Threshold.lagrange_coeffs_at_zero(players)
         return Signature.from_g2(sk.value * (r * lambs[i]))
-
 
 
 """
