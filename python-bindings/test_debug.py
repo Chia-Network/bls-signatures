@@ -1,11 +1,12 @@
 from blspy import (
     PrivateKey,
-    G1Element as G1,
-    G2Element as G2,
     BasicScheme as BSc,
     AugScheme as ASc,
-    PopScheme as PSc
+    PopScheme as PSc,
 )
+
+#    G1Element as G1,
+#    G2Element as G2,
 
 from py_ecc.bls import (
     G2Basic,
@@ -22,6 +23,7 @@ from py_ecc.bls import (
 
 if 0:
     import random
+
     msg = [1, 2, 3]
     msg_bytes = bytes(msg)
 
@@ -30,7 +32,7 @@ if 0:
             secret_bytes = bytes([0] * 31 + [secret])
             sk = PrivateKey.from_bytes(secret_bytes, 1)
             yield secret, sk
-        
+
         for trials in range(50):
             secret_list = [random.randint(0, 255) for _ in range(32)]
             secret = 0
@@ -67,8 +69,7 @@ if 0:
 
     print("done")
 
-
-
+"""
 invalid_inputs_1 = [
     # infinity points: too short
     "c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
@@ -129,10 +130,12 @@ invalid_inputs_2 = [
 ]
 
 import binascii
+
 for s in invalid_inputs_1:
     print(len(s))
     bytes_ = binascii.unhexlify(s)
-    if len(bytes_) < 48: bytes_ = bytes_.rjust(48)
+    if len(bytes_) < 48:
+        bytes_ = bytes_.rjust(48)
     try:
         g1 = G1(bytes_)
         assert False, "FAILED TEST"
@@ -143,7 +146,8 @@ for s in invalid_inputs_2:
     t = s[:2] + s[98:] + s[:2] + s[2:96]  # endian swap c0c1 to c1c0
     for u, rev in ((s, False), (t, True)):
         bytes_ = binascii.unhexlify(u)
-        if len(bytes_) < 96: bytes_ = bytes_.rjust(96) 
+        if len(bytes_) < 96:
+            bytes_ = bytes_.rjust(96)
 
         try:
             g1 = G2(bytes_)
@@ -152,13 +156,15 @@ for s in invalid_inputs_2:
             print(e)
 
 
-VECTOR = "39f0b25d4c15b09a0692b22fbacbb5f8aee184cb75887e2ebe0cd3be5d3815d29f9b587e10b3168c939054a89df11068e5c3fac21af742bf4c3e9512f5569674e7ad8b39042bcd73e4b7ce3e64fbea1c434ed01ad4ad8b5b569f6a0b9a1144f94097925672e59ba97bc4d33be2fa21b46c3dadbfb3a1f89afa199d4b44189938 0af857beff08046f23b03c4299eda86490393bde88e4f74348886b200555276b93b37d4f6fdec17c0ea581a30c59c727 b5492ca654796b7a175ea4033e75e56a6c2abd740a417d6e3f7fa59bd55ce97d74ef8c1c0dd24a7a3960669edd11c580066b7a2dfa5a3db3bd25e183a6265edda14dd904bd04fb41c0830a9e01694952d445a8da4611dd745d526cf0be7c1c6e"
-msg, secret_bytes, sig = tuple(binascii.unhexlify(val) for val in VECTOR.strip().split(' '))
-secret = int.from_bytes(secret_bytes, 'big')
+msg, secret_bytes, sig = tuple(
+    binascii.unhexlify(val) for val in VECTOR.strip().split(" ")
+)
+secret = int.from_bytes(secret_bytes, "big")
 print(len(msg), len(secret_bytes), len(sig))
 print(list(map(len, VECTOR.split())))
 print("!", len(secret_bytes))
-#sk = PrivateKey.from_bytes(secret_bytes, 1)
-#print(msg)
-#print(sk)
-#print(sig)
+# sk = PrivateKey.from_bytes(secret_bytes, 1)
+# print(msg)
+# print(sk)
+# print(sig)
+"""
