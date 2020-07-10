@@ -9,8 +9,6 @@ GMP(speed) and libsodium(secure memory alloc) are optional dependencies.
 To install from source, run the following, in the project root directory:
 
 ```bash
-git submodule init
-git submodule update
 pip3 install .
 ```
 
@@ -177,10 +175,4 @@ prepend_agg = PrependSignature.aggregate([prepend1, prepend2])
 
 ok = prepend_agg.verify([Util.hash256(msg), Util.hash256(msg)], [pk1, pk2])
 
-```
-
-#### Publishing the library
-```bash
-python3 setup.py sdist bdist_wheel
-twine upload  dist/*
 ```

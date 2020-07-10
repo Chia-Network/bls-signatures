@@ -19,6 +19,16 @@ include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
   )
 
+# CMake 3.14+
+include(FetchContent)
+
+FetchContent_Declare(
+  pybind11-src
+  GIT_REPOSITORY https://github.com/pybind/pybind11.git
+  GIT_TAG        v2.5.0
+)
+FetchContent_MakeAvailable(pybind11-src)
+
 pybind11_add_module(blspy ${CMAKE_CURRENT_SOURCE_DIR}/pythonbindings.cpp)
 
 if (SODIUM_FOUND)

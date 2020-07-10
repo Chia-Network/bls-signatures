@@ -1,17 +1,34 @@
+![Build](https://github.com/Chia-Network/bls-signatures/workflows/Build/badge.svg)
+![PyPI](https://img.shields.io/pypi/v/blspy?logo=pypi)
+![PyPI - Format](https://img.shields.io/pypi/format/blspy?logo=pypi)
+![GitHub](https://img.shields.io/github/license/Chia-Network/bls-signatures?logo=Github)
+
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/alerts/)
+[![Language grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/context:javascript)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/context:python)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/context:cpp)
+
 ### BLS Signatures implementation
-[![Build Status](https://travis-ci.org/Chia-Network/bls-signatures.svg?branch=master)](https://travis-ci.org/Chia-Network/bls-signatures)
 
 NOTE: THIS LIBRARY IS A DRAFT AND NOT YET REVIEWED FOR SECURITY
 
-Implements BLS signatures with aggregation as in [Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html), using
-[relic toolkit](https://github.com/relic-toolkit/relic) for cryptographic primitives (pairings, EC, hashing).
-The [BLS12-381](https://github.com/zkcrypto/pairing/tree/master/src/bls12_381) curve is used. The spec is [here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md).
+Implements BLS signatures with aggregation as in
+[Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html)
+, using [relic toolkit](https://github.com/relic-toolkit/relic)
+for cryptographic primitives (pairings, EC, hashing).
+The [BLS12-381](https://github.com/zkcrypto/pairing/tree/master/src/bls12_381)
+curve is used. The original spec is
+[here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md).
+This library implements
+[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/)
+shortly.
 
 Features:
 * Non-interactive signature aggregation on identical or distinct messages
 * Aggregate aggregates (trees)
 * Efficient verification (only one pairing per distinct message)
-* Security against rogue public key attack, using aggregation info, or proof of possession
+* Security against rogue public key attack, using aggregation info, or proof of
+possession
 * Aggregate public keys and private keys
 * M/N threshold keys and signatures using Joint-Feldman scheme
 * HD (BIP32) key derivation
@@ -215,9 +232,10 @@ prependAgg.Verify(hashes, prependPubKeys);
 ```
 
 ### Build
-Cmake, a c++ compiler, and python3 (for bindings) are required for building.
+Cmake 3.14+, a c++ compiler, and python3 (for bindings) are required for building.
 ```bash
 git submodule update --init --recursive
+
 mkdir build
 cd build
 cmake ../
@@ -241,11 +259,14 @@ ude -Ibls-signatures/src/  -L./bls-signatures/build/ -l bls  yourfile.cpp
 ```
 
 ### Notes on dependencies
-Changes performed to relic: Added config files for Chia, and added gmp include in relic.h, new ep_map and ep2_map, new ep_pck and ep2_pck. Custom inversion function. Note: relic is used with the Apache 2.0 license.
+Changes performed to relic: Added config files for Chia, and added gmp include
+in relic.h, new ep_map and ep2_map, new ep_pck and ep2_pck. Custom inversion
+function. Note: relic is used with the Apache 2.0 license.
 
-Libsodium and GMP are optional dependencies: libsodium gives secure memory allocation,
-and GMP speeds up the library by ~ 3x. To install them, either download them from github
-and follow the instructions for each repo, or use a package manager like APT or brew.
+Libsodium and GMP are optional dependencies: libsodium gives secure memory
+allocation, and GMP speeds up the library by ~ 3x. To install them, either
+download them from github and follow the instructions for each repo, or use
+a package manager like APT or brew.
 
 ### Discussion
 Discussion about this library and other Chia related development is on Keybase.
@@ -264,11 +285,38 @@ keybase team request-access chia_network.public
 * Objects allocate and free their own memory
 * Use cpplint with default rules
 
+There are three types of signatures: InsecureSignatures (simple signatures
+which are not secure by themselves, due to rogue public keys), Signatures
+(secure signatures that require AggregationInfo to aggregate), and
+PrependSignatures, which prepend public keys to messages, making them secure.
 
-There are three types of signatures: InsecureSignatures (simple signatures which are not secure by themselves, due to rogue public keys),
-Signatures (secure signatures that require AggregationInfo to aggregate),
-and PrependSignatures, which prepend public keys to messages, making them secure.
+### ci Building
+The primary build process for this repository is to use GitHub Actions to
+build binary wheels for MacOS, Linux (x64 and aarch64), and Windows and publish
+them with a source wheel on PyPi. See `.github/workflows/build.yml`. CMake uses
+[FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)
+to download [pybind11](https://github.com/pybind/pybind11) for the Python
+bindings. Building is then managed by
+[cibuildwheel](https://github.com/joerick/cibuildwheel). Further installation
+is then available via `pip install blspy` e.g. The ci builds include GMP and
+libsoduium.
 
+### Contributing and workflow
+Contributions are welcome and more details are available in chia-blockchain's
+[CONTRIBUTING.md](https://github.com/Chia-Network/chia-blockchain/blob/master/CONTRIBUTING.md).
+
+The master branch is usually the currently released latest version on PyPI.
+Note that at times bls-signatures/blspy will be ahead of the release version
+that chia-blockchain requires in it's master/release version in preparation
+for a new chia-blockchain release. Please branch or fork master and then create
+a pull request to the master branch. Linear merging is enforced on master and
+merging requires a completed review. PRs will kick off a GitHub actions ci build
+and analysis of bls-signatures at
+[lgtm.com](https://lgtm.com/projects/g/Chia-Network/bls-signatures/?mode=list).
+Please make sure your build is passing and that it does not increase alerts
+at lgtm.
 
 ### Specification and test vectors
-The specification and test vectors can be found [here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md). Test vectors can also be seen in the python or cpp test files.
+The specification and test vectors can be found
+[here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md).
+Test vectors can also be seen in the python or cpp test files.
