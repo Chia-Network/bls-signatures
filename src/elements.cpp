@@ -240,7 +240,8 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
 {
     G2Element ele = G2Element();
     uint8_t buffer[G2Element::SIZE + 1];
-    std::memcpy(buffer + 1, bytes, G2Element::SIZE);
+    std::memcpy(buffer + 1, bytes + G2Element::SIZE / 2, G2Element::SIZE / 2);
+    std::memcpy(buffer + 1 + G2Element::SIZE / 2, bytes, G2Element::SIZE / 2);
     buffer[0] = 0x00;
     buffer[1] &= 0x1f;  // erase 3 msbs from input
     buffer[49] &= 0x1f;
@@ -259,7 +260,7 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
         }
         return ele;
     } else {
-/*        if (((bytes[0] & 0xc0) != 0x80) || ((bytes[48] & 0xc0) != 0x80)) {
+        if (((bytes[0] & 0xc0) != 0x80) || ((bytes[48] & 0xc0) != 0x80)) {
             throw std::invalid_argument(
                 "G2 non-inf element must have 0th and 48th byte "
                 "start with 0b10");
@@ -268,7 +269,7 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
             throw std::invalid_argument(
                 "G2 element must have the same leading 3 bits at byte 0 "
                 "and 48");
-        }*/
+        }
         if (bytes[0] & 0x20) {
             buffer[0] = 0x03;
         } else {
@@ -278,7 +279,7 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
 
     g2_read_bin(ele.q, buffer, G2Element::SIZE + 1);
     if (g2_is_valid(*(g2_t*)&ele) == 0)
-        throw("Given G2 element failed g2_is_valid check");
+        throw std::invalid_argument("Given G2 element failed g2_is_valid check");
 
     // check if inside subgroup
     g2_t point, unity;
@@ -434,7 +435,10 @@ void G2Element::CompressPoint(uint8_t* result, const g2_t* point)
         buffer[49] |= 0x80;
     }
 
-    std::memcpy(result, buffer + 1, G2Element::SIZE);
+    // Swap buffer
+    std::memcpy(result, buffer + 1 + G2Element::SIZE / 2, G2Element::SIZE / 2);
+    std::memcpy(result + G2Element::SIZE / 2, buffer + 1, G2Element::SIZE / 2);
+    
 }
 
 // GTElement
