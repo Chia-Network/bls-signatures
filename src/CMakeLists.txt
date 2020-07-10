@@ -11,10 +11,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(chia-relic)
 
-#message(STATUS "chia-relic_BINARY_DIR: ${chia-relic_BINARY_DIR}/include")
-#message(STATUS "chia-relic_SOURCE_DIR: ${chia-relic_SOURCE_DIR}")
-
-
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 source_group("SrcHeaders" FILES ${HEADERS})
 
