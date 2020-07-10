@@ -101,10 +101,10 @@ ext_modules = [
             # Path to pybind11 headers
             get_pybind_include(),
             get_pybind_include(user=True),
-            'relic_gmp_64/include',
+            'relic_ietf_64/include',
             'mpir_gc_x64',
         ],
-        library_dirs=['relic_gmp_64', 'mpir_gc_x64'],
+        library_dirs=['relic_ietf_64', 'mpir_gc_x64'],
         libraries=['relic_s', 'Advapi32', 'mpir'],
         language='c++'
     ),
