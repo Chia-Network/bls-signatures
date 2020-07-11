@@ -90,7 +90,7 @@ jobs:
           python -m pip install --upgrade pip
           && pwd
           && nuget install libsodium -Version 1.0.18
-          && tree libsodium.1.0.18\runtimes\ /f
+          && tree .\libsodium.1.0.18\runtimes\ /f
           && git clone https://github.com/Chia-Network/relic_ietf_64.git
           && ls -l relic_ietf_64
           && git clone https://github.com/Chia-Network/mpir_gc_x64.git
