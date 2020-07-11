@@ -100,7 +100,7 @@ ext_modules = [
             'mpir_gc_x64',
         ],
         library_dirs=['relic_ietf_64', 'mpir_gc_x64', 'libsodium.1.0.18/runtimes/win-x64/native/'],
-        libraries=['relic_s', 'Advapi32', 'mpir', 'libsodium'],
+        libraries=['relic_s', 'Advapi32', 'mpir'],
         language='c++'
     ),
 ]
