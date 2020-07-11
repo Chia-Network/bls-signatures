@@ -18,6 +18,7 @@
 
 #include "../src/bls.hpp"
 #include "../src/elements.hpp"
+#include "../src/hdkeys.hpp"
 #include "../src/privatekey.hpp"
 #include "../src/schemes.hpp"
 
@@ -33,8 +34,7 @@ PYBIND11_MODULE(blspy, m)
     py::class_<BNWrapper>(m, "BNWrapper")
         .def(py::init(&BNWrapper::FromByteVector))
         .def(py::init([](py::int_ pyint) {
-            size_t n_bytes =
-                1 + ((_PyLong_NumBits(pyint.ptr()) + 7) / 8);
+            size_t n_bytes = 1 + ((_PyLong_NumBits(pyint.ptr()) + 7) / 8);
             std::vector<uint8_t> buffer(n_bytes, 0);
             if (_PyLong_AsByteArray(
                     (PyLongObject *)pyint.ptr(), buffer.data(), n_bytes, 0, 0) <
@@ -121,7 +121,7 @@ PYBIND11_MODULE(blspy, m)
             })
         .def(
             "from_bytes",
-            [](py::buffer const b, int modOrder = true) {
+            [](py::buffer const b) {
                 py::buffer_info info = b.request();
                 if (info.format != py::format_descriptor<uint8_t>::format() ||
                     info.ndim != 1)
@@ -132,7 +132,7 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to PrivateKey::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                return PrivateKey::FromBytes(data_ptr, modOrder);
+                return PrivateKey::FromBytes(data_ptr);
             })
         .def(
             "__bytes__",
@@ -162,6 +162,12 @@ PYBIND11_MODULE(blspy, m)
             "__deepcopy__",
             [](const PrivateKey &k, const py::object &memo) {
                 return PrivateKey(k);
+            })
+        .def("get_g1", [](const PrivateKey &k) { return k.GetG1Element(); })
+        .def(
+            "derive_child",
+            [](PrivateKey &k, uint32_t index) {
+                return HDKeys::DeriveChildSk(k, index);
             })
         /*
                 .def(
@@ -906,10 +912,26 @@ PYBIND11_MODULE(blspy, m)
             std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
             return G1Element::FromByteVector(data);
         }))
+        .def(
+            "from_bytes",
+            [](py::buffer const b) {
+                py::buffer_info info = b.request();
+                if (info.format != py::format_descriptor<uint8_t>::format() ||
+                    info.ndim != 1)
+                    throw std::runtime_error("Incompatible buffer format!");
+
+                if ((int)info.size != G1Element::SIZE) {
+                    throw std::invalid_argument(
+                        "Length of bytes object not equal to G1Element::SIZE");
+                }
+                auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
+                return G1Element::FromBytes(data_ptr);
+            })
         .def("generator", &G1Element::Generator)
         .def("from_message", &G1Element::FromMessage)
         .def("pair", &G1Element::pair)
         .def("inverse", &G1Element::Inverse)
+        .def("get_fingerprint", &G1Element::GetFingerprint)
 
         .def(py::self == py::self)
         .def(py::self != py::self)
@@ -1014,6 +1036,21 @@ PYBIND11_MODULE(blspy, m)
             }
             return G2Element::FromByteVector(buffer);
         }))
+        .def(
+            "from_bytes",
+            [](py::buffer const b) {
+                py::buffer_info info = b.request();
+                if (info.format != py::format_descriptor<uint8_t>::format() ||
+                    info.ndim != 1)
+                    throw std::runtime_error("Incompatible buffer format!");
+
+                if ((int)info.size != G2Element::SIZE) {
+                    throw std::invalid_argument(
+                        "Length of bytes object not equal to G1Element::SIZE");
+                }
+                auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
+                return G2Element::FromBytes(data_ptr);
+            })
         .def("generator", &G2Element::Generator)
         .def("from_message", &G2Element::FromMessage)
         .def("pair", &G2Element::pair)

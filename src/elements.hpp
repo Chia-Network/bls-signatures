@@ -42,10 +42,6 @@ public:
         const std::vector<uint8_t> &message,
         const uint8_t *dst,
         int dst_len);
-    static G1Element FromMessageHash(
-        const std::vector<uint8_t> &messageHash,
-        const uint8_t *dst,
-        int dst_len);
 
     g1_t p;
     G1Element();  // unity

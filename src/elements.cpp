@@ -137,8 +137,8 @@ G1Element G1Element::FromMessage(
 }
 
 G1Element::G1Element(const G1Element& pubKey) { g1_copy(p, pubKey.p); }
-G1Element& G1Element::operator=(const G1Element& pubKey) 
-{ 
+G1Element& G1Element::operator=(const G1Element& pubKey)
+{
     g1_copy(p, pubKey.p);
     return *this;
 }
@@ -246,7 +246,8 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
     buffer[1] &= 0x1f;  // erase 3 msbs from input
     buffer[49] &= 0x1f;
 
-    if (((bytes[0] & 0xc0) == 0xc0) && ((bytes[48] & 0xc0) == 0xc0)) {  // infinity
+    if (((bytes[0] & 0xc0) == 0xc0) &&
+        ((bytes[48] & 0xc0) == 0xc0)) {  // infinity
         // enforce that infinity must be 0xc0000..00c0000..00
         if (bytes[0] != 0xc0 || bytes[48] != 0xc0) {
             throw std::invalid_argument(
@@ -279,7 +280,8 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
 
     g2_read_bin(ele.q, buffer, G2Element::SIZE + 1);
     if (g2_is_valid(*(g2_t*)&ele) == 0)
-        throw std::invalid_argument("Given G2 element failed g2_is_valid check");
+        throw std::invalid_argument(
+            "Given G2 element failed g2_is_valid check");
 
     // check if inside subgroup
     g2_t point, unity;
@@ -438,7 +440,6 @@ void G2Element::CompressPoint(uint8_t* result, const g2_t* point)
     // Swap buffer
     std::memcpy(result, buffer + 1 + G2Element::SIZE / 2, G2Element::SIZE / 2);
     std::memcpy(result + G2Element::SIZE / 2, buffer + 1, G2Element::SIZE / 2);
-    
 }
 
 // GTElement
@@ -452,7 +453,7 @@ GTElement GTElement::FromBytes(const uint8_t* bytes)
     GTElement ele = GTElement();
     gt_read_bin(ele.r, bytes, GTElement::SIZE);
     if (gt_is_valid(*(gt_t*)&ele) == 0)
-        throw;
+        throw std::invalid_argument("GTElement is invalid");
     BLS::CheckRelicErrorsInvalidArgument();
     return ele;
 }
