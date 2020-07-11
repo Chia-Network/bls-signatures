@@ -63,9 +63,9 @@ jobs:
       run: |
         python -m cibuildwheel --output-dir dist
       env:
-        CIBW_BUILD_VERBOSITY_MACOS: 0
-        CIBW_BUILD_VERBOSITY_LINUX: 0
-        CIBW_BUILD_VERBOSITY_WINDOWS: 0
+        CIBW_BUILD_VERBOSITY_MACOS: 1
+        CIBW_BUILD_VERBOSITY_LINUX: 1
+        CIBW_BUILD_VERBOSITY_WINDOWS: 1
         # Python 3.7 and 3.8
         CIBW_BUILD: cp37-* cp38-*
         # don't build i686 targets, can't seem to find cmake for these
@@ -89,8 +89,8 @@ jobs:
         CIBW_BEFORE_BUILD_WINDOWS: >
           python -m pip install --upgrade pip
           && pwd
-          && nuget install libsodium -Version 1.0.18
-          && ls -l . && ls -l libsodium.1.0.18
+          && nuget install libsodium -Version 1.0.18 -Verbosity detailed
+          && ls -l libsodium.1.0.18/runtimes
           && git clone https://github.com/Chia-Network/relic_ietf_64.git
           && ls -l relic_ietf_64
           && git clone https://github.com/Chia-Network/mpir_gc_x64.git
