@@ -65,8 +65,8 @@ jobs:
         CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
         # we need boost
         CIBW_BEFORE_BUILD_LINUX: >
-          yum -y install epel-release gmp-devel libsodium-devel
-          && yum -y install cmake3
+          yum -y install epel-release
+          && yum -y install cmake3 gmp-devel libsodium-devel
           && ln -s /usr/bin/cmake3 /usr/local/bin/cmake
           && python -m pip install --upgrade pip
           && cmake --version

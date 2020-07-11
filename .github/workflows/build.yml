@@ -74,7 +74,7 @@ jobs:
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
         CIBW_BEFORE_BUILD_LINUX: >
-          yum -y install gmp-devel libsodium
+          yum -y install gmp-devel libsodium-devel
           && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-`uname -m`.sh > cmake.sh
           && yes | sh cmake.sh | cat
           && rm -f /usr/bin/cmake
