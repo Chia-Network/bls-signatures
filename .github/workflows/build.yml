@@ -63,9 +63,9 @@ jobs:
       run: |
         python -m cibuildwheel --output-dir dist
       env:
-        CIBW_BUILD_VERBOSITY_MACOS: 1
-        CIBW_BUILD_VERBOSITY_LINUX: 1
-        CIBW_BUILD_VERBOSITY_WINDOWS: 1
+        CIBW_BUILD_VERBOSITY_MACOS: 0
+        CIBW_BUILD_VERBOSITY_LINUX: 0
+        CIBW_BUILD_VERBOSITY_WINDOWS: 0
         # Python 3.7 and 3.8
         CIBW_BUILD: cp37-* cp38-*
         # don't build i686 targets, can't seem to find cmake for these
@@ -74,8 +74,8 @@ jobs:
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
         CIBW_BEFORE_BUILD_LINUX: >
-          yum -y install gmp-devel libsodium-devel
-          && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.0/cmake-3.17.0-Linux-`uname -m`.sh > cmake.sh
+          yum -y install gmp-devel libsodium libsodium-devel
+          && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
           && yes | sh cmake.sh | cat
           && rm -f /usr/bin/cmake
           && python -m pip install --upgrade pip
@@ -89,6 +89,7 @@ jobs:
           python -m pip install --upgrade pip
           && pwd
           && nuget install libsodium
+          && ls -l .
           && git clone https://github.com/Chia-Network/relic_ietf_64.git
           && ls -l relic_ietf_64
           && git clone https://github.com/Chia-Network/mpir_gc_x64.git
