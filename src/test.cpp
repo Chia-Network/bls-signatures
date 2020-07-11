@@ -1760,28 +1760,29 @@ TEST_CASE("Threshold")
 
 TEST_CASE("Schemes")
 {
-    SECTION("Debug") {
+    SECTION("Debug")
+    {
         vector<uint8_t> msg0 = {};
         vector<uint8_t> msg1 = {1, 2, 3};
-        uint8_t seed1[32] = {0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0,
-                            0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,3};
+        uint8_t seed1[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3};
         PrivateKey sk1 = PrivateKey::FromBytes(seed1, true);
         vector<uint8_t> sk1ser = sk1.Serialize();
         std::stringstream ss;
         ss << std::hex;
 
-        for( int i = 0 ; i < 32; ++i )
+        for (int i = 0; i < 32; ++i)
             ss << std::setw(2) << std::setfill('0') << (int)sk1ser[i];
 
         std::cout << "sk1: " << ss.str() << "\n";
-        G1Element pk1 = BasicScheme::SkToG1(sk1);
-        vector<uint8_t> pk1v = BasicScheme::SkToPk(sk1);
-        G2Element sig1 = BasicScheme::SignNative(sk1, msg1);
-        vector<uint8_t> sig1v = BasicScheme::Sign(sk1, msg1);
+        G1Element pk1 = BasicSchemeMPL::SkToG1(sk1);
+        vector<uint8_t> pk1v = BasicSchemeMPL::SkToPk(sk1);
+        G2Element sig1 = BasicSchemeMPL::SignNative(sk1, msg1);
+        vector<uint8_t> sig1v = BasicSchemeMPL::Sign(sk1, msg1);
         std::cout << "PK1: " << pk1 << "\n";
         std::cout << "SIG1: " << sig1 << "\n";
-        G2Element sig0 = BasicScheme::SignNative(sk1, msg0);
-        std::cout << "SIG0: " <<  sig0 << "\n";
+        G2Element sig0 = BasicSchemeMPL::SignNative(sk1, msg0);
+        std::cout << "SIG0: " << sig0 << "\n";
     }
     /*
     SECTION("Basic Scheme")
@@ -1793,34 +1794,34 @@ TEST_CASE("Schemes")
         vector<vector<uint8_t>> msgs = {msg1, msg2};
 
         PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
-        G1Element pk1 = BasicScheme::SkToG1(sk1);
-        vector<uint8_t> pk1v = BasicScheme::SkToPk(sk1);
-        G2Element sig1 = BasicScheme::SignNative(sk1, msg1);
-        vector<uint8_t> sig1v = BasicScheme::Sign(sk1, msg1);
+        G1Element pk1 = BasicSchemeMPL::SkToG1(sk1);
+        vector<uint8_t> pk1v = BasicSchemeMPL::SkToPk(sk1);
+        G2Element sig1 = BasicSchemeMPL::SignNative(sk1, msg1);
+        vector<uint8_t> sig1v = BasicSchemeMPL::Sign(sk1, msg1);
 
-        REQUIRE(BasicScheme::Verify(pk1, msg1, sig1));
-        REQUIRE(BasicScheme::Verify(pk1v, msg1, sig1v));
+        REQUIRE(BasicSchemeMPL::Verify(pk1, msg1, sig1));
+        REQUIRE(BasicSchemeMPL::Verify(pk1v, msg1, sig1v));
 
         PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
-        G1Element pk2 = BasicScheme::SkToG1(sk2);
-        vector<uint8_t> pk2v = BasicScheme::SkToPk(sk2);
-        G2Element sig2 = BasicScheme::SignNative(sk2, msg2);
-        vector<uint8_t> sig2v = BasicScheme::Sign(sk2, msg2);
+        G1Element pk2 = BasicSchemeMPL::SkToG1(sk2);
+        vector<uint8_t> pk2v = BasicSchemeMPL::SkToPk(sk2);
+        G2Element sig2 = BasicSchemeMPL::SignNative(sk2, msg2);
+        vector<uint8_t> sig2v = BasicSchemeMPL::Sign(sk2, msg2);
 
         // Wrong signature
-        REQUIRE(BasicScheme::Verify(pk1, msg1, sig2) == false);
-        REQUIRE(BasicScheme::Verify(pk1v, msg1, sig2v) == false);
+        REQUIRE(BasicSchemeMPL::Verify(pk1, msg1, sig2) == false);
+        REQUIRE(BasicSchemeMPL::Verify(pk1v, msg1, sig2v) == false);
         // Wrong msg
-        REQUIRE(BasicScheme::Verify(pk1, msg2, sig1) == false);
-        REQUIRE(BasicScheme::Verify(pk1v, msg2, sig1v) == false);
+        REQUIRE(BasicSchemeMPL::Verify(pk1, msg2, sig1) == false);
+        REQUIRE(BasicSchemeMPL::Verify(pk1v, msg2, sig1v) == false);
         // Wrong pk
-        REQUIRE(BasicScheme::Verify(pk2, msg1, sig1) == false);
-        REQUIRE(BasicScheme::Verify(pk2v, msg1, sig1v) == false);
+        REQUIRE(BasicSchemeMPL::Verify(pk2, msg1, sig1) == false);
+        REQUIRE(BasicSchemeMPL::Verify(pk2v, msg1, sig1v) == false);
 
-        G2Element aggsig = BasicScheme::Aggregate({sig1, sig2});
-        vector<uint8_t> aggsigv = BasicScheme::Aggregate({sig1v, sig2v});
-        REQUIRE(BasicScheme::AggregateVerify({pk1, pk2}, msgs, aggsig));
-        REQUIRE(BasicScheme::AggregateVerify({pk1v, pk2v}, msgs, aggsigv));
+        G2Element aggsig = BasicSchemeMPL::Aggregate({sig1, sig2});
+        vector<uint8_t> aggsigv = BasicSchemeMPL::Aggregate({sig1v, sig2v});
+        REQUIRE(BasicSchemeMPL::AggregateVerify({pk1, pk2}, msgs, aggsig));
+        REQUIRE(BasicSchemeMPL::AggregateVerify({pk1v, pk2v}, msgs, aggsigv));
     }
 
     SECTION("Aug Scheme")
@@ -1832,34 +1833,34 @@ TEST_CASE("Schemes")
         vector<vector<uint8_t>> msgs = {msg1, msg2};
 
         PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
-        G1Element pk1 = AugScheme::SkToG1(sk1);
-        vector<uint8_t> pk1v = AugScheme::SkToPk(sk1);
-        G2Element sig1 = AugScheme::SignNative(sk1, msg1);
-        vector<uint8_t> sig1v = AugScheme::Sign(sk1, msg1);
+        G1Element pk1 = AugSchemeMPL::SkToG1(sk1);
+        vector<uint8_t> pk1v = AugSchemeMPL::SkToPk(sk1);
+        G2Element sig1 = AugSchemeMPL::SignNative(sk1, msg1);
+        vector<uint8_t> sig1v = AugSchemeMPL::Sign(sk1, msg1);
 
-        REQUIRE(AugScheme::Verify(pk1, msg1, sig1));
-        REQUIRE(AugScheme::Verify(pk1v, msg1, sig1v));
+        REQUIRE(AugSchemeMPL::Verify(pk1, msg1, sig1));
+        REQUIRE(AugSchemeMPL::Verify(pk1v, msg1, sig1v));
 
         PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
-        G1Element pk2 = AugScheme::SkToG1(sk2);
-        vector<uint8_t> pk2v = AugScheme::SkToPk(sk2);
-        G2Element sig2 = AugScheme::SignNative(sk2, msg2);
-        vector<uint8_t> sig2v = AugScheme::Sign(sk2, msg2);
+        G1Element pk2 = AugSchemeMPL::SkToG1(sk2);
+        vector<uint8_t> pk2v = AugSchemeMPL::SkToPk(sk2);
+        G2Element sig2 = AugSchemeMPL::SignNative(sk2, msg2);
+        vector<uint8_t> sig2v = AugSchemeMPL::Sign(sk2, msg2);
 
         // Wrong signature
-        REQUIRE(AugScheme::Verify(pk1, msg1, sig2) == false);
-        REQUIRE(AugScheme::Verify(pk1v, msg1, sig2v) == false);
+        REQUIRE(AugSchemeMPL::Verify(pk1, msg1, sig2) == false);
+        REQUIRE(AugSchemeMPL::Verify(pk1v, msg1, sig2v) == false);
         // Wrong msg
-        REQUIRE(AugScheme::Verify(pk1, msg2, sig1) == false);
-        REQUIRE(AugScheme::Verify(pk1v, msg2, sig1v) == false);
+        REQUIRE(AugSchemeMPL::Verify(pk1, msg2, sig1) == false);
+        REQUIRE(AugSchemeMPL::Verify(pk1v, msg2, sig1v) == false);
         // Wrong pk
-        REQUIRE(AugScheme::Verify(pk2, msg1, sig1) == false);
-        REQUIRE(AugScheme::Verify(pk2v, msg1, sig1v) == false);
+        REQUIRE(AugSchemeMPL::Verify(pk2, msg1, sig1) == false);
+        REQUIRE(AugSchemeMPL::Verify(pk2v, msg1, sig1v) == false);
 
-        G2Element aggsig = AugScheme::Aggregate({sig1, sig2});
-        vector<uint8_t> aggsigv = AugScheme::Aggregate({sig1v, sig2v});
-        REQUIRE(AugScheme::AggregateVerify({pk1, pk2}, msgs, aggsig));
-        REQUIRE(AugScheme::AggregateVerify({pk1v, pk2v}, msgs, aggsigv));
+        G2Element aggsig = AugSchemeMPL::Aggregate({sig1, sig2});
+        vector<uint8_t> aggsigv = AugSchemeMPL::Aggregate({sig1v, sig2v});
+        REQUIRE(AugSchemeMPL::AggregateVerify({pk1, pk2}, msgs, aggsig));
+        REQUIRE(AugSchemeMPL::AggregateVerify({pk1v, pk2v}, msgs, aggsigv));
     }
 
     SECTION("Pop Scheme")
@@ -1871,56 +1872,54 @@ TEST_CASE("Schemes")
         vector<vector<uint8_t>> msgs = {msg1, msg2};
 
         PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
-        G1Element pk1 = PopScheme::SkToG1(sk1);
-        vector<uint8_t> pk1v = PopScheme::SkToPk(sk1);
-        G2Element sig1 = PopScheme::SignNative(sk1, msg1);
-        vector<uint8_t> sig1v = PopScheme::Sign(sk1, msg1);
+        G1Element pk1 = PopSchemeMPL::SkToG1(sk1);
+        vector<uint8_t> pk1v = PopSchemeMPL::SkToPk(sk1);
+        G2Element sig1 = PopSchemeMPL::SignNative(sk1, msg1);
+        vector<uint8_t> sig1v = PopSchemeMPL::Sign(sk1, msg1);
 
-        REQUIRE(PopScheme::Verify(pk1, msg1, sig1));
-        REQUIRE(PopScheme::Verify(pk1v, msg1, sig1v));
+        REQUIRE(PopSchemeMPL::Verify(pk1, msg1, sig1));
+        REQUIRE(PopSchemeMPL::Verify(pk1v, msg1, sig1v));
 
         PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
-        G1Element pk2 = PopScheme::SkToG1(sk2);
-        vector<uint8_t> pk2v = PopScheme::SkToPk(sk2);
-        G2Element sig2 = PopScheme::SignNative(sk2, msg2);
-        vector<uint8_t> sig2v = PopScheme::Sign(sk2, msg2);
+        G1Element pk2 = PopSchemeMPL::SkToG1(sk2);
+        vector<uint8_t> pk2v = PopSchemeMPL::SkToPk(sk2);
+        G2Element sig2 = PopSchemeMPL::SignNative(sk2, msg2);
+        vector<uint8_t> sig2v = PopSchemeMPL::Sign(sk2, msg2);
 
         // Wrong signature
-        REQUIRE(PopScheme::Verify(pk1, msg1, sig2) == false);
-        REQUIRE(PopScheme::Verify(pk1v, msg1, sig2v) == false);
+        REQUIRE(PopSchemeMPL::Verify(pk1, msg1, sig2) == false);
+        REQUIRE(PopSchemeMPL::Verify(pk1v, msg1, sig2v) == false);
         // Wrong msg
-        REQUIRE(PopScheme::Verify(pk1, msg2, sig1) == false);
-        REQUIRE(PopScheme::Verify(pk1v, msg2, sig1v) == false);
+        REQUIRE(PopSchemeMPL::Verify(pk1, msg2, sig1) == false);
+        REQUIRE(PopSchemeMPL::Verify(pk1v, msg2, sig1v) == false);
         // Wrong pk
-        REQUIRE(PopScheme::Verify(pk2, msg1, sig1) == false);
-        REQUIRE(PopScheme::Verify(pk2v, msg1, sig1v) == false);
+        REQUIRE(PopSchemeMPL::Verify(pk2, msg1, sig1) == false);
+        REQUIRE(PopSchemeMPL::Verify(pk2v, msg1, sig1v) == false);
 
-        G2Element aggsig = PopScheme::Aggregate({sig1, sig2});
-        vector<uint8_t> aggsigv = PopScheme::Aggregate({sig1v, sig2v});
-        REQUIRE(PopScheme::AggregateVerify({pk1, pk2}, msgs, aggsig));
-        REQUIRE(PopScheme::AggregateVerify({pk1v, pk2v}, msgs, aggsigv));
+        G2Element aggsig = PopSchemeMPL::Aggregate({sig1, sig2});
+        vector<uint8_t> aggsigv = PopSchemeMPL::Aggregate({sig1v, sig2v});
+        REQUIRE(PopSchemeMPL::AggregateVerify({pk1, pk2}, msgs, aggsig));
+        REQUIRE(PopSchemeMPL::AggregateVerify({pk1v, pk2v}, msgs, aggsigv));
 
         // PopVerify
-        G2Element proof1 = PopScheme::PopProveNative(sk1);
-        vector<uint8_t> proof1v = PopScheme::PopProve(sk1);
-        REQUIRE(PopScheme::PopVerify(pk1, proof1));
-        REQUIRE(PopScheme::PopVerify(pk1v, proof1v));
+        G2Element proof1 = PopSchemeMPL::PopProveNative(sk1);
+        vector<uint8_t> proof1v = PopSchemeMPL::PopProve(sk1);
+        REQUIRE(PopSchemeMPL::PopVerify(pk1, proof1));
+        REQUIRE(PopSchemeMPL::PopVerify(pk1v, proof1v));
 
         // FastAggregateVerify
         // We want sk2 to sign the same message
-        G2Element sig2_same = PopScheme::SignNative(sk2, msg1);
-        vector<uint8_t> sig2v_same = PopScheme::Sign(sk2, msg1);
-        G2Element aggsig_same = PopScheme::Aggregate({sig1, sig2_same});
+        G2Element sig2_same = PopSchemeMPL::SignNative(sk2, msg1);
+        vector<uint8_t> sig2v_same = PopSchemeMPL::Sign(sk2, msg1);
+        G2Element aggsig_same = PopSchemeMPL::Aggregate({sig1, sig2_same});
         vector<uint8_t> aggsigv_same =
-            PopScheme::Aggregate({sig1v, sig2v_same});
-        REQUIRE(PopScheme::FastAggregateVerify({pk1, pk2}, msg1, aggsig_same));
-        REQUIRE(
-            PopScheme::FastAggregateVerify({pk1v, pk2v}, msg1, aggsigv_same));
+            PopSchemeMPL::Aggregate({sig1v, sig2v_same});
+        REQUIRE(PopSchemeMPL::FastAggregateVerify({pk1, pk2}, msg1,
+    aggsig_same)); REQUIRE( PopSchemeMPL::FastAggregateVerify({pk1v, pk2v},
+    msg1, aggsigv_same));
     }
     */
 }
-
-
 
 int main(int argc, char* argv[])
 {

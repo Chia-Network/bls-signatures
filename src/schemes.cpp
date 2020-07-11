@@ -29,15 +29,15 @@ namespace bls {
 /* These are all for the min-pubkey-size variant.
    TODO : analogs for min-signature-size
 */
-const uint8_t *BasicScheme::CIPHERSUITE_ID =
+const uint8_t *BasicSchemeMPL::CIPHERSUITE_ID =
     (const uint8_t *)"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
-const int BasicScheme::CIPHERSUITE_ID_LEN = 43;
-const uint8_t *AugScheme::CIPHERSUITE_ID =
+const int BasicSchemeMPL::CIPHERSUITE_ID_LEN = 43;
+const uint8_t *AugSchemeMPL::CIPHERSUITE_ID =
     (const uint8_t *)"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_AUG_";
-const int AugScheme::CIPHERSUITE_ID_LEN = 43;
-const uint8_t *PopScheme::CIPHERSUITE_ID =
+const int AugSchemeMPL::CIPHERSUITE_ID_LEN = 43;
+const uint8_t *PopSchemeMPL::CIPHERSUITE_ID =
     (const uint8_t *)"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
-const int PopScheme::CIPHERSUITE_ID_LEN = 43;
+const int PopSchemeMPL::CIPHERSUITE_ID_LEN = 43;
 
 // TODO: PrivateKey Core::KeyGen - use PrivateKey.FromSeed for now
 
@@ -200,29 +200,29 @@ bool Core::NativeVerify(g1_t *pubkeys, g2_t *mappedHashes, size_t length)
     return true;
 }
 
-vector<uint8_t> BasicScheme::Sign(
+vector<uint8_t> BasicSchemeMPL::Sign(
     const PrivateKey &seckey,
     const vector<uint8_t> &message)
 {
     return Core::Sign(
         seckey,
         message,
-        BasicScheme::CIPHERSUITE_ID,
-        BasicScheme::CIPHERSUITE_ID_LEN);
+        BasicSchemeMPL::CIPHERSUITE_ID,
+        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-G2Element BasicScheme::SignNative(
+G2Element BasicSchemeMPL::SignNative(
     const PrivateKey &seckey,
     const vector<uint8_t> &message)
 {
     return Core::SignNative(
         seckey,
         message,
-        BasicScheme::CIPHERSUITE_ID,
-        BasicScheme::CIPHERSUITE_ID_LEN);
+        BasicSchemeMPL::CIPHERSUITE_ID,
+        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool BasicScheme::Verify(
+bool BasicSchemeMPL::Verify(
     const vector<uint8_t> &pubkey,
     const vector<uint8_t> &message,
     const vector<uint8_t> &signature)
@@ -231,11 +231,11 @@ bool BasicScheme::Verify(
         pubkey,
         message,
         signature,
-        BasicScheme::CIPHERSUITE_ID,
-        BasicScheme::CIPHERSUITE_ID_LEN);
+        BasicSchemeMPL::CIPHERSUITE_ID,
+        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool BasicScheme::Verify(
+bool BasicSchemeMPL::Verify(
     const G1Element &pubkey,
     const vector<uint8_t> &message,
     const G2Element &signature)
@@ -244,11 +244,11 @@ bool BasicScheme::Verify(
         pubkey,
         message,
         signature,
-        BasicScheme::CIPHERSUITE_ID,
-        BasicScheme::CIPHERSUITE_ID_LEN);
+        BasicSchemeMPL::CIPHERSUITE_ID,
+        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool BasicScheme::AggregateVerify(
+bool BasicSchemeMPL::AggregateVerify(
     const vector<vector<uint8_t>> &pubkeys,
     const vector<vector<uint8_t>> &messages,
     const vector<uint8_t> &signature)
@@ -263,11 +263,11 @@ bool BasicScheme::AggregateVerify(
         pubkeys,
         messages,
         signature,
-        BasicScheme::CIPHERSUITE_ID,
-        BasicScheme::CIPHERSUITE_ID_LEN);
+        BasicSchemeMPL::CIPHERSUITE_ID,
+        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool BasicScheme::AggregateVerify(
+bool BasicSchemeMPL::AggregateVerify(
     const vector<G1Element> &pubkeys,
     const vector<vector<uint8_t>> &messages,
     const G2Element &signature)
@@ -282,18 +282,18 @@ bool BasicScheme::AggregateVerify(
         pubkeys,
         messages,
         signature,
-        BasicScheme::CIPHERSUITE_ID,
-        BasicScheme::CIPHERSUITE_ID_LEN);
+        BasicSchemeMPL::CIPHERSUITE_ID,
+        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-vector<uint8_t> AugScheme::Sign(
+vector<uint8_t> AugSchemeMPL::Sign(
     const PrivateKey &seckey,
     const vector<uint8_t> &message)
 {
-    return AugScheme::SignNative(seckey, message).Serialize();
+    return AugSchemeMPL::SignNative(seckey, message).Serialize();
 }
 
-G2Element AugScheme::SignNative(
+G2Element AugSchemeMPL::SignNative(
     const PrivateKey &seckey,
     const vector<uint8_t> &message)
 {
@@ -304,11 +304,28 @@ G2Element AugScheme::SignNative(
     return seckey.SignG2(
         augMessage.data(),
         augMessage.size(),
-        AugScheme::CIPHERSUITE_ID,
-        AugScheme::CIPHERSUITE_ID_LEN);
+        AugSchemeMPL::CIPHERSUITE_ID,
+        AugSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool AugScheme::Verify(
+// Used for prepending different augMessage
+G2Element AugSchemeMPL::SignNative(
+    const PrivateKey &seckey,
+    const vector<uint8_t> &message,
+    const G1Element &prepend_pk)
+{
+    vector<uint8_t> augMessage = prepend_pk.Serialize();
+    augMessage.reserve(
+        augMessage.size() + std::distance(message.begin(), message.end()));
+    augMessage.insert(augMessage.end(), message.begin(), message.end());
+    return seckey.SignG2(
+        augMessage.data(),
+        augMessage.size(),
+        AugSchemeMPL::CIPHERSUITE_ID,
+        AugSchemeMPL::CIPHERSUITE_ID_LEN);
+}
+
+bool AugSchemeMPL::Verify(
     const vector<uint8_t> &pubkey,
     const vector<uint8_t> &message,
     const vector<uint8_t> &signature)
@@ -321,11 +338,11 @@ bool AugScheme::Verify(
         pubkey,
         augMessage,
         signature,
-        AugScheme::CIPHERSUITE_ID,
-        AugScheme::CIPHERSUITE_ID_LEN);
+        AugSchemeMPL::CIPHERSUITE_ID,
+        AugSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool AugScheme::Verify(
+bool AugSchemeMPL::Verify(
     const G1Element &pubkey,
     const vector<uint8_t> &message,
     const G2Element &signature)
@@ -338,11 +355,11 @@ bool AugScheme::Verify(
         pubkey,
         augMessage,
         signature,
-        AugScheme::CIPHERSUITE_ID,
-        AugScheme::CIPHERSUITE_ID_LEN);
+        AugSchemeMPL::CIPHERSUITE_ID,
+        AugSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool AugScheme::AggregateVerify(
+bool AugSchemeMPL::AggregateVerify(
     const vector<vector<uint8_t>> &pubkeys,
     const vector<vector<uint8_t>> &messages,
     const vector<uint8_t> &signature)
@@ -363,11 +380,11 @@ bool AugScheme::AggregateVerify(
         pubkeys,
         const_cast<const vector<vector<uint8_t>> &>(augMessages),
         signature,
-        AugScheme::CIPHERSUITE_ID,
-        AugScheme::CIPHERSUITE_ID_LEN);
+        AugSchemeMPL::CIPHERSUITE_ID,
+        AugSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool AugScheme::AggregateVerify(
+bool AugSchemeMPL::AggregateVerify(
     const vector<G1Element> &pubkeys,
     const vector<vector<uint8_t>> &messages,
     const G2Element &signature)
@@ -388,33 +405,33 @@ bool AugScheme::AggregateVerify(
         pubkeys,
         const_cast<const vector<vector<uint8_t>> &>(augMessages),
         signature,
-        AugScheme::CIPHERSUITE_ID,
-        AugScheme::CIPHERSUITE_ID_LEN);
+        AugSchemeMPL::CIPHERSUITE_ID,
+        AugSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-vector<uint8_t> PopScheme::Sign(
+vector<uint8_t> PopSchemeMPL::Sign(
     const PrivateKey &seckey,
     const vector<uint8_t> &message)
 {
     return Core::Sign(
         seckey,
         message,
-        PopScheme::CIPHERSUITE_ID,
-        PopScheme::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::CIPHERSUITE_ID,
+        PopSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-G2Element PopScheme::SignNative(
+G2Element PopSchemeMPL::SignNative(
     const PrivateKey &seckey,
     const vector<uint8_t> &message)
 {
     return Core::SignNative(
         seckey,
         message,
-        PopScheme::CIPHERSUITE_ID,
-        PopScheme::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::CIPHERSUITE_ID,
+        PopSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool PopScheme::Verify(
+bool PopSchemeMPL::Verify(
     const vector<uint8_t> &pubkey,
     const vector<uint8_t> &message,
     const vector<uint8_t> &signature)
@@ -423,11 +440,11 @@ bool PopScheme::Verify(
         pubkey,
         message,
         signature,
-        PopScheme::CIPHERSUITE_ID,
-        PopScheme::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::CIPHERSUITE_ID,
+        PopSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool PopScheme::Verify(
+bool PopSchemeMPL::Verify(
     const G1Element &pubkey,
     const vector<uint8_t> &message,
     const G2Element &signature)
@@ -436,11 +453,11 @@ bool PopScheme::Verify(
         pubkey,
         message,
         signature,
-        PopScheme::CIPHERSUITE_ID,
-        PopScheme::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::CIPHERSUITE_ID,
+        PopSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool PopScheme::AggregateVerify(
+bool PopSchemeMPL::AggregateVerify(
     const vector<vector<uint8_t>> &pubkeys,
     const vector<vector<uint8_t>> &messages,
     const vector<uint8_t> &signature)
@@ -449,11 +466,11 @@ bool PopScheme::AggregateVerify(
         pubkeys,
         messages,
         signature,
-        PopScheme::CIPHERSUITE_ID,
-        PopScheme::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::CIPHERSUITE_ID,
+        PopSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool PopScheme::AggregateVerify(
+bool PopSchemeMPL::AggregateVerify(
     const vector<G1Element> &pubkeys,
     const vector<vector<uint8_t>> &messages,
     const G2Element &signature)
@@ -462,35 +479,35 @@ bool PopScheme::AggregateVerify(
         pubkeys,
         messages,
         signature,
-        PopScheme::CIPHERSUITE_ID,
-        PopScheme::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::CIPHERSUITE_ID,
+        PopSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-G2Element PopScheme::PopProveNative(const PrivateKey &seckey)
+G2Element PopSchemeMPL::PopProveNative(const PrivateKey &seckey)
 {
     G1Element pk = seckey.GetG1Element();
     G2Element hashedKey = G2Element::FromMessage(
         pk.Serialize(),
-        PopScheme::CIPHERSUITE_ID,
-        PopScheme::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::CIPHERSUITE_ID,
+        PopSchemeMPL::CIPHERSUITE_ID_LEN);
 
     return seckey.GetG2Power(*(g2_t *)&hashedKey.q);
 }
 
-vector<uint8_t> PopScheme::PopProve(const PrivateKey &seckey)
+vector<uint8_t> PopSchemeMPL::PopProve(const PrivateKey &seckey)
 {
-    return PopScheme::PopProveNative(seckey).Serialize();
+    return PopSchemeMPL::PopProveNative(seckey).Serialize();
 }
 
-bool PopScheme::PopVerify(
+bool PopSchemeMPL::PopVerify(
     const G1Element &pubkey,
     const G2Element &signature_proof)
 {
     G1Element geninverse = G1Element::Generator().Inverse();
     G2Element hashedPoint = G2Element::FromMessage(
         pubkey.Serialize(),
-        PopScheme::CIPHERSUITE_ID,
-        PopScheme::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::CIPHERSUITE_ID,
+        PopSchemeMPL::CIPHERSUITE_ID_LEN);
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
@@ -505,16 +522,16 @@ bool PopScheme::PopVerify(
     return ans;
 }
 
-bool PopScheme::PopVerify(
+bool PopSchemeMPL::PopVerify(
     const vector<uint8_t> &pubkey,
     const vector<uint8_t> &proof)
 {
     G1Element p = G1Element::FromBytes(pubkey.data());
     G2Element q = G2Element::FromBytes(proof.data());
-    return PopScheme::PopVerify(p, q);
+    return PopSchemeMPL::PopVerify(p, q);
 }
 
-bool PopScheme::FastAggregateVerify(
+bool PopSchemeMPL::FastAggregateVerify(
     const vector<G1Element> &pubkeys,
     const vector<uint8_t> &message,
     const G2Element &signature)
@@ -530,11 +547,11 @@ bool PopScheme::FastAggregateVerify(
         pkagg,
         message,
         signature,
-        PopScheme::CIPHERSUITE_ID,
-        PopScheme::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::CIPHERSUITE_ID,
+        PopSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-bool PopScheme::FastAggregateVerify(
+bool PopSchemeMPL::FastAggregateVerify(
     const vector<vector<uint8_t>> &pubkeys,
     const vector<uint8_t> &message,
     const vector<uint8_t> &signature)
@@ -548,7 +565,7 @@ bool PopScheme::FastAggregateVerify(
         pkelements.push_back(G1Element::FromBytes(pubkeys[i].data()));
     }
 
-    return PopScheme::FastAggregateVerify(
+    return PopSchemeMPL::FastAggregateVerify(
         pkelements, message, G2Element::FromBytes(signature.data()));
 }
 }  // end namespace bls

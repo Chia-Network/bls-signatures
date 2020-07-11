@@ -755,135 +755,146 @@ PYBIND11_MODULE(blspy, m)
             reinterpret_cast<char *>(output), BLS::MESSAGE_HASH_LEN);
     });
 
-    py::class_<BasicScheme>(m, "BasicScheme")
-        //.def("sk_to_pk", &BasicScheme::SkToPk)
-        .def("sk_to_g1", &BasicScheme::SkToG1)
+    py::class_<BasicSchemeMPL>(m, "BasicSchemeMPL")
+        //.def("sk_to_pk", &BasicSchemeMPL::SkToPk)
+        .def("sk_to_g1", &BasicSchemeMPL::SkToG1)
         .def(
             "aggregate",
             overload_cast_<const vector<vector<uint8_t>> &>()(
-                &BasicScheme::Aggregate))
+                &BasicSchemeMPL::Aggregate))
         .def(
             "aggregate",
             overload_cast_<const vector<G2Element> &>()(
-                &BasicScheme::Aggregate))
-        .def("sign", &BasicScheme::SignNative)  // no ::Sign
+                &BasicSchemeMPL::Aggregate))
+        .def("sign", &BasicSchemeMPL::SignNative)  // no ::Sign
         .def(
             "verify",
             overload_cast_<
                 const vector<uint8_t> &,
                 const vector<uint8_t> &,
-                const vector<uint8_t> &>()(&BasicScheme::Verify))
+                const vector<uint8_t> &>()(&BasicSchemeMPL::Verify))
         .def(
             "verify",
             overload_cast_<
                 const G1Element &,
                 const vector<uint8_t> &,
-                const G2Element &>()(&BasicScheme::Verify))
+                const G2Element &>()(&BasicSchemeMPL::Verify))
         .def(
             "agg_verify",
             overload_cast_<
                 const vector<vector<uint8_t>> &,
                 const vector<vector<uint8_t>> &,
-                const vector<uint8_t> &>()(&BasicScheme::AggregateVerify))
+                const vector<uint8_t> &>()(&BasicSchemeMPL::AggregateVerify))
         .def(
             "agg_verify",
             overload_cast_<
                 const vector<G1Element> &,
                 const vector<vector<uint8_t>> &,
-                const G2Element &>()(&BasicScheme::AggregateVerify));
+                const G2Element &>()(&BasicSchemeMPL::AggregateVerify));
 
-    py::class_<AugScheme>(m, "AugScheme")
-        //.def("sk_to_pk", &AugScheme::SkToPk)
-        .def("sk_to_g1", &AugScheme::SkToG1)
+    py::class_<AugSchemeMPL>(m, "AugSchemeMPL")
+        //.def("sk_to_pk", &AugSchemeMPL::SkToPk)
+        .def("sk_to_g1", &AugSchemeMPL::SkToG1)
         .def(
             "aggregate",
             overload_cast_<const vector<vector<uint8_t>> &>()(
-                &AugScheme::Aggregate))
+                &AugSchemeMPL::Aggregate))
         .def(
             "aggregate",
-            overload_cast_<const vector<G2Element> &>()(&AugScheme::Aggregate))
-        .def("sign", &AugScheme::SignNative)  // no ::SignNative
+            overload_cast_<const vector<G2Element> &>()(
+                &AugSchemeMPL::Aggregate))
+        .def(
+            "sign",
+            overload_cast_<const PrivateKey &, const vector<uint8_t> &>()(
+                &AugSchemeMPL::SignNative))
+        .def(
+            "sign",
+            overload_cast_<
+                const PrivateKey &,
+                const vector<uint8_t> &,
+                const G1Element &>()(&AugSchemeMPL::SignNative))
         .def(
             "verify",
             overload_cast_<
                 const vector<uint8_t> &,
                 const vector<uint8_t> &,
-                const vector<uint8_t> &>()(&AugScheme::Verify))
+                const vector<uint8_t> &>()(&AugSchemeMPL::Verify))
         .def(
             "verify",
             overload_cast_<
                 const G1Element &,
                 const vector<uint8_t> &,
-                const G2Element &>()(&AugScheme::Verify))
+                const G2Element &>()(&AugSchemeMPL::Verify))
         .def(
             "agg_verify",
             overload_cast_<
                 const vector<vector<uint8_t>> &,
                 const vector<vector<uint8_t>> &,
-                const vector<uint8_t> &>()(&AugScheme::AggregateVerify))
+                const vector<uint8_t> &>()(&AugSchemeMPL::AggregateVerify))
         .def(
             "agg_verify",
             overload_cast_<
                 const vector<G1Element> &,
                 const vector<vector<uint8_t>> &,
-                const G2Element &>()(&AugScheme::AggregateVerify));
+                const G2Element &>()(&AugSchemeMPL::AggregateVerify));
 
-    py::class_<PopScheme>(m, "PopScheme")
-        .def("sk_to_pk", &PopScheme::SkToPk)
-        .def("sk_to_g1", &PopScheme::SkToG1)
+    py::class_<PopSchemeMPL>(m, "PopSchemeMPL")
+        .def("sk_to_pk", &PopSchemeMPL::SkToPk)
+        .def("sk_to_g1", &PopSchemeMPL::SkToG1)
         .def(
             "aggregate",
             overload_cast_<const vector<vector<uint8_t>> &>()(
-                &PopScheme::Aggregate))
+                &PopSchemeMPL::Aggregate))
         .def(
             "aggregate",
-            overload_cast_<const vector<G2Element> &>()(&PopScheme::Aggregate))
-        .def("sign", &PopScheme::SignNative)
+            overload_cast_<const vector<G2Element> &>()(
+                &PopSchemeMPL::Aggregate))
+        .def("sign", &PopSchemeMPL::SignNative)
         .def(
             "verify",
             overload_cast_<
                 const vector<uint8_t> &,
                 const vector<uint8_t> &,
-                const vector<uint8_t> &>()(&PopScheme::Verify))
+                const vector<uint8_t> &>()(&PopSchemeMPL::Verify))
         .def(
             "verify",
             overload_cast_<
                 const G1Element &,
                 const vector<uint8_t> &,
-                const G2Element &>()(&PopScheme::Verify))
+                const G2Element &>()(&PopSchemeMPL::Verify))
         .def(
             "agg_verify",
             overload_cast_<
                 const vector<vector<uint8_t>> &,
                 const vector<vector<uint8_t>> &,
-                const vector<uint8_t> &>()(&PopScheme::AggregateVerify))
+                const vector<uint8_t> &>()(&PopSchemeMPL::AggregateVerify))
         .def(
             "agg_verify",
             overload_cast_<
                 const vector<G1Element> &,
                 const vector<vector<uint8_t>> &,
-                const G2Element &>()(&PopScheme::AggregateVerify))
-        .def("pop_prove", &PopScheme::PopProveNative)
+                const G2Element &>()(&PopSchemeMPL::AggregateVerify))
+        .def("pop_prove", &PopSchemeMPL::PopProveNative)
         .def(
             "pop_verify",
             overload_cast_<const G1Element &, const G2Element &>()(
-                &PopScheme::PopVerify))
+                &PopSchemeMPL::PopVerify))
         .def(
             "pop_verify",
             overload_cast_<const vector<uint8_t> &, const vector<uint8_t> &>()(
-                &PopScheme::PopVerify))
+                &PopSchemeMPL::PopVerify))
         .def(
             "fast_agg_verify",
             overload_cast_<
                 const vector<G1Element> &,
                 const vector<uint8_t> &,
-                const G2Element &>()(&PopScheme::FastAggregateVerify))
+                const G2Element &>()(&PopSchemeMPL::FastAggregateVerify))
         .def(
             "fast_agg_verify",
             overload_cast_<
                 const vector<vector<uint8_t>> &,
                 const vector<uint8_t> &,
-                const vector<uint8_t> &>()(&PopScheme::FastAggregateVerify));
+                const vector<uint8_t> &>()(&PopSchemeMPL::FastAggregateVerify));
 
     py::class_<G1Element>(m, "G1Element")
         .def_property_readonly_static(
