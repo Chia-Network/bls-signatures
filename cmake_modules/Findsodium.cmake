@@ -225,7 +225,7 @@ endif()
 # communicate results
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
-    Sodium # The name must be either uppercase or match the filename case.
+    sodium # The name must be either uppercase or match the filename case.
     REQUIRED_VARS
         sodium_LIBRARY_RELEASE
         sodium_LIBRARY_DEBUG
