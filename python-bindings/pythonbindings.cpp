@@ -59,7 +59,11 @@ PYBIND11_MODULE(blspy, m)
             })
         .def("__bytes__", [](const BNWrapper &b) {
             std::stringstream s;
-            s << b;
+            int length = bn_size_bin(*b.b);
+            uint8_t *out = new uint8_t[length];
+            bn_write_bin(out, length, *b.b);
+            s << out;
+            delete[] out;
             return py::bytes(s.str());
         });
 
@@ -1000,9 +1004,12 @@ PYBIND11_MODULE(blspy, m)
                 return s.str();
             })
         .def("__bytes__", [](const G1Element &ele) {
-            std::stringstream s;
-            s << ele;
-            return py::bytes(s.str());
+            uint8_t *out = new uint8_t[G1Element::SIZE];
+            ele.Serialize(out);
+            py::bytes ans =
+                py::bytes(reinterpret_cast<const char *>(out), G1Element::SIZE);
+            delete[] out;
+            return ans;
         });
 
     py::class_<G2Element>(m, "G2Element")
@@ -1121,9 +1128,12 @@ PYBIND11_MODULE(blspy, m)
                 return s.str();
             })
         .def("__bytes__", [](const G2Element &ele) {
-            std::stringstream s;
-            s << ele;
-            return py::bytes(s.str());
+            uint8_t *out = new uint8_t[G2Element::SIZE];
+            ele.Serialize(out);
+            py::bytes ans =
+                py::bytes(reinterpret_cast<const char *>(out), G2Element::SIZE);
+            delete[] out;
+            return ans;
         });
 
     py::class_<GTElement>(m, "GTElement")
@@ -1174,9 +1184,12 @@ PYBIND11_MODULE(blspy, m)
                 return s.str();
             })
         .def("__bytes__", [](const GTElement &ele) {
-            std::stringstream s;
-            s << ele;
-            return py::bytes(s.str());
+            uint8_t *out = new uint8_t[GTElement::SIZE];
+            ele.Serialize(out);
+            py::bytes ans =
+                py::bytes(reinterpret_cast<char *>(out), GTElement::SIZE);
+            delete[] out;
+            return ans;
         });
 
 #ifdef VERSION_INFO
