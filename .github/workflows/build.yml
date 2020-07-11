@@ -73,6 +73,7 @@ jobs:
         # we need boost
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
+        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
         CIBW_BEFORE_BUILD_LINUX: >
           yum -y install gmp-devel libsodium libsodium-devel
           && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
@@ -88,8 +89,8 @@ jobs:
         CIBW_BEFORE_BUILD_WINDOWS: >
           python -m pip install --upgrade pip
           && pwd
-          && nuget install libsodium
-          && ls -l .
+          && nuget install libsodium -Version 1.0.18
+          && ls -l . && ls -l libsodium.1.0.18
           && git clone https://github.com/Chia-Network/relic_ietf_64.git
           && ls -l relic_ietf_64
           && git clone https://github.com/Chia-Network/mpir_gc_x64.git
@@ -112,7 +113,6 @@ jobs:
         # The pure python implementation, is not used anywhere and will be replaced
         # pytest {project}/python-impl/tests.py
         CIBW_TEST_COMMAND: python {project}/python-bindings/test.py
-        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.0-Linux-`uname -m`/bin:$PATH"
         CIBW_REPAIR_WHEEL_COMMAND_MACOS: >
           pip uninstall -y delocate
           && pip install git+https://github.com/Chia-Network/delocate.git

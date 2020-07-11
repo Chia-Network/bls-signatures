@@ -98,9 +98,10 @@ ext_modules = [
             get_pybind_include(user=True),
             'relic_ietf_64/include',
             'mpir_gc_x64',
+            'libsodium1.0.18/include',
         ],
-        library_dirs=['relic_ietf_64', 'mpir_gc_x64'],
-        libraries=['relic_s', 'Advapi32', 'mpir'],
+        library_dirs=['relic_ietf_64', 'mpir_gc_x64', 'libsodium1.0.18/lib'],
+        libraries=['relic_s', 'Advapi32', 'mpir', 'libsodium'],
         language='c++'
     ),
 ]
