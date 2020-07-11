@@ -34,7 +34,7 @@ PYBIND11_MODULE(blspy, m)
         .def(py::init(&BNWrapper::FromByteVector))
         .def(py::init([](py::int_ pyint) {
             size_t n_bytes =
-                1 + std::floor(((_PyLong_NumBits(pyint.ptr()) + 7) / 8));
+                1 + ((_PyLong_NumBits(pyint.ptr()) + 7) / 8);
             std::vector<uint8_t> buffer(n_bytes, 0);
             if (_PyLong_AsByteArray(
                     (PyLongObject *)pyint.ptr(), buffer.data(), n_bytes, 0, 0) <
