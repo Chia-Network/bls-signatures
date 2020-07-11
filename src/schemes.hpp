@@ -188,7 +188,7 @@ public:
         const PrivateKey &seckey,
         const vector<uint8_t> &message);
 
-    // Custom prepended data
+    // Custom prepended pk
     static G2Element SignNative(
         const PrivateKey &seckey,
         const vector<uint8_t> &message,
