@@ -66,6 +66,7 @@ jobs:
         # we need boost
         CIBW_BEFORE_BUILD_LINUX: >
           yum -y install epel-release
+          yum -y install gmp-devel libsodium
           && yum -y install cmake3
           && ln -s /usr/bin/cmake3 /usr/local/bin/cmake
           && python -m pip install --upgrade pip

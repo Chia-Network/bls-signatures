@@ -19,9 +19,8 @@ for cryptographic primitives (pairings, EC, hashing).
 The [BLS12-381](https://github.com/zkcrypto/pairing/tree/master/src/bls12_381)
 curve is used. The original spec is
 [here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md).
-This library implements
-[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/)
-shortly.
+This library now implements
+[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/).
 
 Features:
 * Non-interactive signature aggregation on identical or distinct messages
