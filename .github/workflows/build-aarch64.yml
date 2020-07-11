@@ -65,13 +65,13 @@ jobs:
         CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
         # we need boost
         CIBW_BEFORE_BUILD_LINUX: >
-          yum -y install epel-release gmp-devel libsodium
+          yum -y install epel-release gmp-devel libsodium-devel
           && yum -y install cmake3
           && ln -s /usr/bin/cmake3 /usr/local/bin/cmake
           && python -m pip install --upgrade pip
           && cmake --version
           && uname -a
-        CIBW_BUILD_VERBOSITY_LINUX: 0
+        CIBW_BUILD_VERBOSITY_LINUX: 1
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: python {project}/python-bindings/test.py
 
