@@ -1294,6 +1294,9 @@ PYBIND11_MODULE(blspy, m)
             return ans;
         });
 
+    m.attr("PublicKeyMPL") = m.attr("G1Element");
+    m.attr("SignatureMPL") = m.attr("G2Element");
+
 #ifdef VERSION_INFO
     m.attr("__version__") = VERSION_INFO;
 #else
