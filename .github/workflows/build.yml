@@ -77,8 +77,8 @@ jobs:
         CIBW_BEFORE_BUILD_LINUX: >
           yum -y install lzip
           && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
-          && yes | sh cmake.sh --prefix=/usr/local --exclude-subdir --skip-license | cat
-          && yum remove cmake && rm -f /usr/bin/cmake && hash -r
+          && yes | sh cmake.sh | cat
+          && rm -f /usr/bin/cmake && hash -r
           && python -m pip install --upgrade pip
           && which cmake
           && cmake --version

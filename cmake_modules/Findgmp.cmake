@@ -71,6 +71,6 @@ endif()
 find_library(GMP_LIBRARIES gmp PATHS $ENV{GMPDIR} ${LIB_INSTALL_DIR})
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(GMP DEFAULT_MSG
+find_package_handle_standard_args(gmp DEFAULT_MSG
                                   GMP_INCLUDES GMP_LIBRARIES GMP_VERSION_OK)
 mark_as_advanced(GMP_INCLUDES GMP_LIBRARIES)
