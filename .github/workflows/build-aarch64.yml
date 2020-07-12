@@ -113,6 +113,7 @@ jobs:
         source venv/bin/activate
         twine upload --non-interactive --skip-existing --verbose 'dist/*'
 
-    - name: Clean up venv
+    - name: Clean up
       run: |
         rm -rf venv
+        rm -rf dist
