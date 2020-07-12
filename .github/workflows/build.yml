@@ -140,6 +140,11 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install valgrind libsodium-dev -y
+        sudo apt-get install snap -y
+        sudo apt-get remove --purge cmake -y
+        sudo snap install cmake --classic
+        hash -r
+        cmake --version
         mkdir -p build
         cd build
         cmake ../
