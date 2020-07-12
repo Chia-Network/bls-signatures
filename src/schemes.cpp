@@ -112,9 +112,14 @@ vector<uint8_t> Core::Aggregate(vector<vector<uint8_t>> const &signatures)
     g2_t ans;
     g2_free(ans);
     g2_new(ans);
+    int n = (int)signatures.size();
+    if (n <= 0) {
+        g2_set_infty(ans);
+        G2Element::FromNative(&ans).Serialize();
+    }
     g2_copy(ans, G2Element::FromBytes(signatures[0].data()).q);
 
-    for (int i = 1; i < signatures.size(); ++i) {
+    for (int i = 1; i < n; ++i) {
         g2_add(ans, ans, G2Element::FromBytes(signatures[i].data()).q);
     }
     return G2Element::FromNative(&ans).Serialize();
@@ -125,9 +130,15 @@ G2Element Core::Aggregate(vector<G2Element> const &signatures)
     g2_t ans;
     g2_free(ans);
     g2_new(ans);
+    int n = (int)signatures.size();
+    if (n <= 0) {
+        g2_set_infty(ans);
+        return G2Element::FromNative(&ans);
+    }
+
     g2_copy(ans, *(g2_t *)&signatures[0].q);
 
-    for (int i = 1; i < signatures.size(); ++i) {
+    for (int i = 1; i < n; ++i) {
         g2_add(ans, ans, *(g2_t *)&signatures[i].q);
     }
     return G2Element::FromNative(&ans);
