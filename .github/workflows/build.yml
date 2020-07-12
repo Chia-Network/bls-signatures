@@ -82,6 +82,9 @@ jobs:
           && python -m pip install --upgrade pip
           && which cmake
           && cmake --version
+          && curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz > | tar xz
+          && cd libsodium-stable && ./configure
+          && make && make install && cd ..
         # GH hosted runner has gmp and libsodium natively
         CIBW_BEFORE_BUILD_MACOS: >
           python -m pip install --upgrade pip
