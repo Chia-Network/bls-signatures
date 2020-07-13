@@ -1760,6 +1760,7 @@ TEST_CASE("Threshold")
 
 TEST_CASE("Schemes")
 {
+    /*
     SECTION("Debug")
     {
         vector<uint8_t> msg0 = {};
@@ -1784,7 +1785,8 @@ TEST_CASE("Schemes")
         G2Element sig0 = BasicSchemeMPL::SignNative(sk1, msg0);
         std::cout << "SIG0: " << sig0 << "\n";
     }
-    /*
+    */
+
     SECTION("Basic Scheme")
     {
         uint8_t seed1[5] = {1, 2, 3, 4, 5};
@@ -1914,11 +1916,11 @@ TEST_CASE("Schemes")
         G2Element aggsig_same = PopSchemeMPL::Aggregate({sig1, sig2_same});
         vector<uint8_t> aggsigv_same =
             PopSchemeMPL::Aggregate({sig1v, sig2v_same});
-        REQUIRE(PopSchemeMPL::FastAggregateVerify({pk1, pk2}, msg1,
-    aggsig_same)); REQUIRE( PopSchemeMPL::FastAggregateVerify({pk1v, pk2v},
-    msg1, aggsigv_same));
+        REQUIRE(
+            PopSchemeMPL::FastAggregateVerify({pk1, pk2}, msg1, aggsig_same));
+        REQUIRE(PopSchemeMPL::FastAggregateVerify(
+            {pk1v, pk2v}, msg1, aggsigv_same));
     }
-    */
 }
 
 int main(int argc, char* argv[])

@@ -906,7 +906,13 @@ PYBIND11_MODULE(blspy, m)
             "aggregate",
             overload_cast_<const vector<G2Element> &>()(
                 &PopSchemeMPL::Aggregate))
-        .def("sign", &PopSchemeMPL::SignNative)
+        .def(
+            "sign",
+            [](const PrivateKey &pk, const py::bytes &msg) {
+                std::string s(msg);
+                vector<uint8_t> v(s.begin(), s.end());
+                return PopSchemeMPL::SignNative(pk, v);
+            })
         .def(
             "verify",
             [](const G1Element &pk,
@@ -1105,13 +1111,18 @@ PYBIND11_MODULE(blspy, m)
                 s << ele;
                 return s.str();
             })
-        .def("__bytes__", [](const G1Element &ele) {
-            uint8_t *out = new uint8_t[G1Element::SIZE];
-            ele.Serialize(out);
-            py::bytes ans =
-                py::bytes(reinterpret_cast<const char *>(out), G1Element::SIZE);
-            delete[] out;
-            return ans;
+        .def(
+            "__bytes__",
+            [](const G1Element &ele) {
+                uint8_t *out = new uint8_t[G1Element::SIZE];
+                ele.Serialize(out);
+                py::bytes ans = py::bytes(
+                    reinterpret_cast<const char *>(out), G1Element::SIZE);
+                delete[] out;
+                return ans;
+            })
+        .def("__deepcopy__", [](const G1Element &ele, const py::object &memo) {
+            return G1Element(ele);
         });
 
     py::class_<G2Element>(m, "G2Element")
@@ -1155,7 +1166,7 @@ PYBIND11_MODULE(blspy, m)
 
                 if ((int)info.size != G2Element::SIZE) {
                     throw std::invalid_argument(
-                        "Length of bytes object not equal to G1Element::SIZE");
+                        "Length of bytes object not equal to G2Element::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
                 return G2Element::FromBytes(data_ptr);
@@ -1229,16 +1240,23 @@ PYBIND11_MODULE(blspy, m)
                 s << ele;
                 return s.str();
             })
-        .def("__bytes__", [](const G2Element &ele) {
-            uint8_t *out = new uint8_t[G2Element::SIZE];
-            ele.Serialize(out);
-            py::bytes ans =
-                py::bytes(reinterpret_cast<const char *>(out), G2Element::SIZE);
-            delete[] out;
-            return ans;
+        .def(
+            "__bytes__",
+            [](const G2Element &ele) {
+                uint8_t *out = new uint8_t[G2Element::SIZE];
+                ele.Serialize(out);
+                py::bytes ans = py::bytes(
+                    reinterpret_cast<const char *>(out), G2Element::SIZE);
+                delete[] out;
+                return ans;
+            })
+        .def("__deepcopy__", [](const G2Element &ele, const py::object &memo) {
+            return G2Element(ele);
         });
 
     py::class_<GTElement>(m, "GTElement")
+        .def_property_readonly_static(
+            "SIZE", [](py::object self) { return GTElement::SIZE; })
         .def(py::init<>())
         .def(py::init(&GTElement::FromByteVector))
         .def(py::init([](py::buffer const b) {
@@ -1267,8 +1285,21 @@ PYBIND11_MODULE(blspy, m)
             }
             return GTElement::FromByteVector(buffer);
         }))
-        .def_property_readonly_static(
-            "SIZE", [](py::object self) { return GTElement::SIZE; })
+        .def(
+            "from_bytes",
+            [](py::buffer const b) {
+                py::buffer_info info = b.request();
+                if (info.format != py::format_descriptor<uint8_t>::format() ||
+                    info.ndim != 1)
+                    throw std::runtime_error("Incompatible buffer format!");
+
+                if ((int)info.size != GTElement::SIZE) {
+                    throw std::invalid_argument(
+                        "Length of bytes object not equal to GTElement::SIZE");
+                }
+                auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
+                return GTElement::FromBytes(data_ptr);
+            })
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def(
@@ -1285,13 +1316,18 @@ PYBIND11_MODULE(blspy, m)
                 s << ele;
                 return s.str();
             })
-        .def("__bytes__", [](const GTElement &ele) {
-            uint8_t *out = new uint8_t[GTElement::SIZE];
-            ele.Serialize(out);
-            py::bytes ans =
-                py::bytes(reinterpret_cast<char *>(out), GTElement::SIZE);
-            delete[] out;
-            return ans;
+        .def(
+            "__bytes__",
+            [](const GTElement &ele) {
+                uint8_t *out = new uint8_t[GTElement::SIZE];
+                ele.Serialize(out);
+                py::bytes ans =
+                    py::bytes(reinterpret_cast<char *>(out), GTElement::SIZE);
+                delete[] out;
+                return ans;
+            })
+        .def("__deepcopy__", [](const GTElement &ele, const py::object &memo) {
+            return GTElement(ele);
         });
 
     m.attr("PublicKeyMPL") = m.attr("G1Element");
