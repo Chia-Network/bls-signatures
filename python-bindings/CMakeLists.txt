@@ -17,6 +17,7 @@ include_directories(
   ${chia-relic_SOURCE_DIR}/include
   ${chia-relic_BINARY_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
+  ${GMP_INCLUDES}
   )
 
 pybind11_add_module(blspy ${CMAKE_CURRENT_SOURCE_DIR}/pythonbindings.cpp)
