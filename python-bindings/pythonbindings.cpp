@@ -50,9 +50,11 @@ PYBIND11_MODULE(blspy, m)
                 s << b;
                 return "<BNWrapper " + s.str() + ">";
             })
-        .def("__deepcopy__", [](const BNWrapper &k, const py::object& memo) {
-            return BNWrapper(k);
-        })
+        .def(
+            "__deepcopy__",
+            [](const BNWrapper &k, const py::object &memo) {
+                return BNWrapper(k);
+            })
         .def(
             "__str__",
             [](const BNWrapper &b) {
@@ -71,7 +73,6 @@ PYBIND11_MODULE(blspy, m)
         });
 
     py::implicitly_convertible<py::int_, BNWrapper>();
-
 
     py::class_<PrivateKey>(m, "PrivateKey")
         .def_property_readonly_static(
@@ -130,9 +131,11 @@ PYBIND11_MODULE(blspy, m)
                 return PrivateKey(k);
             })
         .def("get_g1", [](const PrivateKey &k) { return k.GetG1Element(); })
-        .def("__deepcopy__", [](const PrivateKey &k, const py::object& memo) {
-            return PrivateKey(k);
-        })
+        .def(
+            "__deepcopy__",
+            [](const PrivateKey &k, const py::object &memo) {
+                return PrivateKey(k);
+            })
         .def(
             "derive_child",
             [](PrivateKey &k, uint32_t index) {
@@ -162,17 +165,11 @@ PYBIND11_MODULE(blspy, m)
     });
 
     py::class_<BasicSchemeMPL>(m, "BasicSchemeMPL")
-        //.def("sk_to_pk", &BasicSchemeMPL::SkToPk)
         .def("sk_to_g1", &BasicSchemeMPL::SkToG1)
-        // .def(
-        //     "aggregate",
-        //     overload_cast_<const vector<vector<uint8_t>> &>()(
-        //         &BasicSchemeMPL::Aggregate))
         .def(
             "aggregate",
             overload_cast_<const vector<G2Element> &>()(
                 &BasicSchemeMPL::Aggregate))
-        // .def("sign", &BasicSchemeMPL::SignNative)  // no ::Sign
         .def(
             "sign",
             [](const PrivateKey &pk, const py::bytes &msg) {
@@ -180,18 +177,6 @@ PYBIND11_MODULE(blspy, m)
                 vector<uint8_t> v(s.begin(), s.end());
                 return BasicSchemeMPL::SignNative(pk, v);
             })
-        // .def(
-        //     "verify",
-        //     overload_cast_<
-        //         const vector<uint8_t> &,
-        //         const vector<uint8_t> &,
-        //         const vector<uint8_t> &>()(&BasicSchemeMPL::Verify))
-        // .def(
-        //     "verify",
-        //     overload_cast_<
-        //         const G1Element &,
-        //         const vector<uint8_t> &,
-        //         const G2Element &>()(&BasicSchemeMPL::Verify))
         .def(
             "verify",
             [](const G1Element &pk,
@@ -201,18 +186,6 @@ PYBIND11_MODULE(blspy, m)
                 vector<uint8_t> v(s.begin(), s.end());
                 return BasicSchemeMPL::Verify(pk, v, sig);
             })
-        // .def(
-        //     "agg_verify",
-        //     overload_cast_<
-        //         const vector<vector<uint8_t>> &,
-        //         const vector<vector<uint8_t>> &,
-        //         const vector<uint8_t> &>()(&BasicSchemeMPL::AggregateVerify))
-        // .def(
-        //     "agg_verify",
-        //     overload_cast_<
-        //         const vector<G1Element> &,
-        //         const vector<vector<uint8_t>> &,
-        //         const G2Element &>()(&BasicSchemeMPL::AggregateVerify));
         .def(
             "agg_verify",
             [](const vector<G1Element> &pks,
@@ -228,12 +201,7 @@ PYBIND11_MODULE(blspy, m)
             });
 
     py::class_<AugSchemeMPL>(m, "AugSchemeMPL")
-        //.def("sk_to_pk", &AugSchemeMPL::SkToPk)
         .def("sk_to_g1", &AugSchemeMPL::SkToG1)
-        // .def(
-        //     "aggregate",
-        //     overload_cast_<const vector<vector<uint8_t>> &>()(
-        //         &AugSchemeMPL::Aggregate))
         .def(
             "aggregate",
             overload_cast_<const vector<G2Element> &>()(
@@ -276,33 +244,8 @@ PYBIND11_MODULE(blspy, m)
 
                 return AugSchemeMPL::AggregateVerify(pks, vecs, sig);
             });
-    // .def(
-    //     "verify",
-    //     overload_cast_<
-    //         const vector<uint8_t> &,
-    //         const vector<uint8_t> &,
-    //         const vector<uint8_t> &>()(&AugSchemeMPL::Verify))
-    // .def(
-    //     "verify",
-    //     overload_cast_<
-    //         const G1Element &,
-    //         const vector<uint8_t> &,
-    //         const G2Element &>()(&AugSchemeMPL::Verify))
-    // .def(
-    //     "agg_verify",
-    //     overload_cast_<
-    //         const vector<vector<uint8_t>> &,
-    //         const vector<vector<uint8_t>> &,
-    //         const vector<uint8_t> &>()(&AugSchemeMPL::AggregateVerify))
-    // .def(
-    //     "agg_verify",
-    //     overload_cast_<
-    //         const vector<G1Element> &,
-    //         const vector<vector<uint8_t>> &,
-    //         const G2Element &>()(&AugSchemeMPL::AggregateVerify));
 
     py::class_<PopSchemeMPL>(m, "PopSchemeMPL")
-        // .def("sk_to_pk", &PopSchemeMPL::SkToPk)
         .def("sk_to_g1", &PopSchemeMPL::SkToG1)
         .def(
             "aggregate",
@@ -341,54 +284,17 @@ PYBIND11_MODULE(blspy, m)
 
                 return PopSchemeMPL::AggregateVerify(pks, vecs, sig);
             })
-        // .def(
-        //     "verify",
-        //     overload_cast_<
-        //         const vector<uint8_t> &,
-        //         const vector<uint8_t> &,
-        //         const vector<uint8_t> &>()(&PopSchemeMPL::Verify))
-        // .def(
-        //     "verify",
-        //     overload_cast_<
-        //         const G1Element &,
-        //         const vector<uint8_t> &,
-        //         const G2Element &>()(&PopSchemeMPL::Verify))
-        // .def(
-        //     "agg_verify",
-        //     overload_cast_<
-        //         const vector<vector<uint8_t>> &,
-        //         const vector<vector<uint8_t>> &,
-        //         const vector<uint8_t> &>()(&PopSchemeMPL::AggregateVerify))
-        // .def(
-        //     "agg_verify",
-        //     overload_cast_<
-        //         const vector<G1Element> &,
-        //         const vector<vector<uint8_t>> &,
-        //         const G2Element &>()(&PopSchemeMPL::AggregateVerify))
         .def("pop_prove", &PopSchemeMPL::PopProveNative)
         .def(
             "pop_verify",
             overload_cast_<const G1Element &, const G2Element &>()(
                 &PopSchemeMPL::PopVerify))
-        // .def(
-        //     "pop_verify",
-        //     overload_cast_<const vector<uint8_t> &, const vector<uint8_t>
-        //     &>()(
-        //         &PopSchemeMPL::PopVerify))
         .def(
             "fast_agg_verify",
             overload_cast_<
                 const vector<G1Element> &,
                 const vector<uint8_t> &,
                 const G2Element &>()(&PopSchemeMPL::FastAggregateVerify))
-        // .def(
-        //     "fast_agg_verify",
-        //     overload_cast_<
-        //         const vector<vector<uint8_t>> &,
-        //         const vector<uint8_t> &,
-        //         const vector<uint8_t>
-        //         &>()(&PopSchemeMPL::FastAggregateVerify));
-
         .def(
             "fast_agg_verify",
             [](const vector<G1Element> &pks,
@@ -453,9 +359,11 @@ PYBIND11_MODULE(blspy, m)
 
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("__deepcopy__", [](const G1Element &g1, const py::object& memo) {
-            return G1Element(g1);
-        })
+        .def(
+            "__deepcopy__",
+            [](const G1Element &g1, const py::object &memo) {
+                return G1Element(g1);
+            })
         .def(
             "__add__",
             [](G1Element &self, G1Element &other) { return self + other; },
@@ -583,9 +491,11 @@ PYBIND11_MODULE(blspy, m)
         .def("from_message", &G2Element::FromMessage)
         .def("pair", &G2Element::pair)
         .def("inverse", &G2Element::Inverse)
-        .def("__deepcopy__", [](const G2Element &g2, const py::object& memo) {
-            return G2Element(g2);
-        })
+        .def(
+            "__deepcopy__",
+            [](const G2Element &g2, const py::object &memo) {
+                return G2Element(g2);
+            })
         .def(py::self == py::self)
         .def(py::self != py::self)
 
@@ -712,9 +622,11 @@ PYBIND11_MODULE(blspy, m)
             })
         .def(py::self == py::self)
         .def(py::self != py::self)
-        .def("__deepcopy__", [](const GTElement &gt, const py::object& memo) {
-            return GTElement(gt);
-        })
+        .def(
+            "__deepcopy__",
+            [](const GTElement &gt, const py::object &memo) {
+                return GTElement(gt);
+            })
         .def(
             "__repr__",
             [](const GTElement &ele) {
