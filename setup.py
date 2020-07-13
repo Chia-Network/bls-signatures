@@ -86,7 +86,6 @@ ext_modules = [
         'blspy',
         [
             'src/elements.cpp',
-            'src/chaincode.cpp',
             'src/schemes.cpp',
             'src/privatekey.cpp',
             'src/bls.cpp',
