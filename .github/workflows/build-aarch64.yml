@@ -79,7 +79,7 @@ jobs:
           && cd libsodium-stable && ./configure
           && make && make install && cd .. && rm -rf libsodium-stable
         CIBW_TEST_REQUIRES: pytest
-        CIBW_TEST_COMMAND: python {project}/python-bindings/test.py
+        CIBW_TEST_COMMAND: pytest -v {project}/python-bindings/test.py
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v1
