@@ -64,14 +64,20 @@ jobs:
         CIBW_BUILD: cp38-*
         CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
         # we need boost
+        CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_BEFORE_BUILD_LINUX: >
           yum -y install epel-release
-          && yum -y install cmake3 gmp-devel libsodium-devel
+          && yum -y install cmake3 lzip
           && ln -s /usr/bin/cmake3 /usr/local/bin/cmake
           && python -m pip install --upgrade pip
           && cmake --version
           && uname -a
-        CIBW_BUILD_VERBOSITY_LINUX: 1
+          && curl -L https://gmplib.org/download/gmp/gmp-6.2.0.tar.lz | lzip -dc | tar x
+          && cd gmp-6.2.0 && ./configure --enable-fat
+          && make && make install && cd .. && rm -rf gmp-6.2.0
+          && curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz | tar xz
+          && cd libsodium-stable && ./configure
+          && make && make install && cd .. && rm -rf libsodium-stable
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: python {project}/python-bindings/test.py
 
@@ -107,6 +113,7 @@ jobs:
         source venv/bin/activate
         twine upload --non-interactive --skip-existing --verbose 'dist/*'
 
-    - name: Clean up venv
+    - name: Clean up
       run: |
         rm -rf venv
+        rm -rf dist
