@@ -184,13 +184,16 @@ void TestVector(string messageHex, string masterSkHex, string sigHex) {
     cout << "lenmsg: " << message.size() << " len sk: " << masterSkInt.size() << endl;
     REQUIRE(sig.size() == 96);
 
-    while (masterSkInt.size() < 32) {
-        masterSkInt.insert(masterSkInt.begin(), 0);
-    }
+    // while (masterSkInt.size() < 32) {
+    //     masterSkInt.insert(masterSkInt.begin(), 0);
+    // }
 
-    REQUIRE(masterSkInt.size() == 32);
+    cout << "M<sg key: " << Util::HexStr(masterSkInt) << endl;
+    PrivateKey masterSk = PrivateKey::FromSeed(masterSkInt.data(), masterSkInt.size());
+    // REQUIRE(masterSkInt.size() == 32);
 
-    PrivateKey masterSk = PrivateKey::FromBytes(masterSkInt.data(), true);
+    cout << "sk xprime: " << Util::HexStr(masterSk.Serialize()) << endl;
+
     G2Element sigCalc = AugSchemeMPL::SignNative(masterSk, message);
     REQUIRE(AugSchemeMPL::Verify(masterSk.GetG1Element(), message, sigCalc));
     REQUIRE(G2Element::FromByteVector(sig) == sigCalc);
@@ -204,7 +207,7 @@ void TestVector(string messageHex, string masterSkHex, string sigHex) {
 
 TEST_CASE("Algorand IETF test vectors") {
     SECTION ("Test vectors from file") {
-        vector<string> filenames = {"../test-vectors/rfc6979", "../test-vectors/fips_186_3_P256"};
+        vector<string> filenames = {"../test-vectors/fips_186_3_P256", "../test-vectors/rfc6979"};
         for (string filename : filenames) {
             string line;
             std::ifstream tv(filename);
