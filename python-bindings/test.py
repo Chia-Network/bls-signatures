@@ -168,7 +168,7 @@ def test_vectors_invalid():
             assert False, "Failed to disallow creation of G1 element."
         except Exception as e:
             pass
-    
+
     for s in invalid_inputs_2:
         t = s[:2] + s[98:] + s[:2] + s[2:96]  # endian swap c0c1 to c1c0
         bytes_ = binascii.unhexlify(t)
@@ -218,7 +218,7 @@ def test_vectors_valid():
     secret2 = bytes([x * 314159 % 256 for x in range(32)])
     sk1 = PrivateKey.from_bytes(secret1)
     sk2 = PrivateKey.from_bytes(secret2)
-    
+
     msg = bytes([3, 1, 4, 1, 5, 9])
     sig1Basic = BScheme.sign(sk1, msg)
     sig2Basic = BScheme.sign(sk2, msg)
@@ -231,13 +231,10 @@ def test_vectors_valid():
     sigAPop = PScheme.aggregate([sig1Pop, sig2Pop])
 
     def compare(sig: bytes, ref_sig: bytes):
-        # In py_ecc, the 48th byte starts with 3 zeros
         assert len(sig) == len(ref_sig)
         for i, x in enumerate(sig):
-            if i != 48:
-                assert x == ref_sig[i]
-        assert int(sig[0]) & 0xe0 == int(sig[48]) & 0xe0
-    
+            assert x == ref_sig[i]
+
     compare(bytes(sig1Basic), ref_sig1Basic)
     compare(bytes(sig2Basic), ref_sig2Basic)
     compare(bytes(sigABasic), ref_sigABasic)
