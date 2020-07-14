@@ -170,8 +170,7 @@ def test_vectors_invalid():
             pass
     
     for s in invalid_inputs_2:
-        t = s[:2] + s[98:] + s[:2] + s[2:96]  # endian swap c0c1 to c1c0
-        bytes_ = binascii.unhexlify(t)
+        bytes_ = binascii.unhexlify(s)
         try:
             g2 = G2(bytes_)
             assert False, "Failed to disallow creation of G2 element."
@@ -230,23 +229,15 @@ def test_vectors_valid():
     sig2Pop = PScheme.sign(sk2, msg)
     sigAPop = PScheme.aggregate([sig1Pop, sig2Pop])
 
-    def compare(sig: bytes, ref_sig: bytes):
-        # In py_ecc, the 48th byte starts with 3 zeros
-        assert len(sig) == len(ref_sig)
-        for i, x in enumerate(sig):
-            if i != 48:
-                assert x == ref_sig[i]
-        assert int(sig[0]) & 0xe0 == int(sig[48]) & 0xe0
-    
-    compare(bytes(sig1Basic), ref_sig1Basic)
-    compare(bytes(sig2Basic), ref_sig2Basic)
-    compare(bytes(sigABasic), ref_sigABasic)
-    compare(bytes(sig1Aug), ref_sig1Aug)
-    compare(bytes(sig2Aug), ref_sig2Aug)
-    compare(bytes(sigAAug), ref_sigAAug)
-    compare(bytes(sig1Pop), ref_sig1Pop)
-    compare(bytes(sig2Pop), ref_sig2Pop)
-    compare(bytes(sigAPop), ref_sigAPop)
+    assert bytes(sig1Basic) == ref_sig1Basic
+    assert bytes(sig2Basic) == ref_sig2Basic
+    assert bytes(sigABasic) == ref_sigABasic
+    assert bytes(sig1Aug) == ref_sig1Aug
+    assert bytes(sig2Aug) == ref_sig2Aug
+    assert bytes(sigAAug) == ref_sigAAug
+    assert bytes(sig1Pop) == ref_sig1Pop
+    assert bytes(sig2Pop) == ref_sig2Pop
+    assert bytes(sigAPop) == ref_sigAPop
 
 test_schemes()
 test_elements()

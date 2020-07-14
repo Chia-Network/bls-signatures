@@ -243,33 +243,29 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
     std::memcpy(buffer + 1, bytes + G2Element::SIZE / 2, G2Element::SIZE / 2);
     std::memcpy(buffer + 1 + G2Element::SIZE / 2, bytes, G2Element::SIZE / 2);
     buffer[0] = 0x00;
-    buffer[1] &= 0x1f;  // erase 3 msbs from input
-    buffer[49] &= 0x1f;
+    buffer[49] &= 0x1f;  // erase 3 msbs from input
 
-    if (((bytes[0] & 0xc0) == 0xc0) &&
-        ((bytes[48] & 0xc0) == 0xc0)) {  // infinity
-        // enforce that infinity must be 0xc0000..00c0000..00
-        if (bytes[0] != 0xc0 || bytes[48] != 0xc0) {
+    if ((bytes[48] & 0xe0) != 0x00) {
+        throw std::invalid_argument(
+            "Given G2 element must always have 48th byte start with 0b000");
+    }
+    if (((bytes[0] & 0xc0) == 0xc0)) {  // infinity
+        // enforce that infinity must be 0xc0000..00
+        if (bytes[0] != 0xc0) {
             throw std::invalid_argument(
                 "Given G2 infinity element must be canonical");
         }
         for (int i = 1; i < G2Element::SIZE; ++i) {
-            if (i != 48 && bytes[i] != 0x00) {
+            if (bytes[i] != 0x00) {
                 throw std::invalid_argument(
                     "Given G2 infinity element must be canonical");
             }
         }
         return ele;
     } else {
-        if (((bytes[0] & 0xc0) != 0x80) || ((bytes[48] & 0xc0) != 0x80)) {
+        if (((bytes[0] & 0xc0) != 0x80)) {
             throw std::invalid_argument(
-                "G2 non-inf element must have 0th and 48th byte "
-                "start with 0b10");
-        }
-        if ((bytes[0] & 0xe0) != (bytes[48] & 0xe0)) {
-            throw std::invalid_argument(
-                "G2 element must have the same leading 3 bits at byte 0 "
-                "and 48");
+                "G2 non-inf element must have 0th byte start with 0b10");
         }
         if (bytes[0] & 0x20) {
             buffer[0] = 0x03;
@@ -423,17 +419,14 @@ void G2Element::CompressPoint(uint8_t* result, const g2_t* point)
     if (buffer[0] == 0x00) {  // infinity
         std::memset(result, 0, G2Element::SIZE);
         result[0] = 0xc0;
-        result[48] = 0xc0;
         return;
     }
     // remove leading 3 bits
     buffer[1] &= 0x1f;
     buffer[49] &= 0x1f;
     if (buffer[0] == 0x03) {
-        buffer[1] |= 0xa0;
-        buffer[49] |= 0xa0;
+        buffer[49] |= 0xa0;  // swapped later to 0
     } else {
-        buffer[1] |= 0x80;
         buffer[49] |= 0x80;
     }
 
