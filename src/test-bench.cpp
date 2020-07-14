@@ -24,6 +24,7 @@ using std::endl;
 
 using namespace bls;
 
+/*
 void benchSigs() {
     string testName = "Sigining";
     double numIters = 1000;
@@ -188,12 +189,13 @@ void benchDegenerateTree() {
     endStopwatch("Verify degenerate aggSig tree",
                  start, numIters);
 }
+*/
 
 int main(int argc, char* argv[]) {
-    benchSigs();
-    benchVerification();
-    benchBatchVerification();
-    benchAggregateSigsSecure();
-    benchAggregateSigsSimple();
-    benchDegenerateTree();
+    // benchSigs();
+    // benchVerification();
+    // benchBatchVerification();
+    // benchAggregateSigsSecure();
+    // benchAggregateSigsSimple();
+    // benchDegenerateTree();
 }

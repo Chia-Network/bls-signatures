@@ -1,6 +1,13 @@
 from copy import deepcopy
-from ec import (AffinePoint, JacobianPoint, default_ec, generator_Fq,
-                default_ec_twist, y_for_x, hash_to_point_prehashed_Fq2)
+from ec import (
+    AffinePoint,
+    JacobianPoint,
+    default_ec,
+    generator_Fq,
+    default_ec_twist,
+    y_for_x,
+    hash_to_point_prehashed_Fq2,
+)
 from fields import Fq, Fq2, Fq12
 from util import hash256
 from aggregation_info import AggregationInfo
@@ -15,6 +22,7 @@ class Signature:
     just the x value, and thus 96 bytes. (With the 1st bit determining the
     valid y).
     """
+
     SIGNATURE_SIZE = 96
 
     def __init__(self, value, aggregation_info=None):
@@ -28,20 +36,21 @@ class Signature:
         if prepend:
             raise Exception("Should not have prepend bit set")
 
-        buffer = bytes([buffer[0] & 0x1f]) + buffer[1:]
+        buffer = bytes([buffer[0] & 0x1F]) + buffer[1:]
 
         x0 = int.from_bytes(buffer[:48], "big")
         x1 = int.from_bytes(buffer[48:], "big")
         x = Fq2(default_ec.q, Fq(default_ec.q, x0), Fq(default_ec.q, x1))
         ys = y_for_x(x, default_ec_twist, Fq2)
         y = ys[0]
-        if ((use_big_y and ys[1][1] > default_ec.q // 2) or
-                (not use_big_y and ys[1][1] < default_ec.q // 2)):
+        if (use_big_y and ys[1][1] > default_ec.q // 2) or (
+            not use_big_y and ys[1][1] < default_ec.q // 2
+        ):
             y = ys[1]
 
-        return Signature(AffinePoint(x, y, False, default_ec_twist)
-                         .to_jacobian(),
-                         aggregation_info)
+        return Signature(
+            AffinePoint(x, y, False, default_ec_twist).to_jacobian(), aggregation_info
+        )
 
     @staticmethod
     def from_g2(g2_el, aggregation_info=None):
@@ -64,8 +73,13 @@ class Signature:
         """
         message_hashes_to_remove = []
         pubkeys_to_remove = []
-        prod = JacobianPoint(Fq2.one(default_ec.q), Fq2.one(default_ec.q),
-                             Fq2.zero(default_ec.q), True, default_ec)
+        prod = JacobianPoint(
+            Fq2.one(default_ec.q),
+            Fq2.one(default_ec.q),
+            Fq2.zero(default_ec.q),
+            True,
+            default_ec,
+        )
         for divisor_sig in divisor_signatures:
             pks = divisor_sig.aggregation_info.public_keys
             message_hashes = divisor_sig.aggregation_info.message_hashes
@@ -73,29 +87,28 @@ class Signature:
                 raise Exception("Invalid aggregation info")
 
             for i in range(len(pks)):
-                divisor = divisor_sig.aggregation_info.tree[
-                        (message_hashes[i], pks[i])]
+                divisor = divisor_sig.aggregation_info.tree[(message_hashes[i], pks[i])]
                 try:
-                    dividend = self.aggregation_info.tree[
-                        (message_hashes[i], pks[i])]
+                    dividend = self.aggregation_info.tree[(message_hashes[i], pks[i])]
                 except KeyError:
                     raise Exception("Signature is not a subset")
                 if i == 0:
-                    quotient = (Fq(default_ec.n, dividend)
-                                / Fq(default_ec.n, divisor))
+                    quotient = Fq(default_ec.n, dividend) / Fq(default_ec.n, divisor)
                 else:
                     # Makes sure the quotient is identical for each public
                     # key, which means message/pk pair is unique.
-                    new_quotient = (Fq(default_ec.n, dividend)
-                                    / Fq(default_ec.n, divisor))
+                    new_quotient = Fq(default_ec.n, dividend) / Fq(
+                        default_ec.n, divisor
+                    )
                     if quotient != new_quotient:
-                        raise Exception("Cannot divide by aggregate signature,"
-                                        + "msg/pk pairs are not unique")
+                        raise Exception(
+                            "Cannot divide by aggregate signature,"
+                            + "msg/pk pairs are not unique"
+                        )
                 message_hashes_to_remove.append(message_hashes[i])
                 pubkeys_to_remove.append(pks[i])
-            prod += (divisor_sig.value * -quotient)
-        copy = Signature(deepcopy(self.value + prod),
-                         deepcopy(self.aggregation_info))
+            prod += divisor_sig.value * -quotient
+        copy = Signature(deepcopy(self.value + prod), deepcopy(self.aggregation_info))
 
         for i in range(len(message_hashes_to_remove)):
             a = message_hashes_to_remove[i]
@@ -143,8 +156,7 @@ class Signature:
         on the same message.
         """
         q = default_ec.q
-        agg_sig = (AffinePoint(Fq2.zero(q), Fq2.zero(q), True, default_ec)
-                   .to_jacobian())
+        agg_sig = AffinePoint(Fq2.zero(q), Fq2.zero(q), True, default_ec).to_jacobian()
 
         for sig in signatures:
             agg_sig += sig.value
@@ -159,11 +171,14 @@ class Signature:
         exponent before multiplying them together. This is secure against
         rogue public key attack, but is slower than simple aggregation.
         """
-        if (len(signatures) != len(public_keys) or
-                len(public_keys) != len(message_hashes)):
+        if len(signatures) != len(public_keys) or len(public_keys) != len(
+            message_hashes
+        ):
             raise Exception("Invalid number of keys")
-        mh_pub_sigs = [(message_hashes[i], public_keys[i], signatures[i])
-                       for i in range(len(signatures))]
+        mh_pub_sigs = [
+            (message_hashes[i], public_keys[i], signatures[i])
+            for i in range(len(signatures))
+        ]
 
         # Sort by message hash + pk
         mh_pub_sigs.sort()
@@ -173,8 +188,7 @@ class Signature:
         # Raise each sig to a power of each t,
         # and multiply all together into agg_sig
         ec = public_keys[0].ec
-        agg_sig = JacobianPoint(Fq2.one(ec.q), Fq2.one(ec.q),
-                                Fq2.zero(ec.q), True, ec)
+        agg_sig = JacobianPoint(Fq2.one(ec.q), Fq2.one(ec.q), Fq2.zero(ec.q), True, ec)
 
         for i, (_, _, signature) in enumerate(mh_pub_sigs):
             agg_sig += signature * computed_Ts[i]
@@ -193,8 +207,9 @@ class Signature:
 
         for signature in signatures:
             if signature.aggregation_info.empty():
-                raise Exception("Each signature must have a valid aggregation "
-                                + "info")
+                raise Exception(
+                    "Each signature must have a valid aggregation " + "info"
+                )
             public_keys.append(signature.aggregation_info.public_keys)
             message_hashes.append(signature.aggregation_info.message_hashes)
 
@@ -250,8 +265,9 @@ class Signature:
         sort_keys_sorted = []
         for i in range(len(colliding_public_keys)):
             for j in range(len(colliding_public_keys[i])):
-                sort_keys_sorted.append((colliding_message_hashes[i][j],
-                                         colliding_public_keys[i][j]))
+                sort_keys_sorted.append(
+                    (colliding_message_hashes[i][j], colliding_public_keys[i][j])
+                )
         sort_keys_sorted.sort()
         sorted_public_keys = [pk for (mh, pk) in sort_keys_sorted]
 
@@ -260,8 +276,7 @@ class Signature:
         # Raise each sig to a power of each t,
         # and multiply all together into agg_sig
         ec = sorted_public_keys[0].value.ec
-        agg_sig = JacobianPoint(Fq2.one(ec.q), Fq2.one(ec.q),
-                                Fq2.zero(ec.q), True, ec)
+        agg_sig = JacobianPoint(Fq2.one(ec.q), Fq2.one(ec.q), Fq2.zero(ec.q), True, ec)
 
         for i, signature in enumerate(colliding_sigs):
             agg_sig += signature.value * computed_Ts[i]
@@ -291,7 +306,7 @@ class Signature:
         """
         message_hashes = self.aggregation_info.message_hashes
         public_keys = self.aggregation_info.public_keys
-        assert(len(message_hashes) == len(public_keys))
+        assert len(message_hashes) == len(public_keys)
 
         hash_to_public_keys = {}
         for i in range(len(message_hashes)):
@@ -305,20 +320,19 @@ class Signature:
         ec = public_keys[0].value.ec
         for message_hash, mapped_keys in hash_to_public_keys.items():
             dedup = list(set(mapped_keys))
-            public_key_sum = JacobianPoint(Fq.one(ec.q), Fq.one(ec.q),
-                                           Fq.zero(ec.q), True, ec)
+            public_key_sum = JacobianPoint(
+                Fq.one(ec.q), Fq.one(ec.q), Fq.zero(ec.q), True, ec
+            )
             for public_key in dedup:
                 try:
-                    exponent = self.aggregation_info.tree[(message_hash,
-                                                           public_key)]
-                    public_key_sum += (public_key.value * exponent)
+                    exponent = self.aggregation_info.tree[(message_hash, public_key)]
+                    public_key_sum += public_key.value * exponent
                 except KeyError:
                     return False
             final_message_hashes.append(message_hash)
             final_public_keys.append(public_key_sum.to_affine())
 
-        mapped_hashes = [hash_to_point_prehashed_Fq2(mh)
-                         for mh in final_message_hashes]
+        mapped_hashes = [hash_to_point_prehashed_Fq2(mh) for mh in final_message_hashes]
 
         g1 = Fq(default_ec.n, -1) * generator_Fq()
         Ps = [g1] + final_public_keys
@@ -340,19 +354,21 @@ class PrependSignature:
         if not prepend:
             raise Exception("Should have prepend bit set")
 
-        buffer = bytes([buffer[0] & 0x1f]) + buffer[1:]
+        buffer = bytes([buffer[0] & 0x1F]) + buffer[1:]
 
         x0 = int.from_bytes(buffer[:48], "big")
         x1 = int.from_bytes(buffer[48:], "big")
         x = Fq2(default_ec.q, Fq(default_ec.q, x0), Fq(default_ec.q, x1))
         ys = y_for_x(x, default_ec_twist, Fq2)
         y = ys[0]
-        if ((use_big_y and ys[1][1] > default_ec.q // 2) or
-                (not use_big_y and ys[1][1] < default_ec.q // 2)):
+        if (use_big_y and ys[1][1] > default_ec.q // 2) or (
+            not use_big_y and ys[1][1] < default_ec.q // 2
+        ):
             y = ys[1]
 
-        return PrependSignature(AffinePoint(x, y, False, default_ec_twist)
-                                .to_jacobian())
+        return PrependSignature(
+            AffinePoint(x, y, False, default_ec_twist).to_jacobian()
+        )
 
     @staticmethod
     def from_g2(g2_el):
@@ -389,8 +405,7 @@ class PrependSignature:
         generated using sign_prepend.
         """
         q = default_ec.q
-        agg_sig = (AffinePoint(Fq2.zero(q), Fq2.zero(q), True, default_ec)
-                   .to_jacobian())
+        agg_sig = AffinePoint(Fq2.zero(q), Fq2.zero(q), True, default_ec).to_jacobian()
 
         for sig in signatures:
             agg_sig += sig.value
@@ -402,9 +417,13 @@ class PrependSignature:
         Verifies messages using the prepend method. It prepends public keys
         to message hashes before verifying.
         """
-        assert(len(message_hashes) == len(public_keys))
-        mapped_hashes = [hash_to_point_prehashed_Fq2(hash256(public_keys[i].serialize() + message_hashes[i]))
-                         for i in range(len(message_hashes))]
+        assert len(message_hashes) == len(public_keys)
+        mapped_hashes = [
+            hash_to_point_prehashed_Fq2(
+                hash256(public_keys[i].serialize() + message_hashes[i])
+            )
+            for i in range(len(message_hashes))
+        ]
         keys = [pk.value.to_affine() for pk in public_keys]
 
         g1 = Fq(default_ec.n, -1) * generator_Fq()

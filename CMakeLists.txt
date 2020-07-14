@@ -1,5 +1,4 @@
-# add_compile_definitions() was introduced in cmake 3.12 but this compiles on 3.10
-CMAKE_MINIMUM_REQUIRED(VERSION 3.10.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -49,6 +48,7 @@ set(VERBS "off" CACHE STRING "")
 set(ALLOC "AUTO" CACHE STRING "")
 set(SHLIB "OFF" CACHE STRING "")
 set(MULTI "PTHREAD" CACHE STRING "")
+set(DOCUM "off" CACHE STRING "")
 
 set(FP_PRIME 381 CACHE INTEGER "")
 
@@ -78,12 +78,13 @@ set(QUIET 1 CACHE INTEGER "")
 set(PP_EXT "LAZYR" CACHE STRING "")
 set(PP_METHD "LAZYR;OATEP" CACHE STRING "")
 
-add_subdirectory(contrib/relic)
+#add_subdirectory(contrib/relic)
 add_subdirectory(src)
 
 if (EMSCRIPTEN)
   add_subdirectory(js-bindings)
 else()
   # emscripten can't build python bindings, it produces only javascript
+  # add_subdirectory(contrib/pybind11)
   add_subdirectory(python-bindings)
 endif()

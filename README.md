@@ -17,11 +17,10 @@ Implements BLS signatures with aggregation as in
 , using [relic toolkit](https://github.com/relic-toolkit/relic)
 for cryptographic primitives (pairings, EC, hashing).
 The [BLS12-381](https://github.com/zkcrypto/pairing/tree/master/src/bls12_381)
-curve is used. The spec is
+curve is used. The original spec is
 [here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md).
-This library will be migrating to the
-[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/)
-shortly.
+This library now implements
+[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/).
 
 Features:
 * Non-interactive signature aggregation on identical or distinct messages
@@ -266,15 +265,12 @@ function. Note: relic is used with the Apache 2.0 license.
 Libsodium and GMP are optional dependencies: libsodium gives secure memory
 allocation, and GMP speeds up the library by ~ 3x. To install them, either
 download them from github and follow the instructions for each repo, or use
-a package manager like APT or brew.
+a package manager like APT or brew. You can follow the recipe used to build
+python wheels for multiple platforms in `.github/workflows/`
 
 ### Discussion
-Discussion about this library and other Chia related development is on Keybase.
-Install Keybase, and run the following to join the Chia public channels:
-
-```bash
-keybase team request-access chia_network.public
-```
+Discussion about this library and other Chia related development is in Chia's
+[public Keybase channels](https://keybase.io/team/chia_network.public).
 
 ### Code style
 * Always use uint8_t for bytes
@@ -296,10 +292,10 @@ build binary wheels for MacOS, Linux (x64 and aarch64), and Windows and publish
 them with a source wheel on PyPi. See `.github/workflows/build.yml`. CMake uses
 [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)
 to download [pybind11](https://github.com/pybind/pybind11) for the Python
-bindings. Building is then managed by
-[cibuildwheel](https://github.com/joerick/cibuildwheel). Further installation
-is then available via `pip install blspy` e.g. The ci builds include GMP and
-libsoduium.
+bindings and relic from a chia relic forked reporitory. Building is then
+managed by [cibuildwheel](https://github.com/joerick/cibuildwheel).
+Further installation is then available via `pip install blspy` e.g. The ci
+builds include GMP and soduium.
 
 ### Contributing and workflow
 Contributions are welcome and more details are available in chia-blockchain's

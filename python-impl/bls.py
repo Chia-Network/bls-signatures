@@ -1,4 +1,3 @@
-from ec import JacobianPoint, default_ec
 from util import hash256
 
 
@@ -8,7 +7,7 @@ class BLS:
         Construction from https://eprint.iacr.org/2018/483.pdf
         Two hashes are performed for speed.
         """
-        input_bytes = b''.join([pk.serialize() for pk in public_keys])
+        input_bytes = b"".join([pk.serialize() for pk in public_keys])
         pk_hash = hash256(input_bytes)
         order = public_keys[0].value.ec.n
 

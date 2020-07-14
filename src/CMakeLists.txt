@@ -1,30 +1,36 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.1.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.11 FATAL_ERROR)
 set (CMAKE_CXX_STANDARD 11)
+
+# CMake 3.11+
+include(FetchContent)
+
+FetchContent_Declare(
+  chia-relic
+  GIT_REPOSITORY https://github.com/Chia-Network/relic.git
+  GIT_TAG        origin/master
+)
+FetchContent_MakeAvailable(chia-relic)
 
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 source_group("SrcHeaders" FILES ${HEADERS})
 
 include_directories(
-  BEFORE
-  ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/relic/include
-  ${CMAKE_BINARY_DIR}/contrib/relic/include
+  ${INCLUDE_DIRECTORIES}
+  ${chia-relic_SOURCE_DIR}/include
+  ${chia-relic_BINARY_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
+  ${GMP_INCLUDES}
   )
 
 set(C_LIB ${CMAKE_BINARY_DIR}/libbls.a)
 
-add_library(bls ${CMAKE_CURRENT_SOURCE_DIR}/chaincode.cpp)
+add_library(bls ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp)
 
 add_library(blstmp ${HEADERS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/extendedpublickey.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/extendedprivatekey.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/chaincode.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/signature.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/publickey.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/aggregationinfo.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/threshold.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
 )
 
 set(OPREFIX object_)

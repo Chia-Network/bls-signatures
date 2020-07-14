@@ -85,26 +85,20 @@ ext_modules = [
     Extension(
         'blspy',
         [
-            'src/chaincode.cpp',
-            'src/extendedpublickey.cpp',
-            'src/extendedprivatekey.cpp',
-            'src/chaincode.cpp',
-            'src/signature.cpp',
-            'src/publickey.cpp',
+            'src/elements.cpp',
+            'src/schemes.cpp',
             'src/privatekey.cpp',
             'src/bls.cpp',
-            'src/aggregationinfo.cpp',
-            'src/threshold.cpp',
             'python-bindings/pythonbindings.cpp',
         ],
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
             get_pybind_include(user=True),
-            'relic_gmp_64/include',
+            'relic_ietf_64/include',
             'mpir_gc_x64',
         ],
-        library_dirs=['relic_gmp_64', 'mpir_gc_x64'],
+        library_dirs=['relic_ietf_64', 'mpir_gc_x64', 'libsodium.1.0.18/runtimes/win-x64/native/'],
         libraries=['relic_s', 'Advapi32', 'mpir'],
         language='c++'
     ),
@@ -187,7 +181,6 @@ if platform.system() == "Windows":
         python_requires='>=3.7',
         setup_requires=['pybind11>=2.5.0'],
         install_requires=['pybind11>=2.5.0'],
-        build_requires=["pybind11>=2.5.0"],
         ext_modules=ext_modules,
         cmdclass={'build_ext': BuildExt},
         zip_safe=False,
@@ -195,7 +188,6 @@ if platform.system() == "Windows":
 else:
     setup(
         name='blspy',
-        version='0.1.14',
         author='Mariano Sorgente',
         author_email='mariano@chia.net',
         description='BLS signatures in c++ (python bindings)',

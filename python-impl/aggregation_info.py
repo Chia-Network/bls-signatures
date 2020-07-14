@@ -14,6 +14,7 @@ class AggregationInfo:
     along with this map, and raise each public key to the correct
     exponent, and multiply the pks together, for identical messages.
     """
+
     def __init__(self, tree, message_hashes, public_keys):
         self.tree = tree
         self.message_hashes = message_hashes
@@ -30,13 +31,22 @@ class AggregationInfo:
         Compares two AggregationInfo objects, this is necessary for sorting
         them. Comparison is done by comparing (message hash, pk, exponent)
         """
-        combined = [(self.message_hashes[i], self.public_keys[i],
-                     self.tree[(self.message_hashes[i], self.public_keys[i])])
-                    for i in range(len(self.public_keys))]
-        combined_other = [(other.message_hashes[i], other.public_keys[i],
-                           other.tree[(other.message_hashes[i],
-                                       other.public_keys[i])])
-                          for i in range(len(other.public_keys))]
+        combined = [
+            (
+                self.message_hashes[i],
+                self.public_keys[i],
+                self.tree[(self.message_hashes[i], self.public_keys[i])],
+            )
+            for i in range(len(self.public_keys))
+        ]
+        combined_other = [
+            (
+                other.message_hashes[i],
+                other.public_keys[i],
+                other.tree[(other.message_hashes[i], other.public_keys[i])],
+            )
+            for i in range(len(other.public_keys))
+        ]
 
         for i in range(max(len(combined), len(combined_other))):
             if i == len(combined):
@@ -52,8 +62,15 @@ class AggregationInfo:
     def __str__(self):
         ret = ""
         for key, value in self.tree.items():
-            ret += ("(" + key[0].hex() + "," + key[1].serialize().hex()
-                    + "):\n" + hex(value) + "\n")
+            ret += (
+                "("
+                + key[0].hex()
+                + ","
+                + key[1].serialize().hex()
+                + "):\n"
+                + hex(value)
+                + "\n"
+            )
         return ret
 
     def __deepcopy__(self, memo):
@@ -85,10 +102,8 @@ class AggregationInfo:
 
         mh_pubkeys.sort()
 
-        message_hashes = [message_hash for (message_hash, public_key)
-                          in mh_pubkeys]
-        public_keys = [public_key for (message_hash, public_key)
-                       in mh_pubkeys]
+        message_hashes = [message_hash for (message_hash, public_key) in mh_pubkeys]
+        public_keys = [public_key for (message_hash, public_key) in mh_pubkeys]
 
         return AggregationInfo(new_tree, message_hashes, public_keys)
 
@@ -108,8 +123,7 @@ class AggregationInfo:
             for key, value in info.tree.items():
                 sorted_keys.append(key)
         sorted_keys.sort()
-        sorted_pks = [public_key for (message_hash, public_key)
-                      in sorted_keys]
+        sorted_pks = [public_key for (message_hash, public_key) in sorted_keys]
         computed_Ts = BLS.hash_pks(len(colliding_infos), sorted_pks)
 
         # Group order, exponents can be reduced mod the order
@@ -127,10 +141,8 @@ class AggregationInfo:
                     new_tree[key] = (new_tree[key] + addend) % order
         mh_pubkeys = [k for k, v in new_tree.items()]
         mh_pubkeys.sort()
-        message_hashes = [message_hash for (message_hash, public_key)
-                          in mh_pubkeys]
-        public_keys = [public_key for (message_hash, public_key)
-                       in mh_pubkeys]
+        message_hashes = [message_hash for (message_hash, public_key) in mh_pubkeys]
+        public_keys = [public_key for (message_hash, public_key) in mh_pubkeys]
         return AggregationInfo(new_tree, message_hashes, public_keys)
 
     @staticmethod

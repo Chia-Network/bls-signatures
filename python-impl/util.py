@@ -25,7 +25,7 @@ def hmac256(m, k):
         k = hash256(k)
     while len(k) < HMAC_BLOCK_SIZE:
         k += bytes([0])
-    opad = bytes([0x5c] * HMAC_BLOCK_SIZE)
+    opad = bytes([0x5C] * HMAC_BLOCK_SIZE)
     ipad = bytes([0x36] * HMAC_BLOCK_SIZE)
     kopad = bytes([k[i] ^ opad[i] for i in range(HMAC_BLOCK_SIZE)])
     kipad = bytes([k[i] ^ ipad[i] for i in range(HMAC_BLOCK_SIZE)])
