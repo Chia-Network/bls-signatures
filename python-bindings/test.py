@@ -168,7 +168,7 @@ def test_vectors_invalid():
             assert False, "Failed to disallow creation of G1 element."
         except Exception as e:
             pass
-    
+
     for s in invalid_inputs_2:
         bytes_ = binascii.unhexlify(s)
         try:
@@ -217,7 +217,7 @@ def test_vectors_valid():
     secret2 = bytes([x * 314159 % 256 for x in range(32)])
     sk1 = PrivateKey.from_bytes(secret1)
     sk2 = PrivateKey.from_bytes(secret2)
-    
+
     msg = bytes([3, 1, 4, 1, 5, 9])
     sig1Basic = BScheme.sign(sk1, msg)
     sig2Basic = BScheme.sign(sk2, msg)

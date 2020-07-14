@@ -176,6 +176,50 @@ TEST_CASE("EIP-2333 HD keys") {
         );
     }
 }
+void TestVector(string messageHex, string masterSkHex, string sigHex) {
+    cout << "testing" << endl;
+    auto message = Util::HexToBytes(messageHex);
+    auto masterSkInt = Util::HexToBytes(masterSkHex);
+    auto sig = Util::HexToBytes(sigHex);
+    cout << "lenmsg: " << message.size() << " len sk: " << masterSkInt.size() << endl;
+    REQUIRE(sig.size() == 96);
+
+    while (masterSkInt.size() < 32) {
+        masterSkInt.insert(masterSkInt.begin(), 0);
+    }
+
+    REQUIRE(masterSkInt.size() == 32);
+
+    PrivateKey masterSk = PrivateKey::FromBytes(masterSkInt.data(), true);
+    G2Element sigCalc = AugSchemeMPL::SignNative(masterSk, message);
+    REQUIRE(AugSchemeMPL::Verify(masterSk.GetG1Element(), message, sigCalc));
+    REQUIRE(G2Element::FromByteVector(sig) == sigCalc);
+
+    auto sigCalcSer = sigCalc.Serialize();
+    REQUIRE(sigCalcSer.size() == sig.size());
+    for (int i=0; i < sigCalcSer.size(); i++) {
+        REQUIRE(sigCalcSer[i] == sig[i]);
+    }
+}
+
+TEST_CASE("Algorand IETF test vectors") {
+    SECTION ("Test vectors from file") {
+        vector<string> filenames = {"../test-vectors/rfc6979", "../test-vectors/fips_186_3_P256"};
+        for (string filename : filenames) {
+            string line;
+            std::ifstream tv(filename);
+            while (getline(tv, line)) {
+                std::stringstream ss(line);
+                string messageHex, keyHex, sigHex;
+                getline(ss, messageHex, ' ');
+                getline(ss, keyHex, ' ');
+                getline(ss, sigHex);
+                TestVector(messageHex, keyHex, sigHex);
+            }
+            tv.close();
+        }
+    }
+}
 
 /*
 TEST_CASE("Test vectors")
@@ -1987,6 +2031,8 @@ TEST_CASE("Schemes")
         vector<uint8_t> pk1v = AugSchemeMPL::SkToPk(sk1);
         G2Element sig1 = AugSchemeMPL::SignNative(sk1, msg1);
         vector<uint8_t> sig1v = AugSchemeMPL::Sign(sk1, msg1);
+
+        std::cout << "Sig1v" << " " << (int)sig1v[0] << " " << (int)sig1v[48] << std::endl;
 
         REQUIRE(AugSchemeMPL::Verify(pk1, msg1, sig1));
         REQUIRE(AugSchemeMPL::Verify(pk1v, msg1, sig1v));
