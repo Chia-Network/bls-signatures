@@ -65,6 +65,14 @@ class Util {
         return s.str();
     }
 
+    static std::string HexStr(const std::vector<uint8_t> &data) {
+        std::stringstream s;
+        s << std::hex;
+        for (int i=0; i < data.size(); ++i)
+            s << std::setw(2) << std::setfill('0') << static_cast<int>(data[i]);
+        return s.str();
+    }
+
     /*
      * Securely allocates a portion of memory, using libsodium. This prevents
      * paging to disk, and zeroes out the memory when it's freed.
