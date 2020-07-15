@@ -82,9 +82,9 @@ jobs:
           && python -m pip install --upgrade pip
           && which cmake
           && cmake --version
-          && curl -L https://gmplib.org/download/gmp/gmp-6.2.0.tar.lz | lzip -dc | tar x
-          && cd gmp-6.2.0 && ./configure --enable-fat
-          && make && make install && cd .. && rm -rf gmp-6.2.0
+          && curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz | lzip -dc | tar x
+          && cd gmp-6.1.2 && ./configure --enable-fat
+          && make && make install && cd .. && rm -rf gmp-6.1.2
         # GH hosted runner has gmp and libsodium natively
         CIBW_BEFORE_BUILD_MACOS: >
           python -m pip install --upgrade pip
