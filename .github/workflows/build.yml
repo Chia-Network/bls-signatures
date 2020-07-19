@@ -41,7 +41,7 @@ jobs:
     - name: Install cibuildwheel
       run: |
        python -m pip install --upgrade pip
-       python -m pip install cibuildwheel==1.5.2
+       python -m pip install cibuildwheel==1.5.4
 
     - name: Lint source with flake8
       run: |
@@ -81,6 +81,7 @@ jobs:
           && rm -f /usr/bin/cmake && hash -r
           && python -m pip install --upgrade pip
           && ls -l /project/ && ls -l cmake-3.17.3-Linux-x86_64
+          && echo $PATH && pwd
           && echo "About to test cmake version"
           && cmake --version
           && curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz | lzip -dc | tar x
