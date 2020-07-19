@@ -65,7 +65,7 @@ jobs:
       env:
         CIBW_BUILD_VERBOSITY_MACOS: 0
         CIBW_BUILD_VERBOSITY_LINUX: 0
-        CIBW_BUILD_VERBOSITY_WINDOWS: 1
+        CIBW_BUILD_VERBOSITY_WINDOWS: 0
         # Python 3.7 and 3.8
         CIBW_BUILD: cp37-* cp38-*
         CIBW_SKIP: '*-manylinux_i686 *-win32'
@@ -73,7 +73,7 @@ jobs:
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
         CIBW_ENVIRONMENT_LINUX: "PATH=/cmake-3.17.3-Linux-x86_64/bin:$PATH"
-        CIBW_BEFORE_BUILD_LINUX: >
+        CIBW_BEFORE_ALL_LINUX: >
           yum -y install lzip
           && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.sh > cmake.sh
           && yes | sh cmake.sh | cat
@@ -90,10 +90,10 @@ jobs:
           && cd libsodium-stable && ./configure
           && make && make install && cd .. && rm -rf libsodium-stable
         # GH hosted MacOS runner has gmp and libsodium natively
-        CIBW_BEFORE_BUILD_MACOS: >
+        CIBW_BEFORE_ALL_MACOS: >
           python -m pip install --upgrade pip
         CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.14
-        CIBW_BEFORE_BUILD_WINDOWS: >
+        CIBW_BEFORE_ALL_WINDOWS: >
           python -m pip install --upgrade pip
           && pwd
           && git clone https://github.com/Chia-Network/relic_ietf_64.git
