@@ -73,7 +73,7 @@ jobs:
         # we need boost
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
-        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
+        CIBW_ENVIRONMENT_LINUX: "PATH=/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
         CIBW_BEFORE_BUILD_LINUX: >
           yum -y install lzip
           && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
