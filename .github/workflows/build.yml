@@ -80,7 +80,7 @@ jobs:
           && yes | sh cmake.sh | cat
           && rm -f /usr/bin/cmake && hash -r
           && python -m pip install --upgrade pip
-          && which cmake
+          && echo "About to test cmake version"
           && cmake --version
           && curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz | lzip -dc | tar x
           && cd gmp-6.1.2 && ./configure --enable-fat
@@ -88,7 +88,7 @@ jobs:
           && curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz | tar xz
           && cd libsodium-stable && ./configure
           && make && make install && cd .. && rm -rf libsodium-stable
-        # GH hosted runner has gmp and libsodium natively
+        # GH hosted MacOS runner has gmp and libsodium natively
         CIBW_BEFORE_BUILD_MACOS: >
           python -m pip install --upgrade pip
         CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.14
@@ -156,7 +156,7 @@ jobs:
         valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all  ./src/runtest
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: wheels
         path: ./dist
