@@ -61,7 +61,7 @@ jobs:
 
     - name: Build wheel and test
       run: |
-        python -m cibuildwheel --output-dir dist
+        python -m cibuildwheel --prefix=/project --output-dir dist
       env:
         CIBW_BUILD_VERBOSITY_MACOS: 0
         CIBW_BUILD_VERBOSITY_LINUX: 0
@@ -73,10 +73,10 @@ jobs:
         # we need boost
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
-        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
+        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-x86_64/bin:$PATH"
         CIBW_BEFORE_BUILD_LINUX: >
           yum -y install lzip
-          && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
+          && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-x86_64.sh > cmake.sh
           && yes | sh cmake.sh | cat
           && rm -f /usr/bin/cmake && hash -r
           && python -m pip install --upgrade pip
