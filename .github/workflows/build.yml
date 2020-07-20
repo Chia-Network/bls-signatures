@@ -41,7 +41,7 @@ jobs:
     - name: Install cibuildwheel
       run: |
        python -m pip install --upgrade pip
-       python -m pip install git+https://github.com/joerick/cibuildwheel.git@627e6590321c24027dc964684dc38c09b48dff39
+       python -m pip install git+https://github.com/YannickJadoul/cibuildwheel.git@fix-pwd-linux-docker
 
     - name: Lint source with flake8
       run: |
