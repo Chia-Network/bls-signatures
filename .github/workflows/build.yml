@@ -78,9 +78,7 @@ jobs:
           && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
           && yes | sh cmake.sh | cat
           && rm -f /usr/bin/cmake && hash -r
-          && ls -l /project/ && ls -l cmake-3.17.3-Linux-x86_64
-          && echo $PATH && pwd
-          && echo "About to test cmake version"
+          && which cmake
           && cmake --version
           && curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz | lzip -dc | tar x
           && cd gmp-6.1.2 && ./configure --enable-fat
