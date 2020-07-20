@@ -191,7 +191,7 @@ else:
         author='Mariano Sorgente',
         author_email='mariano@chia.net',
         description='BLS signatures in c++ (python bindings)',
-        python_requires='>3.7',
+        python_requires='>=3.7',
         install_requires=["wheel"],
         long_description=open('README.md').read(),
         long_description_content_type="text/markdown",
