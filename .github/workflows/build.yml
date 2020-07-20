@@ -69,7 +69,6 @@ jobs:
         # Python 3.7 and 3.8
         CIBW_BUILD: cp37-* cp38-*
         CIBW_SKIP: '*-manylinux_i686 *-win32'
-        # we need boost
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
         CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
