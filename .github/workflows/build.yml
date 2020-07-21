@@ -67,7 +67,7 @@ jobs:
       env:
         CIBW_BUILD_VERBOSITY_MACOS: 0
         CIBW_BUILD_VERBOSITY_LINUX: 0
-        CIBW_BUILD_VERBOSITY_WINDOWS: 0
+        CIBW_BUILD_VERBOSITY_WINDOWS: 1
         # Python 3.7 and 3.8
         CIBW_BUILD: cp37-* cp38-*
         CIBW_SKIP: '*-manylinux_i686 *-win32'
@@ -96,7 +96,7 @@ jobs:
         CIBW_BEFORE_BUILD_WINDOWS: >
           python -m pip install --upgrade pip
         CIBW_BEFORE_ALL_WINDOWS: >
-          curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-msvc.zip > libsodium-1.0.18-stable-msvc.zip 
+          curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-msvc.zip > libsodium-1.0.18-stable-msvc.zip
           && 7z x libsodium-1.0.18-stable-msvc.zip
           && ls -l && ls -l && ls -l libsodium/x64/Release/v142/static/
           && git clone https://github.com/Chia-Network/relic_ietf_64.git
