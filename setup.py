@@ -171,8 +171,6 @@ class BuildExt(build_ext):
 
 
 if platform.system() == "Windows":
-    if -e path to sodium:
-        ext_modules
     setup(
         name='blspy',
         author='Mariano Sorgente',
