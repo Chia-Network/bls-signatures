@@ -37,10 +37,10 @@ Building requires Node.js (with npm) and [Emscripten](https://emscripten.org/doc
 The build process is the same as for the c++ lib, with one additional step: pass the Emscripten toolchain file as an option to CMake.
 From the project root directory, run:
 ```
-git submodule update --init --recursive
+#git submodule update --init --recursive
 mkdir js_build
 cd js_build
-cmake ../ -DCMAKE_TOOLCHAIN_FILE={path_to_your_emscripten_installation}/emsdk/emscripten/{version}/cmake/Modules/Platform/Emscripten.cmake
+cmake ../ -DCMAKE_TOOLCHAIN_FILE={path_to_your_emscripten_installation}/emsdk/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
 cmake --build . --
 ```
 
