@@ -97,9 +97,10 @@ ext_modules = [
             get_pybind_include(user=True),
             'relic_ietf_64/include',
             'mpir_gc_x64',
+            'libsodium/include',
         ],
-        library_dirs=['relic_ietf_64', 'mpir_gc_x64'],
-        libraries=['relic_s', 'Advapi32', 'mpir'],
+        library_dirs=['relic_ietf_64', 'mpir_gc_x64', 'libsodium/x64/Release/v142/static'],
+        libraries=['relic_s', 'Advapi32', 'mpir', 'libsodium'],
         language='c++'
     ),
 ]
@@ -170,6 +171,8 @@ class BuildExt(build_ext):
 
 
 if platform.system() == "Windows":
+    if -e path to sodium:
+        ext_modules
     setup(
         name='blspy',
         author='Mariano Sorgente',

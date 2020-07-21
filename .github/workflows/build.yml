@@ -97,6 +97,7 @@ jobs:
           python -m pip install --upgrade pip
         CIBW_BEFORE_ALL_WINDOWS: >
           pwd
+          curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-msvc.zip 
           && git clone https://github.com/Chia-Network/relic_ietf_64.git
           && ls -l relic_ietf_64
           && git clone https://github.com/Chia-Network/mpir_gc_x64.git
