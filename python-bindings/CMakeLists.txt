@@ -23,6 +23,7 @@ include_directories(
 pybind11_add_module(blspy ${CMAKE_CURRENT_SOURCE_DIR}/pythonbindings.cpp)
 
 if (SODIUM_FOUND)
+message("SODIUM_FOUND in python-bindings/CMakeLists.txt")
   set(BLSALLOC_SODIUM "1" CACHE STRING "")
   set(SODIUM_STATIC "1" CACHE STRING "")
   target_link_libraries(blspy PRIVATE blstmp relic_s sodium)

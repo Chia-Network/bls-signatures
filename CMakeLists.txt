@@ -21,6 +21,7 @@ if (SODIUM_FOUND)
   message(STATUS "Sodium include dir = ${sodium_INCLUDE_DIR}")
   set(BLSALLOC_SODIUM "1" CACHE STRING "")
   set(SODIUM_STATIC "1" CACHE STRING "")
+  message("SODIUM FOUND in CMakeLists.txt")
   include_directories(${sodium_INCLUDE_DIR})
 endif()
 
