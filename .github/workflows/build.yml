@@ -156,7 +156,7 @@ jobs:
         ls -l
         ./configure --with-pic="yes"
         make
-        make install
+        sudo make install
         cd ..
         mkdir -p build
         cd build
