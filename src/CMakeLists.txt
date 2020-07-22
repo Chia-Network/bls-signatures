@@ -75,6 +75,8 @@ add_executable(runtest test.cpp)
 add_executable(runbench test-bench.cpp)
 
 if (SODIUM_FOUND)
+  set(BLSALLOC_SODIUM "1" CACHE STRING "")
+  set(SODIUM_STATIC "1" CACHE STRING "")
   target_link_libraries(runtest blstmp relic_s sodium)
   target_link_libraries(runbench blstmp relic_s sodium)
 else()
