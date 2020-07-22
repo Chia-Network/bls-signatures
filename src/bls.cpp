@@ -18,6 +18,11 @@
 #include <string>
 
 #include "bls.hpp"
+
+#if BLSALLOC_SODIUM
+#include "sodium.h"
+#endif
+
 namespace bls {
 
 const char BLS::GROUP_ORDER[] =
