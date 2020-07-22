@@ -33,6 +33,8 @@ add_library(blstmp ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
 )
 
+target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1 SODIUM_STATIC=1)
+
 set(OPREFIX object_)
 find_library(GMP_NAME NAMES libgmp.a gmp)
 find_library(SODIUM_NAME NAMES libsodium.a sodium)
@@ -59,7 +61,6 @@ add_custom_target(combined_custom
 
 add_library(combined STATIC IMPORTED GLOBAL)
 add_dependencies(combined combined_custom)
-
 target_link_libraries(bls combined)
 
 set_target_properties(combined
@@ -77,7 +78,7 @@ add_executable(runbench test-bench.cpp)
 if (SODIUM_FOUND)
   set(BLSALLOC_SODIUM "1" CACHE STRING "")
   set(SODIUM_STATIC "1" CACHE STRING "")
-  target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1 SODIUM_STATIC=1)
+#  target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1 SODIUM_STATIC=1)
   message("SODIUM_FOUND 2nd time in src/CMakeLists.txt")
   target_link_libraries(runtest blstmp relic_s sodium)
   target_link_libraries(runbench blstmp relic_s sodium)
