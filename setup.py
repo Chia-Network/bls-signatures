@@ -97,9 +97,10 @@ ext_modules = [
             get_pybind_include(user=True),
             'relic_ietf_64/include',
             'mpir_gc_x64',
+            'libsodium/include',
         ],
-        library_dirs=['relic_ietf_64', 'mpir_gc_x64'],
-        libraries=['relic_s', 'Advapi32', 'mpir'],
+        library_dirs=['relic_ietf_64', 'mpir_gc_x64', 'libsodium/x64/Release/v142/static'],
+        libraries=['relic_s', 'Advapi32', 'mpir', 'libsodium'],
         language='c++'
     ),
 ]
@@ -139,7 +140,7 @@ def cpp_flag(compiler):
 class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
     c_opts = {
-        'msvc': ['/EHsc', '/std:c++17'],
+        'msvc': ['/EHsc', '/std:c++17', '/DBLSALLOC_SODIUM=1', '/DSODIUM_STATIC'],
         'unix': [],
     }
     l_opts = {
@@ -191,7 +192,7 @@ else:
         author='Mariano Sorgente',
         author_email='mariano@chia.net',
         description='BLS signatures in c++ (python bindings)',
-        python_requires='>3.7',
+        python_requires='>=3.7',
         install_requires=["wheel"],
         long_description=open('README.md').read(),
         long_description_content_type="text/markdown",

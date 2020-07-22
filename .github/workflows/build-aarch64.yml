@@ -41,7 +41,9 @@ jobs:
         source venv/bin/activate
         python -m pip install --upgrade pip
         pip install wheel
-        pip install cibuildwheel==1.5.1
+        python -m pip install cibuildwheel==1.5.2
+#        python -m pip install git+https://github.com/YannickJadoul/cibuildwheel.git@fix-pwd-linux-docker
+#        python -m pip install git+https://github.com/joerick/cibuildwheel.git@726bcdf372daa2ad2ae9a67fd090ebadcbd964db
 
     - name: Lint source with flake8
       run: |
@@ -61,28 +63,27 @@ jobs:
         python -m cibuildwheel --output-dir dist
       env:
         # build python 3.7 and 3.8
-        CIBW_BUILD: cp38-*
+        CIBW_BUILD: cp37-* cp38-*
         CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
-        # we need boost
         CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_BEFORE_BUILD_LINUX: >
+          python -m pip install --upgrade pip
+        CIBW_BEFORE_ALL_LINUX: >
           yum -y install epel-release
           && yum -y install cmake3 lzip
           && ln -s /usr/bin/cmake3 /usr/local/bin/cmake
-          && python -m pip install --upgrade pip
           && cmake --version
-          && uname -a
           && curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz | lzip -dc | tar x
           && cd gmp-6.1.2 && ./configure --enable-fat
           && make && make install && cd .. && rm -rf gmp-6.1.2
           && curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz | tar xz
-          && cd libsodium-stable && ./configure
+          && cd libsodium-stable && ./configure --with-pic="yes"
           && make && make install && cd .. && rm -rf libsodium-stable
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: pytest -v {project}/python-bindings/test.py
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v1
+      uses: actions/upload-artifact@v2
       with:
         name: wheels
         path: ./dist

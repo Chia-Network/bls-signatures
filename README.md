@@ -1,3 +1,5 @@
+# BLS Signatures implementation
+
 ![Build](https://github.com/Chia-Network/bls-signatures/workflows/Build/badge.svg)
 ![PyPI](https://img.shields.io/pypi/v/blspy?logo=pypi)
 ![PyPI - Format](https://img.shields.io/pypi/format/blspy?logo=pypi)
@@ -8,9 +10,9 @@
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/context:python)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/context:cpp)
 
-### BLS Signatures implementation
-
 NOTE: THIS LIBRARY IS A DRAFT AND NOT YET REVIEWED FOR SECURITY
+NOTE: THIS LIBRARY WAS SHIFTED TO THE IETF BLS SPECIFICATION ON 7/16/20 SOME
+DOCUMENTATION IS NOT YET UPDATED
 
 Implements BLS signatures with aggregation as in
 [Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html)
@@ -23,6 +25,7 @@ This library now implements
 [IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/).
 
 Features:
+
 * Non-interactive signature aggregation on identical or distinct messages
 * Aggregate aggregates (trees)
 * Efficient verification (only one pairing per distinct message)
@@ -38,13 +41,14 @@ possession
 * [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/master/python-bindings)
 * [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/master/python-impl)
 
+## Import the library
 
-#### Import the library
 ```c++
 #include "bls.hpp"
 ```
 
-#### Creating keys and signatures
+## Creating keys and signatures
+
 ```c++
 // Example seed, used to generate private key. Always use
 // a secure RNG with sufficient entropy to generate a seed.
@@ -60,7 +64,8 @@ uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
 bls::Signature sig = sk.Sign(msg, sizeof(msg));
 ```
 
-#### Serializing keys and signatures to bytes
+## Serializing keys and signatures to bytes
+
 ```c++
 uint8_t skBytes[bls::PrivateKey::PRIVATE_KEY_SIZE];  // 32 byte array
 uint8_t pkBytes[bls::PublicKey::PUBLIC_KEY_SIZE];    // 48 byte array
@@ -71,7 +76,8 @@ pk.Serialize(pkBytes);   // 48 bytes
 sig.Serialize(sigBytes); // 96 bytes
 ```
 
-#### Loading keys and signatures from bytes
+## Loading keys and signatures from bytes
+
 ```c++
 // Takes array of 32 bytes
 sk = bls::PrivateKey::FromBytes(skBytes);
@@ -83,7 +89,8 @@ pk = bls::PublicKey::FromBytes(pkBytes);
 sig = bls::Signature::FromBytes(sigBytes);
 ```
 
-#### Verifying signatures
+## Verifying signatures
+
 ```c++
 // Add information required for verification, to sig object
 sig.SetAggregationInfo(bls::AggregationInfo::FromMsg(pk, msg, sizeof(msg)));
@@ -91,7 +98,8 @@ sig.SetAggregationInfo(bls::AggregationInfo::FromMsg(pk, msg, sizeof(msg)));
 bool ok = sig.Verify();
 ```
 
-#### Aggregate signatures for a single message
+## Aggregate signatures for a single message
+
 ```c++
 // Generate some more private keys
 seed[0] = 1;
@@ -118,7 +126,8 @@ vector<bls::PublicKey> pubKeys = {pk1, pk2};
 bls::PublicKey aggPubKey = bls::Signature::Aggregate(pubKeys);
 ```
 
-#### Aggregate signatures for different messages
+## Aggregate signatures for different messages
+
 ```c++
 // Generate one more key and message
 seed[0] = 3;
@@ -145,7 +154,8 @@ bls::Signature aggSigFinal = bls::Signature::Aggregate(sigsFinal);
 aggSigFinal.Serialize(sigBytes);
 ```
 
-#### Verify aggregate signature for different messages
+## Verify aggregate signature for different messages
+
 ```c++
 // Deserialize aggregate signature
 aggSigFinal = bls::Signature::FromBytes(sigBytes);
@@ -173,7 +183,8 @@ aggSigFinal = aggSigFinal.DivideBy(cache);
 ok = aggSigFinal.Verify();
 ```
 
-#### Aggregate private keys
+## Aggregate private keys
+
 ```c++
 vector<bls::PrivateKey> privateKeysList = {sk1, sk2};
 vector<bls::PublicKey> pubKeysList = {pk1, pk2};
@@ -186,7 +197,8 @@ const bls::PrivateKey aggSk = bls::PrivateKey::Aggregate(
 bls::Signature aggSig3 = aggSk.Sign(msg, sizeof(msg));
 ```
 
-#### HD keys
+## HD keys
+
 ```c++
 // Random seed, used to generate master extended private key
 uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
@@ -213,7 +225,8 @@ pkChild.Serialize(buffer1);
 skChild.Serialize(buffer2);
 ```
 
-#### Prepend PK method
+## Prepend PK method
+
 ```c++
 // Can use proofs of possession to avoid keeping track of metadata
 PrependSignature prepend1 = sk1.SignPrepend(msg, sizeof(msg));
@@ -230,8 +243,10 @@ PrependSignature prependAgg = PrependSignature::Aggregate(prependSigs);
 prependAgg.Verify(hashes, prependPubKeys);
 ```
 
-### Build
+## Build
+
 Cmake 3.14+, a c++ compiler, and python3 (for bindings) are required for building.
+
 ```bash
 git submodule update --init --recursive
 
@@ -242,22 +257,26 @@ cmake --build . -- -j 6
 ```
 
 ### Run tests
+
 ```bash
 ./build/src/runtest
 ```
 
 ### Run benchmarks
+
 ```bash
 ./build/src/runbench
 ```
 
 ### Link the library to use it
+
 ```bash
 g++ -Wl,-no_pie  -Ibls-signatures/contrib/relic/include -Ibls-signatures/build/contrib/relic/incl
 ude -Ibls-signatures/src/  -L./bls-signatures/build/ -l bls  yourfile.cpp
 ```
 
-### Notes on dependencies
+## Notes on dependencies
+
 Changes performed to relic: Added config files for Chia, and added gmp include
 in relic.h, new ep_map and ep2_map, new ep_pck and ep2_pck. Custom inversion
 function. Note: relic is used with the Apache 2.0 license.
@@ -268,11 +287,13 @@ download them from github and follow the instructions for each repo, or use
 a package manager like APT or brew. You can follow the recipe used to build
 python wheels for multiple platforms in `.github/workflows/`
 
-### Discussion
-Discussion about this library and other Chia related development is in Chia's
-[public Keybase channels](https://keybase.io/team/chia_network.public).
+## Discussion
 
-### Code style
+Discussion about this library and other Chia related development is in the #dev
+channle of Chia's [public Keybase channels](https://keybase.io/team/chia_network.public).
+
+## Code style
+
 * Always use uint8_t for bytes
 * Use size_t for size variables
 * Uppercase method names
@@ -286,7 +307,8 @@ which are not secure by themselves, due to rogue public keys), Signatures
 (secure signatures that require AggregationInfo to aggregate), and
 PrependSignatures, which prepend public keys to messages, making them secure.
 
-### ci Building
+## ci Building
+
 The primary build process for this repository is to use GitHub Actions to
 build binary wheels for MacOS, Linux (x64 and aarch64), and Windows and publish
 them with a source wheel on PyPi. See `.github/workflows/build.yml`. CMake uses
@@ -295,9 +317,10 @@ to download [pybind11](https://github.com/pybind/pybind11) for the Python
 bindings and relic from a chia relic forked reporitory. Building is then
 managed by [cibuildwheel](https://github.com/joerick/cibuildwheel).
 Further installation is then available via `pip install blspy` e.g. The ci
-builds include GMP and soduium.
+builds include GMP and libsoduium.
 
-### Contributing and workflow
+## Contributing and workflow
+
 Contributions are welcome and more details are available in chia-blockchain's
 [CONTRIBUTING.md](https://github.com/Chia-Network/chia-blockchain/blob/master/CONTRIBUTING.md).
 
@@ -312,7 +335,34 @@ and analysis of bls-signatures at
 Please make sure your build is passing and that it does not increase alerts
 at lgtm.
 
-### Specification and test vectors
+## Specification and test vectors
+
 The specification and test vectors can be found
 [here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md).
 Test vectors can also be seen in the python or cpp test files.
+
+## Libsodium license
+
+The libsodium static library is licensed under the ISC license which requires
+the following copyright notice.
+
+>ISC License
+>
+>Copyright (c) 2013-2020
+>Frank Denis \<j at pureftpd dot org\>
+>
+>Permission to use, copy, modify, and/or distribute this software for any
+>purpose with or without fee is hereby granted, provided that the above
+>copyright notice and this permission notice appear in all copies.
+>
+>THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+>WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+>MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+>ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+>WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+>ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+>OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+## GMP license
+
+GMP is distributed under the [GNU LGPL v3 license](https://www.gnu.org/licenses/lgpl-3.0.html)

@@ -18,6 +18,11 @@
 #include <string>
 
 #include "bls.hpp"
+
+#if BLSALLOC_SODIUM
+#include "sodium.h"
+#endif
+
 namespace bls {
 
 const char BLS::GROUP_ORDER[] =
@@ -58,7 +63,7 @@ bool BLS::Init()
         std::cout << "libsodium init failed";
         throw std::string("libsodium init failed");
     }
-    SetSecureAllocator(libsodium::sodium_malloc, libsodium::sodium_free);
+    SetSecureAllocator(sodium_malloc, sodium_free);
 #else
     SetSecureAllocator(malloc, free);
 #endif

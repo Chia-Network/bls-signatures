@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.11.0 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14.0 FATAL_ERROR)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
@@ -20,6 +20,7 @@ if (SODIUM_FOUND)
   message(STATUS "Found libsodium")
   message(STATUS "Sodium include dir = ${sodium_INCLUDE_DIR}")
   set(BLSALLOC_SODIUM "1" CACHE STRING "")
+  set(SODIUM_STATIC "1" CACHE STRING "")
   include_directories(${sodium_INCLUDE_DIR})
 endif()
 

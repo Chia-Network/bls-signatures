@@ -1,7 +1,7 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.11 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14 FATAL_ERROR)
 set (CMAKE_CXX_STANDARD 11)
 
-# CMake 3.11+
+# CMake 3.14+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -33,6 +33,8 @@ add_library(blstmp ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
 )
 
+target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1 SODIUM_STATIC=1)
+
 set(OPREFIX object_)
 find_library(GMP_NAME NAMES libgmp.a gmp)
 find_library(SODIUM_NAME NAMES libsodium.a sodium)
@@ -46,6 +48,7 @@ if (GMP_FOUND)
   list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}gmp || true && cd ${OPREFIX}gmp &&  ${CMAKE_AR} -x ${GMP_NAME})
 endif()
 if (SODIUM_FOUND)
+  message("SODIUM_FOUND in src/CMakeLists.txt")
   list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}sodium || true && cd ${OPREFIX}sodium &&  ${CMAKE_AR} -x ${SODIUM_NAME})
 endif()
 
@@ -58,7 +61,6 @@ add_custom_target(combined_custom
 
 add_library(combined STATIC IMPORTED GLOBAL)
 add_dependencies(combined combined_custom)
-
 target_link_libraries(bls combined)
 
 set_target_properties(combined
