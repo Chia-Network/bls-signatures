@@ -41,7 +41,7 @@ jobs:
         source venv/bin/activate
         python -m pip install --upgrade pip
         pip install wheel
-        python -m pip install cibuildwheel==1.5.2
+        python -m pip install cibuildwheel==1.5.1
 #        python -m pip install git+https://github.com/YannickJadoul/cibuildwheel.git@fix-pwd-linux-docker
 #        python -m pip install git+https://github.com/joerick/cibuildwheel.git@726bcdf372daa2ad2ae9a67fd090ebadcbd964db
 
