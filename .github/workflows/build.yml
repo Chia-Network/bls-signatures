@@ -149,6 +149,12 @@ jobs:
         sudo snap install cmake --classic
         hash -r
         cmake --version
+        curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz | tar xz
+        cd libsodium-stable
+        ./configure --with-pic="yes"
+        make
+        make install
+        cd ..
         mkdir -p build
         cd build
         cmake ../
