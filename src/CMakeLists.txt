@@ -1,7 +1,7 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 3.11 FATAL_ERROR)
+CMAKE_MINIMUM_REQUIRED(VERSION 3.14 FATAL_ERROR)
 set (CMAKE_CXX_STANDARD 11)
 
-# CMake 3.11+
+# CMake 3.14+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -46,6 +46,7 @@ if (GMP_FOUND)
   list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}gmp || true && cd ${OPREFIX}gmp &&  ${CMAKE_AR} -x ${GMP_NAME})
 endif()
 if (SODIUM_FOUND)
+  message("SODIUM FOUND in src/CMakeLists.txt")
   list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}sodium || true && cd ${OPREFIX}sodium &&  ${CMAKE_AR} -x ${SODIUM_NAME})
 endif()
 
