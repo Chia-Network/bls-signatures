@@ -117,7 +117,7 @@ jobs:
           && delocate-wheel -v -i mpir_gc_x64/mpir_bulldozer.dll {wheel}
           && delocate-wheel -v -i mpir_gc_x64/mpir_haswell.dll {wheel}
           && delocate-wheel -v -i mpir_gc_x64/mpir_piledriver.dll {wheel}
-          && delocate-wheel -v -i mpir_gc_x64/mpir_skylake.dll {wheel}
+          && delocate-wheel -v -i mpir_gc_x64/mpir_sandybridge.dll {wheel}
           && delocate-wheel -v -i mpir_gc_x64/mpir_skylake_avx.dll {wheel}
           && cp {wheel} {dest_dir} && ls -l {dest_dir}
         # The pure python implementation, is not used anywhere and will be replaced
