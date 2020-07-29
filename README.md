@@ -123,7 +123,7 @@ bls::Signature aggSig = bls::Signature::Aggregate(sigs);
 // The signature can be verified the same as a single signature,
 // using this public key.
 vector<bls::PublicKey> pubKeys = {pk1, pk2};
-bls::PublicKey aggPubKey = bls::Signature::Aggregate(pubKeys);
+bls::PublicKey aggPubKey = bls::PublicKey::Aggregate(pubKeys);
 ```
 
 ## Aggregate signatures for different messages
