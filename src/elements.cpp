@@ -163,27 +163,27 @@ std::vector<uint8_t> G1Element::Serialize() const
     return data;
 }
 
-bool operator==(G1Element const& a, G1Element const& b)
+bool operator==(const G1Element & a, const G1Element &b)
 {
     return g1_cmp(a.p, b.p) == RLC_EQ;
 }
 
-bool operator!=(G1Element const& a, G1Element const& b) { return !(a == b); }
+bool operator!=(const G1Element & a, const G1Element & b) { return !(a == b); }
 
-std::ostream& operator<<(std::ostream& os, G1Element const& ele)
+std::ostream& operator<<(std::ostream& os, const G1Element &ele)
 {
     uint8_t data[G1Element::SIZE];
     ele.Serialize(data);
     return os << Util::HexStr(data, G1Element::SIZE);
 }
 
-G1Element& operator+=(G1Element& a, G1Element& b)
+G1Element& operator+=(G1Element& a, const G1Element& b)
 {
     g1_add(a.p, a.p, b.p);
     return a;
 }
 
-G1Element operator+(G1Element& a, G1Element& b)
+G1Element operator+(const G1Element& a, const G1Element& b)
 {
     g1_t ans;
     g1_new(ans);
@@ -207,7 +207,7 @@ G1Element operator*(G1Element& a, bn_t& k)
 
 G1Element operator*(bn_t& k, G1Element& a) { return a * k; }
 
-GTElement G1Element::pair(G2Element& b) { return (*this) & b; }
+GTElement G1Element::Pair(G2Element& b) { return (*this) & b; }
 
 uint32_t G1Element::GetFingerprint() const
 {
@@ -403,7 +403,7 @@ G2Element operator*(G2Element& a, bn_t& k)
 
 G2Element operator*(bn_t& k, G2Element& a) { return a * k; }
 
-GTElement G2Element::pair(G1Element& a) { return a & (*this); }
+GTElement G2Element::Pair(G1Element& a) { return a & (*this); }
 
 G2Element& G2Element::operator=(const G2Element& rhs)
 {

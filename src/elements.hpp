@@ -46,17 +46,17 @@ public:
     g1_t p;
     G1Element();  // unity
     G1Element(const G1Element &element);
-    friend bool operator==(G1Element const &a, G1Element const &b);
-    friend bool operator!=(G1Element const &a, G1Element const &b);
-    friend std::ostream &operator<<(std::ostream &os, G1Element const &s);
-    friend G1Element &operator+=(G1Element &a, G1Element &b);
-    friend G1Element operator+(G1Element &a, G1Element &b);
+    friend bool operator==(const G1Element &a, const G1Element &b);
+    friend bool operator!=(const G1Element &a, const G1Element &b);
+    friend std::ostream &operator<<(std::ostream &os, const G1Element &s);
+    friend G1Element &operator+=(G1Element &a, const G1Element &b);
+    friend G1Element operator+(const G1Element &a, const G1Element &b);
     friend G1Element &operator*=(G1Element &a, bn_t &k);
     friend G1Element operator*(G1Element &a, bn_t &k);
     friend G1Element operator*(bn_t &k, G1Element &a);
     G1Element &operator=(const G1Element &pubKey);
 
-    GTElement pair(G2Element &b);
+    GTElement Pair(G2Element &b);
     friend GTElement operator&(G1Element &a, G2Element &b);
 
     G1Element Inverse();
@@ -97,7 +97,7 @@ public:
     friend G2Element operator*(bn_t &k, G2Element &a);
 
     G2Element Inverse();
-    GTElement pair(G1Element &a);
+    GTElement Pair(G1Element &a);
     // friend GTElement operator&(G1Element &a, G2Element &b);
     G2Element &operator=(const G2Element &rhs);
 

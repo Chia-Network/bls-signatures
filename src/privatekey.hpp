@@ -21,26 +21,20 @@
 #include <gmp.h>
 #endif
 
-// #include "publickey.hpp"
-// #include "signature.hpp"
 #include "elements.hpp"
 
 namespace bls {
 class PrivateKey {
     friend class BLS;
-    // friend class Threshold;
     friend class G1Element;
     friend class G2Element;
+    friend class HDKeys;
 
 public:
     // Private keys are represented as 32 byte field elements. Note that
     // not all 32 byte integers are valid keys, the private key must be
     // less than the group order (which is in bls.hpp).
     static const size_t PRIVATE_KEY_SIZE = 32;
-
-    // Generates a private key from a seed, similar to HD key generation
-    // (hashes the seed), and reduces it mod the group order.
-    static PrivateKey FromSeed(const uint8_t *seed, size_t seedLen);
 
     // Construct a private key from a bytearray.
     static PrivateKey FromBytes(const uint8_t *bytes, bool modOrder = false);
@@ -57,24 +51,12 @@ public:
 
     ~PrivateKey();
 
-    // PublicKey GetPublicKey() const;
     G1Element GetG1Element() const;
     G2Element GetG2Element() const;
 
     G2Element GetG2Power(g2_t base) const;
 
     bool IsZero();
-
-    /*
-    // Insecurely aggregate multiple private keys into one
-    static PrivateKey AggregateInsecure(std::vector<PrivateKey> const&
-    privateKeys);
-
-    // Securely aggregate multiple private keys into one by exponentiating the
-    keys with the pubKey hashes first static PrivateKey
-    Aggregate(std::vector<PrivateKey> const& privateKeys, std::vector<PublicKey>
-    const& pubKeys);
-    */
 
     // Compare to different private key
     friend bool operator==(const PrivateKey &a, const PrivateKey &b);
@@ -107,24 +89,6 @@ public:
         const uint8_t *dst,
         size_t dst_len) const;
 
-    /*
-    // Sign a message without setting aggreagation info.
-    InsecureSignature SignInsecure(const uint8_t *msg, size_t len) const;
-    InsecureSignature SignInsecurePrehashed(const uint8_t *hash) const;
-
-    // The secure Signing variants, which also set and return appropriate
-    aggregation info. Signature Sign(const uint8_t *msg, size_t len) const;
-    Signature SignPrehashed(const uint8_t *hash) const;
-
-    // Helper methods to prepend the public key to the message, allowing secure
-    // aggregation by proof of posession of public key. These must be verified
-    using
-    // VerifyPrepend. These signatures are identical to Insecure signatures, but
-    are generated
-    // and verified by prepending the pulic keys: Sign(H(pk + H(m))).
-    PrependSignature SignPrepend(const uint8_t *msg, size_t len) const;
-    PrependSignature SignPrependPrehashed(const uint8_t *msg) const;
-    */
 
 private:
     // Don't allow public construction, force static methods
