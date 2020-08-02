@@ -117,7 +117,7 @@ void TestEIP2333(string seedHex, string masterSkHex, string childSkHex, uint32_t
     auto masterSk = Util::HexToBytes(masterSkHex);
     auto childSk = Util::HexToBytes(childSkHex);
 
-    PrivateKey master = PrivateKey::FromSeed(seed.data(), seed.size());
+    PrivateKey master = BasicSchemeMPL::KeyGen(seed.data(), seed.size());
     PrivateKey child = HDKeys::DeriveChildSk(master, childIndex);
 
     uint8_t master_arr[32];
@@ -135,7 +135,7 @@ void TestEIP2333(string seedHex, string masterSkHex, string childSkHex, uint32_t
     }
 }
 
-TEST_CASE("EIP-2333 HD keys") {
+TEST_CASE("EIP-2333 hardened HD keys") {
     // The comments in the test cases correspond to  integers that are converted to
     // bytes using python int.to_bytes(32, "big").hex(), since the EIP spec provides ints, but c++
     // does not support bigint by default
@@ -176,6 +176,46 @@ TEST_CASE("EIP-2333 HD keys") {
         );
     }
 }
+
+TEST_CASE("Unhardened HD keys") {
+    SECTION("Should match derivation through private and public keys"){
+        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
+
+        PrivateKey sk = BasicSchemeMPL::KeyGen(seed, sizeof(seed));
+        G1Element pk = sk.GetG1Element();
+
+        PrivateKey childSk = BasicSchemeMPL::DeriveChildSkUnhardened(sk, 42);
+        G1Element childPk = BasicSchemeMPL::DeriveChildPkUnhardened(pk, 42);
+
+        REQUIRE(childSk.GetG1Element() == childPk);
+
+        PrivateKey grandchildSk = BasicSchemeMPL::DeriveChildSkUnhardened(childSk, 12142);
+        G1Element grandcihldPk = BasicSchemeMPL::DeriveChildPkUnhardened(childPk, 12142);
+
+        REQUIRE(grandchildSk.GetG1Element() == grandcihldPk);
+    }
+
+    SECTION("Should prevent hardened pk derivation") {
+
+    }
+
+    SECTION("Should derive public child from parent") {
+        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
+
+        PrivateKey sk = BasicSchemeMPL::KeyGen(seed, sizeof(seed));
+        G1Element pk = sk.GetG1Element();
+
+        PrivateKey childSk = BasicSchemeMPL::DeriveChildSkUnhardened(sk, 42);
+        G1Element childPk = BasicSchemeMPL::DeriveChildPkUnhardened(pk, 42);
+
+        PrivateKey childSkHardened = BasicSchemeMPL::DeriveChildSk(sk, 42);
+        REQUIRE(childSk.GetG1Element() == childPk);
+        REQUIRE(childSkHardened != childSk);
+        REQUIRE(childSkHardened.GetG1Element() != childPk);
+    }
+}
+
+
 
 /*
 TEST_CASE("Test vectors")
@@ -1208,256 +1248,9 @@ TEST_CASE("Signatures")
         REQUIRE(aggSig2.Verify());
     }
 }
+*/
 
-TEST_CASE("HD keys")
-{
-    SECTION("Should create an extended private key from seed")
-    {
-        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
-        ExtendedPrivateKey esk =
-            ExtendedPrivateKey::FromSeed(seed, sizeof(seed));
-
-        ExtendedPrivateKey esk77 = esk.PrivateChild(77 + (1 << 31));
-        ExtendedPrivateKey esk77copy = esk.PrivateChild(77 + (1 << 31));
-
-        REQUIRE(esk77 == esk77copy);
-
-        ExtendedPrivateKey esk77nh = esk.PrivateChild(77);
-
-        auto eskLong = esk.PrivateChild((1 << 31) + 5)
-                           .PrivateChild(0)
-                           .PrivateChild(0)
-                           .PrivateChild((1 << 31) + 56)
-                           .PrivateChild(70)
-                           .PrivateChild(4);
-        uint8_t chainCode[32];
-        eskLong.GetChainCode().Serialize(chainCode);
-    }
-
-    SECTION("Should match derivation through private and public keys")
-    {
-        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
-        ExtendedPrivateKey esk =
-            ExtendedPrivateKey::FromSeed(seed, sizeof(seed));
-        ExtendedPublicKey epk = esk.GetExtendedPublicKey();
-
-        PublicKey pk1 = esk.PrivateChild(238757).GetPublicKey();
-        PublicKey pk2 = epk.PublicChild(238757).GetPublicKey();
-
-        REQUIRE(pk1 == pk2);
-
-        PrivateKey sk3 = esk.PrivateChild(0)
-                             .PrivateChild(3)
-                             .PrivateChild(8)
-                             .PrivateChild(1)
-                             .GetPrivateKey();
-
-        PublicKey pk4 = epk.PublicChild(0)
-                            .PublicChild(3)
-                            .PublicChild(8)
-                            .PublicChild(1)
-                            .GetPublicKey();
-        REQUIRE(sk3.GetPublicKey() == pk4);
-
-        Signature sig = sk3.Sign(seed, sizeof(seed));
-
-        REQUIRE(sig.Verify());
-    }
-
-    SECTION("Should prevent hardened pk derivation")
-    {
-        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
-        ExtendedPrivateKey esk =
-            ExtendedPrivateKey::FromSeed(seed, sizeof(seed));
-        ExtendedPublicKey epk = esk.GetExtendedPublicKey();
-
-        ExtendedPrivateKey sk = esk.PrivateChild((1 << 31) + 3);
-        REQUIRE_THROWS(epk.PublicChild((1 << 31) + 3));
-    }
-
-    SECTION("Should derive public child from parent")
-    {
-        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 0, 0, 0};
-        ExtendedPrivateKey esk =
-            ExtendedPrivateKey::FromSeed(seed, sizeof(seed));
-        ExtendedPublicKey epk = esk.GetExtendedPublicKey();
-
-        ExtendedPublicKey pk1 = esk.PublicChild(13);
-        ExtendedPublicKey pk2 = epk.PublicChild(13);
-
-        REQUIRE(pk1 == pk2);
-    }
-
-    SECTION("Should cout structures")
-    {
-        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 0, 0, 0};
-        ExtendedPrivateKey esk =
-            ExtendedPrivateKey::FromSeed(seed, sizeof(seed));
-        ExtendedPublicKey epk = esk.GetExtendedPublicKey();
-
-        cout << epk << endl;
-        cout << epk.GetPublicKey() << endl;
-        cout << epk.GetChainCode() << endl;
-
-        Signature sig1 = esk.GetPrivateKey().Sign(seed, sizeof(seed));
-        cout << sig1 << endl;
-    }
-
-    SECTION("Should serialize extended keys")
-    {
-        uint8_t seed[] = {1, 50, 6, 244, 25, 199, 1, 25};
-        ExtendedPrivateKey esk =
-            ExtendedPrivateKey::FromSeed(seed, sizeof(seed));
-        ExtendedPublicKey epk = esk.GetExtendedPublicKey();
-
-        PublicKey pk1 = esk.PrivateChild(238757).GetPublicKey();
-        PublicKey pk2 = epk.PublicChild(238757).GetPublicKey();
-
-        REQUIRE(pk1 == pk2);
-
-        ExtendedPrivateKey sk3 =
-            esk.PrivateChild(0).PrivateChild(3).PrivateChild(8).PrivateChild(1);
-
-        ExtendedPublicKey pk4 =
-            epk.PublicChild(0).PublicChild(3).PublicChild(8).PublicChild(1);
-        uint8_t buffer1[ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE];
-        uint8_t buffer2[ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
-        uint8_t buffer3[ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];
-
-        sk3.Serialize(buffer1);
-        sk3.GetExtendedPublicKey().Serialize(buffer2);
-        pk4.Serialize(buffer3);
-        REQUIRE(
-            std::memcmp(
-                buffer2,
-                buffer3,
-                ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE) == 0);
-    }
-}
-
-TEST_CASE("AggregationInfo")
-{
-    SECTION("Should create object")
-    {
-        uint8_t message1[7] = {1, 65, 254, 88, 90, 45, 22};
-        uint8_t message2[8] = {1, 65, 254, 88, 90, 45, 22, 12};
-        uint8_t message3[8] = {2, 65, 254, 88, 90, 45, 22, 12};
-        uint8_t message4[8] = {3, 65, 254, 88, 90, 45, 22, 12};
-        uint8_t message5[8] = {4, 65, 254, 88, 90, 45, 22, 12};
-        uint8_t message6[8] = {5, 65, 254, 88, 90, 45, 22, 12};
-        uint8_t messageHash1[32];
-        uint8_t messageHash2[32];
-        uint8_t messageHash3[32];
-        uint8_t messageHash4[32];
-        uint8_t messageHash5[32];
-        uint8_t messageHash6[32];
-        Util::Hash256(messageHash1, message1, 7);
-        Util::Hash256(messageHash2, message2, 8);
-        Util::Hash256(messageHash3, message3, 8);
-        Util::Hash256(messageHash4, message4, 8);
-        Util::Hash256(messageHash5, message5, 8);
-        Util::Hash256(messageHash6, message6, 8);
-
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        getRandomSeed(seed);
-        PrivateKey sk2 = PrivateKey::FromSeed(seed, 32);
-        getRandomSeed(seed);
-        PrivateKey sk3 = PrivateKey::FromSeed(seed, 32);
-        getRandomSeed(seed);
-        PrivateKey sk4 = PrivateKey::FromSeed(seed, 32);
-        getRandomSeed(seed);
-        PrivateKey sk5 = PrivateKey::FromSeed(seed, 32);
-        getRandomSeed(seed);
-        PrivateKey sk6 = PrivateKey::FromSeed(seed, 32);
-
-        PublicKey pk1 = sk1.GetPublicKey();
-        PublicKey pk2 = sk2.GetPublicKey();
-        PublicKey pk3 = sk3.GetPublicKey();
-        PublicKey pk4 = sk4.GetPublicKey();
-        PublicKey pk5 = sk5.GetPublicKey();
-        PublicKey pk6 = sk6.GetPublicKey();
-
-        AggregationInfo a1 = AggregationInfo::FromMsgHash(pk1, messageHash1);
-        AggregationInfo a2 = AggregationInfo::FromMsgHash(pk2, messageHash2);
-        std::vector<AggregationInfo> infosA = {a1, a2};
-        std::vector<AggregationInfo> infosAcopy = {a2, a1};
-
-        AggregationInfo a3 = AggregationInfo::FromMsgHash(pk3, messageHash1);
-        AggregationInfo a4 = AggregationInfo::FromMsgHash(pk4, messageHash1);
-        std::vector<AggregationInfo> infosB = {a3, a4};
-        std::vector<AggregationInfo> infosBcopy = {a4, a3};
-        std::vector<AggregationInfo> infosC = {a1, a2, a3, a4};
-
-        AggregationInfo a5 = AggregationInfo::MergeInfos(infosA);
-        AggregationInfo a5b = AggregationInfo::MergeInfos(infosAcopy);
-        AggregationInfo a6 = AggregationInfo::MergeInfos(infosB);
-        AggregationInfo a6b = AggregationInfo::MergeInfos(infosBcopy);
-        std::vector<AggregationInfo> infosD = {a5, a6};
-
-        AggregationInfo a7 = AggregationInfo::MergeInfos(infosC);
-        AggregationInfo a8 = AggregationInfo::MergeInfos(infosD);
-
-        REQUIRE(a5 == a5b);
-        REQUIRE(a5 != a6);
-        REQUIRE(a6 == a6b);
-
-        std::vector<AggregationInfo> infosE = {a1, a3, a4};
-        AggregationInfo a9 = AggregationInfo::MergeInfos(infosE);
-        std::vector<AggregationInfo> infosF = {a2, a9};
-        AggregationInfo a10 = AggregationInfo::MergeInfos(infosF);
-
-        REQUIRE(a10 == a7);
-
-        AggregationInfo a11 = AggregationInfo::FromMsgHash(pk1, messageHash1);
-        AggregationInfo a12 = AggregationInfo::FromMsgHash(pk2, messageHash2);
-        AggregationInfo a13 = AggregationInfo::FromMsgHash(pk3, messageHash3);
-        AggregationInfo a14 = AggregationInfo::FromMsgHash(pk4, messageHash4);
-        AggregationInfo a15 = AggregationInfo::FromMsgHash(pk5, messageHash5);
-        AggregationInfo a16 = AggregationInfo::FromMsgHash(pk6, messageHash6);
-        AggregationInfo a17 = AggregationInfo::FromMsgHash(pk6, messageHash5);
-        AggregationInfo a18 = AggregationInfo::FromMsgHash(pk5, messageHash6);
-
-        // Tree L
-        std::vector<AggregationInfo> L1 = {a15, a17};
-        std::vector<AggregationInfo> L2 = {a11, a13};
-        std::vector<AggregationInfo> L3 = {a18, a14};
-
-        AggregationInfo a19 = AggregationInfo::MergeInfos(L1);
-        AggregationInfo a20 = AggregationInfo::MergeInfos(L2);
-        AggregationInfo a21 = AggregationInfo::MergeInfos(L3);
-
-        std::vector<AggregationInfo> L4 = {a21, a16};
-        std::vector<AggregationInfo> L5 = {a19, a20};
-        AggregationInfo a22 = AggregationInfo::MergeInfos(L4);
-        AggregationInfo a23 = AggregationInfo::MergeInfos(L5);
-
-        std::vector<AggregationInfo> L6 = {a22, a12};
-        AggregationInfo a24 = AggregationInfo::MergeInfos(L6);
-        std::vector<AggregationInfo> L7 = {a23, a24};
-        AggregationInfo LFinal = AggregationInfo::MergeInfos(L7);
-
-        // Tree R
-        std::vector<AggregationInfo> R1 = {a17, a12, a11, a15};
-        std::vector<AggregationInfo> R2 = {a14, a18};
-
-        AggregationInfo a25 = AggregationInfo::MergeInfos(R1);
-        AggregationInfo a26 = AggregationInfo::MergeInfos(R2);
-
-        std::vector<AggregationInfo> R3 = {a26, a16};
-
-        AggregationInfo a27 = AggregationInfo::MergeInfos(R3);
-
-        std::vector<AggregationInfo> R4 = {a27, a13};
-        AggregationInfo a28 = AggregationInfo::MergeInfos(R4);
-        std::vector<AggregationInfo> R5 = {a25, a28};
-
-        AggregationInfo RFinal = AggregationInfo::MergeInfos(R5);
-
-        REQUIRE(LFinal == RFinal);
-    }
-
+/*
     SECTION("Should aggregate with multiple levels.")
     {
         uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
@@ -1943,7 +1736,7 @@ TEST_CASE("Schemes")
         vector<uint8_t> msg2 = {10, 11, 12};
         vector<vector<uint8_t>> msgs = {msg1, msg2};
 
-        PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
+        PrivateKey sk1 = BasicSchemeMPL::KeyGen(seed1, sizeof(seed1));
         G1Element pk1 = BasicSchemeMPL::SkToG1(sk1);
         vector<uint8_t> pk1v = BasicSchemeMPL::SkToPk(sk1);
         G2Element sig1 = BasicSchemeMPL::SignNative(sk1, msg1);
@@ -1952,7 +1745,7 @@ TEST_CASE("Schemes")
         REQUIRE(BasicSchemeMPL::Verify(pk1, msg1, sig1));
         REQUIRE(BasicSchemeMPL::Verify(pk1v, msg1, sig1v));
 
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
+        PrivateKey sk2 = BasicSchemeMPL::KeyGen(seed2, sizeof(seed2));
         G1Element pk2 = BasicSchemeMPL::SkToG1(sk2);
         vector<uint8_t> pk2v = BasicSchemeMPL::SkToPk(sk2);
         G2Element sig2 = BasicSchemeMPL::SignNative(sk2, msg2);
@@ -1982,7 +1775,7 @@ TEST_CASE("Schemes")
         vector<uint8_t> msg2 = {10, 11, 12};
         vector<vector<uint8_t>> msgs = {msg1, msg2};
 
-        PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
+        PrivateKey sk1 = AugSchemeMPL::KeyGen(seed1, sizeof(seed1));
         G1Element pk1 = AugSchemeMPL::SkToG1(sk1);
         vector<uint8_t> pk1v = AugSchemeMPL::SkToPk(sk1);
         G2Element sig1 = AugSchemeMPL::SignNative(sk1, msg1);
@@ -1991,7 +1784,7 @@ TEST_CASE("Schemes")
         REQUIRE(AugSchemeMPL::Verify(pk1, msg1, sig1));
         REQUIRE(AugSchemeMPL::Verify(pk1v, msg1, sig1v));
 
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
+        PrivateKey sk2 = AugSchemeMPL::KeyGen(seed2, sizeof(seed2));
         G1Element pk2 = AugSchemeMPL::SkToG1(sk2);
         vector<uint8_t> pk2v = AugSchemeMPL::SkToPk(sk2);
         G2Element sig2 = AugSchemeMPL::SignNative(sk2, msg2);
@@ -2021,7 +1814,7 @@ TEST_CASE("Schemes")
         vector<uint8_t> msg2 = {10, 11, 12};
         vector<vector<uint8_t>> msgs = {msg1, msg2};
 
-        PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
+        PrivateKey sk1 = PopSchemeMPL::KeyGen(seed1, sizeof(seed1));
         G1Element pk1 = PopSchemeMPL::SkToG1(sk1);
         vector<uint8_t> pk1v = PopSchemeMPL::SkToPk(sk1);
         G2Element sig1 = PopSchemeMPL::SignNative(sk1, msg1);
@@ -2030,7 +1823,7 @@ TEST_CASE("Schemes")
         REQUIRE(PopSchemeMPL::Verify(pk1, msg1, sig1));
         REQUIRE(PopSchemeMPL::Verify(pk1v, msg1, sig1v));
 
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
+        PrivateKey sk2 = PopSchemeMPL::KeyGen(seed2, sizeof(seed2));
         G1Element pk2 = PopSchemeMPL::SkToG1(sk2);
         vector<uint8_t> pk2v = PopSchemeMPL::SkToPk(sk2);
         G2Element sig2 = PopSchemeMPL::SignNative(sk2, msg2);

@@ -79,14 +79,6 @@ PYBIND11_MODULE(blspy, m)
             "PRIVATE_KEY_SIZE",
             [](py::object self) { return PrivateKey::PRIVATE_KEY_SIZE; })
         .def(
-            "from_seed",
-            [](const py::bytes &b) {
-                std::string str(b);
-                const uint8_t *input =
-                    reinterpret_cast<const uint8_t *>(str.data());
-                return PrivateKey::FromSeed(input, len(b));
-            })
-        .def(
             "from_bytes",
             [](py::buffer const b) {
                 py::buffer_info info = b.request();
@@ -167,6 +159,14 @@ PYBIND11_MODULE(blspy, m)
     py::class_<BasicSchemeMPL>(m, "BasicSchemeMPL")
         .def("sk_to_g1", &BasicSchemeMPL::SkToG1)
         .def(
+            "key_gen",
+            [](const py::bytes &b) {
+                std::string str(b);
+                const uint8_t *input =
+                    reinterpret_cast<const uint8_t *>(str.data());
+                return BasicSchemeMPL::KeyGen(input, len(b));
+            })
+        .def(
             "aggregate",
             overload_cast_<const vector<G2Element> &>()(
                 &BasicSchemeMPL::Aggregate))
@@ -202,6 +202,14 @@ PYBIND11_MODULE(blspy, m)
 
     py::class_<AugSchemeMPL>(m, "AugSchemeMPL")
         .def("sk_to_g1", &AugSchemeMPL::SkToG1)
+        .def(
+            "key_gen",
+            [](const py::bytes &b) {
+                std::string str(b);
+                const uint8_t *input =
+                    reinterpret_cast<const uint8_t *>(str.data());
+                return AugSchemeMPL::KeyGen(input, len(b));
+            })
         .def(
             "aggregate",
             overload_cast_<const vector<G2Element> &>()(
@@ -247,6 +255,14 @@ PYBIND11_MODULE(blspy, m)
 
     py::class_<PopSchemeMPL>(m, "PopSchemeMPL")
         .def("sk_to_g1", &PopSchemeMPL::SkToG1)
+        .def(
+            "key_gen",
+            [](const py::bytes &b) {
+                std::string str(b);
+                const uint8_t *input =
+                    reinterpret_cast<const uint8_t *>(str.data());
+                return PopSchemeMPL::KeyGen(input, len(b));
+            })
         .def(
             "aggregate",
             overload_cast_<const vector<vector<uint8_t>> &>()(
@@ -353,7 +369,7 @@ PYBIND11_MODULE(blspy, m)
             })
         .def("generator", &G1Element::Generator)
         .def("from_message", &G1Element::FromMessage)
-        .def("pair", &G1Element::pair)
+        .def("pair", &G1Element::Pair)
         .def("inverse", &G1Element::Inverse)
         .def("get_fingerprint", &G1Element::GetFingerprint)
 
@@ -489,7 +505,7 @@ PYBIND11_MODULE(blspy, m)
             })
         .def("generator", &G2Element::Generator)
         .def("from_message", &G2Element::FromMessage)
-        .def("pair", &G2Element::pair)
+        .def("pair", &G2Element::Pair)
         .def("inverse", &G2Element::Inverse)
         .def(
             "__deepcopy__",

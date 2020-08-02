@@ -25,7 +25,7 @@ def test_schemes():
     # fmt: on
     msg = bytes([100, 2, 254, 88, 90, 45, 23])
     msg2 = bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    sk = PrivateKey.from_seed(seed)
+    sk = BScheme.key_gen(seed)
     pk = sk.get_g1()
 
     assert sk == PrivateKey.from_bytes(bytes(sk))
@@ -37,10 +37,10 @@ def test_schemes():
         assert Scheme.verify(pk, msg, sig)
 
     seed = bytes([1]) + seed[1:]
-    sk1 = PrivateKey.from_seed(seed)
+    sk1 = BScheme.key_gen(seed)
     pk1 = sk1.get_g1()
     seed = bytes([2]) + seed[1:]
-    sk2 = PrivateKey.from_seed(seed)
+    sk2 = BScheme.key_gen(seed)
     pk2 = sk2.get_g1()
 
     for Scheme in (BScheme, AScheme, PScheme):
