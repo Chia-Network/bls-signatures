@@ -46,7 +46,9 @@ class HDKeys {
         const size_t infoLen = 0;
 
         // Required by the ietf spec to be at least 32 bytes
-        assert(seed.size() >= 32);
+        if (seed.size() < 32) {
+            throw std::invalid_argument("Seed size must be at least 32 bytes");
+        }
 
         // "BLS-SIG-KEYGEN-SALT-" in ascii
         const uint8_t saltHkdf[20] = {66, 76, 83, 45, 83, 73, 71, 45, 75, 69,

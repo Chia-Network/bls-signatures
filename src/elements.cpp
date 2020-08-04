@@ -75,11 +75,11 @@ G1Element G1Element::FromBytes(const uint8_t* bytes)
     g1_mul(point, ele.p, order);
     ep_set_infty(unity);
     if (g1_cmp(point, unity) != RLC_EQ)
-        throw("Given G1 element failed in_subgroup check");
+        throw std::invalid_argument("Given G1 element failed in_subgroup check");
     try {
         BLS::CheckRelicErrorsInvalidArgument();
     } catch (...) {
-        throw("Relic reports invalid argument given");
+        throw std::invalid_argument("Relic reports invalid argument given");
     }
 
     return ele;
@@ -288,11 +288,11 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
     g2_mul(point, ele.q, order);
     ep2_set_infty(unity);
     if (g2_cmp(point, unity) != RLC_EQ)
-        throw("Given G2 element failed in_subgroup check");
+        throw std::invalid_argument("Given G2 element failed in_subgroup check");
     try {
         BLS::CheckRelicErrorsInvalidArgument();
     } catch (...) {
-        throw("Relic reports invalid argument given");
+        throw std::invalid_argument("Relic reports invalid argument given");
     }
     return ele;
 }
