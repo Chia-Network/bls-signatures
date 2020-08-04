@@ -39,8 +39,8 @@ const uint8_t *PopSchemeMPL::CIPHERSUITE_ID =
     (const uint8_t *)"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 const int PopSchemeMPL::CIPHERSUITE_ID_LEN = 43;
 
-PrivateKey CoreMPL::KeyGen(const uint8_t *seed, size_t seedLen) {
-    return HDKeys::KeyGen(seed, seedLen);
+PrivateKey CoreMPL::KeyGen(const vector<uint8_t> seed) {
+    return HDKeys::KeyGen(seed);
 }
 
 vector<uint8_t> CoreMPL::SkToPk(const PrivateKey &seckey)
@@ -53,16 +53,7 @@ G1Element CoreMPL::SkToG1(const PrivateKey &seckey)
     return seckey.GetG1Element();
 }
 
-vector<uint8_t> CoreMPL::Sign(
-    const PrivateKey &seckey,
-    const vector<uint8_t> &message,
-    const uint8_t *dst,
-    int dst_len)
-{
-    return CoreMPL::SignNative(seckey, message, dst, dst_len).Serialize();
-}
-
-G2Element CoreMPL::SignNative(
+G2Element CoreMPL::Sign(
     const PrivateKey &seckey,
     const vector<uint8_t> &message,
     const uint8_t *dst,
@@ -225,22 +216,11 @@ G1Element CoreMPL::DeriveChildPkUnhardened(const G1Element& pk, uint32_t index) 
     return HDKeys::DeriveChildG1Unhardened(pk, index);
 }
 
-vector<uint8_t> BasicSchemeMPL::Sign(
+G2Element BasicSchemeMPL::Sign(
     const PrivateKey &seckey,
     const vector<uint8_t> &message)
 {
     return CoreMPL::Sign(
-        seckey,
-        message,
-        BasicSchemeMPL::CIPHERSUITE_ID,
-        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
-G2Element BasicSchemeMPL::SignNative(
-    const PrivateKey &seckey,
-    const vector<uint8_t> &message)
-{
-    return CoreMPL::SignNative(
         seckey,
         message,
         BasicSchemeMPL::CIPHERSUITE_ID,
@@ -313,14 +293,7 @@ bool BasicSchemeMPL::AggregateVerify(
         BasicSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-vector<uint8_t> AugSchemeMPL::Sign(
-    const PrivateKey &seckey,
-    const vector<uint8_t> &message)
-{
-    return AugSchemeMPL::SignNative(seckey, message).Serialize();
-}
-
-G2Element AugSchemeMPL::SignNative(
+G2Element AugSchemeMPL::Sign(
     const PrivateKey &seckey,
     const vector<uint8_t> &message)
 {
@@ -336,7 +309,7 @@ G2Element AugSchemeMPL::SignNative(
 }
 
 // Used for prepending different augMessage
-G2Element AugSchemeMPL::SignNative(
+G2Element AugSchemeMPL::Sign(
     const PrivateKey &seckey,
     const vector<uint8_t> &message,
     const G1Element &prepend_pk)
@@ -436,22 +409,11 @@ bool AugSchemeMPL::AggregateVerify(
         AugSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-vector<uint8_t> PopSchemeMPL::Sign(
+G2Element PopSchemeMPL::Sign(
     const PrivateKey &seckey,
     const vector<uint8_t> &message)
 {
     return CoreMPL::Sign(
-        seckey,
-        message,
-        PopSchemeMPL::CIPHERSUITE_ID,
-        PopSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
-G2Element PopSchemeMPL::SignNative(
-    const PrivateKey &seckey,
-    const vector<uint8_t> &message)
-{
-    return CoreMPL::SignNative(
         seckey,
         message,
         PopSchemeMPL::CIPHERSUITE_ID,

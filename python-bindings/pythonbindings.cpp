@@ -164,7 +164,8 @@ PYBIND11_MODULE(blspy, m)
                 std::string str(b);
                 const uint8_t *input =
                     reinterpret_cast<const uint8_t *>(str.data());
-                return BasicSchemeMPL::KeyGen(input, len(b));
+                const vector<uint8_t> inputVec(input, input + len(b));
+                return BasicSchemeMPL::KeyGen(inputVec);
             })
         .def(
             "aggregate",
@@ -175,7 +176,7 @@ PYBIND11_MODULE(blspy, m)
             [](const PrivateKey &pk, const py::bytes &msg) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return BasicSchemeMPL::SignNative(pk, v);
+                return BasicSchemeMPL::Sign(pk, v);
             })
         .def(
             "verify",
@@ -208,7 +209,8 @@ PYBIND11_MODULE(blspy, m)
                 std::string str(b);
                 const uint8_t *input =
                     reinterpret_cast<const uint8_t *>(str.data());
-                return AugSchemeMPL::KeyGen(input, len(b));
+                const vector<uint8_t> inputVec(input, input + len(b));
+                return AugSchemeMPL::KeyGen(inputVec);
             })
         .def(
             "aggregate",
@@ -219,7 +221,7 @@ PYBIND11_MODULE(blspy, m)
             [](const PrivateKey &pk, const py::bytes &msg) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return AugSchemeMPL::SignNative(pk, v);
+                return AugSchemeMPL::Sign(pk, v);
             })
         .def(
             "sign",
@@ -228,7 +230,7 @@ PYBIND11_MODULE(blspy, m)
                const G1Element &prepend_pk) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return AugSchemeMPL::SignNative(pk, v, prepend_pk);
+                return AugSchemeMPL::Sign(pk, v, prepend_pk);
             })
         .def(
             "verify",
@@ -261,7 +263,8 @@ PYBIND11_MODULE(blspy, m)
                 std::string str(b);
                 const uint8_t *input =
                     reinterpret_cast<const uint8_t *>(str.data());
-                return PopSchemeMPL::KeyGen(input, len(b));
+                const vector<uint8_t> inputVec(input, input + len(b));
+                return PopSchemeMPL::KeyGen(inputVec);
             })
         .def(
             "aggregate",
@@ -276,7 +279,7 @@ PYBIND11_MODULE(blspy, m)
             [](const PrivateKey &pk, const py::bytes &msg) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return PopSchemeMPL::SignNative(pk, v);
+                return PopSchemeMPL::Sign(pk, v);
             })
         .def(
             "verify",
