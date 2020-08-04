@@ -45,11 +45,22 @@ PrivateKey PrivateKey::FromBytes(const uint8_t *bytes, bool modOrder)
     return k;
 }
 
-PrivateKey PrivateKey::FromBN(bn_t sk)
+PrivateKey PrivateKey::FromBN(bn_t sk, bool modOrder)
 {
     PrivateKey k;
     k.AllocateKeyData();
+    bn_t ord;
+    bn_new(ord);
+    g1_get_ord(ord);
     bn_copy(*k.keydata, sk);
+    if (modOrder) {
+        bn_mod_basic(*k.keydata, *k.keydata, ord);
+    } else {
+        if (bn_cmp(*k.keydata, ord) > 0) {
+            throw std::invalid_argument(
+                "BN integer argument must be less than the group order");
+        }
+    }
     return k;
 }
 

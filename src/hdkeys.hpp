@@ -158,15 +158,10 @@ class HDKeys {
         Util::IntToFourBytes(buf + G1Element::SIZE, index);
         Util::Hash256(digest, buf, G1Element::SIZE + 4);
 
-        bn_t nonce;
-        bn_new(nonce);
-        bn_zero(nonce);
-        bn_read_bin(nonce, digest, HASH_LEN);
-        PrivateKey ret = PrivateKey::Aggregate({parentSk, PrivateKey::FromBN(nonce)});
+        PrivateKey ret = PrivateKey::Aggregate({parentSk, PrivateKey::FromBytes(digest, true)});
 
         Util::SecFree(buf);
         Util::SecFree(digest);
-        bn_free(nonce);
         return ret;
     }
 
@@ -177,17 +172,19 @@ class HDKeys {
         Util::IntToFourBytes(buf + G1Element::SIZE, index);
         Util::Hash256(digest, buf, G1Element::SIZE + 4);
 
-        bn_t nonce;
+        bn_t nonce, ord;
         bn_new(nonce);
         bn_zero(nonce);
         bn_read_bin(nonce, digest, HASH_LEN);
+        bn_new(ord);
+        g1_get_ord(ord);
+        bn_mod_basic(nonce, nonce, ord);
 
-        G1Element ret = G1Element::Generator();
-        ret *= nonce;
         Util::SecFree(buf);
         Util::SecFree(digest);
-        bn_free(nonce);
-        return pk + ret;
+
+        G1Element gen = G1Element::Generator();
+        return pk + gen * nonce;
     }
 
     static G2Element DeriveChildG2Unhardened(const G2Element& pk, uint32_t index) {
@@ -197,17 +194,19 @@ class HDKeys {
         Util::IntToFourBytes(buf + G2Element::SIZE, index);
         Util::Hash256(digest, buf, G2Element::SIZE + 4);
 
-        bn_t nonce;
+        bn_t nonce, ord;
         bn_new(nonce);
         bn_zero(nonce);
         bn_read_bin(nonce, digest, HASH_LEN);
+        bn_new(ord);
+        g1_get_ord(ord);
+        bn_mod_basic(nonce, nonce, ord);
 
-        G2Element ret = G2Element::Generator();
-        ret *= nonce;
         Util::SecFree(buf);
         Util::SecFree(digest);
-        bn_free(nonce);
-        return ret;
+
+        G2Element gen = G2Element::Generator();
+        return pk + gen * nonce;
     }
 };
 } // end namespace bls
