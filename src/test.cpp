@@ -212,7 +212,7 @@ TEST_CASE("Unhardened HD keys") {
     }
 }
 
-TEST_CASE("Algorand IETF test vectors") {
+TEST_CASE("IETF test vectors") {
     SECTION ("Pyecc vector") {
         string sig1BasicHex = "96ba34fac33c7f129d602a0bc8a3d43f9abc014eceaab7359146b4b150e57b808645738f35671e9e10e0d862a30cab70074eb5831d13e6a5b162d01eebe687d0164adbd0a864370a7c222a2768d7704da254f1bf1823665bc2361f9dd8c00e99";
         string sk = "0x0101010101010101010101010101010101010101010101010101010101010101";
@@ -294,238 +294,90 @@ TEST_CASE("Chia test vectors") {
             "d547ab37659ae207968b545727beba0a3c5572b9c");
     }
 
-    // SECTION("Test vector 2")
-    // {
-    //     uint8_t message1[4] = {1, 2, 3, 40};
-    //     uint8_t message2[4] = {5, 6, 70, 201};
-    //     uint8_t message3[5] = {9, 10, 11, 12, 13};
-    //     uint8_t message4[6] = {15, 63, 244, 92, 0, 1};
+    SECTION("Chia test vector 2 (Augmented, aggregate of aggregates)") {
+        vector<uint8_t> message1 = {1, 2, 3, 40};
+        vector<uint8_t> message2 = {5, 6, 70, 201};
+        vector<uint8_t> message3 = {9, 10, 11, 12, 13};
+        vector<uint8_t> message4 = {15, 63, 244, 92, 0, 1};
 
-    //     uint8_t seed1[5] = {1, 2, 3, 4, 5};
-    //     uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
+        vector<uint8_t> seed1(32, 0x02);  // All 2s
+        vector<uint8_t> seed2(32, 0x03);  // All 3s
 
-    //     PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
-    //     PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
+        PrivateKey sk1 = AugSchemeMPL::KeyGen(seed1);
+        PrivateKey sk2 = AugSchemeMPL::KeyGen(seed2);
 
-    //     G1Element pk1 = sk1.GetG1Element();
-    //     G1Element pk2 = sk2.GetG1Element();
+        G1Element pk1 = sk1.GetG1Element();
+        G1Element pk2 = sk2.GetG1Element();
 
-    //     G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-    //     G2Element sig2 = sk2.Sign(message2, sizeof(message2));
-    //     G2Element sig3 = sk2.Sign(message1, sizeof(message1));
-    //     G2Element sig4 = sk1.Sign(message3, sizeof(message3));
-    //     G2Element sig5 = sk1.Sign(message1, sizeof(message1));
-    //     G2Element sig6 = sk1.Sign(message4, sizeof(message4));
+        G2Element sig1 = AugSchemeMPL::Sign(sk1, message1);
+        G2Element sig2 = AugSchemeMPL::Sign(sk2, message2);
+        G2Element sig3 = AugSchemeMPL::Sign(sk2, message1);
+        G2Element sig4 = AugSchemeMPL::Sign(sk1, message3);
+        G2Element sig5 = AugSchemeMPL::Sign(sk1, message1);
+        G2Element sig6 = AugSchemeMPL::Sign(sk1, message4);
 
-    //     std::vector<G2Element> const sigsL = {sig1, sig2};
-    //     const G2Element aggSigL = G2Element::Aggregate(sigsL);
 
-    //     std::vector<G2Element> const sigsR = {sig3, sig4, sig5};
-    //     const G2Element aggSigR = G2Element::Aggregate(sigsR);
+        G2Element aggSigL = AugSchemeMPL::Aggregate({sig1, sig2});
+        G2Element aggSigR = AugSchemeMPL::Aggregate({sig3, sig4, sig5});
+        G2Element aggSig = AugSchemeMPL::Aggregate({aggSigL, aggSigR, sig6});
 
-    //     std::vector<G2Element> sigs = {aggSigL, aggSigR, sig6};
+        REQUIRE(AugSchemeMPL::AggregateVerify({pk1, pk2, pk2, pk1, pk1, pk1}, {message1, message2, message1, message3, message1, message4}, aggSig));
 
-    //     G2Element aggSig = G2Element::Aggregate(sigs);
-
-    //     REQUIRE(aggSig.Verify());
-
-    //     uint8_t buf[G2Element::G2Element_SIZE];
-    //     aggSig.Serialize(buf);
-    //     REQUIRE(
-    //         Util::HexStr(buf, G2Element::G2Element_SIZE) ==
-    //         "07969958fbf82e65bd13ba0749990764cac81cf10d923af9fdd2723f1e3910c3fd"
-    //         "b874a67f9d511bb7e4920f8c01232b12e2fb5e64a7c2d177a475dab5c3729ca1f5"
-    //         "80301ccdef809c57a8846890265d195b694fa414a2a3aa55c32837fddd80");
-    //     vector<G2Element> G2Elements_to_divide = {sig2, sig5, sig6};
-    //     G2Element quotient = aggSig.DivideBy(G2Elements_to_divide);
-    //     aggSig.DivideBy(G2Elements_to_divide);
-
-    //     quotient.Serialize(buf);
-    //     REQUIRE(
-    //         Util::HexStr(buf, G2Element::G2Element_SIZE) ==
-    //         "8ebc8a73a2291e689ce51769ff87e517be6089fd0627b2ce3cd2f0ee1ce134b39c"
-    //         "4da40928954175014e9bbe623d845d0bdba8bfd2a85af9507ddf145579480132b6"
-    //         "76f027381314d983a63842fcc7bf5c8c088461e3ebb04dcf86b431d6238f");
-
-    //     REQUIRE(quotient.Verify());
-    //     REQUIRE(quotient.DivideBy(vector<G2Element>()) == quotient);
-    //     G2Elements_to_divide = {sig6};
-    //     REQUIRE_THROWS(quotient.DivideBy(G2Elements_to_divide));
-
-    //     // Should not throw
-    //     G2Elements_to_divide = {sig1};
-    //     aggSig.DivideBy(G2Elements_to_divide);
-
-    //     // Should throw due to not unique
-    //     G2Elements_to_divide = {aggSigL};
-    //     REQUIRE_THROWS(aggSig.DivideBy(G2Elements_to_divide));
-
-    //     G2Element sig7 = sk2.Sign(message3, sizeof(message3));
-    //     G2Element sig8 = sk2.Sign(message4, sizeof(message4));
-
-    //     // Divide by aggregate
-    //     std::vector<G2Element> sigsR2 = {sig7, sig8};
-    //     G2Element aggSigR2 = G2Element::Aggregate(sigsR2);
-    //     std::vector<G2Element> sigsFinal2 = {aggSig, aggSigR2};
-    //     G2Element aggSig2 = G2Element::Aggregate(sigsFinal2);
-    //     std::vector<G2Element> divisorFinal2 = {aggSigR2};
-    //     G2Element quotient2 = aggSig2.DivideBy(divisorFinal2);
-
-    //     REQUIRE(quotient2.Verify());
-    //     quotient2.Serialize(buf);
-    //     REQUIRE(
-    //         Util::HexStr(buf, G2Element::G2Element_SIZE) ==
-    //         "06af6930bd06838f2e4b00b62911fb290245cce503ccf5bfc2901459897731dd08"
-    //         "fc4c56dbde75a11677ccfbfa61ab8b14735fddc66a02b7aeebb54ab9a41488f89f"
-    //         "641d83d4515c4dd20dfcf28cbbccb1472c327f0780be3a90c005c58a47d3");
-    // }
-
-    // SECTION("Test vector 3")
-    // {
-    //     uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
-    //     ExtendedPrivateKey esk =
-    //         ExtendedPrivateKey::FromSeed(seed, sizeof(seed));
-    //     REQUIRE(esk.GetG1Element().GetFingerprint() == 0xa4700b27);
-    //     uint8_t chainCode[32];
-    //     esk.GetChainCode().Serialize(chainCode);
-    //     REQUIRE(
-    //         Util::HexStr(chainCode, 32) ==
-    //         "d8b12555b4cc5578951e4a7c80031e22019cc0dce168b3ed88115311b8feb1e3");
-
-    //     ExtendedPrivateKey esk77 = esk.PrivateChild(77 + (1 << 31));
-    //     esk77.GetChainCode().Serialize(chainCode);
-    //     REQUIRE(
-    //         Util::HexStr(chainCode, 32) ==
-    //         "f2c8e4269bb3e54f8179a5c6976d92ca14c3260dd729981e9d15f53049fd698b");
-    //     REQUIRE(
-    //         esk77.GetPrivateKey().GetG1Element().GetFingerprint() ==
-    //         0xa8063dcf);
-
-    //     REQUIRE(
-    //         esk.PrivateChild(3)
-    //             .PrivateChild(17)
-    //             .GetG1Element()
-    //             .GetFingerprint() == 0xff26a31f);
-    //     REQUIRE(
-    //         esk.GetExtendedG1Element()
-    //             .PublicChild(3)
-    //             .PublicChild(17)
-    //             .GetG1Element()
-    //             .GetFingerprint() == 0xff26a31f);
-    // }
-
-    // SECTION("Test vector 4")
-    // {
-    //     uint8_t seed1[5] = {1, 2, 3, 4, 5};
-    //     uint8_t seed2[6] = {1, 2, 3, 4, 5, 6};
-    //     uint8_t message1[3] = {7, 8, 9};
-    //     uint8_t message2[3] = {10, 11, 12};
-
-    //     PrivateKey sk1 = PrivateKey::FromSeed(seed1, sizeof(seed1));
-    //     G1Element pk1 = sk1.GetG1Element();
-
-    //     PrivateKey sk2 = PrivateKey::FromSeed(seed2, sizeof(seed2));
-    //     G1Element pk2 = sk2.GetG1Element();
-
-    //     PrependG2Element sig9 = sk1.SignPrepend(message1, sizeof(message1));
-    //     PrependG2Element sig10 = sk2.SignPrepend(message2, sizeof(message2));
-
-    //     uint8_t buf[G2Element::G2Element_SIZE];
-    //     sig9.Serialize(buf);
-    //     REQUIRE(
-    //         Util::HexStr(buf, G2Element::G2Element_SIZE) ==
-    //         "d2135ad358405d9f2d4e68dc253d64b6049a821797817cffa5aa804086a8fb7b13"
-    //         "5175bb7183750e3aa19513db1552180f0b0ffd513c322f1c0c30a0a9c179f6e275"
-    //         "e0109d4db7fa3e09694190947b17d890f3d58fe0b1866ec4d4f5a59b16ed");
-    //     sig10.Serialize(buf);
-    //     REQUIRE(
-    //         Util::HexStr(buf, G2Element::G2Element_SIZE) ==
-    //         "cc58c982f9ee5817d4fbf22d529cfc6792b0fdcf2d2a8001686755868e10eb32b4"
-    //         "0e464e7fbfe30175a962f1972026f2087f0495ba6e293ac3cf271762cd6979b941"
-    //         "3adc0ba7df153cf1f3faab6b893404c2e6d63351e48cd54e06e449965f08");
-
-    //     uint8_t messageHash1[BLS::MESSAGE_HASH_LEN];
-    //     uint8_t messageHash2[BLS::MESSAGE_HASH_LEN];
-    //     Util::Hash256(messageHash1, message1, sizeof(message1));
-    //     Util::Hash256(messageHash2, message2, sizeof(message2));
-    //     vector<const uint8_t*> messageHashes1 = {messageHash1};
-    //     vector<const uint8_t*> messageHashes2 = {messageHash2};
-    //     vector<const uint8_t*> messageHashes = {
-    //         messageHash1, messageHash1, messageHash2};
-    //     vector<G1Element> pks = {pk1, pk1, pk2};
-
-    //     vector<PrependG2Element> sigs = {sig9, sig9, sig10};
-    //     PrependG2Element agg = PrependG2Element::Aggregate(sigs);
-
-    //     agg.Serialize(buf);
-    //     REQUIRE(
-    //         Util::HexStr(buf, G2Element::G2Element_SIZE) ==
-    //         "c37077684e735e62e3f1fd17772a236b4115d4b581387733d3b97cab08b90918c7"
-    //         "e91c23380c93e54be345544026f93505d41e6000392b82ab3c8af1b2e3954b0ef3"
-    //         "f62c52fc89f99e646ff546881120396c449856428e672178e5e0e14ec894");
-
-    //     REQUIRE(agg.Verify(messageHashes, pks));
-    // }
+        REQUIRE(
+            Util::HexStr(aggSig.Serialize()) ==
+            "a1d5360dcb418d33b29b90b912b4accde535cf0e52caf467a005dc632d9f7af44b6c4e9acd4"
+            "6eac218b28cdb07a3e3bc087df1cd1e3213aa4e11322a3ff3847bbba0b2fd19ddc25ca964871"
+            "997b9bceeab37a4c2565876da19382ea32a962200");
+    }
 }
 
-/*
+
 TEST_CASE("Key generation")
 {
     SECTION("Should generate a keypair from a seed")
     {
-        uint8_t seed[10] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+        vector<uint8_t> seed1(31, 0x08);
+        vector<uint8_t> seed2(32, 0x08);
 
-        PrivateKey sk = PrivateKey::FromSeed(seed, sizeof(seed));
+        REQUIRE_THROWS(BasicSchemeMPL::KeyGen(seed1));
+        PrivateKey sk = BasicSchemeMPL::KeyGen(seed2);
         G1Element pk = sk.GetG1Element();
         REQUIRE(core_get()->code == RLC_OK);
-        REQUIRE(pk.GetFingerprint() == 0xddad59bb);
+        REQUIRE(pk.GetFingerprint() == 0x8ee7ba56);
     }
 }
+
 
 TEST_CASE("Error handling")
 {
     SECTION("Should throw on a bad private key")
     {
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        uint8_t* skData = Util::SecAlloc<uint8_t>(G2Element::G2Element_SIZE);
+        vector<uint8_t> seed(32, 0x10);
+        PrivateKey sk1 = BasicSchemeMPL::KeyGen(seed);
+        uint8_t* skData = Util::SecAlloc<uint8_t>(G2Element::SIZE);
         sk1.Serialize(skData);
         skData[0] = 255;
         REQUIRE_THROWS(PrivateKey::FromBytes(skData));
-
         Util::SecFree(skData);
     }
 
     SECTION("Should throw on a bad public key")
     {
-        uint8_t buf[G1Element::PUBLIC_KEY_SIZE] = {0};
-        std::set<int> invalid = {1, 2, 3, 4};
+        vector<uint8_t> buf(G1Element::SIZE, 0);
 
         for (int i = 0; i < 10; i++) {
             buf[0] = (uint8_t)i;
-            try {
-                G1Element::FromBytes(buf);
-                REQUIRE(invalid.count(i) == 0);
-            } catch (std::invalid_argument& s) {
-                REQUIRE(invalid.count(i) != 0);
-            }
+            REQUIRE_THROWS(G1Element::FromByteVector(buf));
         }
     }
 
     SECTION("Should throw on a bad G2Element")
     {
-        uint8_t buf[G2Element::G2Element_SIZE] = {0};
-        std::set<int> invalid = {0, 1, 2, 3, 5, 6, 7, 8};
+        vector<uint8_t> buf(G2Element::SIZE, 0);
 
         for (int i = 0; i < 10; i++) {
             buf[0] = (uint8_t)i;
-            try {
-                G2Element::FromBytes(buf);
-                REQUIRE(invalid.count(i) == 0);
-            } catch (std::invalid_argument& s) {
-                REQUIRE(invalid.count(i) != 0);
-            }
+            REQUIRE_THROWS(G2Element::FromByteVector(buf));
         }
     }
 
@@ -559,6 +411,7 @@ TEST_CASE("Error handling")
     }
 }
 
+
 TEST_CASE("Util tests")
 {
     SECTION("Should convert an int to four bytes")
@@ -574,17 +427,9 @@ TEST_CASE("Util tests")
         uint32_t again = Util::FourBytesToInt(result);
         REQUIRE(again == x);
     }
-
-    SECTION("Should calculate public key fingerprints")
-    {
-        uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25};
-        ExtendedPrivateKey esk =
-            ExtendedPrivateKey::FromSeed(seed, sizeof(seed));
-        uint32_t fingerprint = esk.GetG1Element().GetFingerprint();
-        REQUIRE(fingerprint == 0xa4700b27);
-    }
 }
 
+/*
 TEST_CASE("G2Elements")
 {
     SECTION("Should sign and verify")
