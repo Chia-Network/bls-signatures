@@ -35,7 +35,7 @@ class HDKeys {
  public:
     static const uint8_t HASH_LEN = 32;
 
-    static PrivateKey KeyGen(const uint8_t *seed, size_t seedLen) {
+    static PrivateKey KeyGen(const std::vector<uint8_t> seed) {
         // KeyGen
         // 1. PRK = HKDF-Extract("BLS-SIG-KEYGEN-SALT-", IKM || I2OSP(0, 1))
         // 2. OKM = HKDF-Expand(PRK, keyInfo || I2OSP(L, 2), L)
@@ -46,16 +46,16 @@ class HDKeys {
         const size_t infoLen = 0;
 
         // Required by the ietf spec to be at least 32 bytes
-        assert(seedLen >= 32);
+        assert(seed.size() >= 32);
 
         // "BLS-SIG-KEYGEN-SALT-" in ascii
         const uint8_t saltHkdf[20] = {66, 76, 83, 45, 83, 73, 71, 45, 75, 69,
                                     89, 71, 69, 78, 45, 83, 65, 76, 84, 45};
 
         uint8_t *prk = Util::SecAlloc<uint8_t>(32);
-        uint8_t *ikmHkdf = Util::SecAlloc<uint8_t>(seedLen + 1);
-        memcpy(ikmHkdf, seed, seedLen);
-        ikmHkdf[seedLen] = 0;
+        uint8_t *ikmHkdf = Util::SecAlloc<uint8_t>(seed.size() + 1);
+        memcpy(ikmHkdf, seed.data(), seed.size());
+        ikmHkdf[seed.size()] = 0;
 
         const uint8_t L = 48;  // `ceil((3 * ceil(log2(r))) / 16)`, where `r` is the
                             // order of the BLS 12-381 curve
@@ -71,7 +71,7 @@ class HDKeys {
             okmHkdf,
             L,
             ikmHkdf,
-            seedLen + 1,
+            seed.size() + 1,
             saltHkdf,
             20,
             keyInfoHkdf,
@@ -146,7 +146,8 @@ class HDKeys {
     static PrivateKey DeriveChildSk(const PrivateKey& parentSk, uint32_t index) {
         uint8_t* lamportPk = Util::SecAlloc<uint8_t>(HASH_LEN);
         HDKeys::ParentSkToLamportPK(lamportPk, parentSk, index);
-        PrivateKey child = HDKeys::KeyGen(lamportPk, HASH_LEN);
+        std::vector<uint8_t> lamportPkVector(lamportPk, lamportPk + HASH_LEN);
+        PrivateKey child = HDKeys::KeyGen(lamportPkVector);
         Util::SecFree(lamportPk);
         return child;
     }

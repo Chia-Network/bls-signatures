@@ -41,20 +41,14 @@ class CoreMPL {
 public:
     // Generates a private key from a seed, similar to HD key generation
     // (hashes the seed), and reduces it mod the group order
-    static PrivateKey KeyGen(const uint8_t *seed, size_t seedLen);
+    static PrivateKey KeyGen(const vector<uint8_t> seed);
 
     // Generates a public key from a secret key
     static vector<uint8_t> SkToPk(const PrivateKey &seckey);
 
     static G1Element SkToG1(const PrivateKey &seckey);
 
-    static vector<uint8_t> Sign(
-        const PrivateKey &seckey,
-        const vector<uint8_t> &message,
-        const uint8_t *dst,
-        int dst_len);
-
-    static G2Element SignNative(
+    static G2Element Sign(
         const PrivateKey &seckey,
         const vector<uint8_t> &message,
         const uint8_t *dst,
@@ -105,8 +99,8 @@ class BasicSchemeMPL {
 public:
     static const uint8_t *CIPHERSUITE_ID;
     static const int CIPHERSUITE_ID_LEN;
-    static PrivateKey KeyGen(const uint8_t *seed, size_t seedLen) {
-        return CoreMPL::KeyGen(seed, seedLen);
+    static PrivateKey KeyGen(const vector<uint8_t> seed) {
+        return CoreMPL::KeyGen(seed);
     }
 
     static vector<uint8_t> SkToPk(const PrivateKey &seckey)
@@ -129,11 +123,7 @@ public:
         return CoreMPL::Aggregate(signatures);
     }
 
-    static vector<uint8_t> Sign(
-        const PrivateKey &seckey,
-        const vector<uint8_t> &message);
-
-    static G2Element SignNative(
+    static G2Element Sign(
         const PrivateKey &seckey,
         const vector<uint8_t> &message);
 
@@ -175,8 +165,8 @@ public:
     static const uint8_t *CIPHERSUITE_ID;
     static const int CIPHERSUITE_ID_LEN;
 
-    static PrivateKey KeyGen(const uint8_t *seed, size_t seedLen) {
-        return CoreMPL::KeyGen(seed, seedLen);
+    static PrivateKey KeyGen(const vector<uint8_t> seed) {
+        return CoreMPL::KeyGen(seed);
     }
 
     static vector<uint8_t> SkToPk(const PrivateKey &seckey)
@@ -199,16 +189,12 @@ public:
         return CoreMPL::Aggregate(signatures);
     }
 
-    static vector<uint8_t> Sign(
-        const PrivateKey &seckey,
-        const vector<uint8_t> &message);
-
-    static G2Element SignNative(
+    static G2Element Sign(
         const PrivateKey &seckey,
         const vector<uint8_t> &message);
 
     // Custom prepended pk
-    static G2Element SignNative(
+    static G2Element Sign(
         const PrivateKey &seckey,
         const vector<uint8_t> &message,
         const G1Element &prepend_pk);
@@ -251,8 +237,8 @@ public:
     static const uint8_t *CIPHERSUITE_ID;
     static const int CIPHERSUITE_ID_LEN;
 
-    static PrivateKey KeyGen(const uint8_t *seed, size_t seedLen) {
-        return CoreMPL::KeyGen(seed, seedLen);
+    static PrivateKey KeyGen(const vector<uint8_t> seed) {
+        return CoreMPL::KeyGen(seed);
     }
 
     static vector<uint8_t> SkToPk(const PrivateKey &seckey)
@@ -275,11 +261,7 @@ public:
         return CoreMPL::Aggregate(signatures);
     }
 
-    static vector<uint8_t> Sign(
-        const PrivateKey &seckey,
-        const vector<uint8_t> &message);
-
-    static G2Element SignNative(
+    static G2Element Sign(
         const PrivateKey &seckey,
         const vector<uint8_t> &message);
 
