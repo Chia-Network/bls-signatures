@@ -45,6 +45,15 @@ PrivateKey PrivateKey::FromBytes(const uint8_t *bytes, bool modOrder)
     return k;
 }
 
+// Construct a private key from a bytearray.
+PrivateKey PrivateKey::FromByteVector(const std::vector<uint8_t> bytes, bool modOrder)
+{
+    if (bytes.size() != PrivateKey::PRIVATE_KEY_SIZE) {
+        throw std::invalid_argument("Private keys must be 32 bytes");
+    }
+    return PrivateKey::FromBytes(bytes.data(), modOrder);
+}
+
 PrivateKey PrivateKey::FromBN(bn_t sk, bool modOrder)
 {
     PrivateKey k;

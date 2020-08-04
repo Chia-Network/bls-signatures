@@ -216,7 +216,7 @@ TEST_CASE("IETF test vectors") {
     SECTION ("Pyecc vector") {
         string sig1BasicHex = "96ba34fac33c7f129d602a0bc8a3d43f9abc014eceaab7359146b4b150e57b808645738f35671e9e10e0d862a30cab70074eb5831d13e6a5b162d01eebe687d0164adbd0a864370a7c222a2768d7704da254f1bf1823665bc2361f9dd8c00e99";
         string sk = "0x0101010101010101010101010101010101010101010101010101010101010101";
-        std::vector<uint8_t> msg = {3, 1, 4, 1, 5, 9};
+        vector<uint8_t> msg = {3, 1, 4, 1, 5, 9};
         auto skobj = PrivateKey::FromBytes(Util::HexToBytes(sk).data());
         G2Element sig = BasicSchemeMPL::Sign(skobj, msg);
         vector<uint8_t> sig1;
@@ -429,49 +429,15 @@ TEST_CASE("Util tests")
     }
 }
 
-/*
-TEST_CASE("G2Elements")
+
+TEST_CASE("Signature tests")
 {
-    SECTION("Should sign and verify")
-    {
-        uint8_t message1[7] = {1, 65, 254, 88, 90, 45, 22};
-
-        uint8_t seed[6] = {28, 20, 102, 229, 1, 157};
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, sizeof(seed));
-        G1Element pk1 = sk1.GetG1Element();
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-
-        sig1.SetAggregationInfo(
-            AggregationInfo::FromMsg(pk1, message1, sizeof(message1)));
-        REQUIRE(sig1.Verify());
-
-        uint8_t hash[32];
-        Util::Hash256(hash, message1, 7);
-        G2Element sig2 = sk1.SignPrehashed(hash);
-        sig2.SetAggregationInfo(
-            AggregationInfo::FromMsg(pk1, message1, sizeof(message1)));
-        REQUIRE(sig1 == sig2);
-        REQUIRE(sig2.Verify());
-
-        // Hashing to g1
-        uint8_t mapMsg[0] = {};
-        g1_t result;
-        uint8_t buf[49];
-        ep_map_ft(result, mapMsg, 0);
-        g1_write_bin(buf, 49, result, 1);
-        REQUIRE(
-            Util::HexStr(buf + 1, 48) ==
-            "12fc5ad5a2fbe9d4b6eb0bc16d530e5f263b6d59cbaf26c3f2831962924aa588ab"
-            "84d46cc80d3a433ce064adb307f256");
-    }
-
     SECTION("Should use copy constructor")
     {
-        uint8_t message1[7] = {1, 65, 254, 88, 90, 45, 22};
+        vector<uint8_t> message1 = {1, 65, 254, 88, 90, 45, 22};
 
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        vector<uint8_t> seed(32, 0x30);
+        PrivateKey sk1 = BasicSchemeMPL::KeyGen(seed);
         G1Element pk1 = sk1.GetG1Element();
         PrivateKey sk2 = PrivateKey(sk1);
 
@@ -480,31 +446,29 @@ TEST_CASE("G2Elements")
         PrivateKey sk4 = PrivateKey::FromBytes(skBytes);
 
         G1Element pk2 = G1Element(pk1);
-        G2Element sig1 = sk4.Sign(message1, sizeof(message1));
+        G2Element sig1 = BasicSchemeMPL::Sign(sk4, message1);
         G2Element sig2 = G2Element(sig1);
 
-        REQUIRE(sig2.Verify());
+        REQUIRE(BasicSchemeMPL::Verify(pk2, message1, sig2));
     }
 
-    SECTION("Should use operators")
+    SECTION("Should use equality operators")
     {
-        uint8_t message1[7] = {1, 65, 254, 88, 90, 45, 22};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed3[32];
-        getRandomSeed(seed3);
+        vector<uint8_t> message1 = {1, 65, 254, 88, 90, 45, 22};
+        vector<uint8_t> seed(32, 0x40);
+        vector<uint8_t> seed3(32, 0x50);
 
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        PrivateKey sk1 = BasicSchemeMPL::KeyGen(seed);
         PrivateKey sk2 = PrivateKey(sk1);
-        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
+        PrivateKey sk3 = BasicSchemeMPL::KeyGen(seed3);
         G1Element pk1 = sk1.GetG1Element();
         G1Element pk2 = sk2.GetG1Element();
         G1Element pk3 = G1Element(pk2);
         G1Element pk4 = sk3.GetG1Element();
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig2 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig3 = sk2.Sign(message1, sizeof(message1));
-        G2Element sig4 = sk3.Sign(message1, sizeof(message1));
+        G2Element sig1 = BasicSchemeMPL::Sign(sk1, message1);
+        G2Element sig2 = BasicSchemeMPL::Sign(sk1, message1);
+        G2Element sig3 = BasicSchemeMPL::Sign(sk2, message1);
+        G2Element sig4 = BasicSchemeMPL::Sign(sk3, message1);
 
         REQUIRE(sk1 == sk2);
         REQUIRE(sk1 != sk3);
@@ -521,552 +485,102 @@ TEST_CASE("G2Elements")
 
     SECTION("Should serialize and deserialize")
     {
-        uint8_t message1[7] = {1, 65, 254, 88, 90, 45, 22};
+        vector<uint8_t> message1 = {1, 65, 254, 88, 90, 45, 22};
 
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
+        vector<uint8_t> seed(32, 0x40);
+        PrivateKey sk1 = BasicSchemeMPL::KeyGen(seed);
         G1Element pk1 = sk1.GetG1Element();
 
-        uint8_t* skData = Util::SecAlloc<uint8_t>(G2Element::G2Element_SIZE);
+        uint8_t* skData = Util::SecAlloc<uint8_t>(G2Element::SIZE);
         sk1.Serialize(skData);
         PrivateKey sk2 = PrivateKey::FromBytes(skData);
         REQUIRE(sk1 == sk2);
 
-        uint8_t pkData[G1Element::PUBLIC_KEY_SIZE];
+        uint8_t pkData[G1Element::SIZE];
         pk1.Serialize(pkData);
 
         G1Element pk2 = G1Element::FromBytes(pkData);
         REQUIRE(pk1 == pk2);
 
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
+        G2Element sig1 = BasicSchemeMPL::Sign(sk1, message1);
 
-        uint8_t sigData[G2Element::G2Element_SIZE];
+        uint8_t sigData[G2Element::SIZE];
         sig1.Serialize(sigData);
 
         G2Element sig2 = G2Element::FromBytes(sigData);
         REQUIRE(sig1 == sig2);
-        sig2.SetAggregationInfo(
-            AggregationInfo::FromMsg(pk2, message1, sizeof(message1)));
 
-        REQUIRE(sig2.Verify());
+        REQUIRE(BasicSchemeMPL::Verify(pk2, message1, sig2));
         Util::SecFree(skData);
-
-        InsecureG2Element sig3 = InsecureG2Element::FromBytes(sigData);
-        REQUIRE(G2Element::FromInsecureSig(sig3) == sig2);
     }
 
-    SECTION("Should not validate a bad sig")
+    SECTION("Should not verify aggregate with same message under BasicScheme")
     {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 22};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-
-        G1Element pk1 = sk1.GetG1Element();
-        G1Element pk2 = sk2.GetG1Element();
-
-        G2Element sig2 = sk2.Sign(message1, sizeof(message1));
-        sig2.SetAggregationInfo(
-            AggregationInfo::FromMsg(pk1, message1, sizeof(message1)));
-
-        REQUIRE(sig2.Verify() == false);
-    }
-
-    SECTION("Should insecurely aggregate and verify aggregate same message")
-    {
-        uint8_t message[7] = {100, 2, 254, 88, 90, 45, 23};
+        vector<uint8_t> message = {100, 2, 254, 88, 90, 45, 23};
         uint8_t hash[BLS::MESSAGE_HASH_LEN];
 
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
+        vector<uint8_t> seed(32, 0x50);
+        vector<uint8_t> seed2(32, 0x70);
 
-        Util::Hash256(hash, message, sizeof(message));
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-
-        InsecureG2Element sig1 = sk1.SignInsecure(message, sizeof(message));
-        InsecureG2Element sig2 = sk2.SignInsecure(message, sizeof(message));
-        REQUIRE(sig1 != sig2);
-        REQUIRE(sig1.Verify({hash}, {sk1.GetG1Element()}));
-        REQUIRE(sig2.Verify({hash}, {sk2.GetG1Element()}));
-
-        std::vector<InsecureG2Element> const sigs = {sig1, sig2};
-        std::vector<G1Element> const pks = {sk1.GetG1Element(),
-                                            sk2.GetG1Element()};
-        InsecureG2Element aggSig = InsecureG2Element::Aggregate(sigs);
-        G1Element aggPk = G1Element::AggregateInsecure(pks);
-        REQUIRE(aggSig.Verify({hash}, {aggPk}));
-    }
-
-    SECTION("Should insecurely aggregate and verify aggregate diff messages")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t message2[8] = {100, 2, 254, 88, 90, 45, 24, 1};
-
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-
-        uint8_t hash1[BLS::MESSAGE_HASH_LEN];
-        uint8_t hash2[BLS::MESSAGE_HASH_LEN];
-        Util::Hash256(hash1, message1, sizeof(message1));
-        Util::Hash256(hash2, message2, sizeof(message2));
-
-        InsecureG2Element sig1 = sk1.SignInsecurePrehashed(hash1);
-        InsecureG2Element sig2 = sk2.SignInsecurePrehashed(hash2);
-        REQUIRE(sig1 != sig2);
-        REQUIRE(sig1.Verify({hash1}, {sk1.GetG1Element()}));
-        REQUIRE(sig2.Verify({hash2}, {sk2.GetG1Element()}));
-
-        std::vector<InsecureG2Element> const sigs = {sig1, sig2};
-        std::vector<G1Element> const pks = {sk1.GetG1Element(),
-                                            sk2.GetG1Element()};
-        InsecureG2Element aggSig = InsecureG2Element::Aggregate(sigs);
-
-        // same message verification should fail
-        G1Element aggPk = G1Element::AggregateInsecure(pks);
-        REQUIRE(!aggSig.Verify({hash1}, {aggPk}));
-        REQUIRE(!aggSig.Verify({hash2}, {aggPk}));
-
-        // diff message verification should succeed
-        std::vector<const uint8_t*> hashes = {hash1, hash2};
-        REQUIRE(aggSig.Verify(hashes, pks));
-    }
-
-    SECTION("Should securely aggregate and verify aggregate")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t message2[7] = {192, 29, 2, 0, 0, 45, 23};
-
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
+        PrivateKey sk1 = BasicSchemeMPL::KeyGen(seed);
+        PrivateKey sk2 = BasicSchemeMPL::KeyGen(seed2);
 
         G1Element pk1 = sk1.GetG1Element();
         G1Element pk2 = sk2.GetG1Element();
 
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig2 = sk2.Sign(message2, sizeof(message2));
+        G2Element sig1 = BasicSchemeMPL::Sign(sk1, message);
+        G2Element sig2 = BasicSchemeMPL::Sign(sk2, message);
 
-        std::vector<G2Element> const sigs = {sig1, sig2};
-        G2Element aggSig = G2Element::Aggregate(sigs);
-
-        G2Element sig3 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig4 = sk2.Sign(message2, sizeof(message2));
-
-        std::vector<G2Element> const sigs2 = {sig3, sig4};
-        G2Element aggSig2 = G2Element::Aggregate(sigs2);
-        REQUIRE(sig1 == sig3);
-        REQUIRE(sig2 == sig4);
-        REQUIRE(aggSig == aggSig2);
-        REQUIRE(sig1 != sig2);
-
-        REQUIRE(aggSig.Verify());
+        G2Element aggSig = BasicSchemeMPL::Aggregate({sig1, sig2});
+        REQUIRE(BasicSchemeMPL::AggregateVerify({pk1, pk2}, {message, message}, aggSig) == false);
     }
 
-    SECTION("Should securely aggregate many G2Elements, diff message")
+    SECTION("Should verify aggregate with same message under AugScheme/PopScheme")
     {
-        std::vector<PrivateKey> sks;
-        std::vector<G2Element> sigs;
+        vector<uint8_t> message = {100, 2, 254, 88, 90, 45, 23};
+        uint8_t hash[BLS::MESSAGE_HASH_LEN];
 
-        for (int i = 0; i < 80; i++) {
-            uint8_t* message = new uint8_t[8];
-            message[0] = 0;
-            message[1] = 100;
-            message[2] = 2;
-            message[3] = 59;
-            message[4] = 255;
-            message[5] = 92;
-            message[6] = 5;
-            message[7] = i;
-            uint8_t seed[32];
-            getRandomSeed(seed);
-            const PrivateKey sk = PrivateKey::FromSeed(seed, 32);
-            const G1Element pk = sk.GetG1Element();
-            sks.push_back(sk);
-            sigs.push_back(sk.Sign(message, sizeof(message)));
-            delete[] message;
+        vector<uint8_t> seed(32, 0x50);
+        vector<uint8_t> seed2(32, 0x70);
+
+        PrivateKey sk1 = BasicSchemeMPL::KeyGen(seed);
+        PrivateKey sk2 = BasicSchemeMPL::KeyGen(seed2);
+
+        G1Element pk1 = sk1.GetG1Element();
+        G1Element pk2 = sk2.GetG1Element();
+
+        G2Element sig1Aug = AugSchemeMPL::Sign(sk1, message);
+        G2Element sig2Aug = AugSchemeMPL::Sign(sk2, message);
+        G2Element aggSigAug = AugSchemeMPL::Aggregate({sig1Aug, sig2Aug});
+        REQUIRE(AugSchemeMPL::AggregateVerify({pk1, pk2}, {message, message}, aggSigAug));
+
+        G2Element sig1Pop = PopSchemeMPL::Sign(sk1, message);
+        G2Element sig2Pop = PopSchemeMPL::Sign(sk2, message);
+        G2Element aggSigPop = PopSchemeMPL::Aggregate({sig1Pop, sig2Pop});
+        REQUIRE(PopSchemeMPL::AggregateVerify({pk1, pk2}, {message, message}, aggSigPop));
+    }
+
+    SECTION("Should Aug aggregate many G2Elements, diff message")
+    {
+        vector<G1Element> pks;
+        vector<G2Element> sigs;
+        vector<vector<uint8_t> > ms;
+
+        for (uint8_t i = 0; i < 80; i++) {
+            vector<uint8_t> message = {0, 100, 2, 45, 64, 12, 12, 63, i};
+            PrivateKey sk = BasicSchemeMPL::KeyGen(getRandomSeed());
+            pks.push_back(sk.GetG1Element());
+            auto sig = AugSchemeMPL::Sign(sk, message);
+            sigs.push_back(sig);
+            ms.push_back(message);
         }
 
-        G2Element aggSig = G2Element::Aggregate(sigs);
+        G2Element aggSig = AugSchemeMPL::Aggregate(sigs);
 
-        REQUIRE(aggSig.Verify());
+        REQUIRE(AugSchemeMPL::AggregateVerify(pks, ms, aggSig));
     }
+}
 
-    SECTION("Should insecurely aggregate many G2Elements, diff message")
-    {
-        std::vector<PrivateKey> sks;
-        std::vector<G1Element> pks;
-        std::vector<InsecureG2Element> sigs;
-        std::vector<const uint8_t*> hashes;
-
-        for (int i = 0; i < 80; i++) {
-            uint8_t* message = new uint8_t[8];
-            uint8_t* hash = new uint8_t[BLS::MESSAGE_HASH_LEN];
-            message[0] = 0;
-            message[1] = 100;
-            message[2] = 2;
-            message[3] = 59;
-            message[4] = 255;
-            message[5] = 92;
-            message[6] = 5;
-            message[7] = i;
-            Util::Hash256(hash, message, 8);
-            hashes.push_back(hash);
-            uint8_t seed[32];
-            getRandomSeed(seed);
-            const PrivateKey sk = PrivateKey::FromSeed(seed, 32);
-            const G1Element pk = sk.GetG1Element();
-            sks.push_back(sk);
-            pks.push_back(pk);
-            sigs.push_back(sk.SignInsecurePrehashed(hash));
-            delete[] message;
-        }
-
-        InsecureG2Element aggSig = InsecureG2Element::Aggregate(sigs);
-
-        REQUIRE(aggSig.Verify(hashes, pks));
-        std::swap(pks[0], pks[1]);
-        REQUIRE(!aggSig.Verify(hashes, pks));
-        std::swap(hashes[0], hashes[1]);
-        REQUIRE(aggSig.Verify(hashes, pks));
-
-        for (auto& p : hashes) {
-            delete[] p;
-        }
-    }
-
-    SECTION("Should securely aggregate same message")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-        uint8_t seed3[32];
-        getRandomSeed(seed3);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        G1Element pk1 = sk1.GetG1Element();
-
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-        G1Element pk2 = sk2.GetG1Element();
-
-        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
-        G1Element pk3 = sk3.GetG1Element();
-
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig2 = sk2.Sign(message1, sizeof(message1));
-        G2Element sig3 = sk3.Sign(message1, sizeof(message1));
-
-        std::vector<G2Element> const sigs = {sig1, sig2, sig3};
-        std::vector<G1Element> const pubKeys = {pk1, pk2, pk3};
-        G2Element aggSig = G2Element::Aggregate(sigs);
-
-        const G1Element aggPubKey = G1Element::Aggregate(pubKeys);
-        aggSig.SetAggregationInfo(
-            AggregationInfo::FromMsg(aggPubKey, message1, sizeof(message1)));
-        REQUIRE(aggSig.Verify());
-    }
-
-    SECTION("Should securely divide G2Elements")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-        uint8_t seed3[32];
-        getRandomSeed(seed3);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        G1Element pk1 = sk1.GetG1Element();
-
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-        G1Element pk2 = sk2.GetG1Element();
-
-        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
-        G1Element pk3 = sk3.GetG1Element();
-
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig2 = sk2.Sign(message1, sizeof(message1));
-        G2Element sig3 = sk3.Sign(message1, sizeof(message1));
-
-        std::vector<G2Element> sigs = {sig1, sig2, sig3};
-        G2Element aggSig = G2Element::Aggregate(sigs);
-
-        REQUIRE(sig2.Verify());
-        REQUIRE(sig3.Verify());
-        std::vector<G2Element> divisorSigs = {sig2, sig3};
-
-        REQUIRE(aggSig.Verify());
-
-        REQUIRE(aggSig.GetAggregationInfo()->GetPubKeys().size() == 3);
-        const G2Element aggSig2 = aggSig.DivideBy(divisorSigs);
-        REQUIRE(aggSig.GetAggregationInfo()->GetPubKeys().size() == 3);
-        REQUIRE(aggSig2.GetAggregationInfo()->GetPubKeys().size() == 1);
-
-        REQUIRE(aggSig.Verify());
-        REQUIRE(aggSig2.Verify());
-    }
-
-    SECTION("Should securely divide aggregate G2Elements")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t message2[7] = {92, 20, 5, 89, 91, 15, 105};
-        uint8_t message3[7] = {200, 10, 10, 159, 4, 15, 24};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-        uint8_t seed3[32];
-        getRandomSeed(seed3);
-        uint8_t seed4[32];
-        getRandomSeed(seed4);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        G1Element pk1 = sk1.GetG1Element();
-
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-        G1Element pk2 = sk2.GetG1Element();
-
-        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
-        G1Element pk3 = sk3.GetG1Element();
-
-        PrivateKey sk4 = PrivateKey::FromSeed(seed4, 32);
-        G1Element pk4 = sk4.GetG1Element();
-
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig2 = sk2.Sign(message1, sizeof(message1));
-        G2Element sig3 = sk3.Sign(message1, sizeof(message1));
-        G2Element sig4 = sk4.Sign(message2, sizeof(message2));
-        G2Element sig5 = sk4.Sign(message1, sizeof(message1));
-        G2Element sig6 = sk2.Sign(message3, sizeof(message3));
-
-        std::vector<G2Element> sigsL = {sig1, sig2};
-        std::vector<G2Element> sigsC = {sig3, sig4};
-        std::vector<G2Element> sigsR = {sig5, sig6};
-        G2Element aggSigL = G2Element::Aggregate(sigsL);
-        G2Element aggSigC = G2Element::Aggregate(sigsC);
-        G2Element aggSigR = G2Element::Aggregate(sigsR);
-
-        std::vector<G2Element> sigsL2 = {aggSigL, aggSigC};
-        G2Element aggSigL2 = G2Element::Aggregate(sigsL2);
-
-        std::vector<G2Element> sigsFinal = {aggSigL2, aggSigR};
-        G2Element aggSigFinal = G2Element::Aggregate(sigsFinal);
-
-        REQUIRE(aggSigFinal.Verify());
-        REQUIRE(aggSigFinal.GetAggregationInfo()->GetPubKeys().size() == 6);
-        std::vector<G2Element> divisorSigs = {aggSigL, sig6};
-        aggSigFinal = aggSigFinal.DivideBy(divisorSigs);
-        REQUIRE(aggSigFinal.GetAggregationInfo()->GetPubKeys().size() == 3);
-        REQUIRE(aggSigFinal.Verify());
-
-        // Throws when the m/pk pair is not unique within the aggregate (sig1
-        // is in both aggSigL2 and sig1.
-        std::vector<G2Element> sigsFinal2 = {aggSigL2, aggSigR, sig1};
-        G2Element aggSigFinal2 = G2Element::Aggregate(sigsFinal2);
-        std::vector<G2Element> divisorSigs2 = {aggSigL};
-        std::vector<G2Element> divisorSigs3 = {sig6};
-        aggSigFinal2 = aggSigFinal2.DivideBy(divisorSigs3);
-        REQUIRE_THROWS(aggSigFinal2.DivideBy(divisorSigs));
-    }
-
-    SECTION("Should insecurely aggregate many sigs, same message")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t hash1[BLS::MESSAGE_HASH_LEN];
-
-        std::vector<PrivateKey> sks;
-        std::vector<G1Element> pks;
-        std::vector<InsecureG2Element> sigs;
-
-        Util::Hash256(hash1, message1, sizeof(message1));
-
-        for (int i = 0; i < 70; i++) {
-            uint8_t seed[32];
-            getRandomSeed(seed);
-            PrivateKey sk = PrivateKey::FromSeed(seed, 32);
-            const G1Element pk = sk.GetG1Element();
-            sks.push_back(sk);
-            pks.push_back(pk);
-            sigs.push_back(sk.SignInsecure(message1, sizeof(message1)));
-        }
-
-        InsecureG2Element aggSig = InsecureG2Element::Aggregate(sigs);
-        const G1Element aggPubKey = G1Element::AggregateInsecure(pks);
-        REQUIRE(aggSig.Verify({hash1}, {aggPubKey}));
-    }
-
-    SECTION("Should securely aggregate many sigs, same message")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-
-        std::vector<PrivateKey> sks;
-        std::vector<G1Element> pks;
-        std::vector<G2Element> sigs;
-
-        for (int i = 0; i < 70; i++) {
-            uint8_t seed[32];
-            getRandomSeed(seed);
-            PrivateKey sk = PrivateKey::FromSeed(seed, 32);
-            const G1Element pk = sk.GetG1Element();
-            sks.push_back(sk);
-            pks.push_back(pk);
-            sigs.push_back(sk.Sign(message1, sizeof(message1)));
-        }
-
-        G2Element aggSig = G2Element::Aggregate(sigs);
-        const G1Element aggPubKey = G1Element::Aggregate(pks);
-        aggSig.SetAggregationInfo(
-            AggregationInfo::FromMsg(aggPubKey, message1, sizeof(message1)));
-        REQUIRE(aggSig.Verify());
-    }
-
-    SECTION("Should have at least one sig, with AggregationInfo")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        G1Element pk1 = sk1.GetG1Element();
-
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-
-        std::vector<G2Element> const sigs = {};
-        REQUIRE_THROWS(G2Element::Aggregate(sigs));
-
-        sig1.SetAggregationInfo(AggregationInfo());
-        std::vector<G2Element> const sigs2 = {sig1};
-        REQUIRE_THROWS(G2Element::Aggregate(sigs2));
-    }
-
-    SECTION("Should perform batch verification")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t message2[8] = {10, 28, 254, 88, 90, 45, 29, 38};
-        uint8_t message3[9] = {10, 28, 254, 88, 90, 45, 29, 38, 177};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-        uint8_t seed3[32];
-        getRandomSeed(seed3);
-        uint8_t seed4[32];
-        getRandomSeed(seed4);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        G1Element pk1 = sk1.GetG1Element();
-
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-        G1Element pk2 = sk2.GetG1Element();
-
-        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
-        G1Element pk3 = sk3.GetG1Element();
-
-        PrivateKey sk4 = PrivateKey::FromSeed(seed4, 32);
-        G1Element pk4 = sk4.GetG1Element();
-
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig2 = sk2.Sign(message1, sizeof(message1));
-        G2Element sig3 = sk3.Sign(message2, sizeof(message2));
-        G2Element sig4 = sk4.Sign(message3, sizeof(message3));
-        G2Element sig5 = sk3.Sign(message1, sizeof(message1));
-        G2Element sig6 = sk2.Sign(message1, sizeof(message1));
-        G2Element sig7 = sk4.Sign(message2, sizeof(message2));
-
-        std::vector<G2Element> const sigs = {
-            sig1, sig2, sig3, sig4, sig5, sig6, sig7};
-        std::vector<G1Element> const pubKeys = {
-            pk1, pk2, pk3, pk4, pk3, pk2, pk4};
-        std::vector<uint8_t*> const messages = {message1,
-                                                message1,
-                                                message2,
-                                                message3,
-                                                message1,
-                                                message1,
-                                                message2};
-        std::vector<size_t> const messageLens = {sizeof(message1),
-                                                 sizeof(message1),
-                                                 sizeof(message2),
-                                                 sizeof(message3),
-                                                 sizeof(message1),
-                                                 sizeof(message1),
-                                                 sizeof(message2)};
-
-        // Verifier generates a batch G2Element for efficiency
-        G2Element aggSig = G2Element::Aggregate(sigs);
-        REQUIRE(aggSig.Verify());
-    }
-
-    SECTION("Should perform batch verification with cache optimization")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t message2[8] = {10, 28, 254, 88, 90, 45, 29, 38};
-        uint8_t message3[9] = {10, 28, 254, 88, 90, 45, 29, 38, 177};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-        uint8_t seed3[32];
-        getRandomSeed(seed3);
-        uint8_t seed4[32];
-        getRandomSeed(seed4);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        G1Element pk1 = sk1.GetG1Element();
-
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-        G1Element pk2 = sk2.GetG1Element();
-
-        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
-        G1Element pk3 = sk3.GetG1Element();
-
-        PrivateKey sk4 = PrivateKey::FromSeed(seed4, 32);
-        G1Element pk4 = sk4.GetG1Element();
-
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig2 = sk2.Sign(message1, sizeof(message1));
-        G2Element sig3 = sk3.Sign(message2, sizeof(message2));
-        G2Element sig4 = sk4.Sign(message3, sizeof(message3));
-        G2Element sig5 = sk3.Sign(message1, sizeof(message1));
-        G2Element sig6 = sk2.Sign(message1, sizeof(message1));
-        G2Element sig7 = sk4.Sign(message2, sizeof(message2));
-
-        std::vector<G2Element> const sigs = {
-            sig1, sig2, sig3, sig4, sig5, sig6, sig7};
-
-        REQUIRE(sig1.Verify());
-        REQUIRE(sig3.Verify());
-        REQUIRE(sig4.Verify());
-        REQUIRE(sig7.Verify());
-        std::vector<G2Element> cache = {sig1, sig3, sig4, sig7};
-
-        // Verifier generates a batch G2Element for efficiency
-        G2Element aggSig = G2Element::Aggregate(sigs);
-
-        const G2Element aggSig2 = aggSig.DivideBy(cache);
-        REQUIRE(aggSig.Verify());
-        REQUIRE(aggSig2.Verify());
-    }
-
-*/
 TEST_CASE("Agg sks") {
     SECTION("Should create aggregates with agg sk (basic scheme)")
     {
@@ -1128,487 +642,170 @@ TEST_CASE("Agg sks") {
     }
 }
 
-
-/*
-    SECTION("Should aggregate with multiple levels.")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t message2[8] = {192, 29, 2, 0, 0, 45, 23, 192};
-        uint8_t message3[7] = {52, 29, 2, 0, 0, 45, 102};
-        uint8_t message4[7] = {99, 29, 2, 0, 0, 45, 222};
-
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-
+TEST_CASE("Advanced") {
+    SECTION("Should aggregate with multiple levels, degenerate") {
+        vector<uint8_t> message1 = {100, 2, 254, 88, 90, 45, 23};
+        PrivateKey sk1 = AugSchemeMPL::KeyGen(getRandomSeed());
         G1Element pk1 = sk1.GetG1Element();
-        G1Element pk2 = sk2.GetG1Element();
-
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig2 = sk2.Sign(message2, sizeof(message2));
-        G2Element sig3 = sk2.Sign(message1, sizeof(message1));
-        G2Element sig4 = sk1.Sign(message3, sizeof(message3));
-        G2Element sig5 = sk1.Sign(message4, sizeof(message4));
-        G2Element sig6 = sk1.Sign(message1, sizeof(message1));
-
-        std::vector<G2Element> const sigsL = {sig1, sig2};
-        std::vector<G1Element> const pksL = {pk1, pk2};
-        const G2Element aggSigL = G2Element::Aggregate(sigsL);
-
-        std::vector<G2Element> const sigsR = {sig3, sig4, sig6};
-        const G2Element aggSigR = G2Element::Aggregate(sigsR);
-
-        std::vector<G1Element> pk1Vec = {pk1};
-
-        std::vector<G2Element> sigs = {aggSigL, aggSigR, sig5};
-
-        const G2Element aggSig = G2Element::Aggregate(sigs);
-
-        REQUIRE(aggSig.Verify());
-    }
-
-    SECTION("Should aggregate with multiple levels, degenerate")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        G1Element pk1 = sk1.GetG1Element();
-        G2Element aggSig = sk1.Sign(message1, sizeof(message1));
+        G2Element aggSig = AugSchemeMPL::Sign(sk1, message1);
+        vector<G1Element> pks = {pk1};
+        vector<vector<uint8_t>> ms = {message1};
 
         for (size_t i = 0; i < 10; i++) {
-            getRandomSeed(seed);
-            PrivateKey sk = PrivateKey::FromSeed(seed, 32);
+            PrivateKey sk = AugSchemeMPL::KeyGen(getRandomSeed());
             G1Element pk = sk.GetG1Element();
-            G2Element sig = sk.Sign(message1, sizeof(message1));
-            std::vector<G2Element> sigs = {aggSig, sig};
-            aggSig = G2Element::Aggregate(sigs);
+            pks.push_back(pk);
+            ms.push_back(message1);
+            G2Element sig = AugSchemeMPL::Sign(sk, message1);
+            aggSig = AugSchemeMPL::Aggregate({aggSig, sig});
         }
-        REQUIRE(aggSig.Verify());
-        uint8_t sigSerialized[G2Element::G2Element_SIZE];
-        aggSig.Serialize(sigSerialized);
-
-        const G2Element aggSig2 = G2Element::FromBytes(sigSerialized);
-        REQUIRE(aggSig2.Verify() == false);
+        REQUIRE(AugSchemeMPL::AggregateVerify(pks, ms, aggSig));
     }
 
-    SECTION("Should aggregate with multiple levels, different messages")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t message2[7] = {192, 29, 2, 0, 0, 45, 23};
-        uint8_t message3[7] = {52, 29, 2, 0, 0, 45, 102};
-        uint8_t message4[7] = {99, 29, 2, 0, 0, 45, 222};
+    SECTION("Should aggregate with multiple levels, different messages") {
+        vector<uint8_t> message1 = {100, 2, 254, 88, 90, 45, 23};
+        vector<uint8_t> message2 = {192, 29, 2, 0, 0, 45, 23};
+        vector<uint8_t> message3 = {52, 29, 2, 0, 0, 45, 102};
+        vector<uint8_t> message4 = {99, 29, 2, 0, 0, 45, 222};
 
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
+        PrivateKey sk1 = AugSchemeMPL::KeyGen(getRandomSeed());
+        PrivateKey sk2 = AugSchemeMPL::KeyGen(getRandomSeed());
 
         G1Element pk1 = sk1.GetG1Element();
         G1Element pk2 = sk2.GetG1Element();
 
-        G2Element sig1 = sk1.Sign(message1, sizeof(message1));
-        G2Element sig2 = sk2.Sign(message2, sizeof(message2));
-        G2Element sig3 = sk2.Sign(message3, sizeof(message4));
-        G2Element sig4 = sk1.Sign(message4, sizeof(message4));
+        G2Element sig1 = AugSchemeMPL::Sign(sk1, message1);
+        G2Element sig2 = AugSchemeMPL::Sign(sk2, message2);
+        G2Element sig3 = AugSchemeMPL::Sign(sk2, message3);
+        G2Element sig4 = AugSchemeMPL::Sign(sk1, message4);
 
-        std::vector<G2Element> const sigsL = {sig1, sig2};
-        std::vector<G1Element> const pksL = {pk1, pk2};
-        std::vector<uint8_t*> const messagesL = {message1, message2};
-        std::vector<size_t> const messageLensL = {sizeof(message1),
-                                                  sizeof(message2)};
-        const G2Element aggSigL = G2Element::Aggregate(sigsL);
+        vector<G2Element> const sigsL = {sig1, sig2};
+        vector<G1Element> const pksL = {pk1, pk2};
+        vector<vector<uint8_t>> messagesL = {message1, message2};
+        const G2Element aggSigL = AugSchemeMPL::Aggregate(sigsL);
 
-        std::vector<G2Element> const sigsR = {sig3, sig4};
-        std::vector<G1Element> const pksR = {pk2, pk1};
-        std::vector<uint8_t*> const messagesR = {message3, message4};
-        std::vector<size_t> const messageLensR = {sizeof(message3),
-                                                  sizeof(message4)};
-        const G2Element aggSigR = G2Element::Aggregate(sigsR);
+        vector<G2Element> const sigsR = {sig3, sig4};
+        vector<G1Element> const pksR = {pk2, pk1};
+        const G2Element aggSigR = AugSchemeMPL::Aggregate(sigsR);
 
-        std::vector<G2Element> sigs = {aggSigL, aggSigR};
-        std::vector<std::vector<G1Element>> pks = {pksL, pksR};
-        std::vector<std::vector<uint8_t*>> messages = {messagesL, messagesR};
-        std::vector<std::vector<size_t>> messageLens = {messageLensL,
-                                                        messageLensR};
+        vector<G2Element> sigs = {aggSigL, aggSigR};
+        const G2Element aggSig = AugSchemeMPL::Aggregate(sigs);
 
-        const G2Element aggSig = G2Element::Aggregate(sigs);
-
-        std::vector<G1Element> allPks = {pk1, pk2, pk2, pk1};
-        std::vector<uint8_t*> allMessages = {
+        vector<G1Element> allPks = {pk1, pk2, pk2, pk1};
+        vector<vector<uint8_t>> allMessages = {
             message1, message2, message3, message4};
-        std::vector<size_t> allMessageLens = {sizeof(message1),
-                                              sizeof(message2),
-                                              sizeof(message3),
-                                              sizeof(message4)};
-
-        REQUIRE(aggSig.Verify());
-    }
-
-    SECTION("Should sign and verify using prepend method")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        G1Element pk1 = sk1.GetG1Element();
-        std::cout << "PK: " << pk1 << std::endl;
-
-        uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-        Util::Hash256(messageHash, message1, 7);
-        vector<const uint8_t*> messageHashes = {messageHash};
-        vector<G1Element> pks = {pk1};
-
-        const PrependG2Element sig1 = sk1.SignPrepend(message1, 7);
-        REQUIRE(sig1.Verify(messageHashes, pks));
-
-        uint8_t sigData[PrependG2Element::G2Element_SIZE];
-        uint8_t sigData2[PrependG2Element::G2Element_SIZE];
-        sig1.Serialize(sigData);
-        sig1.GetInsecureSig().Serialize(sigData2);
-        REQUIRE(
-            memcmp(sigData, sigData2, PrependG2Element::G2Element_SIZE) != 0);
-
-        PrependG2Element sig2 = PrependG2Element::FromBytes(sigData);
-        REQUIRE(sig1 == sig2);
-
-        REQUIRE(sig2.Verify(messageHashes, pks));
-    }
-
-    SECTION("Should aggregate using prepend method")
-    {
-        uint8_t message1[7] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t message2[7] = {192, 29, 2, 0, 0, 45, 23};
-
-        uint8_t seed[32];
-        getRandomSeed(seed);
-        uint8_t seed2[32];
-        getRandomSeed(seed2);
-        uint8_t seed3[32];
-        getRandomSeed(seed3);
-
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, 32);
-        PrivateKey sk2 = PrivateKey::FromSeed(seed2, 32);
-        PrivateKey sk3 = PrivateKey::FromSeed(seed3, 32);
-
-        G1Element pk1 = sk1.GetG1Element();
-        G1Element pk2 = sk2.GetG1Element();
-        G1Element pk3 = sk3.GetG1Element();
-
-        PrependG2Element sig1 = sk1.SignPrepend(message1, 7);
-        PrependG2Element sig2 = sk2.SignPrepend(message1, 7);
-        PrependG2Element sig3 = sk3.SignPrepend(message2, 7);
-
-        uint8_t messageHash1[BLS::MESSAGE_HASH_LEN];
-        uint8_t messageHash2[BLS::MESSAGE_HASH_LEN];
-        Util::Hash256(messageHash1, message1, 7);
-        Util::Hash256(messageHash2, message2, 7);
-        vector<const uint8_t*> messageHashes1 = {messageHash1};
-        vector<const uint8_t*> messageHashes2 = {messageHash2};
-        vector<const uint8_t*> messageHashes = {
-            messageHash1, messageHash1, messageHash2};
-        vector<G1Element> pks1 = {pk1};
-        vector<G1Element> pks2 = {pk2};
-        vector<G1Element> pks3 = {pk3};
-        vector<G1Element> pks = {pk1, pk2, pk3};
-
-        REQUIRE(sig1.Verify(messageHashes1, pks1));
-        REQUIRE(sig2.Verify(messageHashes1, pks2));
-        REQUIRE(sig3.Verify(messageHashes2, pks3));
-
-        vector<PrependG2Element> sigs = {sig1, sig2, sig3};
-
-        PrependG2Element agg = PrependG2Element::Aggregate(sigs);
-        REQUIRE(agg.Verify(messageHashes, pks));
-
-        vector<G1Element> pksWrong = {pk1, pk2, pk2};
-        REQUIRE(agg.Verify(messageHashes, pksWrong) == false);
+        REQUIRE(AugSchemeMPL::AggregateVerify(allPks, allMessages, aggSig));
     }
 
     SECTION("README")
     {
         // Example seed, used to generate private key. Always use
-        // a secure RNG with sufficient entropy to generate a seed.
-        uint8_t seed[] = {0,  50, 6,  244, 24,  199, 1,  25,  52,  88,  192,
-                          19, 18, 12, 89,  6,   220, 18, 102, 58,  209, 82,
-                          12, 62, 89, 110, 182, 9,   44, 20,  254, 22};
+        // a secure RNG with sufficient entropy to generate a seed (at least 32 bytes).
+        vector<uint8_t> seed = {0,  50, 6,  244, 24,  199, 1,  25,  52,  88,  192,
+                                19, 18, 12, 89,  6,   220, 18, 102, 58,  209, 82,
+                                12, 62, 89, 110, 182, 9,   44, 20,  254, 22};
 
-        PrivateKey sk = PrivateKey::FromSeed(seed, sizeof(seed));
+        PrivateKey sk = AugSchemeMPL::KeyGen(seed);
         G1Element pk = sk.GetG1Element();
 
-        uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
+        vector<uint8_t> message = {1, 2, 3, 4, 5};  // Message is passed in as a byte vector
+        G2Element signature = AugSchemeMPL::Sign(sk, message);
 
-        G2Element sig = sk.Sign(msg, sizeof(msg));
+        vector<uint8_t> skBytes = sk.Serialize();
+        vector<uint8_t> pkBytes = pk.Serialize();
+        vector<uint8_t> signatureBytes = signature.Serialize();
 
-        uint8_t skBytes[PrivateKey::PRIVATE_KEY_SIZE];  // 32 byte array
-        uint8_t pkBytes[G1Element::PUBLIC_KEY_SIZE];    // 48 byte array
-        uint8_t sigBytes[G2Element::G2Element_SIZE];    // 96 byte array
+        cout << Util::HexStr(skBytes) << endl;    // 32 bytes
+        cout << Util::HexStr(pkBytes) << endl;    // 48 bytes
+        cout << Util::HexStr(signatureBytes) << endl;  // 96 bytes
 
-        sk.Serialize(skBytes);    // 32 bytes
-        pk.Serialize(pkBytes);    // 48 bytes
-        sig.Serialize(sigBytes);  // 96 bytes
         // Takes array of 32 bytes
-        sk = PrivateKey::FromBytes(skBytes);
+        sk = PrivateKey::FromByteVector(skBytes);
 
         // Takes array of 48 bytes
-        pk = G1Element::FromBytes(pkBytes);
+        pk = G1Element::FromByteVector(pkBytes);
 
         // Takes array of 96 bytes
-        sig = G2Element::FromBytes(sigBytes);
-        // Add information required for verification, to sig object
-        sig.SetAggregationInfo(AggregationInfo::FromMsg(pk, msg, sizeof(msg)));
+        signature = G2Element::FromByteVector(signatureBytes);
 
-        bool ok = sig.Verify();
+        REQUIRE(AugSchemeMPL::Verify(pk, message, signature));
+
         // Generate some more private keys
         seed[0] = 1;
-        PrivateKey sk1 = PrivateKey::FromSeed(seed, sizeof(seed));
+        PrivateKey sk1 = AugSchemeMPL::KeyGen(seed);
         seed[0] = 2;
-        PrivateKey sk2 = PrivateKey::FromSeed(seed, sizeof(seed));
+        PrivateKey sk2 = AugSchemeMPL::KeyGen(seed);
+        vector<uint8_t> message2 = {1, 2, 3, 4, 5, 6, 7};
 
         // Generate first sig
         G1Element pk1 = sk1.GetG1Element();
-        G2Element sig1 = sk1.Sign(msg, sizeof(msg));
+        G2Element sig1 = AugSchemeMPL::Sign(sk1, message);
 
         // Generate second sig
         G1Element pk2 = sk2.GetG1Element();
-        G2Element sig2 = sk2.Sign(msg, sizeof(msg));
+        G2Element sig2 = AugSchemeMPL::Sign(sk2, message2);
 
-        // Aggregate G2Elements together
-        std::vector<G2Element> sigs = {sig1, sig2};
-        G2Element aggSig = G2Element::Aggregate(sigs);
+        // Signatures can be noninteractively combined by anyone
+        G2Element aggSig = AugSchemeMPL::Aggregate({sig1, sig2});
 
-        // For same message, public keys can be aggregated into one.
-        // The G2Element can be verified the same as a single G2Element,
-        // using this public key.
-        std::vector<G1Element> pubKeys = {pk1, pk2};
-        G1Element aggPubKey = G1Element::Aggregate(pubKeys);
-        // Generate one more key
+        REQUIRE(AugSchemeMPL::AggregateVerify({pk1, pk2}, {message, message2}, aggSig));
+
         seed[0] = 3;
-        PrivateKey sk3 = PrivateKey::FromSeed(seed, sizeof(seed));
+        PrivateKey sk3 = AugSchemeMPL::KeyGen(seed);
         G1Element pk3 = sk3.GetG1Element();
-        uint8_t msg2[] = {100, 2, 254, 88, 90, 45, 23};
+        vector<uint8_t> message3 = {100, 2, 254, 88, 90, 45, 23};
+        G2Element sig3 = AugSchemeMPL::Sign(sk3, message3);
 
-        // Generate the G2Elements, assuming we have 3 private keys
-        sig1 = sk1.Sign(msg, sizeof(msg));
-        sig2 = sk2.Sign(msg, sizeof(msg));
-        G2Element sig3 = sk3.Sign(msg2, sizeof(msg2));
-
-        // They can be noninteractively combined by anyone
-        // Aggregation below can also be done by the verifier, to
-        // make batch verification more efficient
-        std::vector<G2Element> sigsL = {sig1, sig2};
-        G2Element aggSigL = G2Element::Aggregate(sigsL);
 
         // Arbitrary trees of aggregates
-        std::vector<G2Element> sigsFinal = {aggSigL, sig3};
-        G2Element aggSigFinal = G2Element::Aggregate(sigsFinal);
+        G2Element aggSigFinal = AugSchemeMPL::Aggregate({aggSig, sig3});
 
-        // Serialize the final G2Element
-        aggSigFinal.Serialize(sigBytes);
-        // Deserialize aggregate G2Element
-        aggSigFinal = G2Element::FromBytes(sigBytes);
+        REQUIRE(AugSchemeMPL::AggregateVerify({pk1, pk2, pk3}, {message, message2, message3}, aggSigFinal));
 
-        // Create aggregation information (or deserialize it)
-        AggregationInfo a1 = AggregationInfo::FromMsg(pk1, msg, sizeof(msg));
-        AggregationInfo a2 = AggregationInfo::FromMsg(pk2, msg, sizeof(msg));
-        AggregationInfo a3 = AggregationInfo::FromMsg(pk3, msg2, sizeof(msg2));
-        std::vector<AggregationInfo> infos = {a1, a2};
-        AggregationInfo a1a2 = AggregationInfo::MergeInfos(infos);
-        std::vector<AggregationInfo> infos2 = {a1a2, a3};
-        AggregationInfo aFinal = AggregationInfo::MergeInfos(infos2);
+        // If the same message is signed, you can use Proof of Posession (PopScheme) for efficiency
+        // A proof of possession MUST be passed around with the PK to ensure security.
 
-        // Verify final G2Element using the aggregation info
-        aggSigFinal.SetAggregationInfo(aFinal);
-        ok = aggSigFinal.Verify();
+        G2Element popSig1 = PopSchemeMPL::Sign(sk1, message);
+        G2Element popSig2 = PopSchemeMPL::Sign(sk2, message);
+        G2Element popSig3 = PopSchemeMPL::Sign(sk3, message);
+        G2Element pop1 = PopSchemeMPL::PopProve(sk1);
+        G2Element pop2 = PopSchemeMPL::PopProve(sk2);
+        G2Element pop3 = PopSchemeMPL::PopProve(sk3);
 
-        // If you previously verified a G2Element, you can also divide
-        // the aggregate G2Element by the G2Element you already verified.
-        ok = aggSigL.Verify();
-        std::vector<G2Element> cache = {aggSigL};
-        aggSigFinal = aggSigFinal.DivideBy(cache);
+        REQUIRE(PopSchemeMPL::PopVerify(pk1, pop1));
+        REQUIRE(PopSchemeMPL::PopVerify(pk2, pop2));
+        REQUIRE(PopSchemeMPL::PopVerify(pk3, pop3));
+        G2Element popSigAgg = PopSchemeMPL::Aggregate({popSig1, popSig2, popSig3});
 
-        // Final verification is now more efficient
-        ok = aggSigFinal.Verify();
+        REQUIRE(PopSchemeMPL::FastAggregateVerify({pk1, pk2, pk3}, message, popSigAgg));
 
-        std::vector<PrivateKey> privateKeysList = {sk1, sk2};
-        std::vector<G1Element> pubKeysList = {pk1, pk2};
+        // Aggregate public key, indistinguishable from a single public key
+        G1Element popAggPk = pk1 + pk2 + pk3;
+        REQUIRE(PopSchemeMPL::Verify(popAggPk, message, popSigAgg));
 
-        // Create an aggregate private key, that can generate
-        // aggregate G2Elements
-        const PrivateKey aggSk =
-            PrivateKey::Aggregate(privateKeysList, pubKeysList);
+        // Aggregate private keys
+        PrivateKey aggSk = PrivateKey::Aggregate({sk1, sk2, sk3});
+        REQUIRE(PopSchemeMPL::Sign(aggSk, message) == popSigAgg);
 
-        G2Element aggSig3 = aggSk.Sign(msg, sizeof(msg));
 
-        PrependG2Element prepend1 = sk1.SignPrepend(msg, sizeof(msg));
-        PrependG2Element prepend2 = sk2.SignPrepend(msg, sizeof(msg));
-        std::vector<G1Element> prependPubKeys = {pk1, pk2};
-        uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-        Util::Hash256(messageHash, msg, sizeof(msg));
-        std::vector<const uint8_t*> hashes = {messageHash, messageHash};
-        std::vector<PrependG2Element> prependSigs = {prepend1, prepend2};
-        PrependG2Element prependAgg = PrependG2Element::Aggregate(prependSigs);
-        prependAgg.Verify(hashes, prependPubKeys);
+        PrivateKey masterSk = AugSchemeMPL::KeyGen(seed);
+        PrivateKey child = AugSchemeMPL::DeriveChildSk(masterSk, 152);
+        PrivateKey grandchild = AugSchemeMPL::DeriveChildSk(child, 952);
+
+        G1Element masterPk = masterSk.GetG1Element();
+        PrivateKey childU = AugSchemeMPL::DeriveChildSkUnhardened(masterSk, 22);
+        PrivateKey grandchildU = AugSchemeMPL::DeriveChildSkUnhardened(childU, 0);
+
+        G1Element childUPk = AugSchemeMPL::DeriveChildPkUnhardened(masterPk, 22);
+        G1Element grandchildUPk = AugSchemeMPL::DeriveChildPkUnhardened(childUPk, 0);
+
+        REQUIRE(grandchildUPk == grandchildU.GetG1Element());
     }
 }
 
-TEST_CASE("Threshold")
-{
-    SECTION("Threshold tests")
-    {
-        // To initialize a T of N threshold key under a
-        // Joint-Feldman scheme:
-        size_t T = 2;
-        size_t N = 3;
 
-        // 1. Each player calls Threshold::Create.
-        // They send everyone commitment to the polynomial,
-        // and send secret share fragments frags[j-1] to
-        // the j-th player (All players have index >= 1).
-
-        // G1Element commits[N][T]
-        // PrivateKey frags[N][N]
-        std::vector<std::vector<G1Element>> commits;
-        std::vector<std::vector<PrivateKey>> frags;
-        for (size_t i = 0; i < N; ++i) {
-            commits.emplace_back(std::vector<G1Element>());
-            frags.emplace_back(std::vector<PrivateKey>());
-            for (size_t j = 0; j < N; ++j) {
-                if (j < T) {
-                    g1_t g;
-                    commits[i].emplace_back(G1Element::FromG1(&g));
-                }
-                bn_t b;
-                bn_new(b);
-                frags[i].emplace_back(PrivateKey::FromBN(b));
-            }
-        }
-
-        PrivateKey sk1 = Threshold::Create(commits[0], frags[0], T, N);
-        PrivateKey sk2 = Threshold::Create(commits[1], frags[1], T, N);
-        PrivateKey sk3 = Threshold::Create(commits[2], frags[2], T, N);
-
-        // 2. Each player calls Threshold::VerifySecretFragment
-        // on all secret fragments they receive.  If any verify
-        // false, they complain to abort the scheme.  (Note that
-        // repeatedly aborting, or 'speaking' last, can bias the
-        // master public key.)
-
-        for (int target = 1; target <= N; ++target) {
-            for (int source = 1; source <= N; ++source) {
-                REQUIRE(Threshold::VerifySecretFragment(
-                    target,
-                    frags[source - 1][target - 1],
-                    commits[source - 1],
-                    T));
-            }
-        }
-
-        // 3. Each player computes the shared, master public key:
-        // masterPubkey = G1Element::AggregateInsecure(...)
-        // They also create their secret share from all secret
-        // fragments received (now verified):
-        // secretShare = PrivateKey::AggregateInsecure(...)
-
-        G1Element masterPubkey = G1Element::AggregateInsecure(
-            {commits[0][0], commits[1][0], commits[2][0]});
-
-        // recvdFrags[j][i] = frags[i][j]
-        std::vector<std::vector<PrivateKey>> recvdFrags = {{}};
-        for (int i = 0; i < N; ++i) {
-            recvdFrags.emplace_back(std::vector<PrivateKey>());
-            for (int j = 0; j < N; ++j) {
-                recvdFrags[i].emplace_back(frags[j][i]);
-            }
-        }
-
-        PrivateKey secretShare1 = PrivateKey::AggregateInsecure(recvdFrags[0]);
-        PrivateKey secretShare2 = PrivateKey::AggregateInsecure(recvdFrags[1]);
-        PrivateKey secretShare3 = PrivateKey::AggregateInsecure(recvdFrags[2]);
-
-        // 4a. Player P creates a pre-multiplied G2Element share wrt T players:
-        // sigShare = Threshold::SignWithCoefficient(...)
-        // These G2Element shares can be combined to sign the msg:
-        // G2Element = InsecureG2Element::Aggregate(...)
-        // The advantage of this approach is that forming the final G2Element
-        // no longer requires information about the players.
-
-        uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t hash[32];
-        Util::Hash256(hash, msg, sizeof(msg));
-
-        size_t players[] = {1, 3};
-        // For example, players 1 and 3 sign.
-        // As we have verified the coefficients through the commitments given,
-        // using InsecureG2Element is okay.
-        InsecureG2Element sigShareC1 = Threshold::SignWithCoefficient(
-            secretShare1, msg, (size_t)sizeof(msg), (size_t)1, players, T);
-        InsecureG2Element sigShareC3 = Threshold::SignWithCoefficient(
-            secretShare3, msg, (size_t)sizeof(msg), (size_t)3, players, T);
-
-        InsecureG2Element G2Element =
-            InsecureG2Element::Aggregate({sigShareC1, sigShareC3});
-
-        REQUIRE(G2Element.Verify({hash}, {masterPubkey}));
-
-        // 4b. Alternatively, players may sign the message blindly, creating
-        // a unit G2Element share: sigShare = secretShare.SignInsecure(...)
-        // These G2Elements may be combined with lagrange coefficients to
-        // sign the message: G2Element = Threshold::AggregateUnitSigs(...)
-        // The advantage to this approach is that each player does not need
-        // to know the final list of signatories.
-
-        // For example, players 1 and 3 sign.
-        InsecureG2Element sigShareU1 =
-            secretShare1.SignInsecure(msg, (size_t)sizeof(msg));
-        InsecureG2Element sigShareU3 =
-            secretShare3.SignInsecure(msg, (size_t)sizeof(msg));
-        InsecureG2Element G2Element2 = Threshold::AggregateUnitSigs(
-            {sigShareU1, sigShareU3}, msg, (size_t)sizeof(msg), players, T);
-
-        REQUIRE(G2Element2.Verify({hash}, {masterPubkey}));
-    }
-}
-*/
-
-TEST_CASE("Schemes")
-{
-    /*
-    SECTION("Debug")
-    {
-        vector<uint8_t> msg0 = {};
-        vector<uint8_t> msg1 = {1, 2, 3};
-        uint8_t seed1[32] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3};
-        PrivateKey sk1 = PrivateKey::FromBytes(seed1, true);
-        vector<uint8_t> sk1ser = sk1.Serialize();
-        std::stringstream ss;
-        ss << std::hex;
-
-        for (int i = 0; i < 32; ++i)
-            ss << std::setw(2) << std::setfill('0') << (int)sk1ser[i];
-
-        std::cout << "sk1: " << ss.str() << "\n";
-        G1Element pk1 = BasicSchemeMPL::SkToG1(sk1);
-        vector<uint8_t> pk1v = BasicSchemeMPL::SkToPk(sk1);
-        G2Element sig1 = BasicSchemeMPL::Sign(sk1, msg1);
-        vector<uint8_t> sig1v = BasicSchemeMPL::Sign(sk1, msg1);
-        std::cout << "PK1: " << pk1 << "\n";
-        std::cout << "SIG1: " << sig1 << "\n";
-        G2Element sig0 = BasicSchemeMPL::Sign(sk1, msg0);
-        std::cout << "SIG0: " << sig0 << "\n";
-    }
-    */
-
-    SECTION("Basic Scheme")
-    {
+TEST_CASE("Schemes") {
+    SECTION("Basic Scheme") {
         vector<uint8_t> seed1(32, 0x04);
         vector<uint8_t> seed2(32, 0x05);
         vector<uint8_t> msg1 = {7, 8, 9};
@@ -1724,8 +921,8 @@ TEST_CASE("Schemes")
         REQUIRE(PopSchemeMPL::AggregateVerify({pk1v, pk2v}, msgs, aggsigv));
 
         // PopVerify
-        G2Element proof1 = PopSchemeMPL::PopProveNative(sk1);
-        vector<uint8_t> proof1v = PopSchemeMPL::PopProve(sk1);
+        G2Element proof1 = PopSchemeMPL::PopProve(sk1);
+        vector<uint8_t> proof1v = PopSchemeMPL::PopProve(sk1).Serialize();
         REQUIRE(PopSchemeMPL::PopVerify(pk1, proof1));
         REQUIRE(PopSchemeMPL::PopVerify(pk1v, proof1v));
 
