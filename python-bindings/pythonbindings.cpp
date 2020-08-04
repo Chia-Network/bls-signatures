@@ -303,7 +303,7 @@ PYBIND11_MODULE(blspy, m)
 
                 return PopSchemeMPL::AggregateVerify(pks, vecs, sig);
             })
-        .def("pop_prove", &PopSchemeMPL::PopProveNative)
+        .def("pop_prove", &PopSchemeMPL::PopProve)
         .def(
             "pop_verify",
             overload_cast_<const G1Element &, const G2Element &>()(

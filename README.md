@@ -11,32 +11,24 @@
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/context:cpp)
 
 NOTE: THIS LIBRARY IS A DRAFT AND NOT YET REVIEWED FOR SECURITY
-NOTE: THIS LIBRARY WAS SHIFTED TO THE IETF BLS SPECIFICATION ON 7/16/20 SOME
-DOCUMENTATION IS NOT YET UPDATED
+NOTE: THIS LIBRARY WAS SHIFTED TO THE IETF BLS SPECIFICATION ON 7/16/20
 
-Implements BLS signatures with aggregation as in
-[Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html)
-, using [relic toolkit](https://github.com/relic-toolkit/relic)
+Implements BLS signatures with aggregation using [relic toolkit](https://github.com/relic-toolkit/relic)
 for cryptographic primitives (pairings, EC, hashing).
-The [BLS12-381](https://github.com/zkcrypto/pairing/tree/master/src/bls12_381)
-curve is used. The original spec is
-[here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md).
+The original spec is [here](https://github.com/Chia-Network/bls-signatures/blob/f4ffccdb961736e0e3f6d23736c0c97d097aaa76/SPEC.md).
 This library now implements
-[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/).
+[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve/) with [these curve parameters](https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/) for BLS12-381.
 
 Features:
 
-* Non-interactive signature aggregation on identical or distinct messages
+* Non-interactive signature aggregation following IETF specification
 * Aggregate aggregates (trees)
-* Efficient verification (only one pairing per distinct message)
-* Security against rogue public key attack, using aggregation info, or proof of
-possession
+* Efficient verification using Proof of Posssesion (only one pairing per distinct message)
+* Security against rogue public key attack using proof of possession or augmented scheme
 * Aggregate public keys and private keys
-* M/N threshold keys and signatures using Joint-Feldman scheme
-* HD (BIP32) key derivation
+* EIP-2333 key derivation (including unhardened keys like BIP-32)
 * Key and signature serialization
 * Batch verification
-* Signature division (divide an aggregate by a previously verified signature)
 * [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings)
 * [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/master/python-bindings)
 * [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/master/python-impl)
@@ -45,202 +37,141 @@ possession
 
 ```c++
 #include "bls.hpp"
+using namespace bls;
 ```
 
 ## Creating keys and signatures
 
 ```c++
 // Example seed, used to generate private key. Always use
-// a secure RNG with sufficient entropy to generate a seed.
-uint8_t seed[] = {0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
-                  19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
-                  82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22};
+// a secure RNG with sufficient entropy to generate a seed (at least 32 bytes).
+vector<uint8_t> seed = {0,  50, 6,  244, 24,  199, 1,  25,  52,  88,  192,
+                        19, 18, 12, 89,  6,   220, 18, 102, 58,  209, 82,
+                        12, 62, 89, 110, 182, 9,   44, 20,  254, 22};
 
-bls::PrivateKey sk = bls::PrivateKey::FromSeed(seed, sizeof(seed));
-bls::PublicKey pk = sk.GetPublicKey();
+PrivateKey sk = AugSchemeMPL::KeyGen(seed);
+G1Element pk = sk.GetG1Element();
 
-uint8_t msg[] = {100, 2, 254, 88, 90, 45, 23};
-
-bls::Signature sig = sk.Sign(msg, sizeof(msg));
+vector<uint8_t> message = {1, 2, 3, 4, 5};  // Message is passed in as a byte vector
+G2Element signature = AugSchemeMPL::Sign(sk, message);
 ```
 
 ## Serializing keys and signatures to bytes
 
 ```c++
-uint8_t skBytes[bls::PrivateKey::PRIVATE_KEY_SIZE];  // 32 byte array
-uint8_t pkBytes[bls::PublicKey::PUBLIC_KEY_SIZE];    // 48 byte array
-uint8_t sigBytes[bls::Signature::SIGNATURE_SIZE];    // 96 byte array
+vector<uint8_t> skBytes = sk.Serialize();
+vector<uint8_t> pkBytes = pk.Serialize();
+vector<uint8_t> signatureBytes = signature.Serialize();
 
-sk.Serialize(skBytes);   // 32 bytes
-pk.Serialize(pkBytes);   // 48 bytes
-sig.Serialize(sigBytes); // 96 bytes
+cout << Util::HexStr(skBytes) << endl;    // 32 bytes printed in hex
+cout << Util::HexStr(pkBytes) << endl;    // 48 bytes printed in hex
+cout << Util::HexStr(signatureBytes) << endl;  // 96 bytes printed in hex
 ```
 
 ## Loading keys and signatures from bytes
 
 ```c++
-// Takes array of 32 bytes
-sk = bls::PrivateKey::FromBytes(skBytes);
+// Takes vector of 32 bytes
+sk = PrivateKey::FromByteVector(skBytes);
 
-// Takes array of 48 bytes
-pk = bls::PublicKey::FromBytes(pkBytes);
+// Takes vector of 48 bytes
+pk = G1Element::FromByteVector(pkBytes);
 
-// Takes array of 96 bytes
-sig = bls::Signature::FromBytes(sigBytes);
+// Takes vector of 96 bytes
+signature = G2Element::FromByteVector(signatureBytes);
 ```
 
 ## Verifying signatures
 
 ```c++
-// Add information required for verification, to sig object
-sig.SetAggregationInfo(bls::AggregationInfo::FromMsg(pk, msg, sizeof(msg)));
-
-bool ok = sig.Verify();
+bool ok = AugSchemeMPL::Verify(pk, message, signature));
 ```
 
-## Aggregate signatures for a single message
+## Create aggregate signatures
 
 ```c++
 // Generate some more private keys
 seed[0] = 1;
-bls::PrivateKey sk1 = bls::PrivateKey::FromSeed(seed, sizeof(seed));
+PrivateKey sk1 = AugSchemeMPL::KeyGen(seed);
 seed[0] = 2;
-bls::PrivateKey sk2 = bls::PrivateKey::FromSeed(seed, sizeof(seed));
+PrivateKey sk2 = AugSchemeMPL::KeyGen(seed);
+vector<uint8_t> message2 = {1, 2, 3, 4, 5, 6, 7};
 
 // Generate first sig
-bls::PublicKey pk1 = sk1.GetPublicKey();
-bls::Signature sig1 = sk1.Sign(msg, sizeof(msg));
+G1Element pk1 = sk1.GetG1Element();
+G2Element sig1 = AugSchemeMPL::Sign(sk1, message);
 
 // Generate second sig
-bls::PublicKey pk2 = sk2.GetPublicKey();
-bls::Signature sig2 = sk2.Sign(msg, sizeof(msg));
+G1Element pk2 = sk2.GetG1Element();
+G2Element sig2 = AugSchemeMPL::Sign(sk2, message2);
 
-// Aggregate signatures together
-vector<bls::Signature> sigs = {sig1, sig2};
-bls::Signature aggSig = bls::Signature::Aggregate(sigs);
+// Signatures can be noninteractively combined by anyone
+G2Element aggSig = AugSchemeMPL::Aggregate({sig1, sig2});
 
-// For same message, public keys can be aggregated into one.
-// The signature can be verified the same as a single signature,
-// using this public key.
-vector<bls::PublicKey> pubKeys = {pk1, pk2};
-bls::PublicKey aggPubKey = bls::Signature::Aggregate(pubKeys);
+ok = AugSchemeMPL::AggregateVerify({pk1, pk2}, {message, message2}, aggSig);
 ```
 
-## Aggregate signatures for different messages
+## Arbitrary trees of aggregates
 
 ```c++
-// Generate one more key and message
 seed[0] = 3;
-bls::PrivateKey sk3 = bls::PrivateKey::FromSeed(seed, sizeof(seed));
-bls::PublicKey pk3 = sk3.GetPublicKey();
-uint8_t msg2[] = {100, 2, 254, 88, 90, 45, 23};
+PrivateKey sk3 = AugSchemeMPL::KeyGen(seed);
+G1Element pk3 = sk3.GetG1Element();
+vector<uint8_t> message3 = {100, 2, 254, 88, 90, 45, 23};
+G2Element sig3 = AugSchemeMPL::Sign(sk3, message3);
 
-// Generate the signatures, assuming we have 3 private keys
-sig1 = sk1.Sign(msg, sizeof(msg));
-sig2 = sk2.Sign(msg, sizeof(msg));
-bls::Signature sig3 = sk3.Sign(msg2, sizeof(msg2));
 
-// They can be noninteractively combined by anyone
-// Aggregation below can also be done by the verifier, to
-// make batch verification more efficient
-vector<bls::Signature> sigsL = {sig1, sig2};
-bls::Signature aggSigL = bls::Signature::Aggregate(sigsL);
+G2Element aggSigFinal = AugSchemeMPL::Aggregate({aggSig, sig3});
+ok = AugSchemeMPL::AggregateVerify({pk1, pk2, pk3}, {message, message2, message3}, aggSigFinal);
 
-// Arbitrary trees of aggregates
-vector<bls::Signature> sigsFinal = {aggSigL, sig3};
-bls::Signature aggSigFinal = bls::Signature::Aggregate(sigsFinal);
-
-// Serialize the final signature
-aggSigFinal.Serialize(sigBytes);
 ```
 
-## Verify aggregate signature for different messages
+## Very fast verification with Proof of Possession scheme
 
 ```c++
-// Deserialize aggregate signature
-aggSigFinal = bls::Signature::FromBytes(sigBytes);
+// If the same message is signed, you can use Proof of Posession (PopScheme) for efficiency
+// A proof of possession MUST be passed around with the PK to ensure security.
 
-// Create aggregation information (or deserialize it)
-bls::AggregationInfo a1 = bls::AggregationInfo::FromMsg(pk1, msg, sizeof(msg));
-bls::AggregationInfo a2 = bls::AggregationInfo::FromMsg(pk2, msg, sizeof(msg));
-bls::AggregationInfo a3 = bls::AggregationInfo::FromMsg(pk3, msg2, sizeof(msg2));
-vector<bls::AggregationInfo> infos = {a1, a2};
-bls::AggregationInfo a1a2 = bls::AggregationInfo::MergeInfos(infos);
-vector<bls::AggregationInfo> infos2 = {a1a2, a3};
-bls::AggregationInfo aFinal = bls::AggregationInfo::MergeInfos(infos2);
+G2Element popSig1 = PopSchemeMPL::Sign(sk1, message);
+G2Element popSig2 = PopSchemeMPL::Sign(sk2, message);
+G2Element popSig3 = PopSchemeMPL::Sign(sk3, message);
+G2Element pop1 = PopSchemeMPL::PopProve(sk1);
+G2Element pop2 = PopSchemeMPL::PopProve(sk2);
+G2Element pop3 = PopSchemeMPL::PopProve(sk3);
 
-// Verify final signature using the aggregation info
-aggSigFinal.SetAggregationInfo(aFinal);
-ok = aggSigFinal.Verify();
+ok = PopSchemeMPL::PopVerify(pk1, pop1);
+ok = PopSchemeMPL::PopVerify(pk2, pop2);
+ok = PopSchemeMPL::PopVerify(pk3, pop3);
+G2Element popSigAgg = PopSchemeMPL::Aggregate({popSig1, popSig2, popSig3});
 
-// If you previously verified a signature, you can also divide
-// the aggregate signature by the signature you already verified.
-ok = aggSigL.Verify();
-vector<bls::Signature> cache = {aggSigL};
-aggSigFinal = aggSigFinal.DivideBy(cache);
+ok = PopSchemeMPL::FastAggregateVerify({pk1, pk2, pk3}, message, popSigAgg);
 
-// Final verification is now more efficient
-ok = aggSigFinal.Verify();
+// Aggregate public key, indistinguishable from a single public key
+G1Element popAggPk = pk1 + pk2 + pk3;
+ok = PopSchemeMPL::Verify(popAggPk, message, popSigAgg);
+
+// Aggregate private keys
+PrivateKey aggSk = PrivateKey::Aggregate({sk1, sk2, sk3});
+ok = (PopSchemeMPL::Sign(aggSk, message) == popSigAgg);
 ```
 
-## Aggregate private keys
+## HD keys using EIP-2333
 
 ```c++
-vector<bls::PrivateKey> privateKeysList = {sk1, sk2};
-vector<bls::PublicKey> pubKeysList = {pk1, pk2};
+// Hardened (more secure, but no parent pk -> child pk)
+PrivateKey masterSk = AugSchemeMPL::KeyGen(seed);
+PrivateKey child = AugSchemeMPL::DeriveChildSk(masterSk, 152);
+PrivateKey grandChild = AugSchemeMPL::DeriveChildSk(child, 952)
 
-// Create an aggregate private key, that can generate
-// aggregate signatures
-const bls::PrivateKey aggSk = bls::PrivateKey::Aggregate(
-        privateKeys, pubKeys);
+// Unhardened (less secure, but can go from parent pk -> child pk), BIP32 style
+G1Element masterPk = masterSk.GetG1Element();
+PrivateKey childU = AugSchemeMPL::DeriveChildSkUnhardened(masterSk, 22);
+PrivateKey grandchildU = AugSchemeMPL::DeriveChildSkUnhardened(childU, 0);
 
-bls::Signature aggSig3 = aggSk.Sign(msg, sizeof(msg));
-```
+G1Element childUPk = AugSchemeMPL::DeriveChildPkUnhardened(masterPk, 22);
+G1Element grandchildUPk = AugSchemeMPL::DeriveChildPkUnhardened(childUPk, 0);
 
-## HD keys
-
-```c++
-// Random seed, used to generate master extended private key
-uint8_t seed[] = {1, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192,
-                  19, 18, 12, 89, 6, 220, 18, 102, 58, 209,
-                  82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22};
-
-bls::ExtendedPrivateKey esk = bls::ExtendedPrivateKey::FromSeed(
-        seed, sizeof(seed));
-
-bls::ExtendedPublicKey epk = esk.GetExtendedPublicKey();
-
-// Use i >= 2^31 for hardened keys
-bls::ExtendedPrivateKey skChild = esk.PrivateChild(0)
-                                .PrivateChild(5);
-
-bls::ExtendedPublicKey pkChild = epk.PublicChild(0)
-                               .PublicChild(5);
-
-// Serialize extended keys
-uint8_t buffer1[bls::ExtendedPublicKey::EXTENDED_PUBLIC_KEY_SIZE];   // 93 bytes
-uint8_t buffer2[bls::ExtendedPrivateKey::EXTENDED_PRIVATE_KEY_SIZE]; // 77 bytes
-
-pkChild.Serialize(buffer1);
-skChild.Serialize(buffer2);
-```
-
-## Prepend PK method
-
-```c++
-// Can use proofs of possession to avoid keeping track of metadata
-PrependSignature prepend1 = sk1.SignPrepend(msg, sizeof(msg));
-PrependSignature prepend2 = sk2.SignPrepend(msg, sizeof(msg));
-
-std::vector<PublicKey> prependPubKeys = {pk1, pk2};
-uint8_t messageHash[BLS::MESSAGE_HASH_LEN];
-Util::Hash256(messageHash, msg, sizeof(msg));
-std::vector<const uint8_t*> hashes = {messageHash, messageHash};
-
-std::vector<PrependSignature> prependSigs = {prepend1, prepend2};
-PrependSignature prependAgg = PrependSignature::Aggregate(prependSigs);
-
-prependAgg.Verify(hashes, prependPubKeys);
+ok = (grandchildUPk == grandchildU.GetG1Element();
 ```
 
 ## Build
@@ -337,9 +268,8 @@ at lgtm.
 
 ## Specification and test vectors
 
-The specification and test vectors can be found
-[here](https://github.com/Chia-Network/bls-signatures/tree/master/SPEC.md).
-Test vectors can also be seen in the python or cpp test files.
+The [IETF bls draft](https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve/) is followed.
+Test vectors can also be seen in the python and cpp test files
 
 ## Libsodium license
 

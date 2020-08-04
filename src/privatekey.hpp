@@ -39,6 +39,9 @@ public:
     // Construct a private key from a bytearray.
     static PrivateKey FromBytes(const uint8_t *bytes, bool modOrder = false);
 
+    // Construct a private key from a bytearray.
+    static PrivateKey FromByteVector(const std::vector<uint8_t> bytes, bool modOrder = false);
+
     // Construct a private key from a native bn element.
     static PrivateKey FromBN(bn_t sk, bool modOrder = false);
 

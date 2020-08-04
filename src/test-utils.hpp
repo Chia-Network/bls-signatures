@@ -42,9 +42,12 @@ void endStopwatch(string testName,
          << " ms" << endl;
 }
 
-void getRandomSeed(uint8_t* seed) {
+std::vector<uint8_t> getRandomSeed() {
+    uint8_t buf[32];
     bn_t r;
     bn_new(r);
     bn_rand(r, RLC_POS, 256);
-    bn_write_bin(seed, 32, r);
+    bn_write_bin(buf, 32, r);
+    std::vector<uint8_t> ret(buf, buf + 32);
+    return ret;
 }

@@ -472,7 +472,7 @@ bool PopSchemeMPL::AggregateVerify(
         PopSchemeMPL::CIPHERSUITE_ID_LEN);
 }
 
-G2Element PopSchemeMPL::PopProveNative(const PrivateKey &seckey)
+G2Element PopSchemeMPL::PopProve(const PrivateKey &seckey)
 {
     G1Element pk = seckey.GetG1Element();
     G2Element hashedKey = G2Element::FromMessage(
@@ -483,10 +483,6 @@ G2Element PopSchemeMPL::PopProveNative(const PrivateKey &seckey)
     return seckey.GetG2Power(*(g2_t *)&hashedKey.q);
 }
 
-vector<uint8_t> PopSchemeMPL::PopProve(const PrivateKey &seckey)
-{
-    return PopSchemeMPL::PopProveNative(seckey).Serialize();
-}
 
 bool PopSchemeMPL::PopVerify(
     const G1Element &pubkey,

@@ -285,8 +285,7 @@ public:
         const vector<vector<uint8_t>> &messages,
         const G2Element &signature);
 
-    static vector<uint8_t> PopProve(const PrivateKey &seckey);
-    static G2Element PopProveNative(const PrivateKey &seckey);
+    static G2Element PopProve(const PrivateKey &seckey);
 
     static bool PopVerify(
         const G1Element &pubkey,
