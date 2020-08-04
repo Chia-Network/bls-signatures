@@ -218,7 +218,7 @@ PrivateKey CoreMPL::DeriveChildSk(const PrivateKey& sk, uint32_t index) {
 }
 
 PrivateKey CoreMPL::DeriveChildSkUnhardened(const PrivateKey& sk, uint32_t index) {
-    return HDKeys::DeriveChildSk(sk, index);
+    return HDKeys::DeriveChildSkUnhardened(sk, index);
 }
 
 G1Element CoreMPL::DeriveChildPkUnhardened(const G1Element& pk, uint32_t index) {
@@ -298,11 +298,13 @@ bool BasicSchemeMPL::AggregateVerify(
     const G2Element &signature)
 {
     int n = messages.size();
-    if (n <= 0)
+    if (n <= 0) {
         return false;
+    }
     std::set<vector<uint8_t>> s(messages.begin(), messages.end());
-    if (s.size() != n)
+    if (s.size() != n) {
         return false;
+    }
     return CoreMPL::AggregateVerify(
         pubkeys,
         messages,

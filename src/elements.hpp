@@ -89,9 +89,9 @@ public:
 
     friend bool operator==(G2Element const &a, G2Element const &b);
     friend bool operator!=(G2Element const &a, G2Element const &b);
-    friend std::ostream &operator<<(std::ostream &os, G2Element const &s);
-    friend G2Element &operator+=(G2Element &a, G2Element &b);
-    friend G2Element operator+(G2Element &a, G2Element &b);
+    friend std::ostream &operator<<(std::ostream &os, const G2Element &s);
+    friend G2Element &operator+=(G2Element &a, const G2Element &b);
+    friend G2Element operator+(const G2Element &a, const G2Element &b);
     friend G2Element &operator*=(G2Element &a, bn_t &k);
     friend G2Element operator*(G2Element &a, bn_t &k);
     friend G2Element operator*(bn_t &k, G2Element &a);

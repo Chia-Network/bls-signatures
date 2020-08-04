@@ -40,7 +40,7 @@ public:
     static PrivateKey FromBytes(const uint8_t *bytes, bool modOrder = false);
 
     // Construct a private key from a native bn element.
-    static PrivateKey FromBN(bn_t sk);
+    static PrivateKey FromBN(bn_t sk, bool modOrder = false);
 
     static PrivateKey Aggregate(std::vector<PrivateKey> const &privateKeys);
 
