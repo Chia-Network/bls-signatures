@@ -80,50 +80,6 @@ void BLS::SetSecureAllocator(
     Util::secureFreeCallback = freeCb;
 }
 
-/*
-void BLS::HashPubKeys(bn_t* output, size_t numOutputs,
-                      std::vector<uint8_t*> const &serPubKeys,
-                      std::vector<size_t> const& sortedIndices) {
-    bn_t order;
-
-    bn_new(order);
-    g2_get_ord(order);
-
-    uint8_t *pkBuffer = new uint8_t[serPubKeys.size() *
-PublicKey::PUBLIC_KEY_SIZE];
-
-    for (size_t i = 0; i < serPubKeys.size(); i++) {
-        memcpy(pkBuffer + i * PublicKey::PUBLIC_KEY_SIZE,
-serPubKeys[sortedIndices[i]], PublicKey::PUBLIC_KEY_SIZE);
-    }
-
-    uint8_t pkHash[32];
-    Util::Hash256(pkHash, pkBuffer, serPubKeys.size() *
-PublicKey::PUBLIC_KEY_SIZE); for (size_t i = 0; i < numOutputs; i++) { uint8_t
-hash[32]; uint8_t buffer[4 + 32]; memset(buffer, 0, 4);
-        // Set first 4 bytes to index, to generate different ts
-        Util::IntToFourBytes(buffer, i);
-        // Set next 32 bytes as the hash of all the public keys
-        std::memcpy(buffer + 4, pkHash, 32);
-        Util::Hash256(hash, buffer, 4 + 32);
-
-        bn_read_bin(output[i], hash, 32);
-        bn_mod_basic(output[i], output[i], order);
-    }
-
-    delete[] pkBuffer;
-
-    CheckRelicErrors();
-}
-
-PublicKey BLS::DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey)
-{ if (!privKey.keydata) { throw std::string("keydata not initialized");
-    }
-    PublicKey ret = pubKey.Exp(*privKey.keydata);
-    CheckRelicErrors();
-    return ret;
-}
-*/
 
 void BLS::CheckRelicErrors()
 {

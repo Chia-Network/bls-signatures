@@ -45,6 +45,7 @@ public:
     // Construct a private key from a native bn element.
     static PrivateKey FromBN(bn_t sk, bool modOrder = false);
 
+    // Aggregate many private keys into one (sum of keys mod order)
     static PrivateKey Aggregate(std::vector<PrivateKey> const &privateKeys);
 
     // Construct a private key from another private key. Allocates memory in
@@ -67,15 +68,13 @@ public:
     PrivateKey &operator=(const PrivateKey &rhs);
 
     // Multiply private key by G1 or G2 elements
-    friend G1Element &operator*=(G1Element &a, PrivateKey &k);
-    friend G1Element &operator*=(PrivateKey &k, G1Element &a);
-    friend G1Element operator*(G1Element &a, PrivateKey &k);
-    friend G1Element operator*(PrivateKey &k, G1Element &a);
+    friend G1Element &operator*=(G1Element &a, const PrivateKey &k);
+    friend G1Element operator*(const G1Element &a, const PrivateKey &k);
+    friend G1Element operator*(const PrivateKey &k, const G1Element &a);
 
-    friend G2Element &operator*=(G2Element &a, PrivateKey &k);
-    friend G2Element &operator*=(PrivateKey &k, G2Element &a);
-    friend G2Element operator*(G2Element &a, PrivateKey &k);
-    friend G2Element operator*(PrivateKey &k, G2Element &a);
+    friend G2Element &operator*=(G2Element &a, const PrivateKey &k);
+    friend G2Element operator*(const G2Element &a, const PrivateKey &k);
+    friend G2Element operator*(const PrivateKey &k, const G2Element &a);
 
     // Serialize the key into bytes
     void Serialize(uint8_t *buffer) const;
@@ -96,9 +95,6 @@ public:
 private:
     // Don't allow public construction, force static methods
     PrivateKey() {}
-
-    // Multiply private key with n
-    PrivateKey Mul(const bn_t n) const;
 
     // Allocate memory for private key
     void AllocateKeyData();

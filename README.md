@@ -198,6 +198,7 @@ cmake --build . -- -j 6
 ```bash
 ./build/src/runbench
 ```
+On a 3.5 GHz i7 Mac, verification takes about 1.1ms per signature, and signing takes 1.3ms.
 
 ### Link the library to use it
 
