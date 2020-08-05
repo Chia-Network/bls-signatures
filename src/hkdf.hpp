@@ -22,6 +22,7 @@
 #include <gmp.h>
 #endif
 
+#include <cassert>
 #include "util.hpp"
 
 namespace bls {
