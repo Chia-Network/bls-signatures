@@ -105,7 +105,7 @@ G2Element sig1 = AugSchemeMPL::Sign(sk1, message);
 G1Element pk2 = sk2.GetG1Element();
 G2Element sig2 = AugSchemeMPL::Sign(sk2, message2);
 
-// Signatures can be noninteractively combined by anyone
+// Signatures can be non-interactively combined by anyone
 G2Element aggSig = AugSchemeMPL::Aggregate({sig1, sig2});
 
 ok = AugSchemeMPL::AggregateVerify({pk1, pk2}, {message, message2}, aggSig);

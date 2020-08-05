@@ -1,10 +1,11 @@
 from math import ceil
-from util import has256
+from util import hash256
 
 BLOCK_SIZE = 32
 
+
 def hmac(key: bytes, message: bytes) -> bytes:
-    k_prime: bytes = k
+    k_prime: bytes = key
     if len(key) > BLOCK_SIZE:
         k_prime = hash256(key)
     while len(k_prime) < BLOCK_SIZE:
@@ -12,20 +13,22 @@ def hmac(key: bytes, message: bytes) -> bytes:
 
     assert len(k_prime) == BLOCK_SIZE
 
-    first = bytes([k_prime[i] ^ 0x5c for i in range(BLOCK_SIZE)])
+    first = bytes([k_prime[i] ^ 0x5C for i in range(BLOCK_SIZE)])
     second = hash256(bytes([k_prime[i] ^ 0x36 for i in range(BLOCK_SIZE)]) + message)
 
     return hash256(first + second)
 
+
 def extract(salt: bytes, ikm: bytes) -> bytes:
     return hmac(salt, ikm)
+
 
 def expand(L: int, prk: bytes, info: bytes) -> bytes:
     N: int = ceil(L / BLOCK_SIZE)
     bytes_written: int = 0
-    okm: bytes = b''
+    okm: bytes = b""
 
-    for i in range(1, N+1):
+    for i in range(1, N + 1):
         if i == 1:
             T: bytes = hmac(info + bytes([1]), prk)
         else:
@@ -38,6 +41,7 @@ def expand(L: int, prk: bytes, info: bytes) -> bytes:
     assert bytes_written == L
     return okm
 
+
 def extract_expand(key: bytes, salt: bytes, info: bytes) -> bytes:
-    prk = extract(salt, key)
-    return expand(prk, info)
+    return bytes()
+    # return expand(prk, info)

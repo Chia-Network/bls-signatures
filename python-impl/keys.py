@@ -1,17 +1,15 @@
-from aggregation_info import AggregationInfo
 from copy import deepcopy
 from ec import (
     AffinePoint,
     JacobianPoint,
     default_ec,
     generator_Fq,
-    hash_to_point_Fq2,
     hash_to_point_prehashed_Fq2,
     y_for_x,
 )
 from fields import Fq
-from signature import Signature, PrependSignature
-from util import hash256, hmac256
+from signature import PrependSignature
+from util import hash256
 from hkdf import extract_expand
 from bls import BLS
 
@@ -113,22 +111,21 @@ class PrivateKey:
 
     @staticmethod
     def from_seed(seed):
-        L = 48;  # `ceil((3 * ceil(log2(r))) / 16)`, where `r` is the order of the BLS 12-381 curve
-        okm = extract_expand(L, seed + bytes([0]), b'BLS-SIG-KEYGEN-SALT-', bytes([0, L]))
+        L = 48
+        # `ceil((3 * ceil(log2(r))) / 16)`, where `r` is the order of the BLS 12-381 curve
+        okm = extract_expand(
+            L, seed + bytes([0]), b"BLS-SIG-KEYGEN-SALT-", bytes([0, L])
+        )
         return PrivateKey(int.from_bytes(okm, "big") % default_ec.n)
 
     def get_public_key(self):
         return PublicKey.from_g1((self.value * generator_Fq()).to_jacobian())
 
     def sign(self, m):
-        r = hash_to_point_Fq2(m).to_jacobian()
-        aggregation_info = AggregationInfo.from_msg(self.get_public_key(), m)
-        return Signature.from_g2(self.value * r, aggregation_info)
+        pass
 
     def sign_prehashed(self, h):
-        r = hash_to_point_prehashed_Fq2(h).to_jacobian()
-        aggregation_info = AggregationInfo.from_msg_hash(self.get_public_key(), h)
-        return Signature.from_g2(self.value * r, aggregation_info)
+        pass
 
     def sign_prepend(self, m):
         return self.sign_prepend_prehashed(hash256(m))
