@@ -128,12 +128,6 @@ PYBIND11_MODULE(blspy, m)
             [](const PrivateKey &k, const py::object &memo) {
                 return PrivateKey(k);
             })
-        .def(
-            "derive_child",
-            [](PrivateKey &k, uint32_t index) {
-                return HDKeys::DeriveChildSk(k, index);
-            })
-
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("__repr__", [](const PrivateKey &k) {
@@ -167,6 +161,9 @@ PYBIND11_MODULE(blspy, m)
                 const vector<uint8_t> inputVec(input, input + len(b));
                 return BasicSchemeMPL::KeyGen(inputVec);
             })
+        .def("derive_child_sk", &BasicSchemeMPL::DeriveChildSk)
+        .def("derive_child_sk_unhardened", &BasicSchemeMPL::DeriveChildSkUnhardened)
+        .def("derive_child_pk_unhardened", &BasicSchemeMPL::DeriveChildPkUnhardened)
         .def(
             "aggregate",
             overload_cast_<const vector<G2Element> &>()(
@@ -212,6 +209,9 @@ PYBIND11_MODULE(blspy, m)
                 const vector<uint8_t> inputVec(input, input + len(b));
                 return AugSchemeMPL::KeyGen(inputVec);
             })
+        .def("derive_child_sk", &AugSchemeMPL::DeriveChildSk)
+        .def("derive_child_sk_unhardened", &AugSchemeMPL::DeriveChildSkUnhardened)
+        .def("derive_child_pk_unhardened", &AugSchemeMPL::DeriveChildPkUnhardened)
         .def(
             "aggregate",
             overload_cast_<const vector<G2Element> &>()(
@@ -266,6 +266,9 @@ PYBIND11_MODULE(blspy, m)
                 const vector<uint8_t> inputVec(input, input + len(b));
                 return PopSchemeMPL::KeyGen(inputVec);
             })
+        .def("derive_child_sk", &PopSchemeMPL::DeriveChildSk)
+        .def("derive_child_sk_unhardened", &PopSchemeMPL::DeriveChildSkUnhardened)
+        .def("derive_child_pk_unhardened", &PopSchemeMPL::DeriveChildPkUnhardened)
         .def(
             "aggregate",
             overload_cast_<const vector<vector<uint8_t>> &>()(
