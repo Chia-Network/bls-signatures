@@ -17,7 +17,7 @@ Implements BLS signatures with aggregation using [relic toolkit](https://github.
 for cryptographic primitives (pairings, EC, hashing).
 The original spec is [here](https://github.com/Chia-Network/bls-signatures/blob/f4ffccdb961736e0e3f6d23736c0c97d097aaa76/SPEC.md).
 This library now implements
-[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve/) with [these curve parameters](https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/) for BLS12-381.
+[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/) with [these curve parameters](https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/) for BLS12-381.
 
 Features:
 

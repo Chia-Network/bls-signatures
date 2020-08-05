@@ -20,10 +20,7 @@
 #include "catch.hpp"
 #include "relic.h"
 #include "relic_test.h"
-#include "schemes.hpp"
 #include "test-utils.hpp"
-#include "hkdf.hpp"
-#include "hdkeys.hpp"
 using std::cout;
 using std::endl;
 using std::string;

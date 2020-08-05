@@ -28,6 +28,10 @@
 
 #include "privatekey.hpp"
 #include "util.hpp"
+#include "schemes.hpp"
+#include "elements.hpp"
+#include "hkdf.hpp"
+#include "hdkeys.hpp"
 
 #include "relic.h"
 #include "relic_test.h"
@@ -48,7 +52,7 @@ class BLS {
     static bool Init();
 
     static void SetSecureAllocator(Util::SecureAllocCallback allocCb, Util::SecureFreeCallback freeCb);
-    
+
     /*
     // Used for secure aggregation
     static void HashPubKeys(
