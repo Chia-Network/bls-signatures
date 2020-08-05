@@ -33,6 +33,9 @@ Features:
 * [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/master/python-bindings)
 * [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/master/python-impl)
 
+## Before you start
+This library uses minimum public key sizes (MPL). A G2Element is a signature (96 bytes), and a G1Element is a public key (48 bytes). A private key is a 32 byte integer. There are three schemes: Basic, Augmented, and ProofOfPossession. Augmented should be enough for most use cases, and ProofOfPossession can be used where verification must be fast.
+
 ## Import the library
 
 ```c++
@@ -54,6 +57,9 @@ G1Element pk = sk.GetG1Element();
 
 vector<uint8_t> message = {1, 2, 3, 4, 5};  // Message is passed in as a byte vector
 G2Element signature = AugSchemeMPL::Sign(sk, message);
+
+// Verify the signature
+bool ok = AugSchemeMPL::Verify(pk, message, signature));
 ```
 
 ## Serializing keys and signatures to bytes
@@ -79,12 +85,6 @@ pk = G1Element::FromByteVector(pkBytes);
 
 // Takes vector of 96 bytes
 signature = G2Element::FromByteVector(signatureBytes);
-```
-
-## Verifying signatures
-
-```c++
-bool ok = AugSchemeMPL::Verify(pk, message, signature));
 ```
 
 ## Create aggregate signatures
@@ -155,9 +155,10 @@ PrivateKey aggSk = PrivateKey::Aggregate({sk1, sk2, sk3});
 ok = (PopSchemeMPL::Sign(aggSk, message) == popSigAgg);
 ```
 
-## HD keys using EIP-2333
+## HD keys using [EIP-2333](https://github.com/ethereum/EIPs/pull/2333)
 
 ```c++
+// You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indeces are used.
 // Hardened (more secure, but no parent pk -> child pk)
 PrivateKey masterSk = AugSchemeMPL::KeyGen(seed);
 PrivateKey child = AugSchemeMPL::DeriveChildSk(masterSk, 152);
@@ -209,10 +210,6 @@ ude -Ibls-signatures/src/  -L./bls-signatures/build/ -l bls  yourfile.cpp
 
 ## Notes on dependencies
 
-Changes performed to relic: Added config files for Chia, and added gmp include
-in relic.h, new ep_map and ep2_map, new ep_pck and ep2_pck. Custom inversion
-function. Note: relic is used with the Apache 2.0 license.
-
 Libsodium and GMP are optional dependencies: libsodium gives secure memory
 allocation, and GMP speeds up the library by ~ 3x. To install them, either
 download them from github and follow the instructions for each repo, or use
@@ -222,22 +219,19 @@ python wheels for multiple platforms in `.github/workflows/`
 ## Discussion
 
 Discussion about this library and other Chia related development is in the #dev
-channle of Chia's [public Keybase channels](https://keybase.io/team/chia_network.public).
+channel of Chia's [public Keybase channels](https://keybase.io/team/chia_network.public).
 
 ## Code style
 
-* Always use uint8_t for bytes
+* Always use vector<uint8_t> for bytes
 * Use size_t for size variables
 * Uppercase method names
 * Prefer static constructors
 * Avoid using templates
 * Objects allocate and free their own memory
 * Use cpplint with default rules
+* Use SecAlloc and SecFree when handling secrets
 
-There are three types of signatures: InsecureSignatures (simple signatures
-which are not secure by themselves, due to rogue public keys), Signatures
-(secure signatures that require AggregationInfo to aggregate), and
-PrependSignatures, which prepend public keys to messages, making them secure.
 
 ## ci Building
 
@@ -270,7 +264,7 @@ at lgtm.
 ## Specification and test vectors
 
 The [IETF bls draft](https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve/) is followed.
-Test vectors can also be seen in the python and cpp test files
+Test vectors can also be seen in the python and cpp test files.
 
 ## Libsodium license
 
@@ -297,3 +291,6 @@ the following copyright notice.
 ## GMP license
 
 GMP is distributed under the [GNU LGPL v3 license](https://www.gnu.org/licenses/lgpl-3.0.html)
+
+## Relic license
+Relic is used with the [Apache 2.0 license](https://github.com/relic-toolkit/relic/blob/master/LICENSE.Apache-2.0)
