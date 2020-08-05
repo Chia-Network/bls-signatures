@@ -51,15 +51,15 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const G1Element &s);
     friend G1Element &operator+=(G1Element &a, const G1Element &b);
     friend G1Element operator+(const G1Element &a, const G1Element &b);
-    friend G1Element &operator*=(G1Element &a, bn_t &k);
-    friend G1Element operator*(G1Element &a, bn_t &k);
-    friend G1Element operator*(bn_t &k, G1Element &a);
+    friend G1Element &operator*=(G1Element &a, const bn_t &k);
+    friend G1Element operator*(const G1Element &a, const bn_t &k);
+    friend G1Element operator*(const bn_t &k, const G1Element &a);
     G1Element &operator=(const G1Element &pubKey);
 
-    GTElement Pair(G2Element &b);
-    friend GTElement operator&(G1Element &a, G2Element &b);
+    GTElement Pair(const G2Element &b) const;
+    friend GTElement operator&(const G1Element &a, const G2Element &b);
 
-    G1Element Inverse();
+    G1Element Inverse() const;
     void Serialize(uint8_t *buffer) const;
     std::vector<uint8_t> Serialize() const;
     uint32_t GetFingerprint() const;
@@ -92,12 +92,12 @@ public:
     friend std::ostream &operator<<(std::ostream &os, const G2Element &s);
     friend G2Element &operator+=(G2Element &a, const G2Element &b);
     friend G2Element operator+(const G2Element &a, const G2Element &b);
-    friend G2Element &operator*=(G2Element &a, bn_t &k);
-    friend G2Element operator*(G2Element &a, bn_t &k);
-    friend G2Element operator*(bn_t &k, G2Element &a);
+    friend G2Element &operator*=(G2Element &a, const bn_t &k);
+    friend G2Element operator*(const G2Element &a, const bn_t &k);
+    friend G2Element operator*(const bn_t &k, const G2Element &a);
 
-    G2Element Inverse();
-    GTElement Pair(G1Element &a);
+    G2Element Inverse() const;
+    GTElement Pair(const G1Element &a) const;
     // friend GTElement operator&(G1Element &a, G2Element &b);
     G2Element &operator=(const G2Element &rhs);
 
@@ -121,7 +121,7 @@ public:
 
     friend bool operator==(GTElement const &a, GTElement const &b);
     friend bool operator!=(GTElement const &a, GTElement const &b);
-    friend std::ostream &operator<<(std::ostream &os, GTElement const &s);
+    friend std::ostream &operator<<(std::ostream &os, const GTElement &s);
     GTElement &operator=(const GTElement &rhs);
 
 private:

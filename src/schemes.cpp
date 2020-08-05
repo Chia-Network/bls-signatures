@@ -100,7 +100,7 @@ bool CoreMPL::Verify(
     return ans;
 }
 
-vector<uint8_t> CoreMPL::Aggregate(vector<vector<uint8_t>> const &signatures)
+vector<uint8_t> CoreMPL::Aggregate(const vector<vector<uint8_t>> &signatures)
 {
     g2_t ans;
     g2_free(ans);
@@ -118,7 +118,7 @@ vector<uint8_t> CoreMPL::Aggregate(vector<vector<uint8_t>> const &signatures)
     return G2Element::FromNative(&ans).Serialize();
 }
 
-G2Element CoreMPL::Aggregate(vector<G2Element> const &signatures)
+G2Element CoreMPL::Aggregate(const vector<G2Element> &signatures)
 {
     g2_t ans;
     g2_free(ans);

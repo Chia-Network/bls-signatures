@@ -53,17 +53,6 @@ class BLS {
 
     static void SetSecureAllocator(Util::SecureAllocCallback allocCb, Util::SecureFreeCallback freeCb);
 
-    /*
-    // Used for secure aggregation
-    static void HashPubKeys(
-            bn_t* output,
-            size_t numOutputs,
-            std::vector<uint8_t*> const &serPubKeys,
-            std::vector<size_t> const &sortedIndices);
-
-    static PublicKey DHKeyExchange(const PrivateKey& privKey, const PublicKey& pubKey);
-    */
-
     static void CheckRelicErrors();
     static void CheckRelicErrorsInvalidArgument();
 };

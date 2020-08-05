@@ -104,49 +104,40 @@ G2Element PrivateKey::GetG2Element() const
     return ret;
 }
 
-G1Element &operator*=(G1Element &a, PrivateKey &k)
+G1Element &operator*=(G1Element &a, const PrivateKey &k)
 {
     g1_mul(a.p, a.p, *(k.keydata));
     return a;
 }
 
-G1Element &operator*=(PrivateKey &k, G1Element &a)
+G1Element operator*(const G1Element &a, const PrivateKey &k)
 {
-    a *= k;
-    return a;
-}
-
-G1Element operator*(G1Element &a, PrivateKey &k)
-{
+    // Relic does not allow const arguments to some functions
+    G1Element nonConstA(a);
     g1_t ans;
     g1_new(ans);
-    g1_mul(ans, a.p, *(k.keydata));
+    g1_mul(ans, nonConstA.p, *(k.keydata));
     return G1Element::FromNative(&ans);
 }
 
-G1Element operator*(PrivateKey &k, G1Element &a) { return a * k; }
+G1Element operator*(const PrivateKey &k, const G1Element &a) { return a * k; }
 
-G2Element &operator*=(G2Element &a, PrivateKey &k)
+G2Element &operator*=(G2Element &a, const PrivateKey &k)
 {
     g2_mul(a.q, a.q, *(k.keydata));
     return a;
 }
 
-G2Element &operator*=(PrivateKey &k, G2Element &a)
+G2Element operator*(const G2Element &a, const PrivateKey &k)
 {
-    a *= k;
-    return a;
-}
-
-G2Element operator*(G2Element &a, PrivateKey &k)
-{
+    G2Element nonConstA(a);
     g2_t ans;
     g2_new(ans);
-    g2_mul(ans, a.q, *(k.keydata));
+    g2_mul(ans, nonConstA.q, *(k.keydata));
     return G2Element::FromNative(&ans);
 }
 
-G2Element operator*(PrivateKey &k, G2Element &a) { return a * k; }
+G2Element operator*(const PrivateKey &k, const G2Element &a) { return a * k; }
 
 G2Element PrivateKey::GetG2Power(g2_t base) const
 {
@@ -177,19 +168,6 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
 }
 
 bool PrivateKey::IsZero() { return (bn_is_zero(*keydata)); }
-
-PrivateKey PrivateKey::Mul(const bn_t n) const
-{
-    bn_t order;
-    bn_new(order);
-    g2_get_ord(order);
-
-    PrivateKey ret;
-    ret.AllocateKeyData();
-    bn_mul_comba(*ret.keydata, *keydata, n);
-    bn_mod_basic(*ret.keydata, *ret.keydata, order);
-    return ret;
-}
 
 bool operator==(const PrivateKey &a, const PrivateKey &b)
 {

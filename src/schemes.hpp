@@ -68,9 +68,9 @@ public:
         const uint8_t *dst,
         int dst_len);
 
-    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures);
+    static vector<uint8_t> Aggregate(const vector<vector<uint8_t>> &signatures);
 
-    static G2Element Aggregate(vector<G2Element> const &signatures);
+    static G2Element Aggregate(const vector<G2Element> &signatures);
 
     static bool AggregateVerify(
         const vector<vector<uint8_t>> &pubkeys,
@@ -113,12 +113,12 @@ public:
         return CoreMPL::SkToG1(seckey);
     }
 
-    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures)
+    static vector<uint8_t> Aggregate(const vector<vector<uint8_t>> &signatures)
     {
         return CoreMPL::Aggregate(signatures);
     }
 
-    static G2Element Aggregate(vector<G2Element> const &signatures)
+    static G2Element Aggregate(const vector<G2Element> &signatures)
     {
         return CoreMPL::Aggregate(signatures);
     }
@@ -179,12 +179,12 @@ public:
         return CoreMPL::SkToG1(seckey);
     }
 
-    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures)
+    static vector<uint8_t> Aggregate(const vector<vector<uint8_t>> &signatures)
     {
         return CoreMPL::Aggregate(signatures);
     }
 
-    static G2Element Aggregate(vector<G2Element> const &signatures)
+    static G2Element Aggregate(const vector<G2Element> &signatures)
     {
         return CoreMPL::Aggregate(signatures);
     }
@@ -251,12 +251,12 @@ public:
         return CoreMPL::SkToG1(seckey);
     }
 
-    static vector<uint8_t> Aggregate(vector<vector<uint8_t>> const &signatures)
+    static vector<uint8_t> Aggregate(const vector<vector<uint8_t>> &signatures)
     {
         return CoreMPL::Aggregate(signatures);
     }
 
-    static G2Element Aggregate(vector<G2Element> const &signatures)
+    static G2Element Aggregate(const vector<G2Element> &signatures)
     {
         return CoreMPL::Aggregate(signatures);
     }
