@@ -123,11 +123,7 @@ PYBIND11_MODULE(blspy, m)
                 return PrivateKey(k);
             })
         .def("get_g1", [](const PrivateKey &k) { return k.GetG1Element(); })
-        .def(
-            "__deepcopy__",
-            [](const PrivateKey &k, const py::object &memo) {
-                return PrivateKey(k);
-            })
+        .def("aggregate", &PrivateKey::Aggregate)
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("__repr__", [](const PrivateKey &k) {
@@ -185,7 +181,7 @@ PYBIND11_MODULE(blspy, m)
                 return BasicSchemeMPL::Verify(pk, v, sig);
             })
         .def(
-            "agg_verify",
+            "aggregate_verify",
             [](const vector<G1Element> &pks,
                const vector<py::bytes> &msgs,
                const G2Element &sig) {
@@ -242,7 +238,7 @@ PYBIND11_MODULE(blspy, m)
                 return AugSchemeMPL::Verify(pk, v, sig);
             })
         .def(
-            "agg_verify",
+            "aggregate_verify",
             [](const vector<G1Element> &pks,
                const vector<py::bytes> &msgs,
                const G2Element &sig) {
@@ -294,7 +290,7 @@ PYBIND11_MODULE(blspy, m)
                 return PopSchemeMPL::Verify(pk, v, sig);
             })
         .def(
-            "agg_verify",
+            "aggregate_verify",
             [](const vector<G1Element> &pks,
                const vector<py::bytes> &msgs,
                const G2Element &sig) {
@@ -312,13 +308,13 @@ PYBIND11_MODULE(blspy, m)
             overload_cast_<const G1Element &, const G2Element &>()(
                 &PopSchemeMPL::PopVerify))
         .def(
-            "fast_agg_verify",
+            "fast_aggregate_verify",
             overload_cast_<
                 const vector<G1Element> &,
                 const vector<uint8_t> &,
                 const G2Element &>()(&PopSchemeMPL::FastAggregateVerify))
         .def(
-            "fast_agg_verify",
+            "fast_aggregate_verify",
             [](const vector<G1Element> &pks,
                const py::bytes &msg,
                const G2Element &sig) {

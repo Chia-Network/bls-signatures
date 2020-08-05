@@ -10,7 +10,6 @@ from ec import (
 )
 from fields import Fq, Fq2, Fq12
 from util import hash256
-from aggregation_info import AggregationInfo
 from bls import BLS
 from pairing import ate_pairing_multi
 
@@ -232,9 +231,6 @@ class Signature:
             # or insecure signature is given, and invalid signature will
             # be created. We don't verify for performance reasons.
             final_sig = Signature.aggregate_sigs_simple(signatures)
-            aggregation_infos = [sig.aggregation_info for sig in signatures]
-            final_agg_info = AggregationInfo.merge_infos(aggregation_infos)
-            final_sig.set_aggregation_info(final_agg_info)
             return final_sig
 
         # There are groups that share messages, therefore we need
@@ -285,9 +281,6 @@ class Signature:
             agg_sig += signature.value
 
         final_sig = Signature.from_g2(agg_sig)
-        aggregation_infos = [sig.aggregation_info for sig in signatures]
-        final_agg_info = AggregationInfo.merge_infos(aggregation_infos)
-        final_sig.set_aggregation_info(final_agg_info)
 
         return final_sig
 

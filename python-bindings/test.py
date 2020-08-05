@@ -1,16 +1,14 @@
 # flake8: noqa: E501
 from blspy import (
     PrivateKey,
-    PublicKeyMPL as PublicKey,
-    SignatureMPL as Signature,
     Util,
-    BasicSchemeMPL as BScheme,
-    AugSchemeMPL as AScheme,
-    PopSchemeMPL as PScheme,
-    BNWrapper as BN,
-    G1Element as G1,
-    G2Element as G2,
-    GTElement as GT,
+    BasicSchemeMPL,
+    AugSchemeMPL,
+    PopSchemeMPL,
+    BNWrapper,
+    G1Element,
+    G2Element,
+    GTElement,
 )
 from copy import deepcopy
 import binascii
@@ -25,28 +23,28 @@ def test_schemes():
     # fmt: on
     msg = bytes([100, 2, 254, 88, 90, 45, 23])
     msg2 = bytes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-    sk = BScheme.key_gen(seed)
+    sk = BasicSchemeMPL.key_gen(seed)
     pk = sk.get_g1()
 
     assert sk == PrivateKey.from_bytes(bytes(sk))
-    assert pk == PublicKey.from_bytes(bytes(pk))
+    assert pk == G1Element.from_bytes(bytes(pk))
 
-    for Scheme in (BScheme, AScheme, PScheme):
+    for Scheme in (BasicSchemeMPL, AugSchemeMPL, PopSchemeMPL):
         sig = Scheme.sign(sk, msg)
-        assert sig == Signature.from_bytes(bytes(sig))
+        assert sig == G2Element.from_bytes(bytes(sig))
         assert Scheme.verify(pk, msg, sig)
 
     seed = bytes([1]) + seed[1:]
-    sk1 = BScheme.key_gen(seed)
+    sk1 = BasicSchemeMPL.key_gen(seed)
     pk1 = sk1.get_g1()
     seed = bytes([2]) + seed[1:]
-    sk2 = BScheme.key_gen(seed)
+    sk2 = BasicSchemeMPL.key_gen(seed)
     pk2 = sk2.get_g1()
 
-    for Scheme in (BScheme, AScheme, PScheme):
+    for Scheme in (BasicSchemeMPL, AugSchemeMPL, PopSchemeMPL):
         # Aggregate same message
         agg_pk = pk1 + pk2
-        if Scheme is AScheme:
+        if Scheme is AugSchemeMPL:
             sig1 = Scheme.sign(sk1, msg, agg_pk)
             sig2 = Scheme.sign(sk2, msg, agg_pk)
         else:
@@ -60,7 +58,7 @@ def test_schemes():
         sig1 = Scheme.sign(sk1, msg)
         sig2 = Scheme.sign(sk2, msg2)
         agg_sig = Scheme.aggregate([sig1, sig2])
-        assert Scheme.agg_verify([pk1, pk2], [msg, msg2], agg_sig)
+        assert Scheme.aggregate_verify([pk1, pk2], [msg, msg2], agg_sig)
 
         # HD keys
         child = Scheme.derive_child_sk(sk1, 123)
@@ -75,21 +73,21 @@ def test_schemes():
 
 
 def test_elements():
-    b1 = BN([1, 2])
-    b2 = BN([3, 1, 4, 1, 5, 9])
+    b1 = BNWrapper([1, 2])
+    b2 = BNWrapper([3, 1, 4, 1, 5, 9])
     i1 = int.from_bytes(bytes([1, 2]), byteorder="big")
     i2 = int.from_bytes(bytes([3, 1, 4, 1, 5, 9]), byteorder="big")
-    g1 = G1.generator()
-    g2 = G2.generator()
-    u1 = G1()  # unity
-    u2 = G2()
+    g1 = G1Element.generator()
+    g2 = G2Element.generator()
+    u1 = G1Element()  # unity
+    u2 = G2Element()
 
     x1 = g1 * b1
     x2 = g1 * b2
     y1 = g2 * b1
     y2 = g2 * b2
 
-    # Implicit conversion from python ints to BNWrapper
+    # Implicit conversion from python ints to BNWrapperWrapperWrapper
     assert x1 == g1 * i1 == i1 * g1
     assert x2 == g1 * i2 == i2 * g1
     assert y1 == g2 * i1 == i1 * g2
@@ -102,7 +100,7 @@ def test_elements():
     assert x1 + u1 == x1
     assert x1 + x2 == x2 + x1
     assert x1 + x1.inverse() == u1
-    assert x1 == G1(bytes(x1))
+    assert x1 == G1Element(bytes(x1))
     copy = deepcopy(x1)
     assert x1 == copy
     x1 += x2
@@ -115,7 +113,7 @@ def test_elements():
     assert y1 + u2 == y1
     assert y1 + y2 == y2 + y1
     assert y1 + y1.inverse() == u2
-    assert y1 == G2(bytes(y1))
+    assert y1 == G2Element(bytes(y1))
     copy = deepcopy(y1)
     assert y1 == copy
     y1 += y2
@@ -126,7 +124,7 @@ def test_elements():
     assert pair != x1 & y2
     assert pair != x2 & y1
     assert pair == x1.pair(y1)
-    assert pair == GT(bytes(pair))
+    assert pair == GTElement(bytes(pair))
     copy = deepcopy(pair)
     assert pair == copy
     pair = None
@@ -175,7 +173,7 @@ def test_vectors_invalid():
     for s in invalid_inputs_1:
         bytes_ = binascii.unhexlify(s)
         try:
-            g1 = G1(bytes_)
+            g1 = G1Element(bytes_)
             assert False, "Failed to disallow creation of G1 element."
         except Exception as e:
             pass
@@ -183,7 +181,7 @@ def test_vectors_invalid():
     for s in invalid_inputs_2:
         bytes_ = binascii.unhexlify(s)
         try:
-            g2 = G2(bytes_)
+            g2 = G2Element(bytes_)
             assert False, "Failed to disallow creation of G2 element."
         except Exception as e:
             pass
@@ -231,15 +229,15 @@ def test_vectors_valid():
     sk2 = PrivateKey.from_bytes(secret2)
 
     msg = bytes([3, 1, 4, 1, 5, 9])
-    sig1Basic = BScheme.sign(sk1, msg)
-    sig2Basic = BScheme.sign(sk2, msg)
-    sigABasic = BScheme.aggregate([sig1Basic, sig2Basic])
-    sig1Aug = AScheme.sign(sk1, msg)
-    sig2Aug = AScheme.sign(sk2, msg)
-    sigAAug = AScheme.aggregate([sig1Aug, sig2Aug])
-    sig1Pop = PScheme.sign(sk1, msg)
-    sig2Pop = PScheme.sign(sk2, msg)
-    sigAPop = PScheme.aggregate([sig1Pop, sig2Pop])
+    sig1Basic = BasicSchemeMPL.sign(sk1, msg)
+    sig2Basic = BasicSchemeMPL.sign(sk2, msg)
+    sigABasic = BasicSchemeMPL.aggregate([sig1Basic, sig2Basic])
+    sig1Aug = AugSchemeMPL.sign(sk1, msg)
+    sig2Aug = AugSchemeMPL.sign(sk2, msg)
+    sigAAug = AugSchemeMPL.aggregate([sig1Aug, sig2Aug])
+    sig1Pop = PopSchemeMPL.sign(sk1, msg)
+    sig2Pop = PopSchemeMPL.sign(sk2, msg)
+    sigAPop = PopSchemeMPL.aggregate([sig1Pop, sig2Pop])
 
     assert bytes(sig1Basic) == ref_sig1Basic
     assert bytes(sig2Basic) == ref_sig2Basic
@@ -252,10 +250,138 @@ def test_vectors_valid():
     assert bytes(sigAPop) == ref_sigAPop
 
 
+def test_readme():
+    seed: bytes = bytes(
+        [
+            0,
+            50,
+            6,
+            244,
+            24,
+            199,
+            1,
+            25,
+            52,
+            88,
+            192,
+            19,
+            18,
+            12,
+            89,
+            6,
+            220,
+            18,
+            102,
+            58,
+            209,
+            82,
+            12,
+            62,
+            89,
+            110,
+            182,
+            9,
+            44,
+            20,
+            254,
+            22,
+        ]
+    )
+    sk: PrivateKey = AugSchemeMPL.key_gen(seed)
+    pk: G1Element = sk.get_g1()
+
+    message: bytes = bytes([1, 2, 3, 4, 5])
+    signature: G2Element = AugSchemeMPL.sign(sk, message)
+
+    ok: bool = AugSchemeMPL.verify(pk, message, signature)
+    assert ok
+
+    sk_bytes: bytes = bytes(sk)  # 32 bytes
+    pk_bytes: bytes = bytes(pk)  # 48 bytes
+    signature_bytes: bytes = bytes(signature)  # 96 bytes
+
+    print(sk_bytes.hex(), pk_bytes.hex(), signature_bytes.hex())
+
+    sk = PrivateKey.from_bytes(sk_bytes)
+    pk = G1Element.from_bytes(pk_bytes)
+    signature = G2Element.from_bytes(signature_bytes)
+
+    seed = bytes([1]) + seed[1:]
+    sk1: PrivateKey = AugSchemeMPL.key_gen(seed)
+    seed = bytes([2]) + seed[1:]
+    sk2: PrivateKey = AugSchemeMPL.key_gen(seed)
+    message2: bytes = bytes([1, 2, 3, 4, 5, 6, 7])
+
+    pk1: G1Element = sk1.get_g1()
+    sig1: G2Element = AugSchemeMPL.sign(sk1, message)
+
+    pk2: G1Element = sk2.get_g1()
+    sig2: G2Element = AugSchemeMPL.sign(sk2, message2)
+
+    agg_sig: G2Element = AugSchemeMPL.aggregate([sig1, sig2])
+
+    ok = AugSchemeMPL.aggregate_verify([pk1, pk2], [message, message2], agg_sig)
+    assert ok
+
+    seed = bytes([3]) + seed[1:]
+    sk3: PrivateKey = AugSchemeMPL.key_gen(seed)
+    pk3: G1Element = sk3.get_g1()
+    message3: bytes = bytes([100, 2, 254, 88, 90, 45, 23])
+    sig3: G2Element = AugSchemeMPL.sign(sk3, message3)
+
+    agg_sig_final: G2Element = AugSchemeMPL.aggregate([agg_sig, sig3])
+    ok = AugSchemeMPL.aggregate_verify(
+        [pk1, pk2, pk3], [message, message2, message3], agg_sig_final
+    )
+    assert ok
+
+    pop_sig1: G2Element = PopSchemeMPL.sign(sk1, message)
+    pop_sig2: G2Element = PopSchemeMPL.sign(sk2, message)
+    pop_sig3: G2Element = PopSchemeMPL.sign(sk3, message)
+    pop1: G2Element = PopSchemeMPL.pop_prove(sk1)
+    pop2: G2Element = PopSchemeMPL.pop_prove(sk2)
+    pop3: G2Element = PopSchemeMPL.pop_prove(sk3)
+
+    ok = PopSchemeMPL.pop_verify(pk1, pop1)
+    assert ok
+    ok = PopSchemeMPL.pop_verify(pk2, pop2)
+    assert ok
+    ok = PopSchemeMPL.pop_verify(pk3, pop3)
+    assert ok
+
+    pop_sig_agg: G2Element = PopSchemeMPL.aggregate([pop_sig1, pop_sig2, pop_sig3])
+
+    ok = PopSchemeMPL.fast_aggregate_verify([pk1, pk2, pk3], message, pop_sig_agg)
+    assert ok
+
+    pop_agg_pk: G1Element = pk1 + pk2 + pk3
+    ok = PopSchemeMPL.verify(pop_agg_pk, message, pop_sig_agg)
+    assert ok
+
+    pop_agg_sk: PrivateKey = PrivateKey.aggregate([sk1, sk2, sk3])
+    ok = PopSchemeMPL.sign(pop_agg_sk, message) == pop_sig_agg
+    assert ok
+
+    master_sk: PrivateKey = AugSchemeMPL.key_gen(seed)
+    child: PrivateKey = AugSchemeMPL.derive_child_sk(master_sk, 152)
+    grandchild: PrivateKey = AugSchemeMPL.derive_child_sk(child, 952)
+
+    master_pk: G1Element = master_sk.get_g1()
+    child_u: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(master_sk, 22)
+    grandchild_u: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(child_u, 0)
+
+    child_u_pk: G1Element = AugSchemeMPL.derive_child_pk_unhardened(master_pk, 22)
+    grandchild_u_pk: G1Element = AugSchemeMPL.derive_child_pk_unhardened(child_u_pk, 0)
+
+    ok = grandchild_u_pk == grandchild_u.get_g1()
+    assert ok
+
+
 test_schemes()
 test_elements()
 test_vectors_invalid()
 test_vectors_valid()
+test_readme()
 
 print("\nAll tests passed.")
 
