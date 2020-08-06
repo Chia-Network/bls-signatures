@@ -15,7 +15,10 @@
 #include <chrono>
 #include "bls.hpp"
 #include "test-utils.hpp"
+
+extern "C" {
 #include "relic.h"
+}
 
 using std::string;
 using std::vector;
