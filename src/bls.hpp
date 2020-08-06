@@ -33,7 +33,9 @@
 #include "hkdf.hpp"
 #include "hdkeys.hpp"
 
+extern "C" {
 #include "relic.h"
+}
 #include "relic_test.h"
 
 namespace bls {

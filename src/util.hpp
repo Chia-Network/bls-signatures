@@ -27,7 +27,9 @@
 #include <gmp.h>
 #endif
 
+extern "C" {
 #include "relic.h"
+}
 #include "relic_test.h"
 
 namespace bls {

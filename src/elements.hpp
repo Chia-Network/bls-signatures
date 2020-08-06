@@ -15,7 +15,9 @@
 #ifndef SRC_BLSELEMENTS_HPP_
 #define SRC_BLSELEMENTS_HPP_
 
+extern "C" {
 #include "relic.h"
+}
 #include "relic_conf.h"
 #include "util.hpp"
 
