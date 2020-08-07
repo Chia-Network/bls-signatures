@@ -84,12 +84,12 @@ bool CoreMPL::Verify(
     const uint8_t *dst,
     int dst_len)
 {
-    G1Element geninverse = G1Element::Generator().Inverse();
+    G1Element genneg = G1Element::Generator().Negate();
     G2Element hashedPoint = G2Element::FromMessage(message, dst, dst_len);
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
-    g1_copy(g1s[0], *(g1_t *)&geninverse.p);
+    g1_copy(g1s[0], *(g1_t *)&genneg.p);
     g1_copy(g1s[1], *(g1_t *)&pubkey.p);
     g2_copy(g2s[0], *(g2_t *)&signature.q);
     g2_copy(g2s[1], *(g2_t *)&hashedPoint.q);
@@ -170,8 +170,8 @@ bool CoreMPL::AggregateVerify(
     g1_t *g1s = new g1_t[n + 1];
     g2_t *g2s = new g2_t[n + 1];
 
-    G1Element geninverse = G1Element::Generator().Inverse();
-    g1_copy(g1s[0], *(g1_t *)&geninverse.p);
+    G1Element genneg = G1Element::Generator().Negate();
+    g1_copy(g1s[0], *(g1_t *)&genneg.p);
     g2_copy(g2s[0], *(g2_t *)&signature.q);
     for (int i = 0; i < n; ++i) {
         g1_copy(g1s[i + 1], *(g1_t *)&pubkeys[i].p);
@@ -488,7 +488,7 @@ bool PopSchemeMPL::PopVerify(
     const G1Element &pubkey,
     const G2Element &signature_proof)
 {
-    G1Element geninverse = G1Element::Generator().Inverse();
+    G1Element genneg = G1Element::Generator().Negate();
     G2Element hashedPoint = G2Element::FromMessage(
         pubkey.Serialize(),
         PopSchemeMPL::CIPHERSUITE_ID,
@@ -496,7 +496,7 @@ bool PopSchemeMPL::PopVerify(
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
-    g1_copy(g1s[0], *(g1_t *)&geninverse.p);
+    g1_copy(g1s[0], *(g1_t *)&genneg.p);
     g1_copy(g1s[1], *(g1_t *)&pubkey.p);
     g2_copy(g2s[0], *(g2_t *)&signature_proof.q);
     g2_copy(g2s[1], *(g2_t *)&hashedPoint.q);
@@ -525,7 +525,7 @@ bool PopSchemeMPL::FastAggregateVerify(
     if (n <= 0)
         return false;
 
-    G1Element pkagg = G1Element::Unity();
+    G1Element pkagg = G1Element();  // Infinity
     for (G1Element pk : pubkeys) pkagg += pk;
 
     return CoreMPL::Verify(

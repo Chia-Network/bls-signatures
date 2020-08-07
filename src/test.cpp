@@ -449,6 +449,16 @@ TEST_CASE("Signature tests")
         REQUIRE(BasicSchemeMPL::Verify(pk2, message1, sig2));
     }
 
+    SECTION("Should sign with the zero key") {
+        vector<uint8_t> sk0(32, 0);
+        PrivateKey sk = PrivateKey::FromByteVector(sk0);
+        REQUIRE(sk.GetG1Element() == G1Element());  // Infinity
+        REQUIRE(sk.GetG2Element() == G2Element());  // Infinity
+        REQUIRE(BasicSchemeMPL::Sign(sk, {1, 2, 3}) == G2Element());
+        REQUIRE(AugSchemeMPL::Sign(sk, {1, 2, 3}) == G2Element());
+        REQUIRE(PopSchemeMPL::Sign(sk, {1, 2, 3}) == G2Element());
+    }
+
     SECTION("Should use equality operators")
     {
         vector<uint8_t> message1 = {1, 65, 254, 88, 90, 45, 22};

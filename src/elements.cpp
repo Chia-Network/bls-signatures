@@ -111,12 +111,6 @@ G1Element G1Element::Generator()
     return ele;
 }
 
-G1Element G1Element::Unity()
-{
-    G1Element ele = G1Element();
-    return ele;
-}
-
 G1Element::G1Element()
 {
     g1_null(p);
@@ -143,15 +137,10 @@ G1Element& G1Element::operator=(const G1Element& pubKey)
     return *this;
 }
 
-G1Element G1Element::Inverse() const
+G1Element G1Element::Negate() const
 {
-    G1Element thisCpy(*this);
     G1Element ans = G1Element();
-    bn_t ordMinus1;
-    bn_new(ordMinus1);
-    g1_get_ord(ordMinus1);
-    bn_sub_dig(ordMinus1, ordMinus1, 1);
-    g1_mul(ans.p, thisCpy.p, ordMinus1);
+    g1_neg(ans.p, this->p);
     return ans;
 }
 
@@ -335,15 +324,11 @@ G2Element G2Element::Generator()
     return ele;
 }
 
-G2Element G2Element::Inverse() const
+G2Element G2Element::Negate() const
 {
-    G2Element thisCpy(*this);
     G2Element ans = G2Element();
-    bn_t ordMinus1;
-    bn_new(ordMinus1);
-    g2_get_ord(ordMinus1);
-    bn_sub_dig(ordMinus1, ordMinus1, 1);
-    g2_mul(ans.q, thisCpy.q, ordMinus1);
+    G2Element thisCpy(*this);
+    g2_neg(ans.q, thisCpy.q);
     return ans;
 }
 

@@ -1,99 +1,106 @@
+from __future__ import annotations
 from copy import deepcopy
+from typing import Any
 
 
-class Fq(int):
+class Fq:
     """
     Represents an element of a finite field mod a prime q.
     """
 
-    extension = 1
+    value: int
+    extension: int = 1
 
-    def __new__(cls, Q, x):
-        ret = super().__new__(cls, x % Q)
-        ret.Q = Q
-        return ret
+    def __init__(self, Q: int, value: int):
+        self.Q = Q
+        self.value = value % Q
 
-    def __neg__(self):
-        return Fq(self.Q, super().__neg__())
+    def __neg__(self) -> Fq:
+        return Fq(self.Q, -self.value)
 
-    def __add__(self, other):
-        if not isinstance(other, int):
+    def __add__(self, other: Fq) -> Fq:
+        if not isinstance(other, Fq):
             return NotImplemented
-        return Fq(self.Q, super().__add__(other))
+        return Fq(self.Q, self.value + other.value)
 
-    def __radd__(self, other):
-        if not isinstance(other, int):
+    def __radd__(self, other: Fq) -> Fq:
+        if not isinstance(other, Fq):
             return NotImplemented
         return self.__add__(other)
 
-    def __sub__(self, other):
-        if not isinstance(other, int):
+    def __sub__(self, other: Fq) -> Fq:
+        if not isinstance(other, Fq):
             return NotImplemented
-        return Fq(self.Q, super().__sub__(other))
+        return Fq(self.Q, self.value - other.value)
 
-    def __rsub__(self, other):
-        if not isinstance(other, int):
+    def __rsub__(self, other: Fq) -> Fq:
+        if not isinstance(other, Fq):
             return NotImplemented
-        return Fq(self.Q, super().__rsub__(other))
+        return Fq(self.Q, other.value - self.value)
 
-    def __mul__(self, other):
-        if not isinstance(other, int):
+    def __mul__(self, other: Fq) -> Fq:
+        if not isinstance(other, Fq):
             return NotImplemented
-        return Fq(self.Q, super().__mul__(other))
+        return Fq(self.Q, self.value * other.value)
 
-    def __rmul__(self, other):
+    def __rmul__(self, other: Fq) -> Fq:
         return self.__mul__(other)
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):
-            return super().__eq__(other)
+            return False
         else:
-            return super().__eq__(other) and self.Q == other.Q
+            return self.value == other.value and self.Q == other.Q
 
-    def __lt__(self, other):
-        return super().__lt__(other)
+    def __lt__(self, other: Fq) -> bool:
+        return self.value < other.value
 
-    def __gt__(self, other):
-        return super().__gt__(other)
+    def __gt__(self, other: Fq) -> bool:
+        return self.value > other.value
 
     def __str__(self):
-        s = hex(int(self))
+        s = hex(self.value)
         s2 = s[0:7] + ".." + s[-5:] if len(s) > 10 else s
         return "Fq(" + s2 + ")"
 
     def __repr__(self):
-        return "Fq(" + hex(int(self)) + ")"
+        return "Fq(" + hex(self) + ")"
 
-    def serialize(self):
-        return super().to_bytes(48, "big")
+    def __bytes__(self):
+        return self.value.to_bytes(48, "big")
 
-    def __pow__(self, other):
+    @staticmethod
+    def from_bytes(buffer: bytes, q: int):
+        assert len(buffer) == 48
+        return Fq(q, int.from_bytes(buffer, "big"))
+
+    def __pow__(self, other) -> Fq:
         if other == 0:
             return Fq(self.Q, 1)
         elif other == 1:
-            return self
+            return Fq(self.Q, self.value)
         elif other % 2 == 0:
-            return (self * self) ** (other // 2)
+            return Fq(self.Q, self.value * self.value) ** (other // 2)
         else:
-            return (self * self) ** (other // 2) * self
+            return Fq(self.Q, self.value * self.value) ** (other // 2) * self
 
-    def qi_power(self, i):
+    def qi_power(self, i: int) -> Fq:
         return self
 
-    def __invert__(self):
+    def __invert__(self) -> Fq:
         """
         Extended euclidian algorithm for inversion.
         """
         x0, x1, y0, y1 = 1, 0, 0, 1
         a = int(self.Q)
-        b = int(self)
+        b = int(self.value)
         while a != 0:
             q, b, a = b // a, a, b % a
             x0, x1 = x1, x0 - q * x1
             y0, y1 = y1, y0 - q * y1
         return Fq(self.Q, x0)
 
-    def __floordiv__(self, other):
+    def __floordiv__(self, other) -> Fq:
         if isinstance(other, int) and not isinstance(other, type(self)):
             other = Fq(self.Q, other)
         return self * ~other
@@ -103,15 +110,15 @@ class Fq(int):
     def __iter__(self):
         yield self
 
-    def modsqrt(self):
-        if int(self) == 0:
+    def modsqrt(self) -> Fq:
+        if int(self.value) == 0:
             return Fq(self.Q, 0)
-        if pow(int(self), (self.Q - 1) // 2, self.Q) != 1:
+        if pow(int(self.value), (self.Q - 1) // 2, self.Q) != 1:
             raise ValueError("No sqrt exists")
         if self.Q % 4 == 3:
-            return Fq(self.Q, pow(int(self), (self.Q + 1) // 4, self.Q))
+            return Fq(self.Q, pow(int(self.value), (self.Q + 1) // 4, self.Q))
         if self.Q % 8 == 5:
-            return Fq(self.Q, pow(int(self), (self.Q + 3) // 8, self.Q))
+            return Fq(self.Q, pow(int(self.value), (self.Q + 3) // 8, self.Q))
 
         # p % 8 == 1. Tonelli Shanks algorithm for finding square root
         S = 0
@@ -130,8 +137,8 @@ class Fq(int):
 
         M = S
         c = pow(z, q, self.Q)
-        t = pow(int(self), q, self.Q)
-        R = pow(int(self), (q + 1) // 2, self.Q)
+        t = pow(self.value, q, self.Q)
+        R = pow(self.value, (q + 1) // 2, self.Q)
 
         while True:
             if t == 0:
@@ -149,19 +156,19 @@ class Fq(int):
             t = (t * c) % self.Q
             R = (R * b) % self.Q
 
-    def __deepcopy__(self, memo):
-        return Fq(self.Q, int(self))
+    def __deepcopy__(self, memo) -> Fq:
+        return Fq(self.Q, self.value)
 
     @classmethod
-    def zero(cls, Q):
+    def zero(cls, Q: int) -> Fq:
         return Fq(Q, 0)
 
     @classmethod
-    def one(cls, Q):
+    def one(cls, Q: int) -> Fq:
         return Fq(Q, 1)
 
     @classmethod
-    def from_fq(cls, Q, fq):
+    def from_fq(cls, Q: int, fq: Fq) -> Fq:
         return fq
 
 
@@ -173,6 +180,10 @@ class FieldExtBase(tuple):
     """
 
     root = None
+    extension: int
+    embedding: int
+    basefield: Any
+    Q: int
 
     def __new__(cls, Q, *args):
         new_args = args[:]
@@ -189,10 +200,7 @@ class FieldExtBase(tuple):
                 raise Exception("Invalid number of arguments")
             for arg in new_args:
                 assert arg.extension == arg_extension
-        assert all(
-            isinstance(arg, cls.basefield if cls.basefield is not Fq else int)
-            for arg in new_args
-        )
+        assert all(isinstance(arg, cls.basefield) for arg in new_args)
         ret = super().__new__(cls, new_args)
         ret.Q = Q
         return ret
@@ -307,13 +315,22 @@ class FieldExtBase(tuple):
         )
 
     # Returns the concatenated coordinates in big endian bytes
-    def serialize(self):
+    def __bytes__(self):
         sum_bytes = bytes([])
         for x in self:
             if type(x) != FieldExtBase and type(x) != Fq:
                 x = Fq.from_fq(self.Q, x)
-            sum_bytes += x.serialize()
+            sum_bytes += bytes(x)
         return sum_bytes
+
+    @classmethod
+    def from_bytes(cls, buffer: bytes, Q: int):
+        assert len(buffer) == cls.extension * 48
+        embedded_size = 48 * (cls.extension // cls.embedding)
+        tup = []
+        for i in range(cls.embedding):
+            tup.append(buffer[i * embedded_size : (i + 1) * embedded_size])
+        return cls(Q, *[cls.basefield.from_bytes(b, Q) for b in tup])
 
     __truediv__ = __floordiv__
 
@@ -396,18 +413,18 @@ class Fq2(FieldExtBase):
     def __init__(self, Q, *args):
         super().set_root(Fq(Q, -1))
 
-    def __invert__(self):
+    def __invert__(self) -> Fq2:
         a, b = self
         factor = ~(a * a + b * b)
         ret = Fq2(self.Q, a * factor, -b * factor)
         return ret
 
-    def mul_by_nonresidue(self):
+    def mul_by_nonresidue(self) -> Fq2:
         # multiply by u + 1
         a, b = self
         return Fq2(self.Q, a - b, a + b)
 
-    def modsqrt(self):
+    def modsqrt(self) -> Fq2:
         """
         Using algorithm 8 (complex method) for square roots in
         https://eprint.iacr.org/2012/685.pdf
@@ -427,7 +444,7 @@ class Fq2(FieldExtBase):
             delta = (a0 - alpha) * ~Fq(self.Q, 2)
 
         x0 = delta.modsqrt()
-        x1 = a1 * ~(2 * x0)
+        x1 = a1 * ~(Fq(self.Q, 2) * x0)
         return Fq2(self.Q, x0, x1)
 
 
@@ -437,10 +454,10 @@ class Fq6(FieldExtBase):
     embedding = 3
     basefield = Fq2
 
-    def __init__(self, Q, *args):
+    def __init__(self, Q: int, *args):
         super().set_root(Fq2(Q, Fq.one(Q), Fq.one(Q)))
 
-    def __invert__(self):
+    def __invert__(self) -> Fq6:
         a, b, c = self
         g0 = a * a - b * c.mul_by_nonresidue()
         g1 = (c * c).mul_by_nonresidue() - a * b
@@ -450,7 +467,7 @@ class Fq6(FieldExtBase):
 
         return Fq6(self.Q, g0 * factor, g1 * factor, g2 * factor)
 
-    def mul_by_nonresidue(self):
+    def mul_by_nonresidue(self) -> Fq6:
         # multiply by v
         a, b, c = self
         return Fq6(self.Q, c * self.root, a, b)
@@ -465,7 +482,7 @@ class Fq12(FieldExtBase):
     def __init__(self, Q, *args):
         super().set_root(Fq6(Q, Fq2.zero(Q), Fq2.one(Q), Fq2.zero(Q)))
 
-    def __invert__(self):
+    def __invert__(self) -> Fq12:
         a, b = self
         factor = ~(a * a - (b * b).mul_by_nonresidue())
         return Fq12(self.Q, a * factor, -b * factor)

@@ -93,8 +93,6 @@ class HDKeys {
         k.AllocateKeyData();
         bn_copy(*k.keydata, *skBn);
 
-        bn_free(order);
-        bn_free(skBn);
         Util::SecFree(prk);
         Util::SecFree(ikmHkdf);
         Util::SecFree(skBn);

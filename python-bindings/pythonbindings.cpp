@@ -106,18 +106,6 @@ PYBIND11_MODULE(blspy, m)
                 return ret;
             })
         .def(
-            "serialize",
-            [](const PrivateKey &k) {
-                uint8_t *output =
-                    Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
-                k.Serialize(output);
-                py::bytes ret = py::bytes(
-                    reinterpret_cast<char *>(output),
-                    PrivateKey::PRIVATE_KEY_SIZE);
-                Util::SecFree(output);
-                return ret;
-            })
-        .def(
             "__deepcopy__",
             [](const PrivateKey &k, const py::object &memo) {
                 return PrivateKey(k);
@@ -372,7 +360,7 @@ PYBIND11_MODULE(blspy, m)
         .def("generator", &G1Element::Generator)
         .def("from_message", &G1Element::FromMessage)
         .def("pair", &G1Element::Pair)
-        .def("inverse", &G1Element::Inverse)
+        .def("negate", &G1Element::Negate)
         .def("get_fingerprint", &G1Element::GetFingerprint)
 
         .def(py::self == py::self)
@@ -508,7 +496,7 @@ PYBIND11_MODULE(blspy, m)
         .def("generator", &G2Element::Generator)
         .def("from_message", &G2Element::FromMessage)
         .def("pair", &G2Element::Pair)
-        .def("inverse", &G2Element::Inverse)
+        .def("negate", &G2Element::Negate)
         .def(
             "__deepcopy__",
             [](const G2Element &g2, const py::object &memo) {
