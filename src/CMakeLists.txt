@@ -5,19 +5,19 @@ set (CMAKE_CXX_STANDARD 11)
 include(FetchContent)
 
 FetchContent_Declare(
-  chia-relic
-  GIT_REPOSITORY https://github.com/Chia-Network/relic.git
+  relic
+  GIT_REPOSITORY https://github.com/relic-toolkit/relic.git
   GIT_TAG        origin/master
 )
-FetchContent_MakeAvailable(chia-relic)
+FetchContent_MakeAvailable(relic)
 
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 source_group("SrcHeaders" FILES ${HEADERS})
 
 include_directories(
   ${INCLUDE_DIRECTORIES}
-  ${chia-relic_SOURCE_DIR}/include
-  ${chia-relic_BINARY_DIR}/include
+  ${relic_SOURCE_DIR}/include
+  ${relic_BINARY_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
   ${GMP_INCLUDES}
   )

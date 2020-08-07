@@ -9,13 +9,13 @@ FetchContent_Declare(
   GIT_REPOSITORY https://github.com/pybind/pybind11.git
   GIT_TAG        v2.5.0
 )
-FetchContent_MakeAvailable(pybind11 chia-relic)
+FetchContent_MakeAvailable(pybind11 relic)
 
 
 include_directories(
   ${INCLUDE_DIRECTORIES}
-  ${chia-relic_SOURCE_DIR}/include
-  ${chia-relic_BINARY_DIR}/include
+  ${relic_SOURCE_DIR}/include
+  ${relic_BINARY_DIR}/include
   ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
   ${GMP_INCLUDES}
   )
