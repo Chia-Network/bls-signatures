@@ -39,7 +39,6 @@ public:
     static G1Element FromNative(const g1_t *element);
     static G1Element FromBN(const bn_t n);
     static G1Element Generator();
-    static G1Element Unity();
     static G1Element FromMessage(
         const std::vector<uint8_t> &message,
         const uint8_t *dst,
@@ -61,7 +60,7 @@ public:
     GTElement Pair(const G2Element &b) const;
     friend GTElement operator&(const G1Element &a, const G2Element &b);
 
-    G1Element Inverse() const;
+    G1Element Negate() const;
     void Serialize(uint8_t *buffer) const;
     std::vector<uint8_t> Serialize() const;
     uint32_t GetFingerprint() const;
@@ -98,7 +97,7 @@ public:
     friend G2Element operator*(const G2Element &a, const bn_t &k);
     friend G2Element operator*(const bn_t &k, const G2Element &a);
 
-    G2Element Inverse() const;
+    G2Element Negate() const;
     GTElement Pair(const G1Element &a) const;
     // friend GTElement operator&(G1Element &a, G2Element &b);
     G2Element &operator=(const G2Element &rhs);
