@@ -37,9 +37,6 @@ class PrivateKey:
     def sign(self, m):
         pass
 
-    def __lt__(self, other):
-        return self.value < other.value
-
     def __eq__(self, other):
         return self.value == other.value
 

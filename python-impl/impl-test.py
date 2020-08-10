@@ -10,6 +10,11 @@ from copy import deepcopy
 from pairing import ate_pairing
 
 
+# def test_edge_case_sgn_Fq2():
+#     q = default_
+#     Fq()
+
+
 def test_elements():
     i1 = int.from_bytes(bytes([1, 2]), byteorder="big")
     i2 = int.from_bytes(bytes([3, 1, 4, 1, 5, 9]), byteorder="big")

@@ -58,13 +58,19 @@ class Fq:
     def __gt__(self, other: Fq) -> bool:
         return self.value > other.value
 
+    def __le__(self, other: Fq) -> bool:
+        return self.value <= other.value
+
+    def __ge__(self, other: Fq) -> bool:
+        return self.value >= other.value
+
     def __str__(self):
         s = hex(self.value)
         s2 = s[0:7] + ".." + s[-5:] if len(s) > 10 else s
         return "Fq(" + s2 + ")"
 
     def __repr__(self):
-        return "Fq(" + hex(self) + ")"
+        return "Fq(" + hex(self.value) + ")"
 
     def __bytes__(self):
         return self.value.to_bytes(48, "big")
