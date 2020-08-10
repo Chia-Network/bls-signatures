@@ -14,10 +14,7 @@ NOTE: THIS LIBRARY IS A DRAFT AND NOT YET REVIEWED FOR SECURITY
 NOTE: THIS LIBRARY WAS SHIFTED TO THE IETF BLS SPECIFICATION ON 7/16/20
 
 Implements BLS signatures with aggregation using [relic toolkit](https://github.com/relic-toolkit/relic)
-for cryptographic primitives (pairings, EC, hashing).
-The original spec is [here](https://github.com/Chia-Network/bls-signatures/blob/f4ffccdb961736e0e3f6d23736c0c97d097aaa76/SPEC.md).
-This library now implements
-[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/) with [these curve parameters](https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/) for BLS12-381.
+for cryptographic primitives (pairings, EC, hashing) according to the [IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/) with [these curve parameters](https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/) for BLS12-381.
 
 Features:
 
@@ -26,10 +23,10 @@ Features:
 * Efficient verification using Proof of Posssesion (only one pairing per distinct message)
 * Security against rogue public key attack using proof of possession or augmented scheme
 * Aggregate public keys and private keys
-* EIP-2333 key derivation (including unhardened keys like BIP-32)
+* EIP-2333 key derivation (including unhardened BIP-32-like keys)
 * Key and signature serialization
 * Batch verification
-* [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings)
+* [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings) (currently out of date)
 * [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/master/python-bindings)
 * [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/master/python-impl)
 

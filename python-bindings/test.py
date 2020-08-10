@@ -81,10 +81,6 @@ def test_elements():
     g2 = G2Element.generator()
     u1 = G1Element()  # unity
     u2 = G2Element()
-    print("Generator", g1)
-    print("Generator", g1 * 2)
-    quit()
-    # print("Generator bytes", bytes(g1 * 2).hex())
 
     x1 = g1 * b1
     x2 = g1 * b2
@@ -381,11 +377,11 @@ def test_readme():
     assert ok
 
 
-# test_schemes()
+test_schemes()
 test_elements()
-# test_vectors_invalid()
-# test_vectors_valid()
-# test_readme()
+test_vectors_invalid()
+test_vectors_valid()
+test_readme()
 
 print("\nAll tests passed.")
 

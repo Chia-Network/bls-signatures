@@ -185,9 +185,6 @@ class JacobianPoint:
     def __rmul__(self, c) -> JacobianPoint:
         return self.__mul__(c)
 
-    def __lt__(self, other) -> bool:
-        return bytes(self) < bytes(other)
-
     def __neg__(self) -> JacobianPoint:
         return self.to_affine().negate().to_jacobian()
 
@@ -223,14 +220,13 @@ class JacobianPoint:
         return int.from_bytes(bytes(self), "big")
 
 
-def sign_Fq(element, ec) -> bool:
+def sign_Fq(element, ec=default_ec) -> bool:
     return element > Fq(ec.q, ((ec.q - 1) // 2))
 
 
-def sign_Fq2(element, ec) -> bool:
-    # TODO: test this edge case
-    if element[1] == 0:
-        return sign_Fq(element[0], ec)
+def sign_Fq2(element, ec=default_ec_twist) -> bool:
+    if element[1] == Fq(ec.q, 0):
+        return sign_Fq(element[0])
 
     return element[1] > Fq(ec.q, ((ec.q - 1) // 2))
 
@@ -513,61 +509,6 @@ def twist(point: AffinePoint, ec=default_ec_twist) -> AffinePoint:
     new_x = point.x * wsq
     new_y = point.y * wcu
     return AffinePoint(new_x, new_y, False, ec)
-
-
-# def psi(P: AffinePoint, ec=default_ec) -> AffinePoint:
-#     ut = untwist(P, ec)
-#     t = AffinePoint(ut.x.qi_power(1), ut.y.qi_power(1), False, ec)
-#     t2 = twist(t, ec)
-#     return AffinePoint(t2.x[0][0], t2.y[0][0], False, ec)
-
-
-# # Performs a Fouque-Tibouchi hash
-# def hash_to_point_prehashed_Fq(m, ec=default_ec) -> AffinePoint:
-#     if type(m) != bytes:
-#         m = m.encode("utf-8")
-#     t0 = Fq(ec.q, int.from_bytes(hash512(m + b"G1_0"), "big"))
-#     t1 = Fq(ec.q, int.from_bytes(hash512(m + b"G1_1"), "big"))
-
-#     P = sw_encode(t0, ec, Fq) + sw_encode(t1, ec, Fq)
-
-#     return P * ec.h  # Scaling by cofactor
-
-
-# def hash_to_point_Fq(m, ec=default_ec) -> AffinePoint:
-#     h = hash256(m)
-#     return hash_to_point_prehashed_Fq(h, ec)
-
-
-# Performs a Fouque-Tibouchi hash
-# def hash_to_point_prehashed_Fq2(m, ec=default_ec_twist) -> AffinePoint:
-#     if type(m) != bytes:
-#         m = m.encode("utf-8")
-#     t0_0 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_0_c0"), "big"))
-#     t0_1 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_0_c1"), "big"))
-#     t1_0 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_1_c0"), "big"))
-#     t1_1 = Fq(ec.q, int.from_bytes(hash512(m + b"G2_1_c1"), "big"))
-
-#     t0 = Fq2(ec.q, t0_0, t0_1)
-#     t1 = Fq2(ec.q, t1_0, t1_1)
-
-#     P = sw_encode(t0, ec, Fq2) + sw_encode(t1, ec, Fq2)
-
-#     # This is the cofactor multiplication, done in a more
-#     # efficient way. See page 11 of "Efficient hash maps
-#     # to G2 on BLS curves" by Budrioni and Pintore.
-#     x = -ec.x
-#     psi2P = psi(psi(2 * P, ec), ec)
-#     t0 = x * P
-#     t1 = x * t0
-#     t2 = (t1 + t0) - P
-#     t3 = psi((x + 1) * P, ec)
-#     return t2 - t3 + psi2P
-
-
-# def hash_to_point_Fq2(m, ec=default_ec_twist) -> AffinePoint:
-#     h = hash256(m)
-#     return hash_to_point_prehashed_Fq2(h, ec)
 
 
 """
