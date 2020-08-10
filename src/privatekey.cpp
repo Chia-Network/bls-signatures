@@ -54,25 +54,6 @@ PrivateKey PrivateKey::FromByteVector(const std::vector<uint8_t> bytes, bool mod
     return PrivateKey::FromBytes(bytes.data(), modOrder);
 }
 
-PrivateKey PrivateKey::FromBN(bn_t sk, bool modOrder)
-{
-    PrivateKey k;
-    k.AllocateKeyData();
-    bn_t ord;
-    bn_new(ord);
-    g1_get_ord(ord);
-    bn_copy(*k.keydata, sk);
-    if (modOrder) {
-        bn_mod_basic(*k.keydata, *k.keydata, ord);
-    } else {
-        if (bn_cmp(*k.keydata, ord) > 0) {
-            throw std::invalid_argument(
-                "BN integer argument must be less than the group order");
-        }
-    }
-    return k;
-}
-
 // Construct a private key from another private key.
 PrivateKey::PrivateKey(const PrivateKey &privateKey)
 {

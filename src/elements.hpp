@@ -37,7 +37,6 @@ public:
     static G1Element FromBytes(const uint8_t *bytes);
     static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G1Element FromNative(const g1_t *element);
-    static G1Element FromBN(const bn_t n);
     static G1Element Generator();
     static G1Element FromMessage(
         const std::vector<uint8_t> &message,
@@ -47,6 +46,7 @@ public:
     g1_t p;
     G1Element();  // unity
     G1Element(const G1Element &element);
+    void CheckValid() const;
     friend bool operator==(const G1Element &a, const G1Element &b);
     friend bool operator!=(const G1Element &a, const G1Element &b);
     friend std::ostream &operator<<(std::ostream &os, const G1Element &s);
@@ -75,7 +75,6 @@ public:
     static G2Element FromBytes(const uint8_t *data);
     static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G2Element FromNative(const g2_t *element);
-    static G2Element FromBN(const bn_t n);
     static G2Element Generator();
     static G2Element FromMessage(
         const std::vector<uint8_t> &message,
@@ -85,6 +84,7 @@ public:
     g2_t q;
     G2Element();  // unity
     G2Element(const G2Element &element);
+    void CheckValid() const;
     void Serialize(uint8_t *buffer) const;
     std::vector<uint8_t> Serialize() const;
 
