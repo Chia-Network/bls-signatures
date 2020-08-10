@@ -42,9 +42,6 @@ public:
     // Construct a private key from a bytearray.
     static PrivateKey FromByteVector(const std::vector<uint8_t> bytes, bool modOrder = false);
 
-    // Construct a private key from a native bn element.
-    static PrivateKey FromBN(bn_t sk, bool modOrder = false);
-
     // Aggregate many private keys into one (sum of keys mod order)
     static PrivateKey Aggregate(std::vector<PrivateKey> const &privateKeys);
 

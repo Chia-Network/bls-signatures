@@ -22,6 +22,35 @@
 #include "util.hpp"
 
 namespace bls {
+
+void G1Element::CheckValid() const {
+    if (g1_is_valid(*(g1_t*)&this->p) == 0)
+        throw std::invalid_argument(
+            "Given G1 element failed g1_is_valid check");
+
+    // check if inside subgroup
+    g1_t point, unity, thisP;
+    bn_t order;
+    bn_null(order);
+    bn_new(order);
+    g1_null(unity);
+    g1_new(unity);
+    g1_null(thisP);
+    g1_new(thisP);
+
+    g1_get_ord(order);
+    g1_copy(thisP, this->p);
+    g1_mul(point, thisP, order);
+    ep_set_infty(unity);
+    if (g1_cmp(point, unity) != RLC_EQ)
+        throw std::invalid_argument("Given G1 element failed in_subgroup check");
+    try {
+        BLS::CheckRelicErrorsInvalidArgument();
+    } catch (...) {
+        throw std::invalid_argument("Relic reports invalid argument given");
+    }
+}
+
 G1Element G1Element::FromBytes(const uint8_t* bytes)
 {
     G1Element ele = G1Element();
@@ -58,30 +87,7 @@ G1Element G1Element::FromBytes(const uint8_t* bytes)
         }
     }
     g1_read_bin(ele.p, buffer, G1Element::SIZE + 1);
-
-    if (g1_is_valid(*(g1_t*)&ele) == 0)
-        throw std::invalid_argument(
-            "Given G1 element failed g1_is_valid check");
-
-    // check if inside subgroup
-    g1_t point, unity;
-    bn_t order;
-    bn_null(order);
-    bn_new(order);
-    g1_null(unity);
-    g1_new(unity);
-
-    g1_get_ord(order);
-    g1_mul(point, ele.p, order);
-    ep_set_infty(unity);
-    if (g1_cmp(point, unity) != RLC_EQ)
-        throw std::invalid_argument("Given G1 element failed in_subgroup check");
-    try {
-        BLS::CheckRelicErrorsInvalidArgument();
-    } catch (...) {
-        throw std::invalid_argument("Relic reports invalid argument given");
-    }
-
+    ele.CheckValid();
     return ele;
 }
 
@@ -94,13 +100,7 @@ G1Element G1Element::FromNative(const g1_t* element)
 {
     G1Element ele = G1Element();
     g1_copy(ele.p, *element);
-    return ele;
-}
-
-G1Element G1Element::FromBN(const bn_t n)
-{
-    G1Element ele = G1Element::Generator();
-    g1_mul(ele.p, ele.p, const_cast<bn_st*>(n));
+    ele.CheckValid();
     return ele;
 }
 
@@ -108,6 +108,7 @@ G1Element G1Element::Generator()
 {
     G1Element ele = G1Element();
     g1_get_gen(ele.p);
+    ele.CheckValid();
     return ele;
 }
 
@@ -116,6 +117,7 @@ G1Element::G1Element()
     g1_null(p);
     g1_new(p);
     g1_set_infty(p);
+    this->CheckValid();
 }
 
 G1Element G1Element::FromMessage(
@@ -130,10 +132,15 @@ G1Element G1Element::FromMessage(
     return G1Element::FromNative(&ans);
 }
 
-G1Element::G1Element(const G1Element& pubKey) { g1_copy(p, pubKey.p); }
+G1Element::G1Element(const G1Element& pubKey) {
+    g1_copy(p, pubKey.p);
+    this->CheckValid();
+}
+
 G1Element& G1Element::operator=(const G1Element& pubKey)
 {
     g1_copy(p, pubKey.p);
+    this->CheckValid();
     return *this;
 }
 
@@ -141,6 +148,7 @@ G1Element G1Element::Negate() const
 {
     G1Element ans = G1Element();
     g1_neg(ans.p, this->p);
+    ans.CheckValid();
     return ans;
 }
 
@@ -237,6 +245,29 @@ void G1Element::CompressPoint(uint8_t* result, const g1_t* point)
 
 // G2Element definitions below
 
+void G2Element::CheckValid() const {
+    if (g2_is_valid(*(g2_t*)&this->q) == 0)
+        throw std::invalid_argument(
+            "Given G2 element failed g2_is_valid check");
+
+    // check if inside subgroup
+    g2_t point, unity;
+    bn_t order;
+    bn_null(order);
+    bn_new(order);
+    g2_get_ord(order);
+    g2_mul(point, *(g2_t*)this->q, order);
+    ep2_set_infty(unity);
+    if (g2_cmp(point, unity) != RLC_EQ)
+        throw std::invalid_argument("Given G2 element failed in_subgroup check");
+    try {
+        BLS::CheckRelicErrorsInvalidArgument();
+    } catch (...) {
+        throw std::invalid_argument("Relic reports invalid argument given");
+    }
+
+}
+
 G2Element G2Element::FromBytes(const uint8_t* bytes)
 {
     G2Element ele = G2Element();
@@ -276,25 +307,7 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
     }
 
     g2_read_bin(ele.q, buffer, G2Element::SIZE + 1);
-    if (g2_is_valid(*(g2_t*)&ele) == 0)
-        throw std::invalid_argument(
-            "Given G2 element failed g2_is_valid check");
-
-    // check if inside subgroup
-    g2_t point, unity;
-    bn_t order;
-    bn_null(order);
-    bn_new(order);
-    g2_get_ord(order);
-    g2_mul(point, ele.q, order);
-    ep2_set_infty(unity);
-    if (g2_cmp(point, unity) != RLC_EQ)
-        throw std::invalid_argument("Given G2 element failed in_subgroup check");
-    try {
-        BLS::CheckRelicErrorsInvalidArgument();
-    } catch (...) {
-        throw std::invalid_argument("Relic reports invalid argument given");
-    }
+    ele.CheckValid();
     return ele;
 }
 
@@ -307,13 +320,7 @@ G2Element G2Element::FromNative(const g2_t* element)
 {
     G2Element ele = G2Element();
     g2_copy(ele.q, *(g2_t*)element);
-    return ele;
-}
-
-G2Element G2Element::FromBN(const bn_t n)
-{
-    G2Element ele = G2Element::Generator();
-    g2_mul(ele.q, ele.q, const_cast<bn_st*>(n));
+    ele.CheckValid();
     return ele;
 }
 
@@ -321,6 +328,7 @@ G2Element G2Element::Generator()
 {
     G2Element ele = G2Element();
     g2_get_gen(ele.q);
+    ele.CheckValid();
     return ele;
 }
 
@@ -329,6 +337,7 @@ G2Element G2Element::Negate() const
     G2Element ans = G2Element();
     G2Element thisCpy(*this);
     g2_neg(ans.q, thisCpy.q);
+    ans.CheckValid();
     return ans;
 }
 
@@ -346,7 +355,10 @@ G2Element G2Element::FromMessage(
 
 G2Element::G2Element() { g2_set_infty(q); }
 
-G2Element::G2Element(const G2Element& ele) { g2_copy(q, *(g2_t*)&ele.q); }
+G2Element::G2Element(const G2Element& ele) {
+    g2_copy(q, *(g2_t*)&ele.q);
+    ele.CheckValid();
+}
 
 void G2Element::Serialize(uint8_t* buffer) const { CompressPoint(buffer, &q); }
 
