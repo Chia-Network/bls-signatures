@@ -505,18 +505,16 @@ TEST_CASE("Signature tests")
         PrivateKey sk2 = PrivateKey::FromBytes(skData);
         REQUIRE(sk1 == sk2);
 
-        uint8_t pkData[G1Element::SIZE];
-        pk1.Serialize(pkData);
+        auto pkData = pk1.Serialize();
 
-        G1Element pk2 = G1Element::FromBytes(pkData);
+        G1Element pk2 = G1Element::FromBytes(pkData.data());
         REQUIRE(pk1 == pk2);
 
         G2Element sig1 = BasicSchemeMPL::Sign(sk1, message1);
 
-        uint8_t sigData[G2Element::SIZE];
-        sig1.Serialize(sigData);
+        auto sigData = sig1.Serialize();
 
-        G2Element sig2 = G2Element::FromBytes(sigData);
+        G2Element sig2 = G2Element::FromBytes(sigData.data());
         REQUIRE(sig1 == sig2);
 
         REQUIRE(BasicSchemeMPL::Verify(pk2, message1, sig2));
@@ -729,7 +727,7 @@ TEST_CASE("Advanced") {
         cout << Util::HexStr(signatureBytes) << endl;  // 96 bytes
 
         // Takes array of 32 bytes
-        sk = PrivateKey::FromByteVector(skBytes);
+        PrivateKey skc = PrivateKey::FromByteVector(skBytes);
 
         // Takes array of 48 bytes
         pk = G1Element::FromByteVector(pkBytes);

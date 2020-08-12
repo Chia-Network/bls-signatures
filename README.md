@@ -75,7 +75,7 @@ cout << Util::HexStr(signatureBytes) << endl;  // 96 bytes printed in hex
 
 ```c++
 // Takes vector of 32 bytes
-sk = PrivateKey::FromByteVector(skBytes);
+PrivateKey skc = PrivateKey::FromByteVector(skBytes);
 
 // Takes vector of 48 bytes
 pk = G1Element::FromByteVector(pkBytes);

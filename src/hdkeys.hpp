@@ -89,9 +89,9 @@ class HDKeys {
         bn_read_bin(*skBn, okmHkdf, L);
         bn_mod_basic(*skBn, *skBn, order);
 
-        PrivateKey k;
-        k.AllocateKeyData();
-        bn_copy(*k.keydata, *skBn);
+        uint8_t *skBytes = Util::SecAlloc<uint8_t>(32);
+        bn_write_bin(skBytes, 32, *skBn);
+        PrivateKey k = PrivateKey::FromBytes(skBytes);
 
         Util::SecFree(prk);
         Util::SecFree(ikmHkdf);
@@ -155,7 +155,7 @@ class HDKeys {
     static PrivateKey DeriveChildSkUnhardened(const PrivateKey& parentSk, uint32_t index) {
         uint8_t* buf = Util::SecAlloc<uint8_t>(G1Element::SIZE + 4);
         uint8_t* digest = Util::SecAlloc<uint8_t>(HASH_LEN);
-        parentSk.GetG1Element().Serialize(buf);
+        memcpy(buf, parentSk.GetG1Element().Serialize().data(), G1Element::SIZE);
         Util::IntToFourBytes(buf + G1Element::SIZE, index);
         Util::Hash256(digest, buf, G1Element::SIZE + 4);
 
@@ -169,7 +169,8 @@ class HDKeys {
     static G1Element DeriveChildG1Unhardened(const G1Element& pk, uint32_t index) {
         uint8_t* buf = Util::SecAlloc<uint8_t>(G1Element::SIZE + 4);
         uint8_t* digest = Util::SecAlloc<uint8_t>(HASH_LEN);
-        pk.Serialize(buf);
+        memcpy(buf, pk.Serialize().data(), G1Element::SIZE);
+
         Util::IntToFourBytes(buf + G1Element::SIZE, index);
         Util::Hash256(digest, buf, G1Element::SIZE + 4);
 
@@ -191,7 +192,7 @@ class HDKeys {
     static G2Element DeriveChildG2Unhardened(const G2Element& pk, uint32_t index) {
         uint8_t* buf = Util::SecAlloc<uint8_t>(G2Element::SIZE + 4);
         uint8_t* digest = Util::SecAlloc<uint8_t>(HASH_LEN);
-        pk.Serialize(buf);
+        memcpy(buf, pk.Serialize().data(), G2Element::SIZE);
         Util::IntToFourBytes(buf + G2Element::SIZE, index);
         Util::Hash256(digest, buf, G2Element::SIZE + 4);
 
