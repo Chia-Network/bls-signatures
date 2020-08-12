@@ -38,13 +38,13 @@ public:
     static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G1Element FromNative(const g1_t *element);
     static G1Element Generator();
+    static G1Element Infinity();  // infinity / unity
     static G1Element FromMessage(
         const std::vector<uint8_t> &message,
         const uint8_t *dst,
         int dst_len);
 
     g1_t p;
-    G1Element();  // unity
     G1Element(const G1Element &element);
     void CheckValid() const;
     friend bool operator==(const G1Element &a, const G1Element &b);
@@ -66,6 +66,7 @@ public:
     uint32_t GetFingerprint() const;
 
 private:
+    G1Element() {}
     static void CompressPoint(uint8_t *result, const g1_t *point);
 };
 
@@ -76,13 +77,13 @@ public:
     static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G2Element FromNative(const g2_t *element);
     static G2Element Generator();
+    static G2Element Infinity();  // infinity/unity
     static G2Element FromMessage(
         const std::vector<uint8_t> &message,
         const uint8_t *dst,
         int dst_len);
 
     g2_t q;
-    G2Element();  // unity
     G2Element(const G2Element &element);
     void CheckValid() const;
     void Serialize(uint8_t *buffer) const;
@@ -99,10 +100,10 @@ public:
 
     G2Element Negate() const;
     GTElement Pair(const G1Element &a) const;
-    // friend GTElement operator&(G1Element &a, G2Element &b);
     G2Element &operator=(const G2Element &rhs);
 
 private:
+    G2Element() {}
     static void CompressPoint(uint8_t *result, const g2_t *point);
 };
 
@@ -115,7 +116,7 @@ public:
     GTElement(const GTElement &element);
 
     gt_t r;
-    GTElement();  // unity
+    static GTElement Unity();  // unity
 
     void Serialize(uint8_t *buffer) const;
     std::vector<uint8_t> Serialize() const;
@@ -126,6 +127,7 @@ public:
     GTElement &operator=(const GTElement &rhs);
 
 private:
+    GTElement() {}
     static void CompressPoint(uint8_t *result, const gt_t *point);
 };
 

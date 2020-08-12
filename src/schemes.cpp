@@ -38,6 +38,9 @@ const int AugSchemeMPL::CIPHERSUITE_ID_LEN = 43;
 const uint8_t *PopSchemeMPL::CIPHERSUITE_ID =
     (const uint8_t *)"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 const int PopSchemeMPL::CIPHERSUITE_ID_LEN = 43;
+const uint8_t *PopSchemeMPL::POP_CIPHERSUITE_ID =
+    (const uint8_t *)"BLS_POP_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+const int PopSchemeMPL::POP_CIPHERSUITE_ID_LEN = 43;
 
 PrivateKey CoreMPL::KeyGen(const vector<uint8_t> seed) {
     return HDKeys::KeyGen(seed);
@@ -477,8 +480,8 @@ G2Element PopSchemeMPL::PopProve(const PrivateKey &seckey)
     G1Element pk = seckey.GetG1Element();
     G2Element hashedKey = G2Element::FromMessage(
         pk.Serialize(),
-        PopSchemeMPL::CIPHERSUITE_ID,
-        PopSchemeMPL::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::POP_CIPHERSUITE_ID,
+        PopSchemeMPL::POP_CIPHERSUITE_ID_LEN);
 
     return seckey.GetG2Power(*(g2_t *)&hashedKey.q);
 }
@@ -491,8 +494,8 @@ bool PopSchemeMPL::PopVerify(
     G1Element genneg = G1Element::Generator().Negate();
     G2Element hashedPoint = G2Element::FromMessage(
         pubkey.Serialize(),
-        PopSchemeMPL::CIPHERSUITE_ID,
-        PopSchemeMPL::CIPHERSUITE_ID_LEN);
+        PopSchemeMPL::POP_CIPHERSUITE_ID,
+        PopSchemeMPL::POP_CIPHERSUITE_ID_LEN);
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
@@ -525,7 +528,7 @@ bool PopSchemeMPL::FastAggregateVerify(
     if (n <= 0)
         return false;
 
-    G1Element pkagg = G1Element();  // Infinity
+    G1Element pkagg = G1Element::Infinity();  // Infinity
     for (G1Element pk : pubkeys) pkagg += pk;
 
     return CoreMPL::Verify(

@@ -454,11 +454,11 @@ TEST_CASE("Signature tests")
     SECTION("Should sign with the zero key") {
         vector<uint8_t> sk0(32, 0);
         PrivateKey sk = PrivateKey::FromByteVector(sk0);
-        REQUIRE(sk.GetG1Element() == G1Element());  // Infinity
-        REQUIRE(sk.GetG2Element() == G2Element());  // Infinity
-        REQUIRE(BasicSchemeMPL::Sign(sk, {1, 2, 3}) == G2Element());
-        REQUIRE(AugSchemeMPL::Sign(sk, {1, 2, 3}) == G2Element());
-        REQUIRE(PopSchemeMPL::Sign(sk, {1, 2, 3}) == G2Element());
+        REQUIRE(sk.GetG1Element() == G1Element::Infinity());  // Infinity
+        REQUIRE(sk.GetG2Element() == G2Element::Infinity());  // Infinity
+        REQUIRE(BasicSchemeMPL::Sign(sk, {1, 2, 3}) == G2Element::Infinity());
+        REQUIRE(AugSchemeMPL::Sign(sk, {1, 2, 3}) == G2Element::Infinity());
+        REQUIRE(PopSchemeMPL::Sign(sk, {1, 2, 3}) == G2Element::Infinity());
     }
 
     SECTION("Should use equality operators")
