@@ -11,6 +11,7 @@
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/context:cpp)
 
 NOTE: THIS LIBRARY IS A DRAFT AND NOT YET REVIEWED FOR SECURITY
+
 NOTE: THIS LIBRARY WAS SHIFTED TO THE IETF BLS SPECIFICATION ON 7/16/20
 
 Implements BLS signatures with aggregation using [relic toolkit](https://github.com/relic-toolkit/relic)
@@ -19,16 +20,15 @@ for cryptographic primitives (pairings, EC, hashing) according to the [IETF BLS 
 Features:
 
 * Non-interactive signature aggregation following IETF specification
-* Aggregate aggregates (trees)
+* Works on Windows, Mac, Linux, BSD
 * Efficient verification using Proof of Posssesion (only one pairing per distinct message)
-* Security against rogue public key attack using proof of possession or augmented scheme
 * Aggregate public keys and private keys
 * EIP-2333 key derivation (including unhardened BIP-32-like keys)
 * Key and signature serialization
 * Batch verification
-* [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings) (currently out of date)
 * [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/master/python-bindings)
 * [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/master/python-impl)
+* [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings) (currently out of date)
 
 ## Before you start
 This library uses minimum public key sizes (MPL). A G2Element is a signature (96 bytes), and a G1Element is a public key (48 bytes). A private key is a 32 byte integer. There are three schemes: Basic, Augmented, and ProofOfPossession. Augmented should be enough for most use cases, and ProofOfPossession can be used where verification must be fast.
