@@ -375,27 +375,6 @@ PYBIND11_MODULE(blspy, m)
             [](G1Element &self, G1Element &other) { return self + other; },
             py::is_operator())
         .def(
-            "__iadd__",
-            [](G1Element &self, G1Element &other) {
-                self += other;
-                return self;
-            },
-            py::is_operator())
-        .def(
-            "__imul__",
-            [](G1Element &self, bn_t other) {
-                self *= (*(bn_t *)&other);
-                return self;
-            },
-            py::is_operator())
-        .def(
-            "__imul__",
-            [](G1Element &self, BNWrapper other) {
-                self *= (*other.b);
-                return self;
-            },
-            py::is_operator())
-        .def(
             "__mul__",
             [](G1Element &self, bn_t other) {
                 return self * (*(bn_t *)&other);
@@ -436,11 +415,9 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__bytes__",
             [](const G1Element &ele) {
-                uint8_t *out = new uint8_t[G1Element::SIZE];
-                ele.Serialize(out);
+                vector<uint8_t> out = ele.Serialize();
                 py::bytes ans = py::bytes(
-                    reinterpret_cast<const char *>(out), G1Element::SIZE);
-                delete[] out;
+                    reinterpret_cast<const char *>(out.data()), G1Element::SIZE);
                 return ans;
             })
         .def("__deepcopy__", [](const G1Element &ele, const py::object &memo) {
@@ -510,28 +487,6 @@ PYBIND11_MODULE(blspy, m)
             [](G2Element &self, G2Element &other) { return self + other; },
             py::is_operator())
         .def(
-            "__iadd__",
-            [](G2Element &self, G2Element &other) {
-                self += other;
-                return self;
-            },
-            py::is_operator())
-        .def(
-            "__imul__",
-            [](G2Element &self, bn_t other) {
-                self *= (*(bn_t *)&other);
-                return self;
-            },
-            py::is_operator())
-        .def(
-            "__imul__",
-            [](G2Element &self, BNWrapper other) {
-                self *= (*other.b);
-                return self;
-            },
-            py::is_operator())
-
-        .def(
             "__mul__",
             [](G2Element &self, bn_t other) {
                 return self * (*(bn_t *)&other);
@@ -569,11 +524,9 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__bytes__",
             [](const G2Element &ele) {
-                uint8_t *out = new uint8_t[G2Element::SIZE];
-                ele.Serialize(out);
+                vector<uint8_t> out = ele.Serialize();
                 py::bytes ans = py::bytes(
-                    reinterpret_cast<const char *>(out), G2Element::SIZE);
-                delete[] out;
+                    reinterpret_cast<const char *>(out.data()), G2Element::SIZE);
                 return ans;
             })
         .def("__deepcopy__", [](const G2Element &ele, const py::object &memo) {

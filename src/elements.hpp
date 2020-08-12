@@ -37,37 +37,33 @@ public:
     static G1Element FromBytes(const uint8_t *bytes);
     static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G1Element FromNative(const g1_t *element);
-    static G1Element Generator();
-    static G1Element Infinity();  // infinity / unity
     static G1Element FromMessage(
         const std::vector<uint8_t> &message,
         const uint8_t *dst,
         int dst_len);
+    static G1Element Generator();
+    static G1Element Infinity();  // infinity / unity
 
-    g1_t p;
-    G1Element(const G1Element &element);
     void CheckValid() const;
+    void ToNative(g1_t* output) const;
+    G1Element Negate() const;
+    GTElement Pair(const G2Element &b) const;
+    uint32_t GetFingerprint() const;
+    std::vector<uint8_t> Serialize() const;
+
     friend bool operator==(const G1Element &a, const G1Element &b);
     friend bool operator!=(const G1Element &a, const G1Element &b);
     friend std::ostream &operator<<(std::ostream &os, const G1Element &s);
-    friend G1Element &operator+=(G1Element &a, const G1Element &b);
     friend G1Element operator+(const G1Element &a, const G1Element &b);
-    friend G1Element &operator*=(G1Element &a, const bn_t &k);
     friend G1Element operator*(const G1Element &a, const bn_t &k);
     friend G1Element operator*(const bn_t &k, const G1Element &a);
-    G1Element &operator=(const G1Element &pubKey);
-
-    GTElement Pair(const G2Element &b) const;
     friend GTElement operator&(const G1Element &a, const G2Element &b);
 
-    G1Element Negate() const;
-    void Serialize(uint8_t *buffer) const;
-    std::vector<uint8_t> Serialize() const;
-    uint32_t GetFingerprint() const;
-
 private:
-    G1Element() {}
-    static void CompressPoint(uint8_t *result, const g1_t *point);
+    g1_t p;
+    G1Element() {
+        g1_set_infty(p);
+    }
 };
 
 class G2Element {
@@ -76,35 +72,32 @@ public:
     static G2Element FromBytes(const uint8_t *data);
     static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G2Element FromNative(const g2_t *element);
-    static G2Element Generator();
-    static G2Element Infinity();  // infinity/unity
     static G2Element FromMessage(
         const std::vector<uint8_t> &message,
         const uint8_t *dst,
         int dst_len);
+    static G2Element Generator();
+    static G2Element Infinity();  // infinity/unity
 
-    g2_t q;
-    G2Element(const G2Element &element);
     void CheckValid() const;
-    void Serialize(uint8_t *buffer) const;
+    void ToNative(g2_t* output) const;
+    G2Element Negate() const;
+    GTElement Pair(const G1Element &a) const;
     std::vector<uint8_t> Serialize() const;
 
     friend bool operator==(G2Element const &a, G2Element const &b);
     friend bool operator!=(G2Element const &a, G2Element const &b);
     friend std::ostream &operator<<(std::ostream &os, const G2Element &s);
-    friend G2Element &operator+=(G2Element &a, const G2Element &b);
     friend G2Element operator+(const G2Element &a, const G2Element &b);
-    friend G2Element &operator*=(G2Element &a, const bn_t &k);
     friend G2Element operator*(const G2Element &a, const bn_t &k);
     friend G2Element operator*(const bn_t &k, const G2Element &a);
 
-    G2Element Negate() const;
-    GTElement Pair(const G1Element &a) const;
-    G2Element &operator=(const G2Element &rhs);
 
 private:
-    G2Element() {}
-    static void CompressPoint(uint8_t *result, const g2_t *point);
+    g2_t q;
+    G2Element() {
+        g2_set_infty(q);
+    }
 };
 
 class GTElement {
@@ -113,9 +106,6 @@ public:
     static GTElement FromBytes(const uint8_t *bytes);
     static GTElement FromByteVector(const std::vector<uint8_t> &bytevec);
     static GTElement FromNative(const gt_t *element);
-    GTElement(const GTElement &element);
-
-    gt_t r;
     static GTElement Unity();  // unity
 
     void Serialize(uint8_t *buffer) const;
@@ -127,8 +117,8 @@ public:
     GTElement &operator=(const GTElement &rhs);
 
 private:
+    gt_t r;
     GTElement() {}
-    static void CompressPoint(uint8_t *result, const gt_t *point);
 };
 
 class BNWrapper {
