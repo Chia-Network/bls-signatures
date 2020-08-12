@@ -25,12 +25,7 @@
 
 namespace bls {
 class PrivateKey {
-    friend class BLS;
-    friend class G1Element;
-    friend class G2Element;
-    friend class HDKeys;
-
-public:
+ public:
     // Private keys are represented as 32 byte field elements. Note that
     // not all 32 byte integers are valid keys, the private key must be
     // less than the group order (which is in bls.hpp).
@@ -55,21 +50,18 @@ public:
     G1Element GetG1Element() const;
     G2Element GetG2Element() const;
 
-    G2Element GetG2Power(g2_t base) const;
+    G2Element GetG2Power(G2Element element) const;
 
-    bool IsZero();
+    bool IsZero() const;
 
     // Compare to different private key
     friend bool operator==(const PrivateKey &a, const PrivateKey &b);
     friend bool operator!=(const PrivateKey &a, const PrivateKey &b);
-    PrivateKey &operator=(const PrivateKey &rhs);
 
     // Multiply private key by G1 or G2 elements
-    friend G1Element &operator*=(G1Element &a, const PrivateKey &k);
     friend G1Element operator*(const G1Element &a, const PrivateKey &k);
     friend G1Element operator*(const PrivateKey &k, const G1Element &a);
 
-    friend G2Element &operator*=(G2Element &a, const PrivateKey &k);
     friend G2Element operator*(const G2Element &a, const PrivateKey &k);
     friend G2Element operator*(const PrivateKey &k, const G2Element &a);
 
@@ -89,14 +81,13 @@ public:
         size_t dst_len) const;
 
 
-private:
+ private:
     // Don't allow public construction, force static methods
     PrivateKey() {}
 
     // Allocate memory for private key
     void AllocateKeyData();
 
-private:
     // The actual byte data
     bn_t *keydata{nullptr};
 };

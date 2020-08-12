@@ -92,10 +92,12 @@ bool CoreMPL::Verify(
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
-    g1_copy(g1s[0], *(g1_t *)&genneg.p);
-    g1_copy(g1s[1], *(g1_t *)&pubkey.p);
-    g2_copy(g2s[0], *(g2_t *)&signature.q);
-    g2_copy(g2s[1], *(g2_t *)&hashedPoint.q);
+
+    genneg.ToNative(g1s);
+    pubkey.ToNative(g1s + 1);
+    signature.ToNative(g2s);
+    hashedPoint.ToNative(g2s + 1);
+
     bool ans = CoreMPL::NativeVerify(g1s, g2s, 2);
 
     delete[] g1s;
@@ -105,37 +107,27 @@ bool CoreMPL::Verify(
 
 vector<uint8_t> CoreMPL::Aggregate(const vector<vector<uint8_t>> &signatures)
 {
-    g2_t ans;
-    g2_free(ans);
-    g2_new(ans);
-    int n = (int)signatures.size();
-    if (n <= 0) {
-        g2_set_infty(ans);
-        G2Element::FromNative(&ans).Serialize();
+    vector<G2Element> elements = vector<G2Element>();
+    for (vector<uint8_t> signature : signatures) {
+        elements.push_back(G2Element::FromByteVector(signature));
     }
-    g2_copy(ans, G2Element::FromBytes(signatures[0].data()).q);
-
-    for (int i = 1; i < n; ++i) {
-        g2_add(ans, ans, G2Element::FromBytes(signatures[i].data()).q);
-    }
-    return G2Element::FromNative(&ans).Serialize();
+    return CoreMPL::Aggregate(elements).Serialize();
 }
 
 G2Element CoreMPL::Aggregate(const vector<G2Element> &signatures)
 {
-    g2_t ans;
-    g2_free(ans);
-    g2_new(ans);
+    g2_t ans, tmp;
     int n = (int)signatures.size();
     if (n <= 0) {
         g2_set_infty(ans);
         return G2Element::FromNative(&ans);
     }
 
-    g2_copy(ans, *(g2_t *)&signatures[0].q);
+    signatures[0].ToNative(&ans);
 
     for (int i = 1; i < n; ++i) {
-        g2_add(ans, ans, *(g2_t *)&signatures[i].q);
+        signatures[i].ToNative(&tmp);
+        g2_add(ans, ans, tmp);
     }
     return G2Element::FromNative(&ans);
 }
@@ -174,12 +166,13 @@ bool CoreMPL::AggregateVerify(
     g2_t *g2s = new g2_t[n + 1];
 
     G1Element genneg = G1Element::Generator().Negate();
-    g1_copy(g1s[0], *(g1_t *)&genneg.p);
-    g2_copy(g2s[0], *(g2_t *)&signature.q);
+
+    genneg.ToNative(g1s);
+    signature.ToNative(g2s);
+
     for (int i = 0; i < n; ++i) {
-        g1_copy(g1s[i + 1], *(g1_t *)&pubkeys[i].p);
-        g2_copy(
-            g2s[i + 1], G2Element::FromMessage(messages[i], dst, dst_len).q);
+        pubkeys[i].ToNative(g1s + i + 1);
+        G2Element::FromMessage(messages[i], dst, dst_len).ToNative(g2s + i + 1);
     }
 
     bool ans = CoreMPL::NativeVerify(g1s, g2s, n + 1);
@@ -194,11 +187,11 @@ bool CoreMPL::NativeVerify(g1_t *pubkeys, g2_t *mappedHashes, size_t length)
     fp12_zero(target);
     fp_set_dig(target[0][0][0], 1);
 
-    // prod e(pubkey[i], hash[i]) * e(-1 * g1, aggSig)
+    // prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
     // Performs pubKeys.size() pairings
     pc_map_sim(candidate, pubkeys, mappedHashes, length);
 
-    // 1 =? prod e(pubkey[i], hash[i]) * e(g1, aggSig)
+    // 1 =? prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
     if (gt_cmp(target, candidate) != RLC_EQ || core_get()->code != RLC_OK) {
         core_get()->code = RLC_OK;
         return false;
@@ -483,7 +476,7 @@ G2Element PopSchemeMPL::PopProve(const PrivateKey &seckey)
         PopSchemeMPL::POP_CIPHERSUITE_ID,
         PopSchemeMPL::POP_CIPHERSUITE_ID_LEN);
 
-    return seckey.GetG2Power(*(g2_t *)&hashedKey.q);
+    return seckey.GetG2Power(hashedKey);
 }
 
 
@@ -499,10 +492,10 @@ bool PopSchemeMPL::PopVerify(
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
-    g1_copy(g1s[0], *(g1_t *)&genneg.p);
-    g1_copy(g1s[1], *(g1_t *)&pubkey.p);
-    g2_copy(g2s[0], *(g2_t *)&signature_proof.q);
-    g2_copy(g2s[1], *(g2_t *)&hashedPoint.q);
+    genneg.ToNative(g1s);
+    pubkey.ToNative(g1s + 1);
+    signature_proof.ToNative(g2s);
+    hashedPoint.ToNative(g2s + 1);
 
     bool ans = CoreMPL::NativeVerify(g1s, g2s, 2);
     delete[] g1s;
@@ -529,7 +522,9 @@ bool PopSchemeMPL::FastAggregateVerify(
         return false;
 
     G1Element pkagg = G1Element::Infinity();  // Infinity
-    for (G1Element pk : pubkeys) pkagg += pk;
+    for (G1Element pk : pubkeys) {
+        pkagg = pkagg + pk;
+    }
 
     return CoreMPL::Verify(
         pkagg,
