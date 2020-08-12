@@ -500,6 +500,11 @@ bls12381_q = (
     q
 ) = 0x1A0111EA397FE69A4B1BA7B6434BACD764774B84F38512BF6730D2A0F6B0F6241EABFFFEB153FFFFB9FEFFFFFFFFAAAB
 
+# roots of unity, used for computing square roots in Fq2
+rv1 = 0x6AF0E0437FF400B6831E36D6BD17FFE48395DABC2D3435E77F76E17009241C5EE67992F72EC05F4C81084FBEDE3CC09
+roots_of_unity = (Fq2(q, 1, 0), Fq2(q, 0, 1), Fq2(q, rv1, rv1), Fq2(q, rv1, q - rv1))
+del rv1
+
 # Frobenius coefficients for raising elements to q**i -th powers
 # These are specific to this given q
 frob_coeffs = {

@@ -61,7 +61,7 @@ def derive_child_g1_unhardened(parent_pk: JacobianPoint, index: int) -> Jacobian
     at the specified index. WARNING: this key is not as secure as a hardened key.
     """
     h = hash256(bytes(parent_pk) + index.to_bytes(4, "big"))
-    return parent_pk + PrivateKey.from_bytes(h) * G1Generator()
+    return parent_pk + PrivateKey.from_bytes(h).value * G1Generator()
 
 
 def derive_child_g2_unhardened(parent_pk: JacobianPoint, index: int) -> JacobianPoint:

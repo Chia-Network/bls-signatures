@@ -154,6 +154,10 @@ class JacobianPoint:
         new_y = self.y / (self.z ** 3)
         return AffinePoint(new_x, new_y, self.infinity, self.ec)
 
+    def check_valid(self) -> None:
+        assert self.is_on_curve()
+        assert self * self.ec.n == G2Infinity()
+
     def get_fingerprint(self) -> int:
         ser = bytes(self)
         return int.from_bytes(hash256(ser)[:4], "big")
@@ -509,6 +513,52 @@ def twist(point: AffinePoint, ec=default_ec_twist) -> AffinePoint:
     new_x = point.x * wsq
     new_y = point.y * wcu
     return AffinePoint(new_x, new_y, False, ec)
+
+
+#
+# Isogeny map evaluation specified by map_coeffs
+#
+# map_coeffs should be specified as (xnum, xden, ynum, yden)
+#
+# This function evaluates the isogeny over Jacobian projective coordinates.
+# For details, see Section 4.3 of
+#    Wahby and Boneh, "Fast and simple constant-time hashing to the BLS12-381 elliptic curve."
+#    ePrint # 2019/403, https://ia.cr/2019/403.
+def eval_iso(P: JacobianPoint, map_coeffs, ec) -> JacobianPoint:
+    (x, y, z) = (P.x, P.y, P.z)
+    mapvals = [None] * 4
+
+    # precompute the required powers of Z^2
+    maxord = max(len(coeffs) for coeffs in map_coeffs)
+    zpows = [None] * maxord
+    zpows[0] = pow(z, 0)
+    zpows[1] = pow(z, 2)
+    for idx in range(2, len(zpows)):
+        zpows[idx] = zpows[idx - 1] * zpows[1]
+
+    # compute the numerator and denominator of the X and Y maps via Horner's rule
+    for (idx, coeffs) in enumerate(map_coeffs):
+        coeffs_z = [
+            zpow * c for (zpow, c) in zip(reversed(coeffs), zpows[: len(coeffs)])
+        ]
+        tmp = coeffs_z[0]
+        for coeff in coeffs_z[1:]:
+            tmp *= x
+            tmp += coeff
+        mapvals[idx] = tmp
+
+    # xden is of order 1 less than xnum, so need to multiply it by an extra factor of Z^2
+    assert len(map_coeffs[1]) + 1 == len(map_coeffs[0])
+    mapvals[1] *= zpows[1]
+
+    # multiply result of Y map by the y-coordinate y / z^3
+    mapvals[2] *= y
+    mapvals[3] *= pow(z, 3)
+
+    Z = mapvals[1] * mapvals[3]
+    X = mapvals[0] * mapvals[3] * Z
+    Y = mapvals[2] * mapvals[1] * Z * Z
+    return JacobianPoint(X, Y, Z, P.infinity, ec)
 
 
 """

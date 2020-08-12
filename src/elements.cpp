@@ -112,14 +112,6 @@ G1Element G1Element::Generator()
     return ele;
 }
 
-G1Element::G1Element()
-{
-    g1_null(p);
-    g1_new(p);
-    g1_set_infty(p);
-    this->CheckValid();
-}
-
 G1Element G1Element::FromMessage(
     const std::vector<uint8_t>& message,
     const uint8_t* dst,
@@ -135,6 +127,15 @@ G1Element G1Element::FromMessage(
 G1Element::G1Element(const G1Element& pubKey) {
     g1_copy(p, pubKey.p);
     this->CheckValid();
+}
+
+G1Element G1Element::Infinity() {
+    G1Element ele = G1Element();
+    g1_null(ele.p);
+    g1_new(ele.p);
+    g1_set_infty(ele.p);
+    ele.CheckValid();
+    return ele;
 }
 
 G1Element& G1Element::operator=(const G1Element& pubKey)
@@ -353,7 +354,12 @@ G2Element G2Element::FromMessage(
     return G2Element::FromNative(&ans);
 }
 
-G2Element::G2Element() { g2_set_infty(q); }
+G2Element G2Element::Infinity() {
+    G2Element ret = G2Element();
+    g2_set_infty(ret.q);
+    ret.CheckValid();
+    return ret;
+}
 
 G2Element::G2Element(const G2Element& ele) {
     g2_copy(q, *(g2_t*)&ele.q);
@@ -459,7 +465,11 @@ void G2Element::CompressPoint(uint8_t* result, const g2_t* point)
 
 // GTElement
 
-GTElement::GTElement() { gt_set_unity(r); }
+GTElement GTElement::Unity() {
+    GTElement ele = GTElement();
+    gt_set_unity(ele.r);
+    return ele;
+}
 
 GTElement::GTElement(const GTElement& ele) { gt_copy(r, *(gt_t*)&ele.r); }
 

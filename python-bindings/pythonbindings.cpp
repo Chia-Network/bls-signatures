@@ -314,7 +314,6 @@ PYBIND11_MODULE(blspy, m)
     py::class_<G1Element>(m, "G1Element")
         .def_property_readonly_static(
             "SIZE", [](py::object self) { return G1Element::SIZE; })
-        .def(py::init<>())
         .def(py::init(&G1Element::FromByteVector))
         .def(py::init([](py::int_ pyint) {
             std::vector<uint8_t> buffer(G1Element::SIZE, 0);
@@ -361,6 +360,7 @@ PYBIND11_MODULE(blspy, m)
         .def("from_message", &G1Element::FromMessage)
         .def("pair", &G1Element::Pair)
         .def("negate", &G1Element::Negate)
+        .def("infinity", &G1Element::Infinity)
         .def("get_fingerprint", &G1Element::GetFingerprint)
 
         .def(py::self == py::self)
@@ -450,7 +450,6 @@ PYBIND11_MODULE(blspy, m)
     py::class_<G2Element>(m, "G2Element")
         .def_property_readonly_static(
             "SIZE", [](py::object self) { return G2Element::SIZE; })
-        .def(py::init<>())
         .def(py::init(&G2Element::FromByteVector))
         .def(py::init([](py::buffer const b) {
             py::buffer_info info = b.request();
@@ -497,6 +496,7 @@ PYBIND11_MODULE(blspy, m)
         .def("from_message", &G2Element::FromMessage)
         .def("pair", &G2Element::Pair)
         .def("negate", &G2Element::Negate)
+        .def("infinity", &G2Element::Infinity)
         .def(
             "__deepcopy__",
             [](const G2Element &g2, const py::object &memo) {
@@ -583,7 +583,6 @@ PYBIND11_MODULE(blspy, m)
     py::class_<GTElement>(m, "GTElement")
         .def_property_readonly_static(
             "SIZE", [](py::object self) { return GTElement::SIZE; })
-        .def(py::init<>())
         .def(py::init(&GTElement::FromByteVector))
         .def(py::init([](py::buffer const b) {
             py::buffer_info info = b.request();
@@ -626,6 +625,7 @@ PYBIND11_MODULE(blspy, m)
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
                 return GTElement::FromBytes(data_ptr);
             })
+        .def("unity", &GTElement::Unity)
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def(

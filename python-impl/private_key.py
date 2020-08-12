@@ -11,7 +11,7 @@ class PrivateKey:
     PRIVATE_KEY_SIZE = 32
 
     def __init__(self, value):
-        assert self.value < default_ec.n
+        assert value < default_ec.n
         self.value = value
 
     @staticmethod
@@ -60,7 +60,7 @@ class PrivateKey:
         """
         Aggregates private keys together
         """
-        return sum(pk.value for pk in private_keys) % default_ec.n
+        return PrivateKey(sum(pk.value for pk in private_keys) % default_ec.n)
 
 
 """
