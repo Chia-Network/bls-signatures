@@ -236,6 +236,8 @@ class PopSchemeMPL {
 public:
     static const uint8_t *CIPHERSUITE_ID;
     static const int CIPHERSUITE_ID_LEN;
+    static const uint8_t *POP_CIPHERSUITE_ID;
+    static const int POP_CIPHERSUITE_ID_LEN;
 
     static PrivateKey KeyGen(const vector<uint8_t> seed) {
         return CoreMPL::KeyGen(seed);

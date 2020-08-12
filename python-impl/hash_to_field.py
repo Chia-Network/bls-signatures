@@ -87,22 +87,6 @@ def hash_to_field(msg, count, DST, modulus, degree, blen, expand_fn, hash_fn):
     return u_vals
 
 
-def Hp_shake(msg, count, dst):
-    if not isinstance(msg, bytes):
-        raise ValueError("Hp can't hash anything but bytes")
-    return hash_to_field(
-        msg, count, dst, q, 1, 64, expand_message_xof, hashlib.shake_128
-    )
-
-
-def Hp2_shake(msg, count, dst):
-    if not isinstance(msg, bytes):
-        raise ValueError("Hp2 can't hash anything but bytes")
-    return hash_to_field(
-        msg, count, dst, q, 2, 64, expand_message_xof, hashlib.shake_128
-    )
-
-
 def Hp(msg, count, dst):
     if not isinstance(msg, bytes):
         raise ValueError("Hp can't hash anything but bytes")

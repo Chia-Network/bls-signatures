@@ -79,8 +79,20 @@ def test_elements():
     i2 = int.from_bytes(bytes([3, 1, 4, 1, 5, 9]), byteorder="big")
     g1 = G1Element.generator()
     g2 = G2Element.generator()
-    u1 = G1Element()  # unity
-    u2 = G2Element()
+    u1 = G1Element.infinity()  # unity
+    u2 = G2Element.infinity()
+
+    # Does not allow construction
+    try:
+        i = G1Element()
+        assert False
+    except Exception:
+        pass
+    try:
+        i = G2Element()
+        assert False
+    except Exception:
+        pass
 
     x1 = g1 * b1
     x2 = g1 * b2
