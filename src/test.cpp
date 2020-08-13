@@ -274,6 +274,9 @@ TEST_CASE("Chia test vectors") {
             "c2e7790aeb455e27beae91d64e077c70b5506dea3");
 
         REQUIRE(BasicSchemeMPL::AggregateVerify({pk1, pk2}, {message1, message2}, aggSig1));
+        REQUIRE(!BasicSchemeMPL::AggregateVerify({pk1, pk2}, {message1, message2}, sig1));
+        REQUIRE(!BasicSchemeMPL::Verify(pk1, message1, sig2));
+        REQUIRE(!BasicSchemeMPL::Verify(pk1, message2, sig1));
 
         vector<uint8_t> message3 = {1, 2, 3};
         vector<uint8_t> message4 = {1, 2, 3, 4};

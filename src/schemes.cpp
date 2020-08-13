@@ -183,13 +183,20 @@ bool CoreMPL::AggregateVerify(
 
 bool CoreMPL::NativeVerify(g1_t *pubkeys, g2_t *mappedHashes, size_t length)
 {
-    gt_t target, candidate;
+    gt_t target, candidate, tmpPairing;
     fp12_zero(target);
     fp_set_dig(target[0][0][0], 1);
+    fp12_zero(candidate);
+    fp_set_dig(candidate[0][0][0], 1);
 
     // prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
-    // Performs pubKeys.size() pairings
-    pc_map_sim(candidate, pubkeys, mappedHashes, length);
+    // Performs pubKeys.size() pairings, 250 at a time
+
+    for (size_t i = 0; i < length; i += 250) {
+        size_t numPairings = std::min((length - i), (size_t)250);
+        pc_map_sim(tmpPairing, pubkeys + i, mappedHashes + i, numPairings);
+        fp12_mul(candidate, candidate, tmpPairing);
+    }
 
     // 1 =? prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
     if (gt_cmp(target, candidate) != RLC_EQ || core_get()->code != RLC_OK) {

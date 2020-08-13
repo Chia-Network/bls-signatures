@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import List, Optional
 import bls12381
 from collections import namedtuple
 from copy import deepcopy
@@ -526,14 +527,16 @@ def twist(point: AffinePoint, ec=default_ec_twist) -> AffinePoint:
 #    ePrint # 2019/403, https://ia.cr/2019/403.
 def eval_iso(P: JacobianPoint, map_coeffs, ec) -> JacobianPoint:
     (x, y, z) = (P.x, P.y, P.z)
-    mapvals = [None] * 4
+    mapvals: List[Optional[Fq2]] = [None] * 4
 
     # precompute the required powers of Z^2
     maxord = max(len(coeffs) for coeffs in map_coeffs)
-    zpows = [None] * maxord
-    zpows[0] = pow(z, 0)
-    zpows[1] = pow(z, 2)
+    zpows: List[Optional[Fq2]] = [None] * maxord
+    zpows[0] = z ** 0  # type: ignore
+    zpows[1] = z ** 2  # type: ignore
     for idx in range(2, len(zpows)):
+        assert zpows[idx - 1] is not None
+        assert zpows[1] is not None
         zpows[idx] = zpows[idx - 1] * zpows[1]
 
     # compute the numerator and denominator of the X and Y maps via Horner's rule
@@ -549,11 +552,15 @@ def eval_iso(P: JacobianPoint, map_coeffs, ec) -> JacobianPoint:
 
     # xden is of order 1 less than xnum, so need to multiply it by an extra factor of Z^2
     assert len(map_coeffs[1]) + 1 == len(map_coeffs[0])
+    assert zpows[1] is not None
+    assert mapvals[1] is not None
     mapvals[1] *= zpows[1]
 
     # multiply result of Y map by the y-coordinate y / z^3
+    assert mapvals[2] is not None
+    assert mapvals[3] is not None
     mapvals[2] *= y
-    mapvals[3] *= pow(z, 3)
+    mapvals[3] *= z ** 3
 
     Z = mapvals[1] * mapvals[3]
     X = mapvals[0] * mapvals[3] * Z
