@@ -44,7 +44,7 @@ void benchSigs() {
 
 void benchVerification() {
     string testName = "Verification";
-    double numIters = 5000;
+    double numIters = 10000;
     PrivateKey sk = AugSchemeMPL::KeyGen(getRandomSeed());
     G1Element pk = sk.GetG1Element();
 
@@ -69,7 +69,7 @@ void benchVerification() {
 }
 
 void benchBatchVerification() {
-    double numIters = 5000;
+    double numIters = 100000;
 
     vector<G2Element> sigs;
     vector<G1Element> pks;
