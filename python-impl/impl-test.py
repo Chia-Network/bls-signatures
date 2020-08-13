@@ -328,7 +328,7 @@ def test_elements():
     assert ate_pairing(g1, sig) == ate_pairing(pk, Hm)
 
 
-def test_chia_vectors():
+def test_chia_vectors_1():
     seed1: bytes = bytes([0x00] * 32)
     seed2: bytes = bytes([0x01] * 32)
     msg1: bytes = bytes([7, 8, 9])
@@ -386,6 +386,18 @@ def test_chia_vectors():
         "a0b1378d518bea4d1100adbc7bdbc4ff64f2c219ed6395cd36fe5d2aa44a4b8e710b607afd9"
         "65e505a5ac3283291b75413d09478ab4b5cfbafbeea366de2d0c0bcf61deddaa521f6020460f"
         "d547ab37659ae207968b545727beba0a3c5572b9c"
+    )
+
+
+def test_chia_vectors_3():
+    seed1: bytes = bytes([0x04] * 32)
+    sk1 = PopSchemeMPL.key_gen(seed1)
+    proof = PopSchemeMPL.pop_prove(sk1)
+    assert (
+        bytes(proof).hex()
+        == "84f709159435f0dc73b3e8bf6c78d85282d19231555a8ee3b6e2573aaf66872d9203fefa1ef"
+        "700e34e7c3f3fb28210100558c6871c53f1ef6055b9f06b0d1abe22ad584ad3b957f3018a8f5"
+        "8227c6c716b1e15791459850f2289168fa0cf9115"
     )
 
 
@@ -539,7 +551,9 @@ def test_readme():
     print(sk_bytes.hex(), pk_bytes.hex(), signature_bytes.hex())
 
     sk = PrivateKey.from_bytes(sk_bytes)
+    assert sk is not None
     pk = G1FromBytes(pk_bytes)
+    assert pk is not None
     signature: G2Element = G2FromBytes(signature_bytes)
 
     seed = bytes([1]) + seed[1:]
@@ -622,7 +636,8 @@ test_xmd()
 test_swu()
 test_edge_case_sign_Fq2()
 test_elements()
-test_chia_vectors()
+test_chia_vectors_1()
+test_chia_vectors_3()
 test_pyecc_vectors()
 test_vectors_invalid()
 test_readme()
