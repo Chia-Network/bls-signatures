@@ -331,6 +331,20 @@ TEST_CASE("Chia test vectors") {
             "6eac218b28cdb07a3e3bc087df1cd1e3213aa4e11322a3ff3847bbba0b2fd19ddc25ca964871"
             "997b9bceeab37a4c2565876da19382ea32a962200");
     }
+    SECTION("Chia test vector 3 (PoP)") {
+        vector<uint8_t> message1 = {1, 2, 3, 40, 50};
+
+        vector<uint8_t> seed1(32, 0x04);  // All 4s
+
+        PrivateKey sk1 = PopSchemeMPL::KeyGen(seed1);
+
+        G2Element pop = PopSchemeMPL::PopProve(sk1);
+        REQUIRE(PopSchemeMPL::PopVerify(sk1.GetG1Element(), pop));
+
+        REQUIRE(Util::HexStr(pop.Serialize()) == "84f709159435f0dc73b3e8bf6c78d85282d19231555a8ee3b6e2573aaf66872d9203fefa1ef"
+                                                 "700e34e7c3f3fb28210100558c6871c53f1ef6055b9f06b0d1abe22ad584ad3b957f3018a8f5"
+                                                 "8227c6c716b1e15791459850f2289168fa0cf9115");
+    }
 }
 
 
