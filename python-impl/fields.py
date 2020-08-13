@@ -323,7 +323,7 @@ class FieldExtBase(tuple):
     # Returns the concatenated coordinates in big endian bytes
     def __bytes__(self):
         sum_bytes = bytes([])
-        for x in self:
+        for x in reversed(self):
             if type(x) != FieldExtBase and type(x) != Fq:
                 x = Fq.from_fq(self.Q, x)
             sum_bytes += bytes(x)
@@ -336,7 +336,7 @@ class FieldExtBase(tuple):
         tup = []
         for i in range(cls.embedding):
             tup.append(buffer[i * embedded_size : (i + 1) * embedded_size])
-        return cls(Q, *[cls.basefield.from_bytes(b, Q) for b in tup])
+        return cls(Q, *[cls.basefield.from_bytes(b, Q) for b in reversed(tup)])
 
     __truediv__ = __floordiv__
 

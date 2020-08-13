@@ -40,13 +40,10 @@ def core_aggregate_mpl(signatures: List[JacobianPoint]) -> JacobianPoint:
     if len(signatures) < 1:
         raise ValueError("Must aggregate at least 1 signature")
     aggregate = signatures[0]
-    try:
-        aggregate.check_valid()
-        for signature in signatures[1:]:
-            signature.check_valid()
-            aggregate += signature
-    except AssertionError:
-        return False
+    aggregate.check_valid()
+    for signature in signatures[1:]:
+        signature.check_valid()
+        aggregate += signature
     return aggregate
 
 
