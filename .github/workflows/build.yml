@@ -164,6 +164,10 @@ jobs:
         ./src/runtest
         valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all  ./src/runtest
 
+    - name: Test pure python implementation
+      run: |
+        python python-impl/impl-test.py
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
