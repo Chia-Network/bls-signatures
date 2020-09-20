@@ -41,7 +41,7 @@ jobs:
         source venv/bin/activate
         python -m pip install --upgrade pip
         pip install wheel
-        python -m pip install cibuildwheel==1.5.5
+        python -m pip install cibuildwheel==1.6.1
 
     - name: Lint source with flake8
       run: |
