@@ -72,6 +72,8 @@ public:
 
     static G2Element Aggregate(const vector<G2Element> &signatures);
 
+    static G1Element Aggregate(const vector<G1Element> &publicKeys);
+
     static bool AggregateVerify(
         const vector<vector<uint8_t>> &pubkeys,
         const vector<vector<uint8_t>> &messages,
@@ -121,6 +123,11 @@ public:
     static G2Element Aggregate(const vector<G2Element> &signatures)
     {
         return CoreMPL::Aggregate(signatures);
+    }
+
+    static G1Element Aggregate(const vector<G1Element> &publicKeys)
+    {
+        return CoreMPL::Aggregate(publicKeys);
     }
 
     static G2Element Sign(
@@ -187,6 +194,11 @@ public:
     static G2Element Aggregate(const vector<G2Element> &signatures)
     {
         return CoreMPL::Aggregate(signatures);
+    }
+
+    static G1Element Aggregate(const vector<G1Element> &publicKeys)
+    {
+        return CoreMPL::Aggregate(publicKeys);
     }
 
     static G2Element Sign(
@@ -261,6 +273,11 @@ public:
     static G2Element Aggregate(const vector<G2Element> &signatures)
     {
         return CoreMPL::Aggregate(signatures);
+    }
+
+    static G1Element Aggregate(const vector<G1Element> &publicKeys)
+    {
+        return CoreMPL::Aggregate(publicKeys);
     }
 
     static G2Element Sign(

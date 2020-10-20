@@ -132,6 +132,24 @@ G2Element CoreMPL::Aggregate(const vector<G2Element> &signatures)
     return G2Element::FromNative(&ans);
 }
 
+G1Element CoreMPL::Aggregate(const vector<G1Element> &publicKeys)
+{
+    g1_t ans, tmp;
+    int n = (int)publicKeys.size();
+    if (n <= 0) {
+        g1_set_infty(ans);
+        return G1Element::FromNative(&ans);
+    }
+
+    publicKeys[0].ToNative(&ans);
+
+    for (int i = 1; i < n; ++i) {
+        publicKeys[i].ToNative(&tmp);
+        g1_add(ans, ans, tmp);
+    }
+    return G1Element::FromNative(&ans);
+}
+
 bool CoreMPL::AggregateVerify(
     const vector<vector<uint8_t>> &pubkeys,
     const vector<vector<uint8_t>> &messages,  // unhashed
@@ -528,10 +546,7 @@ bool PopSchemeMPL::FastAggregateVerify(
     if (n <= 0)
         return false;
 
-    G1Element pkagg = G1Element::Infinity();  // Infinity
-    for (G1Element pk : pubkeys) {
-        pkagg = pkagg + pk;
-    }
+    G1Element pkagg = CoreMPL::Aggregate(pubkeys);
 
     return CoreMPL::Verify(
         pkagg,
