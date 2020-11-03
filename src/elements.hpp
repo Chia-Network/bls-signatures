@@ -124,9 +124,26 @@ private:
 class BNWrapper {
 public:
     bn_t *b;
+
+    BNWrapper()
+    { 
+        std::cout << "BNWrapper constructor" << std::endl;
+        b = NULL;
+    }
+
+    ~BNWrapper() 
+    {
+        std::cout << "BNWrapper destructor" << std::endl;
+        if(b != NULL) {
+            std::cout << "BNWrapper SecFree" << std::endl;
+            Util::SecFree(b);
+        }
+    }
+
     static BNWrapper FromByteVector(std::vector<uint8_t> &bytes)
     {
         BNWrapper bnw;
+        std::cout << "BNWrapper SecAlloc" << std::endl;
         bnw.b = Util::SecAlloc<bn_t>(1);
         bn_new(*bnw.b);
         bn_zero(*bnw.b);
