@@ -127,13 +127,11 @@ public:
 
     BNWrapper()
     { 
-        std::cout << "BNWrapper constructor " << this << std::endl;
         b = NULL;
     }
 
     BNWrapper(const BNWrapper& other)
     {
-        std::cout << "BNWrapper copy constructor " << this << std::endl;
         b = Util::SecAlloc<bn_t>(1);
         bn_new(*b);
         bn_copy(*b, *(other.b));
@@ -141,7 +139,6 @@ public:
 
     BNWrapper& operator=(const BNWrapper& other)
     {
-        std::cout << "BNWrapper assignment constructor " << this << std::endl;
         b = Util::SecAlloc<bn_t>(1);
         bn_new(*b);
         bn_copy(*b, *(other.b));
@@ -150,9 +147,7 @@ public:
 
     ~BNWrapper() 
     {
-        std::cout << "BNWrapper destructor " << this << std::endl;
         if(b != NULL) {
-            std::cout << "BNWrapper SecFree " << this << std::endl;
             Util::SecFree(b);
             b = NULL;
         }
@@ -161,7 +156,6 @@ public:
     static BNWrapper FromByteVector(std::vector<uint8_t> &bytes)
     {
         BNWrapper bnw;
-        std::cout << "BNWrapper SecAlloc " << std::endl;
         bnw.b = Util::SecAlloc<bn_t>(1);
         bn_new(*bnw.b);
         bn_zero(*bnw.b);
