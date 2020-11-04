@@ -181,6 +181,9 @@ bool CoreMPL::AggregateVerify(
     int dst_len)
 {
     int n = pubkeys.size();
+    if (n == 0) {
+        return (messages.empty() && signature == G2Element::Infinity());
+    }
     if (n != messages.size() || n <= 0)
         return false;
 
