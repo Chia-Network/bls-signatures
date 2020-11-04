@@ -131,6 +131,23 @@ public:
         b = NULL;
     }
 
+    BNWrapper(const BNWrapper& other)
+    {
+        std::cout << "BNWrapper copy constructor " << this << std::endl;
+        b = Util::SecAlloc<bn_t>(1);
+        bn_new(*b);
+        bn_copy(*b, *(other.b));
+    }
+
+    BNWrapper& operator=(const BNWrapper& other)
+    {
+        std::cout << "BNWrapper assignment constructor " << this << std::endl;
+        b = Util::SecAlloc<bn_t>(1);
+        bn_new(*b);
+        bn_copy(*b, *(other.b));
+        return *this;
+    }
+
     ~BNWrapper() 
     {
         std::cout << "BNWrapper destructor " << this << std::endl;
