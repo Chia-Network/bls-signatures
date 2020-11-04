@@ -25,6 +25,8 @@ extern "C" {
 #include <gmp.h>
 #endif
 
+#include <utility>
+
 namespace bls {
 class G1Element;
 class G2Element;
@@ -123,12 +125,9 @@ private:
 
 class BNWrapper {
 public:
-    bn_t *b;
+    bn_t *b = nullptr;
 
-    BNWrapper()
-    { 
-        b = NULL;
-    }
+    BNWrapper() = default;
 
     BNWrapper(const BNWrapper& other)
     {
@@ -137,15 +136,28 @@ public:
         bn_copy(*b, *(other.b));
     }
 
-    BNWrapper& operator=(const BNWrapper& other)
+    BNWrapper(BNWrapper&& other)
+        : b(std::exchange(other.b, nullptr))
+    {}
+
+    BNWrapper& operator=(const BNWrapper& other) &
     {
+        if (&other == this) return *this;
         b = Util::SecAlloc<bn_t>(1);
         bn_new(*b);
         bn_copy(*b, *(other.b));
         return *this;
     }
 
-    ~BNWrapper() 
+    BNWrapper& operator=(BNWrapper&& other) &
+    {
+        if (&other == this) return *this;
+        if (b) Util::SecFree(b);
+        b = std::exchange(other.b, nullptr);
+        return *this;
+    }
+
+    ~BNWrapper()
     {
         if(b != NULL) {
             Util::SecFree(b);
