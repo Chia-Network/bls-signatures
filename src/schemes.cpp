@@ -158,6 +158,10 @@ bool CoreMPL::AggregateVerify(
     int dst_len)
 {
     int n = pubkeys.size();
+    if (n == 0) {
+        G2Element signatureElement = G2Element::FromBytes(signature.data());
+        return (messages.empty() && signatureElement == G2Element::Infinity());
+    }
     if (n != messages.size() || n <= 0)
         return false;
     vector<G1Element> pubkeyElements;

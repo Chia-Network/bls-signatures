@@ -389,11 +389,16 @@ def test_readme():
     assert ok
 
 
+def test_infinity_agg():
+    assert AugSchemeMPL.aggregate_verify([], [], G2Element.infinity())
+
+
 test_schemes()
 test_elements()
 test_vectors_invalid()
 test_vectors_valid()
 test_readme()
+test_infinity_agg()
 
 print("\nAll tests passed.")
 
