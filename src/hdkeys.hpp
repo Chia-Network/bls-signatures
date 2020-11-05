@@ -97,6 +97,7 @@ class HDKeys {
         Util::SecFree(ikmHkdf);
         Util::SecFree(skBn);
         Util::SecFree(okmHkdf);
+        Util::SecFree(skBytes);
 
         return k;
     }
