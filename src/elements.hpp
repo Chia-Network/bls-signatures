@@ -152,7 +152,10 @@ public:
     BNWrapper& operator=(BNWrapper&& other) &
     {
         if (&other == this) return *this;
-        if (b) Util::SecFree(b);
+        if (b) {
+            bn_free(*b);
+            Util::SecFree(b);
+        }
         b = std::exchange(other.b, nullptr);
         return *this;
     }
@@ -160,6 +163,7 @@ public:
     ~BNWrapper()
     {
         if(b != NULL) {
+            bn_free(*b);
             Util::SecFree(b);
             b = NULL;
         }
