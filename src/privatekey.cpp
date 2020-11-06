@@ -61,9 +61,26 @@ PrivateKey::PrivateKey(const PrivateKey &privateKey)
     bn_copy(*keydata, *privateKey.keydata);
 }
 
-PrivateKey::PrivateKey(PrivateKey &&k) { std::swap(keydata, k.keydata); }
+PrivateKey::PrivateKey(PrivateKey &&k)
+    : keydata(std::exchange(k.keydata, nullptr))
+{}
 
 PrivateKey::~PrivateKey() { if(keydata !=NULL) Util::SecFree(keydata); }
+
+PrivateKey& PrivateKey::operator=(PrivateKey const& k) &
+{
+    if (!keydata) AllocateKeyData();
+    bn_copy(*keydata, *k.keydata);
+    return *this;
+}
+
+PrivateKey& PrivateKey::operator=(PrivateKey&& k) &
+{
+    if (keydata) Util::SecFree(keydata);
+    keydata = std::exchange(k.keydata, nullptr);
+    return *this;
+}
+>>>>>>> fix resource management in PrivateKey class. add assignment operators to properly copy value (instead of pointer) or move (instead of copying pointer, resulting in double-free)
 
 G1Element PrivateKey::GetG1Element() const
 {
@@ -171,6 +188,7 @@ G2Element PrivateKey::SignG2(
 
 void PrivateKey::AllocateKeyData()
 {
+    assert(!keydata);
     keydata = Util::SecAlloc<bn_t>(1);
     bn_new(*keydata);  // Freed in destructor
     bn_zero(*keydata);

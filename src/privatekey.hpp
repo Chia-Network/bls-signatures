@@ -45,6 +45,9 @@ class PrivateKey {
     PrivateKey(const PrivateKey &k);
     PrivateKey(PrivateKey &&k);
 
+    PrivateKey& operator=(PrivateKey const&) &;
+    PrivateKey& operator=(PrivateKey&&) &;
+
     ~PrivateKey();
 
     G1Element GetG1Element() const;
@@ -83,7 +86,7 @@ class PrivateKey {
 
  private:
     // Don't allow public construction, force static methods
-    PrivateKey() {}
+    PrivateKey() = default;
 
     // Allocate memory for private key
     void AllocateKeyData();
