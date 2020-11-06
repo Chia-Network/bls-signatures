@@ -63,7 +63,7 @@ PrivateKey::PrivateKey(const PrivateKey &privateKey)
 
 PrivateKey::PrivateKey(PrivateKey &&k) { std::swap(keydata, k.keydata); }
 
-PrivateKey::~PrivateKey() { Util::SecFree(keydata); }
+PrivateKey::~PrivateKey() { if(keydata !=NULL) Util::SecFree(keydata); }
 
 G1Element PrivateKey::GetG1Element() const
 {
