@@ -45,8 +45,8 @@ class PrivateKey {
     PrivateKey(const PrivateKey &k);
     PrivateKey(PrivateKey &&k);
 
-    PrivateKey& operator=(PrivateKey const&) &;
-    PrivateKey& operator=(PrivateKey&&) &;
+    PrivateKey& operator=(PrivateKey const&) = delete;
+    PrivateKey& operator=(PrivateKey&&) = delete;
 
     ~PrivateKey();
 
