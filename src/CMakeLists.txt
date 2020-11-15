@@ -33,7 +33,11 @@ add_library(blstmp ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
 )
 
-# target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1 SODIUM_STATIC=1)
+# Make sure to statically link libsodium when building wheels on ci
+if(DEFINED ENV{CIBUILDWHEEL})
+  target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1 SODIUM_STATIC=1)
+  message("setting blstmp PRIVATE BLSALLOC_SODIUM=1 SODIUM_STATIC=1 in src/CMakeLists.txt")
+endif()
 
 set(OPREFIX object_)
 find_library(GMP_NAME NAMES libgmp.a gmp)
