@@ -63,15 +63,15 @@ jobs:
       run: |
         python -m cibuildwheel --output-dir dist
       env:
-        CIBW_BUILD_VERBOSITY_MACOS: 1
-        CIBW_BUILD_VERBOSITY_LINUX: 1
-        CIBW_BUILD_VERBOSITY_WINDOWS: 1
+        CIBW_BUILD_VERBOSITY_MACOS: 0
+        CIBW_BUILD_VERBOSITY_LINUX: 0
+        CIBW_BUILD_VERBOSITY_WINDOWS: 0
         # Python 3.7 and 3.8
         CIBW_BUILD: cp37-* cp38-*
         CIBW_SKIP: '*-manylinux_i686 *-win32'
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
-        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH BLSALLOC_SODIUM=1 SODIUM_STATIC=1"
+        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
         CIBW_BEFORE_ALL_LINUX: >
           yum -y install lzip
           && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
@@ -89,7 +89,7 @@ jobs:
           && make && make install && cd .. && rm -rf libsodium-stable
         CIBW_BEFORE_BUID_LINUX: >
           python -m pip install --upgrade pip
-        CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.14 BLSALLOC_SODIUM=1 SODIUM_STATIC=1"
+        CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.14"
         # GH hosted MacOS runner has gmp and libsodium natively
         CIBW_BEFORE_BUILD_MACOS: >
           python -m pip install --upgrade pip
@@ -119,7 +119,7 @@ jobs:
           && delocate-wheel -v -i mpir_gc_x64/mpir_sandybridge.dll {wheel}
           && delocate-wheel -v -i mpir_gc_x64/mpir_skylake_avx.dll {wheel}
           && cp {wheel} {dest_dir} && ls -l {dest_dir}
-        CIBW_ENVIRONMENT_WINDOWS: "BLSALLOC_SODIUM=1 SODIUM_STATIC=1"
+        # CIBW_ENVIRONMENT_WINDOWS: ""
         # The pure python implementation, is not used anywhere and will be replaced
         # pytest {project}/python-impl/tests.py
         CIBW_TEST_COMMAND: pytest -v {project}/python-bindings/test.py

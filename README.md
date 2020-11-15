@@ -208,7 +208,9 @@ Libsodium and GMP are optional dependencies: libsodium gives secure memory
 allocation, and GMP speeds up the library by ~ 3x. To install them, either
 download them from github and follow the instructions for each repo, or use
 a package manager like APT or brew. You can follow the recipe used to build
-python wheels for multiple platforms in `.github/workflows/`
+python wheels for multiple platforms in `.github/workflows/`. libsodium is
+dynamically linked unless the environment variable $CIBUILDWHEEL is set which
+will then cause libsodium to statically link.
 
 ## Discussion
 
@@ -234,10 +236,10 @@ build binary wheels for MacOS, Linux (x64 and aarch64), and Windows and publish
 them with a source wheel on PyPi. See `.github/workflows/build.yml`. CMake uses
 [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)
 to download [pybind11](https://github.com/pybind/pybind11) for the Python
-bindings and relic from a chia relic forked reporitory. Building is then
+bindings and relic from a chia relic forked repository. Building is then
 managed by [cibuildwheel](https://github.com/joerick/cibuildwheel).
 Further installation is then available via `pip install blspy` e.g. The ci
-builds include GMP and libsoduium.
+builds include GMP and a statically linked libsodium.
 
 ## Contributing and workflow
 
