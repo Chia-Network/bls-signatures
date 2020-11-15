@@ -18,7 +18,6 @@ set(CMAKE_MODULE_PATH
 if(DEFINED ENV{CIBUILDWHEEL})
   set(sodium_USE_STATIC_LIBS TRUE)
   message("libsodium will be statically linked because $CIBUILDWHEEL is defined.")
-
 endif()
 
 find_package(sodium)
@@ -59,13 +58,13 @@ set(DOCUM "off" CACHE STRING "")
 set(FP_PRIME 381 CACHE INTEGER "")
 
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(DSEED "UDEV" CACHE STRING "")
+  set(SEED "UDEV" CACHE STRING "")
   set(FP_QNRES "off" CACHE STRING "")
 ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(SEED "WCGR" CACHE STRING "")
   set(FP_QNRES "on" CACHE STRING "")
 ELSE()
-  set(DSEED "UDEV" CACHE STRING "")
+  set(SEED "UDEV" CACHE STRING "")
   set(FP_QNRES "on" CACHE STRING "")
 ENDIF()
 set(STBIN "OFF" CACHE STRING "")
