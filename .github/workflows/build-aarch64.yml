@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Cancel previous runs on the same branch
-      uses: styfle/cancel-workflow-action@0.5.0
+      uses: styfle/cancel-workflow-action@0.6.0
       with:
         access_token: ${{ github.token }}
 
@@ -41,7 +41,7 @@ jobs:
         source venv/bin/activate
         python -m pip install --upgrade pip
         pip install wheel
-        python -m pip install cibuildwheel==1.6.1
+        python -m pip install cibuildwheel==1.6.4
 
     - name: Lint source with flake8
       run: |
@@ -61,7 +61,7 @@ jobs:
         python -m cibuildwheel --output-dir dist
       env:
         # build python 3.7 and 3.8
-        CIBW_BUILD: cp37-* cp38-*
+        CIBW_BUILD: cp37-* cp38-* cp39-*
         CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
         CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_BEFORE_BUILD_LINUX: >
@@ -69,6 +69,7 @@ jobs:
         CIBW_BEFORE_ALL_LINUX: >
           yum -y install epel-release
           && yum -y install cmake3 lzip
+          && rm -rf /usr/local/bin/cmake
           && ln -s /usr/bin/cmake3 /usr/local/bin/cmake
           && cmake --version
           && curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz | lzip -dc | tar x
@@ -91,6 +92,16 @@ jobs:
         source venv/bin/activate
         pip install twine
 
+    - name: Publish distribution to PyPI
+      if: startsWith(github.event.ref, 'refs/tags') && steps.check_secrets.outputs.HAS_SECRET
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_NON_INTERACTIVE: 1
+        TWINE_PASSWORD: ${{ secrets.pypi_password }}
+      run: |
+        source venv/bin/activate
+        twine upload --non-interactive --skip-existing --verbose 'dist/*'
+
     - name: Publish distribution to Test PyPI
       if: steps.check_secrets.outputs.HAS_SECRET
       env:
@@ -98,16 +109,6 @@ jobs:
         TWINE_USERNAME: __token__
         TWINE_NON_INTERACTIVE: 1
         TWINE_PASSWORD: ${{ secrets.test_pypi_password }}
-      run: |
-        source venv/bin/activate
-        twine upload --non-interactive --skip-existing --verbose 'dist/*'
-
-    - name: Publish distribution to PyPI
-      if: startsWith(github.event.ref, 'refs/tags') && steps.check_secrets.outputs.HAS_SECRET
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_NON_INTERACTIVE: 1
-        TWINE_PASSWORD: ${{ secrets.pypi_password }}
       run: |
         source venv/bin/activate
         twine upload --non-interactive --skip-existing --verbose 'dist/*'

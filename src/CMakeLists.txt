@@ -33,7 +33,7 @@ add_library(blstmp ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
 )
 
-target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1 SODIUM_STATIC=1)
+target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1)
 
 set(OPREFIX object_)
 find_library(GMP_NAME NAMES libgmp.a gmp)

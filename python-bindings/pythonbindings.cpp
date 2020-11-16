@@ -618,7 +618,11 @@ PYBIND11_MODULE(blspy, m)
     m.attr("SignatureMPL") = m.attr("G2Element");
 
 #ifdef VERSION_INFO
+#ifdef _WIN32
+    m.attr("__version__") = "dev";
+#else
     m.attr("__version__") = VERSION_INFO;
+#endif
 #else
     m.attr("__version__") = "dev";
 #endif
