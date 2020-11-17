@@ -124,12 +124,8 @@ void G1Element::CheckValid() const {
     ep_set_infty(unity);
     if (g1_cmp(point, unity) != RLC_EQ)
         throw std::invalid_argument("Given G1 element failed in_subgroup check");
-    try {
-        BLS::CheckRelicErrorsInvalidArgument();
-    } catch (...) {
-        throw std::invalid_argument("Relic reports invalid argument given");
-    }
     bn_free(order);
+    BLS::CheckRelicErrors();
 }
 
 void G1Element::ToNative(g1_t* output) const {
@@ -320,12 +316,8 @@ void G2Element::CheckValid() const {
     ep2_set_infty(unity);
     if (g2_cmp(point, unity) != RLC_EQ)
         throw std::invalid_argument("Given G2 element failed in_subgroup check");
-    try {
-        BLS::CheckRelicErrorsInvalidArgument();
-    } catch (...) {
-        throw std::invalid_argument("Relic reports invalid argument given");
-    }
     bn_free(order);
+    BLS::CheckRelicErrors();
 }
 
 void G2Element::ToNative(g2_t* output) const {
@@ -417,7 +409,7 @@ GTElement GTElement::FromBytes(const uint8_t* bytes)
     gt_read_bin(ele.r, bytes, GTElement::SIZE);
     if (gt_is_valid(*(gt_t*)&ele) == 0)
         throw std::invalid_argument("GTElement is invalid");
-    BLS::CheckRelicErrorsInvalidArgument();
+    BLS::CheckRelicErrors();
     return ele;
 }
 
