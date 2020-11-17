@@ -37,31 +37,23 @@ static void relic_core_initializer(void* ptr)
 {
     core_init();
     if (err_get_code() != RLC_OK) {
-        std::cout << "core_init() failed";
-        // this will most likely crash the application...but there isn't much we
-        // can do
-        throw std::string("core_init() failed");
+        throw std::runtime_error("core_init() failed");
     }
 
     const int r = ep_param_set_any_pairf();
     if (r != RLC_OK) {
-        std::cout << "ep_param_set_any_pairf() failed";
-        // this will most likely crash the application...but there isn't much we
-        // can do
-        throw std::string("ep_param_set_any_pairf() failed");
+        throw std::runtime_error("ep_param_set_any_pairf() failed");
     }
 }
 
 bool BLS::Init()
 {
     if (ALLOC != AUTO) {
-        std::cout << "Must have ALLOC == AUTO";
-        throw std::string("Must have ALLOC == AUTO");
+        throw std::runtime_error("Must have ALLOC == AUTO");
     }
 #if BLSALLOC_SODIUM
     if (sodium_init() < 0) {
-        std::cout << "libsodium init failed";
-        throw std::string("libsodium init failed");
+        throw std::runtime_error("libsodium init failed");
     }
     SetSecureAllocator(sodium_malloc, sodium_free);
 #else
@@ -84,11 +76,11 @@ void BLS::SetSecureAllocator(
 void BLS::CheckRelicErrors()
 {
     if (!core_get()) {
-        throw std::string("Library not initialized properly. Call BLS::Init()");
+        throw std::runtime_error("Library not initialized properly. Call BLS::Init()");
     }
     if (core_get()->code != RLC_OK) {
         core_get()->code = RLC_OK;
-        throw std::string("Relic library error");
+        throw std::invalid_argument("Relic library error");
     }
 }
 
