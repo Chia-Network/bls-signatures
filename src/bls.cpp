@@ -84,14 +84,4 @@ void BLS::CheckRelicErrors()
     }
 }
 
-void BLS::CheckRelicErrorsInvalidArgument()
-{
-    if (!core_get()) {
-        throw std::string("Library not initialized properly. Call BLS::Init()");
-    }
-    if (core_get()->code != RLC_OK) {
-        core_get()->code = RLC_OK;
-        throw std::invalid_argument("Relic library error");
-    }
-}
 }  // end namespace bls
