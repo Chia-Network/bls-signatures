@@ -41,7 +41,7 @@ jobs:
     - name: Install cibuildwheel
       run: |
        python -m pip install --upgrade pip
-       python -m pip install cibuildwheel==1.6.1
+       python -m pip install cibuildwheel==1.7.1
 
     - name: Lint source with flake8
       run: |
@@ -73,6 +73,7 @@ jobs:
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
         CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
         CIBW_BEFORE_ALL_LINUX: >
+          yum -y install epel-release
           yum -y install lzip
           && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
           && yes | sh cmake.sh | cat
