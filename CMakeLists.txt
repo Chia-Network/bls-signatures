@@ -1,5 +1,5 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14.0 FATAL_ERROR)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 IF(NOT CMAKE_BUILD_TYPE)
@@ -14,13 +14,17 @@ set(CMAKE_MODULE_PATH
 	${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules
 )
 
-set(sodium_USE_STATIC_LIBS TRUE)
+# Make sure to statically link libsodium when building wheels on ci
+if(DEFINED ENV{CIBUILDWHEEL})
+  set(sodium_USE_STATIC_LIBS TRUE)
+  message("libsodium will be statically linked because $CIBUILDWHEEL is defined.")
+endif()
+
 find_package(sodium)
 if (SODIUM_FOUND)
   message(STATUS "Found libsodium")
   message(STATUS "Sodium include dir = ${sodium_INCLUDE_DIR}")
   set(BLSALLOC_SODIUM "1" CACHE STRING "")
-  set(SODIUM_STATIC "1" CACHE STRING "")
   include_directories(${sodium_INCLUDE_DIR})
 endif()
 
@@ -54,13 +58,13 @@ set(DOCUM "off" CACHE STRING "")
 set(FP_PRIME 381 CACHE INTEGER "")
 
 IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(DSEED "UDEV" CACHE STRING "")
+  set(SEED "UDEV" CACHE STRING "")
   set(FP_QNRES "off" CACHE STRING "")
 ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(SEED "WCGR" CACHE STRING "")
   set(FP_QNRES "on" CACHE STRING "")
 ELSE()
-  set(DSEED "UDEV" CACHE STRING "")
+  set(SEED "UDEV" CACHE STRING "")
   set(FP_QNRES "on" CACHE STRING "")
 ENDIF()
 set(STBIN "OFF" CACHE STRING "")

@@ -163,7 +163,11 @@ class BuildExt(build_ext):
             if has_flag(self.compiler, '-fvisibility=hidden'):
                 opts.append('-fvisibility=hidden')
         elif ct == 'msvc':
-            opts.append('/DVERSION_INFO=\\"%s\\"' % self.distribution.get_version())
+            if sys.version_info < (3, 9):
+                ver_flag = '/DVERSION_INFO=\\"%s\\"'
+            else:
+                ver_flag = '-DVERSION_INFO="%s"'
+            opts.append(ver_flag % self.distribution.get_version())
         for ext in self.extensions:
             ext.extra_compile_args = opts
             ext.extra_link_args = link_opts

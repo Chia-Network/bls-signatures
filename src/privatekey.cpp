@@ -61,9 +61,11 @@ PrivateKey::PrivateKey(const PrivateKey &privateKey)
     bn_copy(*keydata, *privateKey.keydata);
 }
 
-PrivateKey::PrivateKey(PrivateKey &&k) { std::swap(keydata, k.keydata); }
+PrivateKey::PrivateKey(PrivateKey &&k)
+    : keydata(std::exchange(k.keydata, nullptr))
+{}
 
-PrivateKey::~PrivateKey() { Util::SecFree(keydata); }
+PrivateKey::~PrivateKey() { if(keydata !=NULL) Util::SecFree(keydata); }
 
 G1Element PrivateKey::GetG1Element() const
 {
@@ -171,6 +173,7 @@ G2Element PrivateKey::SignG2(
 
 void PrivateKey::AllocateKeyData()
 {
+    assert(!keydata);
     keydata = Util::SecAlloc<bn_t>(1);
     bn_new(*keydata);  // Freed in destructor
     bn_zero(*keydata);

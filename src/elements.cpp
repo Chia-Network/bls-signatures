@@ -86,7 +86,9 @@ G1Element G1Element::FromMessage(
     g1_null(ans);
     g1_new(ans);
     ep_map_dst(ans, message.data(), (int)message.size(), dst, dst_len);
-    return G1Element::FromNative(&ans);
+    G1Element ret = G1Element::FromNative(&ans);
+    g1_free(ans);
+    return ret;
 }
 
 G1Element G1Element::Generator()
@@ -122,11 +124,8 @@ void G1Element::CheckValid() const {
     ep_set_infty(unity);
     if (g1_cmp(point, unity) != RLC_EQ)
         throw std::invalid_argument("Given G1 element failed in_subgroup check");
-    try {
-        BLS::CheckRelicErrorsInvalidArgument();
-    } catch (...) {
-        throw std::invalid_argument("Relic reports invalid argument given");
-    }
+    bn_free(order);
+    BLS::CheckRelicErrors();
 }
 
 void G1Element::ToNative(g1_t* output) const {
@@ -189,7 +188,9 @@ G1Element operator+(const G1Element& a, const G1Element& b)
     g1_t ans;
     g1_new(ans);
     g1_add(ans, a.p, b.p);
-    return G1Element::FromNative(&ans);
+    G1Element ret = G1Element::FromNative(&ans);
+    g1_free(ans);
+    return ret;
 }
 
 G1Element operator*(const G1Element& a, const bn_t& k)
@@ -201,8 +202,11 @@ G1Element operator*(const G1Element& a, const bn_t& k)
     g1_t ans;
     g1_new(ans);
     g1_mul(ans, nonConstA.p, nonConstK[0]);
+    bn_free(nonConstK[0]);
     Util::SecFree(nonConstK);
-    return G1Element::FromNative(&ans);
+    G1Element ret =  G1Element::FromNative(&ans);
+    g1_free(ans);
+    return ret;
 }
 
 G1Element operator*(const bn_t& k, const G1Element& a) { return a * k; }
@@ -278,7 +282,9 @@ G2Element G2Element::FromMessage(
     g2_null(ans);
     g2_new(ans);
     ep2_map_dst(ans, message.data(), (int)message.size(), dst, dst_len);
-    return G2Element::FromNative(&ans);
+    G2Element ret = G2Element::FromNative(&ans);
+    g2_free(ans);
+    return ret;
 }
 
 G2Element G2Element::Generator()
@@ -310,12 +316,8 @@ void G2Element::CheckValid() const {
     ep2_set_infty(unity);
     if (g2_cmp(point, unity) != RLC_EQ)
         throw std::invalid_argument("Given G2 element failed in_subgroup check");
-    try {
-        BLS::CheckRelicErrorsInvalidArgument();
-    } catch (...) {
-        throw std::invalid_argument("Relic reports invalid argument given");
-    }
-
+    bn_free(order);
+    BLS::CheckRelicErrors();
 }
 
 void G2Element::ToNative(g2_t* output) const {
@@ -388,8 +390,11 @@ G2Element operator*(const G2Element& a, const bn_t& k)
     bn_new(nonConstK[0]);
     bn_copy(nonConstK[0], k);
     g2_mul(ans, nonConstA.q, nonConstK[0]);
+    bn_free(nonConstK[0]);
     Util::SecFree(nonConstK);
-    return G2Element::FromNative(&ans);
+    G2Element ret = G2Element::FromNative(&ans);
+    g2_free(ans);
+    return ret;
 }
 
 G2Element operator*(const bn_t& k, const G2Element& a) { return a * k; }
@@ -404,7 +409,7 @@ GTElement GTElement::FromBytes(const uint8_t* bytes)
     gt_read_bin(ele.r, bytes, GTElement::SIZE);
     if (gt_is_valid(*(gt_t*)&ele) == 0)
         throw std::invalid_argument("GTElement is invalid");
-    BLS::CheckRelicErrorsInvalidArgument();
+    BLS::CheckRelicErrors();
     return ele;
 }
 
@@ -449,7 +454,10 @@ GTElement operator&(const G1Element& a, const G2Element& b)
     g2_new(tmp);
     b.ToNative(&tmp);
     pp_map_oatep_k12(ans, nonConstA.p, tmp);
-    return GTElement::FromNative(&ans);
+    GTElement ret = GTElement::FromNative(&ans);
+    gt_free(ans);
+    g2_free(tmp);
+    return ret;
 }
 
 void GTElement::Serialize(uint8_t* buffer) const
