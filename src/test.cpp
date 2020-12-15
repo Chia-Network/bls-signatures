@@ -603,6 +603,34 @@ TEST_CASE("Signature tests")
 
         REQUIRE(AugSchemeMPL::AggregateVerify(pks, ms, aggSig));
     }
+
+    SECTION("Aggregate Verification of zero items with infinity should pass")
+    {
+        vector<G1Element> pks_as_g1;
+        vector<vector<uint8_t> > pks_as_bytes;
+        vector<vector<uint8_t> > msgs;
+        vector<G2Element> sigs;
+
+        sigs.push_back(G2Element::Infinity());
+        G2Element aggSig = AugSchemeMPL::Aggregate(sigs);
+
+        REQUIRE(aggSig.Serialize().size() != 0);
+        REQUIRE(aggSig == G2Element::Infinity());
+
+        REQUIRE(AugSchemeMPL::AggregateVerify(pks_as_g1, msgs, aggSig));
+        REQUIRE(AugSchemeMPL::AggregateVerify(pks_as_bytes, msgs, aggSig.Serialize()));
+
+        REQUIRE(BasicSchemeMPL::AggregateVerify(pks_as_g1, msgs, aggSig));
+        REQUIRE(BasicSchemeMPL::AggregateVerify(pks_as_bytes, msgs, aggSig.Serialize()));
+
+	// FastAggregateVerify takes one message, and requires at least one key
+        vector<uint8_t> msg;
+        REQUIRE(pks_as_g1.size() == 0);
+        REQUIRE(PopSchemeMPL::FastAggregateVerify(pks_as_g1, msg, aggSig) == false);
+        REQUIRE(pks_as_bytes.size() == 0);
+        REQUIRE(PopSchemeMPL::FastAggregateVerify(pks_as_bytes, msg, aggSig.Serialize()) == false);
+
+    }
 }
 
 TEST_CASE("Agg sks") {
