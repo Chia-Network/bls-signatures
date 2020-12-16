@@ -63,18 +63,10 @@ InvariantResult VerifyAggregateSignatureArguments(
 /* These are all for the min-pubkey-size variant.
    TODO : analogs for min-signature-size
 */
-const uint8_t *BasicSchemeMPL::CIPHERSUITE_ID =
-    (const uint8_t *)"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
-const int BasicSchemeMPL::CIPHERSUITE_ID_LEN = 43;
-const uint8_t *AugSchemeMPL::CIPHERSUITE_ID =
-    (const uint8_t *)"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_AUG_";
-const int AugSchemeMPL::CIPHERSUITE_ID_LEN = 43;
-const uint8_t *PopSchemeMPL::CIPHERSUITE_ID =
-    (const uint8_t *)"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
-const int PopSchemeMPL::CIPHERSUITE_ID_LEN = 43;
-const uint8_t *PopSchemeMPL::POP_CIPHERSUITE_ID =
-    (const uint8_t *)"BLS_POP_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
-const int PopSchemeMPL::POP_CIPHERSUITE_ID_LEN = 43;
+const std::string BasicSchemeMPL::CIPHERSUITE_ID = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_";
+const std::string AugSchemeMPL::CIPHERSUITE_ID = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_AUG_";
+const std::string PopSchemeMPL::CIPHERSUITE_ID = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
+const std::string PopSchemeMPL::POP_CIPHERSUITE_ID = "BLS_POP_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
 PrivateKey CoreMPL::KeyGen(const vector<uint8_t> seed) {
     return HDKeys::KeyGen(seed);
@@ -90,39 +82,28 @@ G1Element CoreMPL::SkToG1(const PrivateKey &seckey)
     return seckey.GetG1Element();
 }
 
-G2Element CoreMPL::Sign(
-    const PrivateKey &seckey,
-    const vector<uint8_t> &message,
-    const uint8_t *dst,
-    int dst_len)
+G2Element CoreMPL::Sign(const PrivateKey &seckey, const vector<uint8_t> &message)
 {
-    return seckey.SignG2(message.data(), message.size(), dst, dst_len);
+    return seckey.SignG2(message.data(), message.size(), (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length());
 }
 
 bool CoreMPL::Verify(
     const vector<uint8_t> &pubkey,
     const vector<uint8_t> &message,  // unhashed
-    const vector<uint8_t> &signature,
-    const uint8_t *dst,
-    int dst_len)
+    const vector<uint8_t> &signature)
 {
-    return CoreMPL::Verify(
-        G1Element::FromBytes(pubkey.data()),
-        message,
-        G2Element::FromBytes(signature.data()),
-        dst,
-        dst_len);
+    return CoreMPL::Verify(G1Element::FromBytes(pubkey.data()),
+                           message,
+                           G2Element::FromBytes(signature.data()));
 }
 
 bool CoreMPL::Verify(
     const G1Element &pubkey,
     const vector<uint8_t> &message,  // unhashed
-    const G2Element &signature,
-    const uint8_t *dst,
-    int dst_len)
+    const G2Element &signature)
 {
     G1Element genneg = G1Element::Generator().Negate();
-    G2Element hashedPoint = G2Element::FromMessage(message, dst, dst_len);
+    G2Element hashedPoint = G2Element::FromMessage(message, (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length());
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
@@ -187,9 +168,7 @@ G1Element CoreMPL::Aggregate(const vector<G1Element> &publicKeys)
 bool CoreMPL::AggregateVerify(
     const vector<vector<uint8_t>> &pubkeys,
     const vector<vector<uint8_t>> &messages,  // unhashed
-    const vector<uint8_t> &signature,
-    const uint8_t *dst,
-    int dst_len)
+    const vector<uint8_t> &signature)
 {
     int n = pubkeys.size();
     if (n <= 0 || n != messages.size()) {
@@ -200,17 +179,14 @@ bool CoreMPL::AggregateVerify(
     for (int i = 0; i < n; ++i) {
         pubkeyElements.push_back(G1Element::FromBytes(pubkeys[i].data()));
     }
-    G2Element signatureElement = G2Element::FromBytes(signature.data());
-    return CoreMPL::AggregateVerify(
-        pubkeyElements, messages, signatureElement, dst, dst_len);
+    G2Element signatureElement = G2Element::FromByteVector(signature);
+    return CoreMPL::AggregateVerify(pubkeyElements, messages, signatureElement);
 }
 
 bool CoreMPL::AggregateVerify(
     const vector<G1Element> &pubkeys,
     const vector<vector<uint8_t>> &messages,  // unhashed
-    const G2Element &signature,
-    const uint8_t *dst,
-    int dst_len)
+    const G2Element &signature)
 {
     int n = pubkeys.size();
     if (n <= 0 || n != messages.size()) {
@@ -227,7 +203,7 @@ bool CoreMPL::AggregateVerify(
 
     for (int i = 0; i < n; ++i) {
         pubkeys[i].ToNative(g1s + i + 1);
-        G2Element::FromMessage(messages[i], dst, dst_len).ToNative(g2s + i + 1);
+        G2Element::FromMessage(messages[i], (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length()).ToNative(g2s + i + 1);
     }
 
     bool ans = CoreMPL::NativeVerify(g1s, g2s, n + 1);
@@ -274,43 +250,6 @@ G1Element CoreMPL::DeriveChildPkUnhardened(const G1Element& pk, uint32_t index) 
     return HDKeys::DeriveChildG1Unhardened(pk, index);
 }
 
-G2Element BasicSchemeMPL::Sign(
-    const PrivateKey &seckey,
-    const vector<uint8_t> &message)
-{
-    return CoreMPL::Sign(
-        seckey,
-        message,
-        BasicSchemeMPL::CIPHERSUITE_ID,
-        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
-bool BasicSchemeMPL::Verify(
-    const vector<uint8_t> &pubkey,
-    const vector<uint8_t> &message,
-    const vector<uint8_t> &signature)
-{
-    return CoreMPL::Verify(
-        pubkey,
-        message,
-        signature,
-        BasicSchemeMPL::CIPHERSUITE_ID,
-        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
-bool BasicSchemeMPL::Verify(
-    const G1Element &pubkey,
-    const vector<uint8_t> &message,
-    const G2Element &signature)
-{
-    return CoreMPL::Verify(
-        pubkey,
-        message,
-        signature,
-        BasicSchemeMPL::CIPHERSUITE_ID,
-        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
 bool BasicSchemeMPL::AggregateVerify(
     const vector<vector<uint8_t>> &pubkeys,
     const vector<vector<uint8_t>> &messages,
@@ -323,12 +262,7 @@ bool BasicSchemeMPL::AggregateVerify(
     std::set<vector<uint8_t>> s(messages.begin(), messages.end());
     if (s.size() != n)
         return false;
-    return CoreMPL::AggregateVerify(
-        pubkeys,
-        messages,
-        signature,
-        BasicSchemeMPL::CIPHERSUITE_ID,
-        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
+    return CoreMPL::AggregateVerify(pubkeys, messages, signature);
 }
 
 bool BasicSchemeMPL::AggregateVerify(
@@ -344,12 +278,7 @@ bool BasicSchemeMPL::AggregateVerify(
     if (s.size() != n) {
         return false;
     }
-    return CoreMPL::AggregateVerify(
-        pubkeys,
-        messages,
-        signature,
-        BasicSchemeMPL::CIPHERSUITE_ID,
-        BasicSchemeMPL::CIPHERSUITE_ID_LEN);
+    return CoreMPL::AggregateVerify(pubkeys, messages, signature);
 }
 
 G2Element AugSchemeMPL::Sign(
@@ -360,11 +289,7 @@ G2Element AugSchemeMPL::Sign(
     augMessage.reserve(
         augMessage.size() + std::distance(message.begin(), message.end()));
     augMessage.insert(augMessage.end(), message.begin(), message.end());
-    return seckey.SignG2(
-        augMessage.data(),
-        augMessage.size(),
-        AugSchemeMPL::CIPHERSUITE_ID,
-        AugSchemeMPL::CIPHERSUITE_ID_LEN);
+    return CoreMPL::Sign(seckey, augMessage);
 }
 
 // Used for prepending different augMessage
@@ -377,11 +302,7 @@ G2Element AugSchemeMPL::Sign(
     augMessage.reserve(
         augMessage.size() + std::distance(message.begin(), message.end()));
     augMessage.insert(augMessage.end(), message.begin(), message.end());
-    return seckey.SignG2(
-        augMessage.data(),
-        augMessage.size(),
-        AugSchemeMPL::CIPHERSUITE_ID,
-        AugSchemeMPL::CIPHERSUITE_ID_LEN);
+    return CoreMPL::Sign(seckey, augMessage);
 }
 
 bool AugSchemeMPL::Verify(
@@ -393,12 +314,7 @@ bool AugSchemeMPL::Verify(
     augMessage.reserve(
         augMessage.size() + std::distance(message.begin(), message.end()));
     augMessage.insert(augMessage.end(), message.begin(), message.end());
-    return CoreMPL::Verify(
-        pubkey,
-        augMessage,
-        signature,
-        AugSchemeMPL::CIPHERSUITE_ID,
-        AugSchemeMPL::CIPHERSUITE_ID_LEN);
+    return CoreMPL::Verify(pubkey, augMessage, signature);
 }
 
 bool AugSchemeMPL::Verify(
@@ -406,16 +322,7 @@ bool AugSchemeMPL::Verify(
     const vector<uint8_t> &message,
     const G2Element &signature)
 {
-    vector<uint8_t> augMessage(pubkey.Serialize());
-    augMessage.reserve(
-        augMessage.size() + std::distance(message.begin(), message.end()));
-    augMessage.insert(augMessage.end(), message.begin(), message.end());
-    return CoreMPL::Verify(
-        pubkey,
-        augMessage,
-        signature,
-        AugSchemeMPL::CIPHERSUITE_ID,
-        AugSchemeMPL::CIPHERSUITE_ID_LEN);
+    return Verify(pubkey.Serialize(), message, signature.Serialize());
 }
 
 bool AugSchemeMPL::AggregateVerify(
@@ -436,12 +343,7 @@ bool AugSchemeMPL::AggregateVerify(
         augMessages[i] = aug;
     }
 
-    return CoreMPL::AggregateVerify(
-        pubkeys,
-        const_cast<const vector<vector<uint8_t>> &>(augMessages),
-        signature,
-        AugSchemeMPL::CIPHERSUITE_ID,
-        AugSchemeMPL::CIPHERSUITE_ID_LEN);
+    return CoreMPL::AggregateVerify(pubkeys, augMessages, signature);
 }
 
 bool AugSchemeMPL::AggregateVerify(
@@ -462,85 +364,13 @@ bool AugSchemeMPL::AggregateVerify(
         augMessages[i] = aug;
     }
 
-    return CoreMPL::AggregateVerify(
-        pubkeys,
-        const_cast<const vector<vector<uint8_t>> &>(augMessages),
-        signature,
-        AugSchemeMPL::CIPHERSUITE_ID,
-        AugSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
-G2Element PopSchemeMPL::Sign(
-    const PrivateKey &seckey,
-    const vector<uint8_t> &message)
-{
-    return CoreMPL::Sign(
-        seckey,
-        message,
-        PopSchemeMPL::CIPHERSUITE_ID,
-        PopSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
-bool PopSchemeMPL::Verify(
-    const vector<uint8_t> &pubkey,
-    const vector<uint8_t> &message,
-    const vector<uint8_t> &signature)
-{
-    return CoreMPL::Verify(
-        pubkey,
-        message,
-        signature,
-        PopSchemeMPL::CIPHERSUITE_ID,
-        PopSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
-bool PopSchemeMPL::Verify(
-    const G1Element &pubkey,
-    const vector<uint8_t> &message,
-    const G2Element &signature)
-{
-    return CoreMPL::Verify(
-        pubkey,
-        message,
-        signature,
-        PopSchemeMPL::CIPHERSUITE_ID,
-        PopSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
-bool PopSchemeMPL::AggregateVerify(
-    const vector<vector<uint8_t>> &pubkeys,
-    const vector<vector<uint8_t>> &messages,
-    const vector<uint8_t> &signature)
-{
-    return CoreMPL::AggregateVerify(
-        pubkeys,
-        messages,
-        signature,
-        PopSchemeMPL::CIPHERSUITE_ID,
-        PopSchemeMPL::CIPHERSUITE_ID_LEN);
-}
-
-bool PopSchemeMPL::AggregateVerify(
-    const vector<G1Element> &pubkeys,
-    const vector<vector<uint8_t>> &messages,
-    const G2Element &signature)
-{
-    return CoreMPL::AggregateVerify(
-        pubkeys,
-        messages,
-        signature,
-        PopSchemeMPL::CIPHERSUITE_ID,
-        PopSchemeMPL::CIPHERSUITE_ID_LEN);
+    return CoreMPL::AggregateVerify(pubkeys, augMessages, signature);
 }
 
 G2Element PopSchemeMPL::PopProve(const PrivateKey &seckey)
 {
     G1Element pk = seckey.GetG1Element();
-    G2Element hashedKey = G2Element::FromMessage(
-        pk.Serialize(),
-        PopSchemeMPL::POP_CIPHERSUITE_ID,
-        PopSchemeMPL::POP_CIPHERSUITE_ID_LEN);
-
+    G2Element hashedKey = G2Element::FromMessage(pk.Serialize(), (const uint8_t *)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
     return seckey.GetG2Power(hashedKey);
 }
 
@@ -550,10 +380,7 @@ bool PopSchemeMPL::PopVerify(
     const G2Element &signature_proof)
 {
     G1Element genneg = G1Element::Generator().Negate();
-    G2Element hashedPoint = G2Element::FromMessage(
-        pubkey.Serialize(),
-        PopSchemeMPL::POP_CIPHERSUITE_ID,
-        PopSchemeMPL::POP_CIPHERSUITE_ID_LEN);
+    G2Element hashedPoint = G2Element::FromMessage(pubkey.Serialize(), (const uint8_t*)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
@@ -596,9 +423,7 @@ bool PopSchemeMPL::FastAggregateVerify(
     return CoreMPL::Verify(
         pkagg,
         message,
-        signature,
-        PopSchemeMPL::CIPHERSUITE_ID,
-        PopSchemeMPL::CIPHERSUITE_ID_LEN);
+        signature);
 }
 
 bool PopSchemeMPL::FastAggregateVerify(
