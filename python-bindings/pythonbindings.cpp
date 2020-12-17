@@ -26,9 +26,6 @@ namespace py = pybind11;
 using namespace bls;
 using std::vector;
 
-template <typename... Args>
-using overload_cast_ = pybind11::detail::overload_cast_impl<Args...>;
-
 PYBIND11_MODULE(blspy, m)
 {
     py::class_<BNWrapper>(m, "BNWrapper")
@@ -135,7 +132,7 @@ PYBIND11_MODULE(blspy, m)
     });
 
     py::class_<BasicSchemeMPL>(m, "BasicSchemeMPL")
-        .def("sk_to_g1", &BasicSchemeMPL::SkToG1)
+        .def("sk_to_g1", [](const PrivateKey &seckey){ return BasicSchemeMPL().SkToG1(seckey); })
         .def(
             "key_gen",
             [](const py::bytes &b) {
@@ -143,21 +140,26 @@ PYBIND11_MODULE(blspy, m)
                 const uint8_t *input =
                     reinterpret_cast<const uint8_t *>(str.data());
                 const vector<uint8_t> inputVec(input, input + len(b));
-                return BasicSchemeMPL::KeyGen(inputVec);
+                return BasicSchemeMPL().KeyGen(inputVec);
             })
-        .def("derive_child_sk", &BasicSchemeMPL::DeriveChildSk)
-        .def("derive_child_sk_unhardened", &BasicSchemeMPL::DeriveChildSkUnhardened)
-        .def("derive_child_pk_unhardened", &BasicSchemeMPL::DeriveChildPkUnhardened)
-        .def(
-            "aggregate",
-            overload_cast_<const vector<G2Element> &>()(
-                &BasicSchemeMPL::Aggregate))
+        .def("derive_child_sk", [](const PrivateKey& sk, uint32_t index){
+            return BasicSchemeMPL().DeriveChildSk(sk, index);
+        })
+        .def("derive_child_sk_unhardened", [](const PrivateKey& sk, uint32_t index){
+            return BasicSchemeMPL().DeriveChildSkUnhardened(sk, index);
+        })
+        .def("derive_child_pk_unhardened", [](const G1Element& pk, uint32_t index){
+            return BasicSchemeMPL().DeriveChildPkUnhardened(pk, index);
+        })
+        .def("aggregate", [](const vector<G2Element> &signatures) {
+            return BasicSchemeMPL().Aggregate(signatures);
+        })
         .def(
             "sign",
             [](const PrivateKey &pk, const py::bytes &msg) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return BasicSchemeMPL::Sign(pk, v);
+                return BasicSchemeMPL().Sign(pk, v);
             })
         .def(
             "verify",
@@ -166,7 +168,7 @@ PYBIND11_MODULE(blspy, m)
                const G2Element &sig) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return BasicSchemeMPL::Verify(pk, v, sig);
+                return BasicSchemeMPL().Verify(pk, v, sig);
             })
         .def(
             "aggregate_verify",
@@ -179,11 +181,11 @@ PYBIND11_MODULE(blspy, m)
                     vecs[i] = vector<uint8_t>(s.begin(), s.end());
                 }
 
-                return BasicSchemeMPL::AggregateVerify(pks, vecs, sig);
+                return BasicSchemeMPL().AggregateVerify(pks, vecs, sig);
             });
 
     py::class_<AugSchemeMPL>(m, "AugSchemeMPL")
-        .def("sk_to_g1", &AugSchemeMPL::SkToG1)
+        .def("sk_to_g1", [](const PrivateKey &seckey){ return AugSchemeMPL().SkToG1(seckey); })
         .def(
             "key_gen",
             [](const py::bytes &b) {
@@ -191,21 +193,26 @@ PYBIND11_MODULE(blspy, m)
                 const uint8_t *input =
                     reinterpret_cast<const uint8_t *>(str.data());
                 const vector<uint8_t> inputVec(input, input + len(b));
-                return AugSchemeMPL::KeyGen(inputVec);
+                return AugSchemeMPL().KeyGen(inputVec);
             })
-        .def("derive_child_sk", &AugSchemeMPL::DeriveChildSk)
-        .def("derive_child_sk_unhardened", &AugSchemeMPL::DeriveChildSkUnhardened)
-        .def("derive_child_pk_unhardened", &AugSchemeMPL::DeriveChildPkUnhardened)
-        .def(
-            "aggregate",
-            overload_cast_<const vector<G2Element> &>()(
-                &AugSchemeMPL::Aggregate))
+        .def("derive_child_sk", [](const PrivateKey& sk, uint32_t index){
+            return AugSchemeMPL().DeriveChildSk(sk, index);
+        })
+        .def("derive_child_sk_unhardened", [](const PrivateKey& sk, uint32_t index){
+            return AugSchemeMPL().DeriveChildSkUnhardened(sk, index);
+        })
+        .def("derive_child_pk_unhardened", [](const G1Element& pk, uint32_t index){
+            return AugSchemeMPL().DeriveChildPkUnhardened(pk, index);
+        })
+        .def("aggregate", [](const vector<G2Element>& signatures) {
+            return AugSchemeMPL().Aggregate(signatures);
+        })
         .def(
             "sign",
             [](const PrivateKey &pk, const py::bytes &msg) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return AugSchemeMPL::Sign(pk, v);
+                return AugSchemeMPL().Sign(pk, v);
             })
         .def(
             "sign",
@@ -214,7 +221,7 @@ PYBIND11_MODULE(blspy, m)
                const G1Element &prepend_pk) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return AugSchemeMPL::Sign(pk, v, prepend_pk);
+                return AugSchemeMPL().Sign(pk, v, prepend_pk);
             })
         .def(
             "verify",
@@ -223,7 +230,7 @@ PYBIND11_MODULE(blspy, m)
                const G2Element &sig) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return AugSchemeMPL::Verify(pk, v, sig);
+                return AugSchemeMPL().Verify(pk, v, sig);
             })
         .def(
             "aggregate_verify",
@@ -236,11 +243,11 @@ PYBIND11_MODULE(blspy, m)
                     vecs[i] = vector<uint8_t>(s.begin(), s.end());
                 }
 
-                return AugSchemeMPL::AggregateVerify(pks, vecs, sig);
+                return AugSchemeMPL().AggregateVerify(pks, vecs, sig);
             });
 
     py::class_<PopSchemeMPL>(m, "PopSchemeMPL")
-        .def("sk_to_g1", &PopSchemeMPL::SkToG1)
+        .def("sk_to_g1", [](const PrivateKey &seckey){ return PopSchemeMPL().SkToG1(seckey); })
         .def(
             "key_gen",
             [](const py::bytes &b) {
@@ -248,25 +255,26 @@ PYBIND11_MODULE(blspy, m)
                 const uint8_t *input =
                     reinterpret_cast<const uint8_t *>(str.data());
                 const vector<uint8_t> inputVec(input, input + len(b));
-                return PopSchemeMPL::KeyGen(inputVec);
+                return PopSchemeMPL().KeyGen(inputVec);
             })
-        .def("derive_child_sk", &PopSchemeMPL::DeriveChildSk)
-        .def("derive_child_sk_unhardened", &PopSchemeMPL::DeriveChildSkUnhardened)
-        .def("derive_child_pk_unhardened", &PopSchemeMPL::DeriveChildPkUnhardened)
-        .def(
-            "aggregate",
-            overload_cast_<const vector<vector<uint8_t>> &>()(
-                &PopSchemeMPL::Aggregate))
-        .def(
-            "aggregate",
-            overload_cast_<const vector<G2Element> &>()(
-                &PopSchemeMPL::Aggregate))
+        .def("derive_child_sk", [](const PrivateKey& sk, uint32_t index){
+            return PopSchemeMPL().DeriveChildSk(sk, index);
+        })
+        .def("derive_child_sk_unhardened", [](const PrivateKey& sk, uint32_t index){
+            return PopSchemeMPL().DeriveChildSkUnhardened(sk, index);
+        })
+        .def("derive_child_pk_unhardened", [](const G1Element& pk, uint32_t index){
+            return PopSchemeMPL().DeriveChildPkUnhardened(pk, index);
+        })
+        .def("aggregate", [](const vector<G2Element>& signatures) {
+            return PopSchemeMPL().Aggregate(signatures);
+        })
         .def(
             "sign",
             [](const PrivateKey &pk, const py::bytes &msg) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return PopSchemeMPL::Sign(pk, v);
+                return PopSchemeMPL().Sign(pk, v);
             })
         .def(
             "verify",
@@ -275,7 +283,7 @@ PYBIND11_MODULE(blspy, m)
                const G2Element &sig) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return PopSchemeMPL::Verify(pk, v, sig);
+                return PopSchemeMPL().Verify(pk, v, sig);
             })
         .def(
             "aggregate_verify",
@@ -288,19 +296,14 @@ PYBIND11_MODULE(blspy, m)
                     vecs[i] = vector<uint8_t>(s.begin(), s.end());
                 }
 
-                return PopSchemeMPL::AggregateVerify(pks, vecs, sig);
+                return PopSchemeMPL().AggregateVerify(pks, vecs, sig);
             })
-        .def("pop_prove", &PopSchemeMPL::PopProve)
-        .def(
-            "pop_verify",
-            overload_cast_<const G1Element &, const G2Element &>()(
-                &PopSchemeMPL::PopVerify))
-        .def(
-            "fast_aggregate_verify",
-            overload_cast_<
-                const vector<G1Element> &,
-                const vector<uint8_t> &,
-                const G2Element &>()(&PopSchemeMPL::FastAggregateVerify))
+        .def("pop_prove", [](const PrivateKey& privateKey){
+            return PopSchemeMPL().PopProve(privateKey);
+        })
+        .def("pop_verify", [](const G1Element& pubkey, const G2Element& signature){
+            return PopSchemeMPL().PopVerify(pubkey, signature);
+        })
         .def(
             "fast_aggregate_verify",
             [](const vector<G1Element> &pks,
@@ -308,7 +311,7 @@ PYBIND11_MODULE(blspy, m)
                const G2Element &sig) {
                 std::string s(msg);
                 vector<uint8_t> v(s.begin(), s.end());
-                return PopSchemeMPL::FastAggregateVerify(pks, v, sig);
+                return PopSchemeMPL().FastAggregateVerify(pks, v, sig);
             });
 
     py::class_<G1Element>(m, "G1Element")
