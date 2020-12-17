@@ -49,14 +49,14 @@ vector<uint8_t> seed = {0,  50, 6,  244, 24,  199, 1,  25,  52,  88,  192,
                         19, 18, 12, 89,  6,   220, 18, 102, 58,  209, 82,
                         12, 62, 89, 110, 182, 9,   44, 20,  254, 22};
 
-PrivateKey sk = AugSchemeMPL::KeyGen(seed);
+PrivateKey sk = AugSchemeMPL().KeyGen(seed);
 G1Element pk = sk.GetG1Element();
 
 vector<uint8_t> message = {1, 2, 3, 4, 5};  // Message is passed in as a byte vector
-G2Element signature = AugSchemeMPL::Sign(sk, message);
+G2Element signature = AugSchemeMPL().Sign(sk, message);
 
 // Verify the signature
-bool ok = AugSchemeMPL::Verify(pk, message, signature));
+bool ok = AugSchemeMPL().Verify(pk, message, signature));
 ```
 
 ## Serializing keys and signatures to bytes
@@ -89,37 +89,37 @@ signature = G2Element::FromByteVector(signatureBytes);
 ```c++
 // Generate some more private keys
 seed[0] = 1;
-PrivateKey sk1 = AugSchemeMPL::KeyGen(seed);
+PrivateKey sk1 = AugSchemeMPL().KeyGen(seed);
 seed[0] = 2;
-PrivateKey sk2 = AugSchemeMPL::KeyGen(seed);
+PrivateKey sk2 = AugSchemeMPL().KeyGen(seed);
 vector<uint8_t> message2 = {1, 2, 3, 4, 5, 6, 7};
 
 // Generate first sig
 G1Element pk1 = sk1.GetG1Element();
-G2Element sig1 = AugSchemeMPL::Sign(sk1, message);
+G2Element sig1 = AugSchemeMPL().Sign(sk1, message);
 
 // Generate second sig
 G1Element pk2 = sk2.GetG1Element();
-G2Element sig2 = AugSchemeMPL::Sign(sk2, message2);
+G2Element sig2 = AugSchemeMPL().Sign(sk2, message2);
 
 // Signatures can be non-interactively combined by anyone
-G2Element aggSig = AugSchemeMPL::Aggregate({sig1, sig2});
+G2Element aggSig = AugSchemeMPL().Aggregate({sig1, sig2});
 
-ok = AugSchemeMPL::AggregateVerify({pk1, pk2}, {message, message2}, aggSig);
+ok = AugSchemeMPL().AggregateVerify({pk1, pk2}, {message, message2}, aggSig);
 ```
 
 ## Arbitrary trees of aggregates
 
 ```c++
 seed[0] = 3;
-PrivateKey sk3 = AugSchemeMPL::KeyGen(seed);
+PrivateKey sk3 = AugSchemeMPL().KeyGen(seed);
 G1Element pk3 = sk3.GetG1Element();
 vector<uint8_t> message3 = {100, 2, 254, 88, 90, 45, 23};
-G2Element sig3 = AugSchemeMPL::Sign(sk3, message3);
+G2Element sig3 = AugSchemeMPL().Sign(sk3, message3);
 
 
-G2Element aggSigFinal = AugSchemeMPL::Aggregate({aggSig, sig3});
-ok = AugSchemeMPL::AggregateVerify({pk1, pk2, pk3}, {message, message2, message3}, aggSigFinal);
+G2Element aggSigFinal = AugSchemeMPL().Aggregate({aggSig, sig3});
+ok = AugSchemeMPL().AggregateVerify({pk1, pk2, pk3}, {message, message2, message3}, aggSigFinal);
 
 ```
 
@@ -129,27 +129,27 @@ ok = AugSchemeMPL::AggregateVerify({pk1, pk2, pk3}, {message, message2, message3
 // If the same message is signed, you can use Proof of Posession (PopScheme) for efficiency
 // A proof of possession MUST be passed around with the PK to ensure security.
 
-G2Element popSig1 = PopSchemeMPL::Sign(sk1, message);
-G2Element popSig2 = PopSchemeMPL::Sign(sk2, message);
-G2Element popSig3 = PopSchemeMPL::Sign(sk3, message);
-G2Element pop1 = PopSchemeMPL::PopProve(sk1);
-G2Element pop2 = PopSchemeMPL::PopProve(sk2);
-G2Element pop3 = PopSchemeMPL::PopProve(sk3);
+G2Element popSig1 = PopSchemeMPL().Sign(sk1, message);
+G2Element popSig2 = PopSchemeMPL().Sign(sk2, message);
+G2Element popSig3 = PopSchemeMPL().Sign(sk3, message);
+G2Element pop1 = PopSchemeMPL().PopProve(sk1);
+G2Element pop2 = PopSchemeMPL().PopProve(sk2);
+G2Element pop3 = PopSchemeMPL().PopProve(sk3);
 
-ok = PopSchemeMPL::PopVerify(pk1, pop1);
-ok = PopSchemeMPL::PopVerify(pk2, pop2);
-ok = PopSchemeMPL::PopVerify(pk3, pop3);
-G2Element popSigAgg = PopSchemeMPL::Aggregate({popSig1, popSig2, popSig3});
+ok = PopSchemeMPL().PopVerify(pk1, pop1);
+ok = PopSchemeMPL().PopVerify(pk2, pop2);
+ok = PopSchemeMPL().PopVerify(pk3, pop3);
+G2Element popSigAgg = PopSchemeMPL().Aggregate({popSig1, popSig2, popSig3});
 
-ok = PopSchemeMPL::FastAggregateVerify({pk1, pk2, pk3}, message, popSigAgg);
+ok = PopSchemeMPL().FastAggregateVerify({pk1, pk2, pk3}, message, popSigAgg);
 
 // Aggregate public key, indistinguishable from a single public key
 G1Element popAggPk = pk1 + pk2 + pk3;
-ok = PopSchemeMPL::Verify(popAggPk, message, popSigAgg);
+ok = PopSchemeMPL().Verify(popAggPk, message, popSigAgg);
 
 // Aggregate private keys
 PrivateKey aggSk = PrivateKey::Aggregate({sk1, sk2, sk3});
-ok = (PopSchemeMPL::Sign(aggSk, message) == popSigAgg);
+ok = (PopSchemeMPL().Sign(aggSk, message) == popSigAgg);
 ```
 
 ## HD keys using [EIP-2333](https://github.com/ethereum/EIPs/pull/2333)
@@ -157,17 +157,17 @@ ok = (PopSchemeMPL::Sign(aggSk, message) == popSigAgg);
 ```c++
 // You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indeces are used.
 // Hardened (more secure, but no parent pk -> child pk)
-PrivateKey masterSk = AugSchemeMPL::KeyGen(seed);
-PrivateKey child = AugSchemeMPL::DeriveChildSk(masterSk, 152);
-PrivateKey grandChild = AugSchemeMPL::DeriveChildSk(child, 952)
+PrivateKey masterSk = AugSchemeMPL().KeyGen(seed);
+PrivateKey child = AugSchemeMPL().DeriveChildSk(masterSk, 152);
+PrivateKey grandChild = AugSchemeMPL().DeriveChildSk(child, 952)
 
 // Unhardened (less secure, but can go from parent pk -> child pk), BIP32 style
 G1Element masterPk = masterSk.GetG1Element();
-PrivateKey childU = AugSchemeMPL::DeriveChildSkUnhardened(masterSk, 22);
-PrivateKey grandchildU = AugSchemeMPL::DeriveChildSkUnhardened(childU, 0);
+PrivateKey childU = AugSchemeMPL().DeriveChildSkUnhardened(masterSk, 22);
+PrivateKey grandchildU = AugSchemeMPL().DeriveChildSkUnhardened(childU, 0);
 
-G1Element childUPk = AugSchemeMPL::DeriveChildPkUnhardened(masterPk, 22);
-G1Element grandchildUPk = AugSchemeMPL::DeriveChildPkUnhardened(childUPk, 0);
+G1Element childUPk = AugSchemeMPL().DeriveChildPkUnhardened(masterPk, 22);
+G1Element grandchildUPk = AugSchemeMPL().DeriveChildPkUnhardened(childUPk, 0);
 
 ok = (grandchildUPk == grandchildU.GetG1Element();
 ```
