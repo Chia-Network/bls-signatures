@@ -107,7 +107,7 @@ G2Element operator*(const G2Element &a, const PrivateKey &k)
 
 G2Element operator*(const PrivateKey &k, const G2Element &a) { return a * k; }
 
-G2Element PrivateKey::GetG2Power(const G2Element element) const
+G2Element PrivateKey::GetG2Power(const G2Element& element) const
 {
     g2_t *q = Util::SecAlloc<g2_t>(1);
     element.ToNative(q);
