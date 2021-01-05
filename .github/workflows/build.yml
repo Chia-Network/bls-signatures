@@ -41,7 +41,7 @@ jobs:
     - name: Install cibuildwheel
       run: |
        python -m pip install --upgrade pip
-       python -m pip install cibuildwheel==1.7.1
+       python -m pip install cibuildwheel==1.7.3
 
     - name: Lint source with flake8
       run: |
@@ -80,11 +80,11 @@ jobs:
           && rm -f /usr/bin/cmake && hash -r
           && which cmake
           && cmake --version
-          && echo "curling GMP 6.1.2"
-          && curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz | lzip -dc | tar x
+          && echo "curling GMP 6.2.1"
+          && curl -L https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz | lzip -dc | tar x
           && echo "Building GMP"
-          && cd gmp-6.1.2 && ./configure --enable-fat
-          && make && make install && cd .. && rm -rf gmp-6.1.2
+          && cd gmp-6.2.1 && ./configure --enable-fat
+          && make && make install && cd .. && rm -rf gmp-6.2.1
           && curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz | tar xz
           && cd libsodium-stable && ./configure --with-pic="yes"
           && make && make install && cd .. && rm -rf libsodium-stable
