@@ -26,7 +26,7 @@ jobs:
     - uses: actions/setup-python@v2
       name: Install Python
       with:
-        python-version: '3.7'
+        python-version: '3.8'
 
     - name: Build source distribution with Ubuntu-latest
       if: startsWith(matrix.os, 'ubuntu')
@@ -34,19 +34,6 @@ jobs:
         python -m pip install --upgrade pip
         pip install build
         python -m build --sdist --outdir dist .
-
-    - name: Mac OS build C++ and test
-      if: startsWith(matrix.os, 'macos')
-      run: |
-        ls -l
-        export MACOSX_DEPLOYMENT_TARGET=10.14
-        mkdir -p build
-        ls -l build
-        cd build
-        cmake ../
-        cmake --build . -- -j 6
-        echo "Running ./src/runtest"
-        ./src/runtest
 
     - name: Ubuntu build C++ and test with valgrind
       if: startsWith(matrix.os, 'ubuntu')
@@ -76,6 +63,19 @@ jobs:
         echo "Running ./src/runtest"
         ./src/runtest
         valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all  ./src/runtest
+
+    - name: Mac OS build C++ and test
+      if: startsWith(matrix.os, 'macos')
+      run: |
+        ls -l
+        export MACOSX_DEPLOYMENT_TARGET=10.14
+        mkdir -p build
+        ls -l build
+        cd build
+        cmake ../
+        cmake --build . -- -j 6
+        echo "Running ./src/runtest"
+        ./src/runtest
 
     - name: Test pure python implementation
       run: |
