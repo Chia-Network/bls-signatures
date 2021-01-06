@@ -72,9 +72,9 @@ jobs:
           && rm -rf /usr/local/bin/cmake
           && ln -s /usr/bin/cmake3 /usr/local/bin/cmake
           && cmake --version
-          && curl -L https://gmplib.org/download/gmp/gmp-6.1.2.tar.lz | lzip -dc | tar x
-          && cd gmp-6.1.2 && ./configure --enable-fat
-          && make && make install && cd .. && rm -rf gmp-6.1.2
+          && curl -L https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz | lzip -dc | tar x
+          && cd gmp-6.2.1 && ./configure --enable-fat
+          && make && make install && cd .. && rm -rf gmp-6.2.1
           && curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz | tar xz
           && cd libsodium-stable && ./configure --with-pic="yes"
           && make && make install && cd .. && rm -rf libsodium-stable
