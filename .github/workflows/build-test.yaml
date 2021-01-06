@@ -1,0 +1,76 @@
+name:  Build and Test C++ and Python
+
+on: [push, pull_request]
+
+jobs:
+  build_wheels:
+    name: Build and Test C++ and Python on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+
+    steps:
+    - name: Cancel previous runs on the same branch
+      uses: styfle/cancel-workflow-action@0.6.0
+      with:
+        access_token: ${{ github.token }}
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+        # we need fetch-depth 0 so setuptools_scm can resolve tags
+
+    - name: Build source distribution with Ubuntu-latest
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        pip install build
+        python -m build --sdist --outdir dist .
+
+    - name: Mac OS build C++ and test
+      if: startsWith(matrix.os, 'macos')
+      run: |
+        ls -l
+        export MACOSX_DEPLOYMENT_TARGET=10.14
+        mkdir -p build
+        ls -l build
+        cd build
+        cmake ../
+        cmake --build . -- -j 6
+        echo "Running ./src/runtest"
+        ./src/runtest
+
+    - name: Ubuntu build C++ and test with valgrind
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        sudo apt-get update
+        sudo apt-get install valgrind -y
+        sudo apt-get install snap -y
+        sudo apt-get remove --purge cmake -y
+        sudo snap install cmake --classic
+        hash -r
+        cmake --version
+        echo "attempting to curl"
+        curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz | tar xz
+        echo "curl complete."
+        cd libsodium-stable
+        ls -l
+        ./configure --with-pic="yes"
+        make
+        sudo make install
+        cd ..
+        echo "Setting libsodium to static compile."
+        export CIBUILDWHEEL=1
+        mkdir -p build
+        cd build
+        cmake ../
+        cmake --build . -- -j 6
+        echo "Running ./src/runtest"
+        ./src/runtest
+        valgrind --leak-check=full --show-leak-kinds=all --errors-for-leak-kinds=all  ./src/runtest
+
+    - name: Test pure python implementation
+      run: |
+        python python-impl/impl-test.py
