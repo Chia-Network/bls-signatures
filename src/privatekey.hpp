@@ -53,7 +53,7 @@ class PrivateKey {
     G1Element GetG1Element() const;
     G2Element GetG2Element() const;
 
-    G2Element GetG2Power(G2Element element) const;
+    G2Element GetG2Power(const G2Element& element) const;
 
     bool IsZero() const;
 
