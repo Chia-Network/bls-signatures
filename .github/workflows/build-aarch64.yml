@@ -13,7 +13,8 @@ jobs:
 
     steps:
     - name: Cancel previous runs on the same branch
-      uses: styfle/cancel-workflow-action@0.6.0
+      if: ${{ github.ref != 'refs/heads/master' }}
+      uses: styfle/cancel-workflow-action@0.7.0
       with:
         access_token: ${{ github.token }}
 
@@ -41,7 +42,7 @@ jobs:
         source venv/bin/activate
         python -m pip install --upgrade pip
         pip install wheel
-        python -m pip install cibuildwheel==1.7.3
+        python -m pip install cibuildwheel==1.8.0
 
     - name: Lint source with flake8
       run: |
