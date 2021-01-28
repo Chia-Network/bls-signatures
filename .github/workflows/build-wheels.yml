@@ -13,7 +13,8 @@ jobs:
 
     steps:
     - name: Cancel previous runs on the same branch
-      uses: styfle/cancel-workflow-action@0.6.0
+      if: ${{ github.ref != 'refs/heads/master' }}
+      uses: styfle/cancel-workflow-action@0.7.0
       with:
         access_token: ${{ github.token }}
 
@@ -26,7 +27,7 @@ jobs:
     - uses: actions/setup-python@v2
       name: Install Python
       with:
-        python-version: '3.7'
+        python-version: '3.8'
 
     - name: Test for secrets access
       id: check_secrets
@@ -41,7 +42,7 @@ jobs:
     - name: Install cibuildwheel
       run: |
        python -m pip install --upgrade pip
-       python -m pip install cibuildwheel==1.7.3
+       python -m pip install cibuildwheel==1.8.0
 
     - name: Lint source with flake8
       run: |
@@ -118,8 +119,6 @@ jobs:
           && delocate-wheel -v -i mpir_gc_x64/mpir_skylake_avx.dll {wheel}
           && cp {wheel} {dest_dir} && ls -l {dest_dir}
         # CIBW_ENVIRONMENT_WINDOWS: ""
-        # The pure python implementation, is not used anywhere and will be replaced
-        # pytest {project}/python-impl/tests.py
         CIBW_TEST_COMMAND: pytest -v {project}/python-bindings/test.py
 
     - name: Upload artifacts
