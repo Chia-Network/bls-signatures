@@ -84,6 +84,21 @@ void PrivateKey::DeallocateKeyData()
     }
 }
 
+PrivateKey& PrivateKey::operator=(const PrivateKey& other)
+{
+    CheckKeyData();
+    other.CheckKeyData();
+    bn_copy(*keydata, *other.keydata);
+    return *this;
+}
+
+PrivateKey& PrivateKey::operator=(PrivateKey&& other)
+{
+    DeallocateKeyData();
+    keydata = std::exchange(other.keydata, nullptr);
+    return *this;
+}
+
 G1Element PrivateKey::GetG1Element() const
 {
     CheckKeyData();
