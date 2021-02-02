@@ -33,7 +33,6 @@ PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
     }
 
     PrivateKey k;
-    k.AllocateKeyData();
     bn_read_bin(*k.keydata, bytes.begin(), PrivateKey::PRIVATE_KEY_SIZE);
     bn_t ord;
     bn_new(ord);
@@ -54,6 +53,10 @@ PrivateKey PrivateKey::FromByteVector(const std::vector<uint8_t> bytes, bool mod
 {
     return PrivateKey::FromBytes({bytes}, modOrder);
 }
+
+PrivateKey::PrivateKey() {
+    AllocateKeyData();
+};
 
 // Construct a private key from another private key.
 PrivateKey::PrivateKey(const PrivateKey &privateKey)

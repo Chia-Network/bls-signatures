@@ -86,7 +86,7 @@ class PrivateKey {
 
  private:
     // Don't allow public construction, force static methods
-    PrivateKey() = default;
+    PrivateKey();
 
     // Allocate memory for private key
     void AllocateKeyData();
