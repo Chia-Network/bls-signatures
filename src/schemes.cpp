@@ -86,13 +86,12 @@ bool CoreMPL::Verify(
     const vector<uint8_t> &message,  // unhashed
     const G2Element &signature)
 {
-    G1Element genneg = G1Element::Generator().Negate();
     G2Element hashedPoint = G2Element::FromMessage(message, (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length());
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
 
-    genneg.ToNative(g1s);
+    G1Element::Generator().Negate().ToNative(g1s);
     pubkey.ToNative(g1s + 1);
     signature.ToNative(g2s);
     hashedPoint.ToNative(g2s + 1);
@@ -180,9 +179,7 @@ bool CoreMPL::AggregateVerify(
     g1_t *g1s = new g1_t[nPubKeys + 1];
     g2_t *g2s = new g2_t[nPubKeys + 1];
 
-    G1Element genneg = G1Element::Generator().Negate();
-
-    genneg.ToNative(g1s);
+    G1Element::Generator().Negate().ToNative(g1s);
     signature.ToNative(g2s);
 
     for (size_t i = 0; i < nPubKeys; ++i) {
@@ -363,12 +360,11 @@ bool PopSchemeMPL::PopVerify(
     const G1Element &pubkey,
     const G2Element &signature_proof)
 {
-    G1Element genneg = G1Element::Generator().Negate();
     G2Element hashedPoint = G2Element::FromMessage(pubkey.Serialize(), (const uint8_t*)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
 
     g1_t *g1s = new g1_t[2];
     g2_t *g2s = new g2_t[2];
-    genneg.ToNative(g1s);
+    G1Element::Generator().Negate().ToNative(g1s);
     pubkey.ToNative(g1s + 1);
     signature_proof.ToNative(g2s);
     hashedPoint.ToNative(g2s + 1);
