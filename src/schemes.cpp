@@ -258,10 +258,7 @@ bool BasicSchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
 
 G2Element AugSchemeMPL::Sign(const PrivateKey &seckey, const vector<uint8_t> &message)
 {
-    vector<uint8_t> augMessage = seckey.GetG1Element().Serialize();
-    augMessage.reserve(augMessage.size() + message.size());
-    augMessage.insert(augMessage.end(), message.begin(), message.end());
-    return CoreMPL::Sign(seckey, augMessage);
+    return Sign(seckey, message, seckey.GetG1Element());
 }
 
 // Used for prepending different augMessage
