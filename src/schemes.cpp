@@ -299,10 +299,10 @@ bool AugSchemeMPL::AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
 
     vector<vector<uint8_t>> augMessages(nPubKeys);
     for (size_t i = 0; i < nPubKeys; ++i) {
-        vector<uint8_t> aug(pubkeys[i]);
-        aug.reserve(aug.size() + messages[i].size());
+        vector<uint8_t>& aug = augMessages[i];
+        aug.reserve(pubkeys[i].size() + messages[i].size());
+        aug.insert(aug.end(), pubkeys[i].begin(), pubkeys[i].end());
         aug.insert(aug.end(), messages[i].begin(), messages[i].end());
-        augMessages[i] = aug;
     }
 
     return CoreMPL::AggregateVerify(pubkeys, augMessages, signature);
@@ -318,10 +318,11 @@ bool AugSchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
 
     vector<vector<uint8_t>> augMessages(nPubKeys);
     for (int i = 0; i < nPubKeys; ++i) {
-        vector<uint8_t> aug(pubkeys[i].Serialize());
-        aug.reserve(aug.size() + messages[i].size());
+        vector<uint8_t>& aug = augMessages[i];
+        vector<uint8_t>&& pubkey = pubkeys[i].Serialize();
+        aug.reserve(pubkey.size() + messages[i].size());
+        aug.insert(aug.end(), pubkey.begin(), pubkey.end());
         aug.insert(aug.end(), messages[i].begin(), messages[i].end());
-        augMessages[i] = aug;
     }
 
     return CoreMPL::AggregateVerify(pubkeys, augMessages, signature);
