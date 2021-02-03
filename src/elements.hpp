@@ -39,10 +39,12 @@ public:
     static G1Element FromBytes(const Bytes& bytes);
     static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G1Element FromNative(const g1_t *element);
-    static G1Element FromMessage(
-        const std::vector<uint8_t> &message,
-        const uint8_t *dst,
-        int dst_len);
+    static G1Element FromMessage(const std::vector<uint8_t> &message,
+                                 const uint8_t *dst,
+                                 int dst_len);
+    static G1Element FromMessage(const Bytes& message,
+                                 const uint8_t* dst,
+                                 int dst_len);
     static G1Element Generator();
     static G1Element Infinity();  // infinity / unity
 
@@ -74,10 +76,12 @@ public:
     static G2Element FromBytes(const Bytes& bytes);
     static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G2Element FromNative(const g2_t *element);
-    static G2Element FromMessage(
-        const std::vector<uint8_t> &message,
-        const uint8_t *dst,
-        int dst_len);
+    static G2Element FromMessage(const std::vector<uint8_t>& message,
+                                 const uint8_t* dst,
+                                 int dst_len);
+    static G2Element FromMessage(const Bytes& message,
+                                 const uint8_t* dst,
+                                 int dst_len);
     static G2Element Generator();
     static G2Element Infinity();  // infinity/unity
 

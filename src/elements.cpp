@@ -81,15 +81,21 @@ G1Element G1Element::FromNative(const g1_t* element)
     return ele;
 }
 
-G1Element G1Element::FromMessage(
-    const std::vector<uint8_t>& message,
-    const uint8_t* dst,
-    int dst_len)
+G1Element G1Element::FromMessage(const std::vector<uint8_t>& message,
+                                 const uint8_t* dst,
+                                 int dst_len)
+{
+    return FromMessage(Bytes{message}, dst, dst_len);
+}
+
+G1Element G1Element::FromMessage(const Bytes& message,
+                                 const uint8_t* dst,
+                                 int dst_len)
 {
     g1_t ans;
     g1_null(ans);
     g1_new(ans);
-    ep_map_dst(ans, message.data(), (int)message.size(), dst, dst_len);
+    ep_map_dst(ans, message.begin(), (int)message.size(), dst, dst_len);
     G1Element ret = G1Element::FromNative(&ans);
     g1_free(ans);
     return ret;
@@ -281,15 +287,21 @@ G2Element G2Element::FromNative(const g2_t* element)
     return ele;
 }
 
-G2Element G2Element::FromMessage(
-    const std::vector<uint8_t>& message,
-    const uint8_t* dst,
-    int dst_len)
+G2Element G2Element::FromMessage(const std::vector<uint8_t>& message,
+                                 const uint8_t* dst,
+                                 int dst_len)
+{
+    return FromMessage(Bytes{message}, dst, dst_len);
+}
+
+G2Element G2Element::FromMessage(const Bytes& message,
+                                 const uint8_t* dst,
+                                 int dst_len)
 {
     g2_t ans;
     g2_null(ans);
     g2_new(ans);
-    ep2_map_dst(ans, message.data(), (int)message.size(), dst, dst_len);
+    ep2_map_dst(ans, message.begin(), (int)message.size(), dst, dst_len);
     G2Element ret = G2Element::FromNative(&ans);
     g2_free(ans);
     return ret;
