@@ -91,7 +91,7 @@ class HDKeys {
 
         uint8_t *skBytes = Util::SecAlloc<uint8_t>(32);
         bn_write_bin(skBytes, 32, *skBn);
-        PrivateKey k = PrivateKey::FromBytes(skBytes);
+        PrivateKey k = PrivateKey::FromBytes({skBytes, 32});
 
         Util::SecFree(prk);
         Util::SecFree(ikmHkdf);
@@ -160,7 +160,7 @@ class HDKeys {
         Util::IntToFourBytes(buf + G1Element::SIZE, index);
         Util::Hash256(digest, buf, G1Element::SIZE + 4);
 
-        PrivateKey ret = PrivateKey::Aggregate({parentSk, PrivateKey::FromBytes(digest, true)});
+        PrivateKey ret = PrivateKey::Aggregate({parentSk, PrivateKey::FromBytes({digest, HASH_LEN}, true)});
 
         Util::SecFree(buf);
         Util::SecFree(digest);
