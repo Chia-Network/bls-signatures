@@ -36,6 +36,28 @@ namespace bls {
 
 class BLS;
 
+class Bytes {
+    const uint8_t* pData;
+    const size_t nSize;
+
+public:
+    Bytes(const uint8_t* pDataIn, const size_t nSizeIn)
+        : pData(pDataIn), nSize(nSizeIn)
+    {
+    }
+    Bytes(const std::vector<uint8_t>& vecBytes)
+        : pData(vecBytes.data()), nSize(vecBytes.size())
+    {
+    }
+
+    inline const uint8_t* begin() const { return pData; }
+    inline const uint8_t* end() const { return pData + nSize; }
+
+    inline size_t size() const { return nSize; }
+
+    const uint8_t& operator[](const int nIndex) const { return pData[nIndex]; }
+};
+
 class Util {
  public:
     typedef void *(*SecureAllocCallback)(size_t);
