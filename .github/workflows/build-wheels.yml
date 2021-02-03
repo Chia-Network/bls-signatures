@@ -54,6 +54,12 @@ jobs:
         pip install mypy
         mypy --config-file mypi.ini python-bindings python-impl
 
+    - name: Build source distribution with Ubuntu-latest
+      if: startsWith(matrix.os, 'ubuntu')
+      run: |
+        pip install build
+        python -m build --sdist --outdir dist .
+
     - name: Build wheel and test
       run: |
         python -m cibuildwheel --output-dir dist
