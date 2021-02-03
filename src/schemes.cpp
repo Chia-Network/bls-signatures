@@ -52,7 +52,7 @@ const std::string AugSchemeMPL::CIPHERSUITE_ID = "BLS_SIG_BLS12381G2_XMD:SHA-256
 const std::string PopSchemeMPL::CIPHERSUITE_ID = "BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 const std::string PopSchemeMPL::POP_CIPHERSUITE_ID = "BLS_POP_BLS12381G2_XMD:SHA-256_SSWU_RO_POP_";
 
-PrivateKey CoreMPL::KeyGen(const vector<uint8_t> seed) {
+PrivateKey CoreMPL::KeyGen(const vector<uint8_t>& seed) {
     return HDKeys::KeyGen(seed);
 }
 
