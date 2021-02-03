@@ -31,33 +31,17 @@ enum InvariantResult { BAD=false, GOOD=true, CONTINUE };
 
 // Enforce argument invariants for Agg Sig Verification
 InvariantResult VerifyAggregateSignatureArguments(
-    const vector<G1Element> &pubkeys,
-    const vector<vector<uint8_t>> &messages,  // unhashed
+    const size_t nPubKeys,
+    const size_t nMessages,
     const G2Element &signature)
 {
-    int n = pubkeys.size();
-
-    if (n == 0) {
-      return (messages.empty() && signature == G2Element::Infinity() ? GOOD : BAD);
+    if (nPubKeys == 0) {
+        return (nMessages == 0 && signature == G2Element::Infinity() ? GOOD : BAD);
     }
-    if (n != messages.size() || n <= 0) {
+    if (nPubKeys != nMessages || nPubKeys <= 0) {
         return BAD;
     }
     return CONTINUE;
-}
-
-InvariantResult VerifyAggregateSignatureArguments(
-    const vector<vector<uint8_t>> &pubkeys,
-    const vector<vector<uint8_t>> &messages,  // unhashed
-    const vector<uint8_t> &signature)
-{
-    vector<G1Element> pubkeyElements;
-    int n = pubkeys.size();
-    for (int i = 0; i < n; ++i) {
-        pubkeyElements.push_back(G1Element::FromBytes(pubkeys[i].data()));
-    }
-    G2Element signatureElement = G2Element::FromBytes(signature.data());
-    return VerifyAggregateSignatureArguments(pubkeyElements, messages, signatureElement);
 }
 
 /* These are all for the min-pubkey-size variant.
@@ -171,15 +155,15 @@ bool CoreMPL::AggregateVerify(
     const vector<uint8_t> &signature)
 {
     int n = pubkeys.size();
+    G2Element signatureElement = G2Element::FromByteVector(signature);
     if (n <= 0 || n != messages.size()) {
-        return VerifyAggregateSignatureArguments(pubkeys, messages, signature);
+        return VerifyAggregateSignatureArguments(n, messages.size(), signatureElement);
     }
 
     vector<G1Element> pubkeyElements;
     for (int i = 0; i < n; ++i) {
         pubkeyElements.push_back(G1Element::FromBytes(pubkeys[i].data()));
     }
-    G2Element signatureElement = G2Element::FromByteVector(signature);
     return CoreMPL::AggregateVerify(pubkeyElements, messages, signatureElement);
 }
 
@@ -190,7 +174,7 @@ bool CoreMPL::AggregateVerify(
 {
     int n = pubkeys.size();
     if (n <= 0 || n != messages.size()) {
-        return VerifyAggregateSignatureArguments(pubkeys, messages, signature);
+        return VerifyAggregateSignatureArguments(pubkeys.size(), messages.size(), signature);
     }
 
     g1_t *g1s = new g1_t[n + 1];
@@ -256,7 +240,7 @@ bool BasicSchemeMPL::AggregateVerify(
     const vector<uint8_t> &signature)
 {
     int n = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(pubkeys, messages, signature);
+    auto arg_check = VerifyAggregateSignatureArguments(n, messages.size(), G2Element::FromByteVector(signature));
     if (arg_check != CONTINUE) return arg_check;
 
     std::set<vector<uint8_t>> s(messages.begin(), messages.end());
@@ -271,7 +255,7 @@ bool BasicSchemeMPL::AggregateVerify(
     const G2Element &signature)
 {
     int n = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(pubkeys, messages, signature);
+    auto arg_check = VerifyAggregateSignatureArguments(n, messages.size(), signature);
     if (arg_check != CONTINUE) return arg_check;
 
     std::set<vector<uint8_t>> s(messages.begin(), messages.end());
@@ -331,7 +315,7 @@ bool AugSchemeMPL::AggregateVerify(
     const vector<uint8_t> &signature)
 {
     int n = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(pubkeys, messages, signature);
+    auto arg_check = VerifyAggregateSignatureArguments(n, messages.size(), G2Element::FromByteVector(signature));
     if (arg_check != CONTINUE) return arg_check;
 
     vector<vector<uint8_t>> augMessages(n);
@@ -352,7 +336,7 @@ bool AugSchemeMPL::AggregateVerify(
     const G2Element &signature)
 {
     int n = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(pubkeys, messages, signature);
+    auto arg_check = VerifyAggregateSignatureArguments(n, messages.size(), signature);
     if (arg_check != CONTINUE) return arg_check;
 
     vector<vector<uint8_t>> augMessages(n);
@@ -417,7 +401,7 @@ bool PopSchemeMPL::FastAggregateVerify(
     const vector<G1Element> pkelements = { pkagg };
 
     if (pubkeys.size() <= 0) return false;
-    auto arg_check = VerifyAggregateSignatureArguments(pkelements, messages, signature);
+    auto arg_check = VerifyAggregateSignatureArguments(pkelements.size(), messages.size(), signature);
     if (arg_check != CONTINUE) return arg_check;
 
     return CoreMPL::Verify(
