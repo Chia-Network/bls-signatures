@@ -393,14 +393,11 @@ bool PopSchemeMPL::FastAggregateVerify(
     const vector<uint8_t> &message,
     const G2Element &signature)
 {
-    if (pubkeys.size() <= 0) return false;
-
-    G1Element pkagg = CoreMPL::Aggregate(pubkeys);
+    if (pubkeys.size() == 0) {
+        return false;
+    }
     // No VerifyAggregateSignatureArguments checks required here as we have exactly one pubkey and one message.
-    return CoreMPL::Verify(
-        pkagg,
-        message,
-        signature);
+    return CoreMPL::Verify(CoreMPL::Aggregate(pubkeys), message, signature);
 }
 
 bool PopSchemeMPL::FastAggregateVerify(
