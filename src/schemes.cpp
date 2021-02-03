@@ -410,8 +410,6 @@ bool PopSchemeMPL::FastAggregateVerify(
         return false;
     }
 
-    const vector<vector<uint8_t>> messages = { message };
-
     vector<G1Element> pkelements;
     for (int i = 0; i < n; ++i) {
         pkelements.push_back(G1Element::FromBytes(pubkeys[i].data()));
