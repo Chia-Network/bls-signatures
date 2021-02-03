@@ -38,7 +38,7 @@ InvariantResult VerifyAggregateSignatureArguments(
     if (nPubKeys == 0) {
         return (nMessages == 0 && signature == G2Element::Infinity() ? GOOD : BAD);
     }
-    if (nPubKeys != nMessages || nPubKeys <= 0) {
+    if (nPubKeys != nMessages || nPubKeys == 0) {
         return BAD;
     }
     return CONTINUE;
@@ -116,15 +116,15 @@ vector<uint8_t> CoreMPL::Aggregate(const vector<vector<uint8_t>> &signatures)
 G2Element CoreMPL::Aggregate(const vector<G2Element> &signatures)
 {
     g2_t ans, tmp;
-    int n = (int)signatures.size();
-    if (n <= 0) {
+    size_t nSignatures = signatures.size();
+    if (nSignatures == 0) {
         g2_set_infty(ans);
         return G2Element::FromNative(&ans);
     }
 
     signatures[0].ToNative(&ans);
 
-    for (int i = 1; i < n; ++i) {
+    for (size_t i = 1; i < nSignatures; ++i) {
         signatures[i].ToNative(&tmp);
         g2_add(ans, ans, tmp);
     }
@@ -134,15 +134,15 @@ G2Element CoreMPL::Aggregate(const vector<G2Element> &signatures)
 G1Element CoreMPL::Aggregate(const vector<G1Element> &publicKeys)
 {
     g1_t ans, tmp;
-    int n = (int)publicKeys.size();
-    if (n <= 0) {
+    size_t nPubKeys = publicKeys.size();
+    if (nPubKeys == 0) {
         g1_set_infty(ans);
         return G1Element::FromNative(&ans);
     }
 
     publicKeys[0].ToNative(&ans);
 
-    for (int i = 1; i < n; ++i) {
+    for (size_t i = 1; i < nPubKeys; ++i) {
         publicKeys[i].ToNative(&tmp);
         g1_add(ans, ans, tmp);
     }
@@ -154,14 +154,14 @@ bool CoreMPL::AggregateVerify(
     const vector<vector<uint8_t>> &messages,  // unhashed
     const vector<uint8_t> &signature)
 {
-    int n = pubkeys.size();
+    size_t nPubKeys = pubkeys.size();
     G2Element signatureElement = G2Element::FromByteVector(signature);
-    if (n <= 0 || n != messages.size()) {
-        return VerifyAggregateSignatureArguments(n, messages.size(), signatureElement);
+    if (nPubKeys == 0 || nPubKeys != messages.size()) {
+        return VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signatureElement);
     }
 
     vector<G1Element> pubkeyElements;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < nPubKeys; ++i) {
         pubkeyElements.push_back(G1Element::FromBytes(pubkeys[i].data()));
     }
     return CoreMPL::AggregateVerify(pubkeyElements, messages, signatureElement);
@@ -172,25 +172,25 @@ bool CoreMPL::AggregateVerify(
     const vector<vector<uint8_t>> &messages,  // unhashed
     const G2Element &signature)
 {
-    int n = pubkeys.size();
-    if (n <= 0 || n != messages.size()) {
+    size_t nPubKeys = pubkeys.size();
+    if (nPubKeys == 0 || nPubKeys != messages.size()) {
         return VerifyAggregateSignatureArguments(pubkeys.size(), messages.size(), signature);
     }
 
-    g1_t *g1s = new g1_t[n + 1];
-    g2_t *g2s = new g2_t[n + 1];
+    g1_t *g1s = new g1_t[nPubKeys + 1];
+    g2_t *g2s = new g2_t[nPubKeys + 1];
 
     G1Element genneg = G1Element::Generator().Negate();
 
     genneg.ToNative(g1s);
     signature.ToNative(g2s);
 
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < nPubKeys; ++i) {
         pubkeys[i].ToNative(g1s + i + 1);
         G2Element::FromMessage(messages[i], (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length()).ToNative(g2s + i + 1);
     }
 
-    bool ans = CoreMPL::NativeVerify(g1s, g2s, n + 1);
+    bool ans = CoreMPL::NativeVerify(g1s, g2s, nPubKeys + 1);
     delete[] g1s;
     delete[] g2s;
     return ans;
@@ -239,12 +239,12 @@ bool BasicSchemeMPL::AggregateVerify(
     const vector<vector<uint8_t>> &messages,
     const vector<uint8_t> &signature)
 {
-    int n = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(n, messages.size(), G2Element::FromByteVector(signature));
+    size_t nPubKeys = pubkeys.size();
+    auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), G2Element::FromByteVector(signature));
     if (arg_check != CONTINUE) return arg_check;
 
     std::set<vector<uint8_t>> s(messages.begin(), messages.end());
-    if (s.size() != n)
+    if (s.size() != nPubKeys)
         return false;
     return CoreMPL::AggregateVerify(pubkeys, messages, signature);
 }
@@ -254,12 +254,12 @@ bool BasicSchemeMPL::AggregateVerify(
     const vector<vector<uint8_t>> &messages,
     const G2Element &signature)
 {
-    int n = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(n, messages.size(), signature);
+    size_t nPubKeys = pubkeys.size();
+    auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
     if (arg_check != CONTINUE) return arg_check;
 
     std::set<vector<uint8_t>> s(messages.begin(), messages.end());
-    if (s.size() != n) {
+    if (s.size() != nPubKeys) {
         return false;
     }
     return CoreMPL::AggregateVerify(pubkeys, messages, signature);
@@ -314,12 +314,12 @@ bool AugSchemeMPL::AggregateVerify(
     const vector<vector<uint8_t>> &messages,
     const vector<uint8_t> &signature)
 {
-    int n = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(n, messages.size(), G2Element::FromByteVector(signature));
+    size_t nPubKeys = pubkeys.size();
+    auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), G2Element::FromByteVector(signature));
     if (arg_check != CONTINUE) return arg_check;
 
-    vector<vector<uint8_t>> augMessages(n);
-    for (int i = 0; i < n; ++i) {
+    vector<vector<uint8_t>> augMessages(nPubKeys);
+    for (size_t i = 0; i < nPubKeys; ++i) {
         vector<uint8_t> aug(pubkeys[i]);
         aug.reserve(
             aug.size() + std::distance(messages[i].begin(), messages[i].end()));
@@ -335,12 +335,12 @@ bool AugSchemeMPL::AggregateVerify(
     const vector<vector<uint8_t>> &messages,
     const G2Element &signature)
 {
-    int n = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(n, messages.size(), signature);
+    size_t nPubKeys = pubkeys.size();
+    auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
     if (arg_check != CONTINUE) return arg_check;
 
-    vector<vector<uint8_t>> augMessages(n);
-    for (int i = 0; i < n; ++i) {
+    vector<vector<uint8_t>> augMessages(nPubKeys);
+    for (int i = 0; i < nPubKeys; ++i) {
         vector<uint8_t> aug(pubkeys[i].Serialize());
         aug.reserve(
             aug.size() + std::distance(messages[i].begin(), messages[i].end()));
@@ -405,13 +405,13 @@ bool PopSchemeMPL::FastAggregateVerify(
     const vector<uint8_t> &message,
     const vector<uint8_t> &signature)
 {
-    size_t n = pubkeys.size();
-    if (n == 0) {
+    size_t nPubKeys = pubkeys.size();
+    if (nPubKeys == 0) {
         return false;
     }
 
     vector<G1Element> pkelements;
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < nPubKeys; ++i) {
         pkelements.push_back(G1Element::FromBytes(pubkeys[i].data()));
     }
 
