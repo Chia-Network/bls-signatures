@@ -405,10 +405,12 @@ bool PopSchemeMPL::FastAggregateVerify(
     const vector<uint8_t> &message,
     const vector<uint8_t> &signature)
 {
-    int n = pubkeys.size();
-    const vector<vector<uint8_t>> messages = { message };
+    size_t n = pubkeys.size();
+    if (n == 0) {
+        return false;
+    }
 
-    if (pubkeys.size() <= 0) return false;
+    const vector<vector<uint8_t>> messages = { message };
 
     vector<G1Element> pkelements;
     for (int i = 0; i < n; ++i) {
