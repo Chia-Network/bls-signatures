@@ -26,11 +26,15 @@
 namespace bls {
 
 // Construct a private key from a bytearray.
-PrivateKey PrivateKey::FromBytes(const uint8_t *bytes, bool modOrder)
+PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
 {
+    if (bytes.size() != PRIVATE_KEY_SIZE) {
+        throw std::invalid_argument("PrivateKey::FromBytes: Invalid size");
+    }
+
     PrivateKey k;
     k.AllocateKeyData();
-    bn_read_bin(*k.keydata, bytes, PrivateKey::PRIVATE_KEY_SIZE);
+    bn_read_bin(*k.keydata, bytes.begin(), PrivateKey::PRIVATE_KEY_SIZE);
     bn_t ord;
     bn_new(ord);
     g1_get_ord(ord);
@@ -48,10 +52,7 @@ PrivateKey PrivateKey::FromBytes(const uint8_t *bytes, bool modOrder)
 // Construct a private key from a bytearray.
 PrivateKey PrivateKey::FromByteVector(const std::vector<uint8_t> bytes, bool modOrder)
 {
-    if (bytes.size() != PrivateKey::PRIVATE_KEY_SIZE) {
-        throw std::invalid_argument("Private keys must be 32 bytes");
-    }
-    return PrivateKey::FromBytes(bytes.data(), modOrder);
+    return PrivateKey::FromBytes({bytes}, modOrder);
 }
 
 // Construct a private key from another private key.

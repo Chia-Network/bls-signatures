@@ -32,7 +32,7 @@ class PrivateKey {
     static const size_t PRIVATE_KEY_SIZE = 32;
 
     // Construct a private key from a bytearray.
-    static PrivateKey FromBytes(const uint8_t *bytes, bool modOrder = false);
+    static PrivateKey FromBytes(const Bytes& bytes, bool modOrder = false);
 
     // Construct a private key from a bytearray.
     static PrivateKey FromByteVector(const std::vector<uint8_t> bytes, bool modOrder = false);
