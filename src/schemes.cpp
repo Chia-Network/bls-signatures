@@ -259,8 +259,7 @@ bool BasicSchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
 G2Element AugSchemeMPL::Sign(const PrivateKey &seckey, const vector<uint8_t> &message)
 {
     vector<uint8_t> augMessage = seckey.GetG1Element().Serialize();
-    augMessage.reserve(
-        augMessage.size() + std::distance(message.begin(), message.end()));
+    augMessage.reserve(augMessage.size() + message.size());
     augMessage.insert(augMessage.end(), message.begin(), message.end());
     return CoreMPL::Sign(seckey, augMessage);
 }
@@ -271,8 +270,7 @@ G2Element AugSchemeMPL::Sign(const PrivateKey &seckey,
                              const G1Element &prepend_pk)
 {
     vector<uint8_t> augMessage = prepend_pk.Serialize();
-    augMessage.reserve(
-        augMessage.size() + std::distance(message.begin(), message.end()));
+    augMessage.reserve(augMessage.size() + message.size());
     augMessage.insert(augMessage.end(), message.begin(), message.end());
     return CoreMPL::Sign(seckey, augMessage);
 }
@@ -282,8 +280,7 @@ bool AugSchemeMPL::Verify(const vector<uint8_t> &pubkey,
                           const vector<uint8_t> &signature)
 {
     vector<uint8_t> augMessage(pubkey);
-    augMessage.reserve(
-        augMessage.size() + std::distance(message.begin(), message.end()));
+    augMessage.reserve(augMessage.size() + message.size());
     augMessage.insert(augMessage.end(), message.begin(), message.end());
     return CoreMPL::Verify(pubkey, augMessage, signature);
 }
@@ -306,8 +303,7 @@ bool AugSchemeMPL::AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
     vector<vector<uint8_t>> augMessages(nPubKeys);
     for (size_t i = 0; i < nPubKeys; ++i) {
         vector<uint8_t> aug(pubkeys[i]);
-        aug.reserve(
-            aug.size() + std::distance(messages[i].begin(), messages[i].end()));
+        aug.reserve(aug.size() + messages[i].size());
         aug.insert(aug.end(), messages[i].begin(), messages[i].end());
         augMessages[i] = aug;
     }
@@ -326,8 +322,7 @@ bool AugSchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
     vector<vector<uint8_t>> augMessages(nPubKeys);
     for (int i = 0; i < nPubKeys; ++i) {
         vector<uint8_t> aug(pubkeys[i].Serialize());
-        aug.reserve(
-            aug.size() + std::distance(messages[i].begin(), messages[i].end()));
+        aug.reserve(aug.size() + messages[i].size());
         aug.insert(aug.end(), messages[i].begin(), messages[i].end());
         augMessages[i] = aug;
     }
