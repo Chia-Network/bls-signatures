@@ -397,8 +397,6 @@ bool PopSchemeMPL::FastAggregateVerify(
 
     G1Element pkagg = CoreMPL::Aggregate(pubkeys);
 
-    int n = pubkeys.size();
-
     const vector<vector<uint8_t>> messages = { message };
     const vector<G1Element> pkelements = { pkagg };
 
