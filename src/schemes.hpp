@@ -40,7 +40,7 @@ public:
     CoreMPL(const std::string& strId) : strCiphersuiteId(strId) {}
     // Generates a private key from a seed, similar to HD key generation
     // (hashes the seed), and reduces it mod the group order
-    virtual PrivateKey KeyGen(const vector<uint8_t> seed);
+    virtual PrivateKey KeyGen(const vector<uint8_t>& seed);
 
     // Generates a public key from a secret key
     virtual vector<uint8_t> SkToPk(const PrivateKey &seckey);
