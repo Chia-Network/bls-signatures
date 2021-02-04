@@ -41,6 +41,7 @@ public:
     // Generates a private key from a seed, similar to HD key generation
     // (hashes the seed), and reduces it mod the group order
     virtual PrivateKey KeyGen(const vector<uint8_t>& seed);
+    virtual PrivateKey KeyGen(const Bytes& seed);
 
     // Generates a public key from a secret key
     virtual vector<uint8_t> SkToPk(const PrivateKey &seckey);
@@ -48,16 +49,22 @@ public:
     virtual G1Element SkToG1(const PrivateKey &seckey);
 
     virtual G2Element Sign(const PrivateKey &seckey, const vector<uint8_t> &message);
+    virtual G2Element Sign(const PrivateKey& seckey, const Bytes& message);
 
     virtual bool Verify(const vector<uint8_t> &pubkey,
                         const vector<uint8_t> &message,
                         const vector<uint8_t> &signature);
 
+    virtual bool Verify(const Bytes& pubkey, const Bytes& message, const Bytes& signature);
+
     virtual bool Verify(const G1Element &pubkey,
                         const vector<uint8_t> &message,
                         const G2Element &signature);
 
+    virtual bool Verify(const G1Element& pubkey, const Bytes& message, const G2Element& signature);
+
     virtual vector<uint8_t> Aggregate(const vector<vector<uint8_t>> &signatures);
+    virtual vector<uint8_t> Aggregate(const vector<Bytes>& signatures);
 
     virtual G2Element Aggregate(const vector<G2Element> &signatures);
 
@@ -67,9 +74,18 @@ public:
                                  const vector<vector<uint8_t>> &messages,
                                  const vector<uint8_t> &signature);
 
+    virtual bool AggregateVerify(const vector<Bytes>& pubkeys,
+                                 const vector<Bytes>& messages,
+                                 const Bytes& signature);
+
     virtual bool AggregateVerify(const vector<G1Element> &pubkeys,
                                  const vector<vector<uint8_t>> &messages,
                                  const G2Element &signature);
+
+     virtual bool AggregateVerify(const vector<G1Element>& pubkeys,
+                                  const vector<Bytes>& messages,
+                                  const G2Element& signature);
+
     PrivateKey DeriveChildSk(const PrivateKey& sk, uint32_t index);
     PrivateKey DeriveChildSkUnhardened(const PrivateKey& sk, uint32_t index);
     G1Element DeriveChildPkUnhardened(const G1Element& sk, uint32_t index);
@@ -87,9 +103,17 @@ public:
                          const vector<vector<uint8_t>> &messages,
                          const vector<uint8_t> &signature) override;
 
+    bool AggregateVerify(const vector<Bytes>& pubkeys,
+                         const vector<Bytes>& messages,
+                         const Bytes& signature) override;
+
     bool AggregateVerify(const vector<G1Element> &pubkeys,
                          const vector<vector<uint8_t>> &messages,
                          const G2Element &signature) override;
+
+    bool AggregateVerify(const vector<G1Element>& pubkeys,
+                         const vector<Bytes>& messages,
+                         const G2Element& signature) override;
 };
 
 class AugSchemeMPL : public CoreMPL {
@@ -100,26 +124,49 @@ public:
 
     G2Element Sign(const PrivateKey &seckey, const vector<uint8_t> &message) override;
 
+    G2Element Sign(const PrivateKey& seckey, const Bytes& message) override;
+
     // Used for prepending different augMessage
     G2Element Sign(const PrivateKey &seckey,
                    const vector<uint8_t> &message,
                    const G1Element &prepend_pk);
 
+    // Used for prepending different augMessage
+    G2Element Sign(const PrivateKey& seckey,
+                   const Bytes& message,
+                   const G1Element& prepend_pk);
+
     bool Verify(const vector<uint8_t> &pubkey,
                 const vector<uint8_t> &message,
                 const vector<uint8_t> &signature) override;
+
+    bool Verify(const Bytes& pubkey,
+                const Bytes& message,
+                const Bytes& signature) override;
 
     bool Verify(const G1Element &pubkey,
                 const vector<uint8_t> &message,
                 const G2Element &signature) override;
 
+    bool Verify(const G1Element& pubkey,
+                const Bytes& message,
+                const G2Element& signature) override;
+
     bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
                          const vector<vector<uint8_t>> &messages,
                          const vector<uint8_t> &signature) override;
 
+    bool AggregateVerify(const vector<Bytes>& pubkeys,
+                         const vector<Bytes>& messages,
+                         const Bytes& signature) override;
+
     bool AggregateVerify(const vector<G1Element> &pubkeys,
                          const vector<vector<uint8_t>> &messages,
                          const G2Element &signature) override;
+
+    bool AggregateVerify(const vector<G1Element>& pubkeys,
+                         const vector<Bytes>& messages,
+                         const G2Element& signature) override;
 };
 
 class PopSchemeMPL : public CoreMPL {
@@ -135,13 +182,23 @@ public:
 
     bool PopVerify(const vector<uint8_t> &pubkey, const vector<uint8_t> &proof);
 
+    bool PopVerify(const Bytes& pubkey, const Bytes& proof);
+
     bool FastAggregateVerify(const vector<G1Element> &pubkeys,
                              const vector<uint8_t> &message,
                              const G2Element &signature);
 
+    bool FastAggregateVerify(const vector<G1Element>& pubkeys,
+                             const Bytes& message,
+                             const G2Element& signature);
+
     bool FastAggregateVerify(const vector<vector<uint8_t>> &pubkeys,
                              const vector<uint8_t> &message,
                              const vector<uint8_t> &signature);
+
+    bool FastAggregateVerify(const vector<Bytes>& pubkeys,
+                             const Bytes& message,
+                             const Bytes& signature);
 };
 
 }  // end namespace bls
