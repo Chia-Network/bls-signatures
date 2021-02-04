@@ -35,7 +35,13 @@ class HDKeys {
  public:
     static const uint8_t HASH_LEN = 32;
 
-    static PrivateKey KeyGen(const std::vector<uint8_t> seed) {
+    static PrivateKey KeyGen(const std::vector<uint8_t>& seed)
+    {
+        return KeyGen(Bytes{seed});
+    }
+    
+    static PrivateKey KeyGen(const Bytes& seed)
+    {
         // KeyGen
         // 1. PRK = HKDF-Extract("BLS-SIG-KEYGEN-SALT-", IKM || I2OSP(0, 1))
         // 2. OKM = HKDF-Expand(PRK, keyInfo || I2OSP(L, 2), L)
@@ -56,7 +62,7 @@ class HDKeys {
 
         uint8_t *prk = Util::SecAlloc<uint8_t>(32);
         uint8_t *ikmHkdf = Util::SecAlloc<uint8_t>(seed.size() + 1);
-        memcpy(ikmHkdf, seed.data(), seed.size());
+        memcpy(ikmHkdf, seed.begin(), seed.size());
         ikmHkdf[seed.size()] = 0;
 
         const uint8_t L = 48;  // `ceil((3 * ceil(log2(r))) / 16)`, where `r` is the
