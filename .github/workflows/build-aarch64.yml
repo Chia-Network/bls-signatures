@@ -43,9 +43,9 @@ jobs:
         mypy --config-file mypi.ini python-bindings python-impl
 
     - name: Build wheels and test
-      uses: joerick/cibuildwheel@v1.9.0
-      with:
-        output-dir: dist
+      run: |
+        source venv/bin/activate
+        python -m cibuildwheel --output-dir dist
       env:
         # build python 3.7 and 3.8
         CIBW_BUILD: cp37-* cp38-* cp39-*
