@@ -21,13 +21,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Lint source with flake8
+    - name: Prepare cibuildwheel
       run: |
         if [ ! -f "venv" ]; then rm -rf venv; fi
         sudo apt-get install python3-venv python3-pip -y
         python3 -m venv venv
         source venv/bin/activate
         python -m pip install --upgrade pip
+        python -m pip install cibuildwheel==1.9.0
+
+    - name: Lint source with flake8
+      run: |
+        source venv/bin/activate
         pip install flake8
         flake8 src setup.py python-bindings python-impl
 
