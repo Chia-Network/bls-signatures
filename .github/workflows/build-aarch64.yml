@@ -20,33 +20,14 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-        # we need fetch-depth 0 so setuptools_scm can resolve tags
 
-    - name: Test for secrets access
-      id: check_secrets
-      shell: bash
-      run: |
-        unset HAS_SECRET
-        if [ -n "$SECRET" ]; then HAS_SECRET='true' ; fi
-        echo ::set-output name=HAS_SECRET::${HAS_SECRET}
-      env:
-        SECRET: "${{ secrets.test_pypi_password }}"
-
-    - name: Prepare cibuildwheel
+    - name: Lint source with flake8
       run: |
         if [ ! -f "venv" ]; then rm -rf venv; fi
         sudo apt-get install python3-venv python3-pip -y
         python3 -m venv venv
         source venv/bin/activate
         python -m pip install --upgrade pip
-        pip install wheel
-        python -m pip install cibuildwheel==1.8.0
-
-    - name: Lint source with flake8
-      run: |
-        source venv/bin/activate
         pip install flake8
         flake8 src setup.py python-bindings python-impl
 
@@ -56,10 +37,10 @@ jobs:
         pip install mypy
         mypy --config-file mypi.ini python-bindings python-impl
 
-    - name: Build wheel and test
-      run: |
-        source venv/bin/activate
-        python -m cibuildwheel --output-dir dist
+    - name: Build wheels and test
+      uses: joerick/cibuildwheel@v1.9.0
+      with:
+        output-dir: dist
       env:
         # build python 3.7 and 3.8
         CIBW_BUILD: cp37-* cp38-* cp39-*
@@ -87,6 +68,16 @@ jobs:
       with:
         name: wheels
         path: ./dist
+
+    - name: Test for secrets access
+      id: check_secrets
+      shell: bash
+      run: |
+        unset HAS_SECRET
+        if [ -n "$SECRET" ]; then HAS_SECRET='true' ; fi
+        echo ::set-output name=HAS_SECRET::${HAS_SECRET}
+      env:
+        SECRET: "${{ secrets.test_pypi_password }}"
 
     - name: Install twine
       run: |
