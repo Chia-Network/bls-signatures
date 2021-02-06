@@ -43,7 +43,7 @@ jobs:
         pip install build
         python -m build --sdist --outdir dist .
 
-    - name: Build wheels and test
+    - name: Build ${{ matrix.os }} wheels and test
       uses: joerick/cibuildwheel@v1.9.0
       with:
         output-dir: dist
