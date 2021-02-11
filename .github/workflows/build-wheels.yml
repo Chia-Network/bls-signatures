@@ -114,6 +114,11 @@ jobs:
         # CIBW_ENVIRONMENT_WINDOWS: ""
         CIBW_TEST_COMMAND: pytest -v {project}/python-bindings/test.py
 
+    - name: Create sha256 wheel hashes
+      run: |
+        cd ./dist
+        sha256sum * > wheel-sha256.txt
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:
