@@ -68,6 +68,19 @@ jobs:
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: pytest -v {project}/python-bindings/test.py
 
+    - name: Create sha256 wheel hashes
+      run: |
+        mkdir hashes
+        cd ./hashes
+        sha256sum ./dist/*
+        sha256sum ./dist/* > ./hashes/wheel-sha256.txt
+
+    - name: Upload hashes
+      uses: actions/upload-artifact@v2
+      with:
+        name: hashes
+        path: ./hashes
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
       with:

@@ -116,10 +116,18 @@ jobs:
 
     - name: Create sha256 wheel hashes
       run: |
-        cd ./dist
-        sha256sum * > wheel-sha256.txt
+        mkdir hashes
+        cd ./hashes
+        sha256sum ./dist/*
+        sha256sum ./dist/* > ./hashes/wheel-sha256.txt
 
-    - name: Upload artifacts
+    - name: Upload hashes
+      uses: actions/upload-artifact@v2
+      with:
+        name: hashes
+        path: ./hashes
+
+    - name: Upload wheels
       uses: actions/upload-artifact@v2
       with:
         name: wheels
