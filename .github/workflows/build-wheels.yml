@@ -130,7 +130,7 @@ jobs:
         mkdir hashes
         cd ./dist
         shasum -a 256 *
-        shasum -a 256 * > ../hashes/wheel-sha256.txt
+        shasum -a 256 * > ../hashes/blspy-wheels-sha256.txt
 
     - name: Upload hashes
       uses: actions/upload-artifact@v2
