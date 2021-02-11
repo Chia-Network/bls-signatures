@@ -36,7 +36,7 @@ class BNWrapper;
 class G1Element {
 public:
     static const size_t SIZE = 48;
-    static G1Element FromBytes(const uint8_t *bytes);
+    static G1Element FromBytes(const Bytes& bytes);
     static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G1Element FromNative(const g1_t *element);
     static G1Element FromMessage(
@@ -71,7 +71,7 @@ private:
 class G2Element {
 public:
     static const size_t SIZE = 96;
-    static G2Element FromBytes(const uint8_t *data);
+    static G2Element FromBytes(const Bytes& bytes);
     static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G2Element FromNative(const g2_t *element);
     static G2Element FromMessage(
@@ -105,7 +105,7 @@ private:
 class GTElement {
 public:
     static const size_t SIZE = 384;
-    static GTElement FromBytes(const uint8_t *bytes);
+    static GTElement FromBytes(const Bytes& bytes);
     static GTElement FromByteVector(const std::vector<uint8_t> &bytevec);
     static GTElement FromNative(const gt_t *element);
     static GTElement Unity();  // unity
