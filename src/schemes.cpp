@@ -104,7 +104,7 @@ bool CoreMPL::Verify(const G1Element &pubkey,
 vector<uint8_t> CoreMPL::Aggregate(const vector<vector<uint8_t>> &signatures)
 {
     vector<G2Element> elements = vector<G2Element>();
-    for (vector<uint8_t> signature : signatures) {
+    for (const vector<uint8_t>& signature : signatures) {
         elements.push_back(G2Element::FromByteVector(signature));
     }
     return CoreMPL::Aggregate(elements).Serialize();
