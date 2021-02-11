@@ -71,7 +71,6 @@ jobs:
     - name: Create sha256 wheel hashes
       run: |
         mkdir hashes
-        cd ./hashes
         sha256sum ./dist/*
         sha256sum ./dist/* > ./hashes/wheel-sha256.txt
 
