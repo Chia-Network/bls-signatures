@@ -75,9 +75,9 @@ bool CoreMPL::Verify(const vector<uint8_t> &pubkey,
                      const vector<uint8_t> &message,  // unhashed
                      const vector<uint8_t> &signature)
 {
-    return CoreMPL::Verify(G1Element::FromBytes(pubkey.data()),
+    return CoreMPL::Verify(G1Element::FromBytes({pubkey}),
                            message,
-                           G2Element::FromBytes(signature.data()));
+                           G2Element::FromBytes({signature}));
 }
 
 bool CoreMPL::Verify(const G1Element &pubkey,
@@ -159,7 +159,7 @@ bool CoreMPL::AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
 
     vector<G1Element> pubkeyElements;
     for (size_t i = 0; i < nPubKeys; ++i) {
-        pubkeyElements.push_back(G1Element::FromBytes(pubkeys[i].data()));
+        pubkeyElements.push_back(G1Element::FromBytes({pubkeys[i]}));
     }
     return CoreMPL::AggregateVerify(pubkeyElements, messages, signatureElement);
 }
@@ -365,8 +365,8 @@ bool PopSchemeMPL::PopVerify(const G1Element &pubkey, const G2Element &signature
 
 bool PopSchemeMPL::PopVerify(const vector<uint8_t> &pubkey, const vector<uint8_t> &proof)
 {
-    G1Element p = G1Element::FromBytes(pubkey.data());
-    G2Element q = G2Element::FromBytes(proof.data());
+    G1Element p = G1Element::FromBytes({pubkey});
+    G2Element q = G2Element::FromBytes({proof});
     return PopSchemeMPL::PopVerify(p, q);
 }
 
@@ -392,10 +392,10 @@ bool PopSchemeMPL::FastAggregateVerify(const vector<vector<uint8_t>> &pubkeys,
 
     vector<G1Element> pkelements;
     for (size_t i = 0; i < nPubKeys; ++i) {
-        pkelements.push_back(G1Element::FromBytes(pubkeys[i].data()));
+        pkelements.push_back(G1Element::FromBytes({pubkeys[i]}));
     }
 
     return PopSchemeMPL::FastAggregateVerify(
-        pkelements, message, G2Element::FromBytes(signature.data()));
+        pkelements, message, G2Element::FromBytes({signature}));
 }
 }  // end namespace bls

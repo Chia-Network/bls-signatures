@@ -24,13 +24,17 @@
 namespace bls {
 
 
-G1Element G1Element::FromBytes(const uint8_t* bytes)
+G1Element G1Element::FromBytes(const Bytes& bytes)
 {
+    if (bytes.size() != SIZE) {
+        throw std::invalid_argument("G1Element::FromBytes: Invalid size");
+    }
+
     G1Element ele = G1Element();
 
     // convert bytes to relic form
     uint8_t buffer[G1Element::SIZE + 1];
-    std::memcpy(buffer + 1, bytes, G1Element::SIZE);
+    std::memcpy(buffer + 1, bytes.begin(), G1Element::SIZE);
     buffer[0] = 0x00;
     buffer[1] &= 0x1f;  // erase 3 msbs from given input
 
@@ -66,7 +70,7 @@ G1Element G1Element::FromBytes(const uint8_t* bytes)
 
 G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
 {
-    return G1Element::FromBytes(bytevec.data());
+    return G1Element::FromBytes({bytevec});
 }
 
 G1Element G1Element::FromNative(const g1_t* element)
@@ -217,12 +221,16 @@ G1Element operator*(const bn_t& k, const G1Element& a) { return a * k; }
 
 
 
-G2Element G2Element::FromBytes(const uint8_t* bytes)
+G2Element G2Element::FromBytes(const Bytes& bytes)
 {
+    if (bytes.size() != SIZE) {
+        throw std::invalid_argument("G2Element::FromBytes: Invalid size");
+    }
+
     G2Element ele = G2Element();
     uint8_t buffer[G2Element::SIZE + 1];
-    std::memcpy(buffer + 1, bytes + G2Element::SIZE / 2, G2Element::SIZE / 2);
-    std::memcpy(buffer + 1 + G2Element::SIZE / 2, bytes, G2Element::SIZE / 2);
+    std::memcpy(buffer + 1, bytes.begin() + G2Element::SIZE / 2, G2Element::SIZE / 2);
+    std::memcpy(buffer + 1 + G2Element::SIZE / 2, bytes.begin(), G2Element::SIZE / 2);
     buffer[0] = 0x00;
     buffer[49] &= 0x1f;  // erase 3 msbs from input
 
@@ -262,7 +270,7 @@ G2Element G2Element::FromBytes(const uint8_t* bytes)
 
 G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
 {
-    return G2Element::FromBytes(bytevec.data());
+    return G2Element::FromBytes({bytevec});
 }
 
 G2Element G2Element::FromNative(const g2_t* element)
@@ -403,10 +411,13 @@ G2Element operator*(const bn_t& k, const G2Element& a) { return a * k; }
 
 // GTElement
 
-GTElement GTElement::FromBytes(const uint8_t* bytes)
+GTElement GTElement::FromBytes(const Bytes& bytes)
 {
+    if (bytes.size() != SIZE) {
+        throw std::invalid_argument("GTElement::FromBytes: Invalid size");
+    }
     GTElement ele = GTElement();
-    gt_read_bin(ele.r, bytes, GTElement::SIZE);
+    gt_read_bin(ele.r, bytes.begin(), GTElement::SIZE);
     if (gt_is_valid(*(gt_t*)&ele) == 0)
         throw std::invalid_argument("GTElement is invalid");
     BLS::CheckRelicErrors();
@@ -415,7 +426,7 @@ GTElement GTElement::FromBytes(const uint8_t* bytes)
 
 GTElement GTElement::FromByteVector(const std::vector<uint8_t>& bytevec)
 {
-    return GTElement::FromBytes(bytevec.data());
+    return GTElement::FromBytes({bytevec});
 }
 
 GTElement GTElement::FromNative(const gt_t* element)

@@ -524,14 +524,14 @@ TEST_CASE("Signature tests")
 
         auto pkData = pk1.Serialize();
 
-        G1Element pk2 = G1Element::FromBytes(pkData.data());
+        G1Element pk2 = G1Element::FromBytes({pkData});
         REQUIRE(pk1 == pk2);
 
         G2Element sig1 = BasicSchemeMPL().Sign(sk1, message1);
 
         auto sigData = sig1.Serialize();
 
-        G2Element sig2 = G2Element::FromBytes(sigData.data());
+        G2Element sig2 = G2Element::FromBytes({sigData});
         REQUIRE(sig1 == sig2);
 
         REQUIRE(BasicSchemeMPL().Verify(pk2, message1, sig2));
