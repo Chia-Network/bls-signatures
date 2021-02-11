@@ -20,6 +20,8 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - uses: actions/setup-python@v2
       name: Install Python
@@ -114,7 +116,29 @@ jobs:
         # CIBW_ENVIRONMENT_WINDOWS: ""
         CIBW_TEST_COMMAND: pytest -v {project}/python-bindings/test.py
 
-    - name: Upload artifacts
+    - name: Create sha256 wheel hashes
+      if: startsWith(runner.os, 'linux') || startsWith(runner.os, 'windows')
+      run: |
+        mkdir hashes
+        cd ./dist
+        sha256sum *
+        sha256sum * > ../hashes/wheel-sha256.txt
+
+    - name: Create sha256 wheel hashes - MacOS
+      if: startsWith(runner.os, 'macos')
+      run: |
+        mkdir hashes
+        cd ./dist
+        shasum -a 256 *
+        shasum -a 256 * > ../hashes/blspy-wheels-sha256.txt
+
+    - name: Upload hashes
+      uses: actions/upload-artifact@v2
+      with:
+        name: blspy-hashes
+        path: ./hashes
+
+    - name: Upload wheels
       uses: actions/upload-artifact@v2
       with:
         name: wheels

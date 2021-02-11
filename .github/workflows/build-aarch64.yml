@@ -20,6 +20,8 @@ jobs:
 
     - name: Checkout code
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
 
     - name: Prepare cibuildwheel
       run: |
@@ -67,6 +69,19 @@ jobs:
           && make && make install && cd .. && rm -rf libsodium-stable
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: pytest -v {project}/python-bindings/test.py
+
+    - name: Create sha256 wheel hashes
+      run: |
+        mkdir hashes
+        cd ./dist
+        shasum -a 256 *
+        shasum -a 256 * > ../hashes/blspy-arm64-wheels-sha256.txt
+
+    - name: Upload hashes
+      uses: actions/upload-artifact@v2
+      with:
+        name: blspy-arm64-hashes
+        path: ./hashes
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v2
