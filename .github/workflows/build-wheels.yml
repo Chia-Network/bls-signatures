@@ -120,15 +120,17 @@ jobs:
       if: startsWith(runner.os, 'linux') || startsWith(runner.os, 'windows')
       run: |
         mkdir hashes
-        sha256sum ./dist/*
-        sha256sum ./dist/* > ./hashes/wheel-sha256.txt
+        cd ./dist
+        sha256sum *
+        sha256sum * > ../hashes/wheel-sha256.txt
 
     - name: Create sha256 wheel hashes - MacOS
       if: startsWith(runner.os, 'macos')
       run: |
         mkdir hashes
-        shasum -a 256 ./dist/*
-        shasum -a 256 ./dist/* > ./hashes/wheel-sha256.txt
+        cd ./dist
+        shasum -a 256 *
+        shasum -a 256 * > ../hashes/wheel-sha256.txt
 
     - name: Upload hashes
       uses: actions/upload-artifact@v2

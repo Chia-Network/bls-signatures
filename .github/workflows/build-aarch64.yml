@@ -73,8 +73,9 @@ jobs:
     - name: Create sha256 wheel hashes
       run: |
         mkdir hashes
-        sha256sum ./dist/*
-        sha256sum ./dist/* > ./hashes/wheel-sha256.txt
+        cd ./dist
+        shasum -a 256 *
+        shasum -a 256 * > ../hashes/wheel-sha256.txt
 
     - name: Upload hashes
       uses: actions/upload-artifact@v2
