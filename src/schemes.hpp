@@ -83,13 +83,13 @@ class BasicSchemeMPL : public CoreMPL {
 public:
     static const std::string CIPHERSUITE_ID;
     BasicSchemeMPL() : CoreMPL(BasicSchemeMPL::CIPHERSUITE_ID) {}
-    virtual bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
-                                 const vector<vector<uint8_t>> &messages,
-                                 const vector<uint8_t> &signature) override;
+    bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
+                         const vector<vector<uint8_t>> &messages,
+                         const vector<uint8_t> &signature) override;
 
-    virtual bool AggregateVerify(const vector<G1Element> &pubkeys,
-                                 const vector<vector<uint8_t>> &messages,
-                                 const G2Element &signature) override;
+    bool AggregateVerify(const vector<G1Element> &pubkeys,
+                         const vector<vector<uint8_t>> &messages,
+                         const G2Element &signature) override;
 };
 
 class AugSchemeMPL : public CoreMPL {
@@ -105,21 +105,21 @@ public:
                    const vector<uint8_t> &message,
                    const G1Element &prepend_pk);
 
-    virtual bool Verify(const vector<uint8_t> &pubkey,
-                        const vector<uint8_t> &message,
-                        const vector<uint8_t> &signature) override;
+    bool Verify(const vector<uint8_t> &pubkey,
+                const vector<uint8_t> &message,
+                const vector<uint8_t> &signature) override;
 
-    virtual bool Verify(const G1Element &pubkey,
-                        const vector<uint8_t> &message,
-                        const G2Element &signature) override;
+    bool Verify(const G1Element &pubkey,
+                const vector<uint8_t> &message,
+                const G2Element &signature) override;
 
-    virtual bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
-                                 const vector<vector<uint8_t>> &messages,
-                                 const vector<uint8_t> &signature) override;
+    bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
+                         const vector<vector<uint8_t>> &messages,
+                         const vector<uint8_t> &signature) override;
 
-    virtual bool AggregateVerify(const vector<G1Element> &pubkeys,
-                                 const vector<vector<uint8_t>> &messages,
-                                 const G2Element &signature) override;
+    bool AggregateVerify(const vector<G1Element> &pubkeys,
+                         const vector<vector<uint8_t>> &messages,
+                         const G2Element &signature) override;
 };
 
 class PopSchemeMPL : public CoreMPL {
