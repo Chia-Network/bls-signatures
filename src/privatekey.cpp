@@ -69,7 +69,13 @@ PrivateKey::PrivateKey(PrivateKey &&k)
     : keydata(std::exchange(k.keydata, nullptr))
 {}
 
-PrivateKey::~PrivateKey() { if(keydata !=NULL) Util::SecFree(keydata); }
+PrivateKey::~PrivateKey() {
+    if(keydata != nullptr) {
+        bn_free(*keydata);
+        Util::SecFree(keydata);
+        keydata = nullptr;
+    }
+}
 
 G1Element PrivateKey::GetG1Element() const
 {
