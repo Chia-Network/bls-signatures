@@ -90,6 +90,8 @@ class PrivateKey {
 
     // Allocate memory for private key
     void AllocateKeyData();
+    /// Throw an error if keydata isn't initialized
+    void CheckKeyData() const;
 
     // The actual byte data
     bn_t *keydata{nullptr};
