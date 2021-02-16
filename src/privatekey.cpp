@@ -70,7 +70,13 @@ PrivateKey::PrivateKey(PrivateKey &&k)
     : keydata(std::exchange(k.keydata, nullptr))
 {}
 
-PrivateKey::~PrivateKey() {
+PrivateKey::~PrivateKey()
+{
+    DeallocateKeyData();
+}
+
+void PrivateKey::DeallocateKeyData()
+{
     if(keydata != nullptr) {
         bn_free(*keydata);
         Util::SecFree(keydata);
