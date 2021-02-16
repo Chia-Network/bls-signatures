@@ -52,6 +52,93 @@ void TestHKDF(string ikm_hex, string salt_hex, string info_hex, string prk_expec
     }
 }
 
+TEST_CASE("class PrivateKey") {
+    uint8_t buffer[PrivateKey::PRIVATE_KEY_SIZE];
+    memcmp(buffer, getRandomSeed().data(), PrivateKey::PRIVATE_KEY_SIZE);
+    SECTION("Copy {constructor|assignment operator}") {
+        PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        PrivateKey pk2 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        PrivateKey pk3 = PrivateKey(pk2);
+        REQUIRE(!pk1.IsZero());
+        REQUIRE(!pk2.IsZero());
+        REQUIRE(!pk3.IsZero());
+        REQUIRE(pk1 != pk2);
+        REQUIRE(pk3 == pk2);
+        pk2 = pk1;
+        REQUIRE(pk1 == pk2);
+        REQUIRE(pk3 != pk2);
+    }
+    SECTION("Move {constructor|assignment operator}") {
+        PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        std::vector<uint8_t> vec1 = pk1.Serialize();
+        PrivateKey pk2 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        std::vector<uint8_t> vec2 = pk2.Serialize();
+        PrivateKey pk3 = PrivateKey(std::move(pk2));
+        REQUIRE(!pk1.IsZero());
+        REQUIRE_THROWS(pk2.IsZero());
+        REQUIRE(!pk3.IsZero());
+        REQUIRE(vec2 == pk3.Serialize());
+        pk3 = std::move(pk1);
+        REQUIRE_THROWS(pk1.IsZero());
+        REQUIRE_THROWS(pk2.IsZero());
+        REQUIRE(!pk3.IsZero());
+        REQUIRE(vec1 == pk3.Serialize());
+        pk3 = std::move(pk1);
+        REQUIRE_THROWS(pk1.IsZero());
+        REQUIRE_THROWS(pk2.IsZero());
+        REQUIRE_THROWS(pk3.IsZero());
+    }
+    SECTION("Equality operators") {
+        PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        PrivateKey pk2 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        PrivateKey pk3 = pk2;
+        REQUIRE(pk1 != pk2);
+        REQUIRE(pk1 != pk3);
+        REQUIRE(pk2 == pk3);
+    }
+    SECTION("(De)Serialization") {
+        PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        pk1.Serialize(buffer);
+        REQUIRE(memcmp(buffer, pk1.Serialize().data(), PrivateKey::PRIVATE_KEY_SIZE) == 0);
+        PrivateKey pk2 = PrivateKey:: FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, true);
+        REQUIRE(pk1 == pk2);
+        REQUIRE_THROWS(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE - 1}, true));
+        REQUIRE_THROWS(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE + 1}, true));
+        REQUIRE_NOTHROW(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, true));
+        bn_t order;
+        bn_new(order);
+        g1_get_ord(order);
+        bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, order);
+        REQUIRE_NOTHROW(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, false));
+        REQUIRE_NOTHROW(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, true));
+        bn_add(order, order, order);
+        bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, order);
+        REQUIRE_THROWS(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, false));
+        REQUIRE_NOTHROW(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, true));
+    }
+    SECTION("keydata checks") {
+        PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        G1Element g1 = pk1.GetG1Element();
+        G2Element g2 = pk1.GetG2Element();
+        PrivateKey pk2 = std::move(pk1);
+        REQUIRE_THROWS(PrivateKey(pk1));
+        REQUIRE_THROWS(pk1 = pk2);
+        REQUIRE_THROWS(pk1.GetG1Element());
+        REQUIRE_THROWS(pk1.GetG2Element());
+        REQUIRE_THROWS(g1 * pk1);
+        REQUIRE_THROWS(pk1 * g1);
+        REQUIRE_THROWS(g2 * pk1);
+        REQUIRE_THROWS(pk1 * g2);
+        REQUIRE_THROWS(pk1.GetG2Power(g2));
+        REQUIRE_THROWS(PrivateKey::Aggregate({pk1, pk2}));
+        REQUIRE_THROWS(pk1.IsZero());
+        REQUIRE_THROWS(pk1 == pk2);
+        REQUIRE_THROWS(pk1 != pk2);
+        REQUIRE_THROWS(pk1.Serialize(buffer));
+        REQUIRE_THROWS(pk1.Serialize());
+        REQUIRE_THROWS(pk1.SignG2(buffer, sizeof(buffer), buffer, sizeof(buffer)));
+    }
+}
 
 TEST_CASE("HKDF") {
     // https://tools.ietf.org/html/rfc5869 test vectors
