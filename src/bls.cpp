@@ -12,11 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <algorithm>
-#include <cstring>
-#include <set>
-#include <string>
-
 #include "bls.hpp"
 
 #if BLSALLOC_SODIUM
@@ -24,9 +19,6 @@
 #endif
 
 namespace bls {
-
-const char BLS::GROUP_ORDER[] =
-    "73EDA753299D7D483339D80809A1D80553BDA402FFFE5BFEFFFFFFFF00000001";
 
 bool BLSInitResult = BLS::Init();
 

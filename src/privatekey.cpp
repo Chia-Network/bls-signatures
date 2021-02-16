@@ -12,16 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <algorithm>
-#include <cassert>
-#include <cstring>
-#include <string>
-
 #include "bls.hpp"
-#include "elements.hpp"
-#include "hkdf.hpp"
-#include "privatekey.hpp"
-#include "util.hpp"
 
 namespace bls {
 

@@ -77,13 +77,7 @@ class PrivateKey {
         size_t len,
         const uint8_t *dst,
         size_t dst_len) const;
-
-    G2Element SignG2Prehashed(
-        const uint8_t *messageHash,
-        const uint8_t *dst,
-        size_t dst_len) const;
-
-
+    
  private:
     // Don't allow public construction, force static methods
     PrivateKey();
