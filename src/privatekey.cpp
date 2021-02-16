@@ -157,6 +157,9 @@ bool operator!=(const PrivateKey &a, const PrivateKey &b) { return !(a == b); }
 
 void PrivateKey::Serialize(uint8_t *buffer) const
 {
+    if (buffer == nullptr) {
+        throw std::runtime_error("PrivateKey::Serialize buffer invalid");
+    }
     bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, *keydata);
 }
 
