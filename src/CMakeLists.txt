@@ -10,6 +10,8 @@ else ()
   set(RELIC_GIT_TAG "cdd71de5392aadac29e8b3be27bf605baaf4ad25")
 endif ()
 
+message(STATUS "Relic will be build from: ${RELIC_GIT_TAG}")
+
 FetchContent_Declare(
   relic
   GIT_REPOSITORY https://github.com/relic-toolkit/relic.git
