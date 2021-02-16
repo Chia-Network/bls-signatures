@@ -12,17 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <algorithm>
 #include <cstring>
-#include <string>
 
 #include "bls.hpp"
-#include "elements.hpp"
-#include "privatekey.hpp"
-#include "util.hpp"
 
 namespace bls {
-
 
 G1Element G1Element::FromBytes(const Bytes& bytes)
 {
@@ -150,8 +144,6 @@ G1Element G1Element::Negate() const
     return ans;
 }
 
-GTElement G1Element::Pair(const G2Element& b) const { return (*this) & b; }
-
 uint32_t G1Element::GetFingerprint() const
 {
     uint8_t buffer[G1Element::SIZE];
@@ -160,7 +152,6 @@ uint32_t G1Element::GetFingerprint() const
     Util::Hash256(hash, buffer, G1Element::SIZE);
     return Util::FourBytesToInt(hash);
 }
-
 
 std::vector<uint8_t> G1Element::Serialize() const {
     uint8_t buffer[G1Element::SIZE + 1];
@@ -353,8 +344,6 @@ G2Element G2Element::Negate() const
     return ans;
 }
 
-GTElement G2Element::Pair(const G1Element& a) const { return a & (*this); }
-
 std::vector<uint8_t> G2Element::Serialize() const {
     uint8_t buffer[G2Element::SIZE + 1];
     g2_write_bin(buffer, G2Element::SIZE + 1, *(g2_t*)this->q, 1);
@@ -418,81 +407,5 @@ G2Element operator*(const G2Element& a, const bn_t& k)
 }
 
 G2Element operator*(const bn_t& k, const G2Element& a) { return a * k; }
-
-
-
-// GTElement
-
-GTElement GTElement::FromBytes(const Bytes& bytes)
-{
-    if (bytes.size() != SIZE) {
-        throw std::invalid_argument("GTElement::FromBytes: Invalid size");
-    }
-    GTElement ele = GTElement();
-    gt_read_bin(ele.r, bytes.begin(), GTElement::SIZE);
-    if (gt_is_valid(*(gt_t*)&ele) == 0)
-        throw std::invalid_argument("GTElement is invalid");
-    BLS::CheckRelicErrors();
-    return ele;
-}
-
-GTElement GTElement::FromByteVector(const std::vector<uint8_t>& bytevec)
-{
-    return GTElement::FromBytes({bytevec});
-}
-
-GTElement GTElement::FromNative(const gt_t* element)
-{
-    GTElement ele = GTElement();
-    gt_copy(ele.r, *(gt_t*)element);
-    return ele;
-}
-
-GTElement GTElement::Unity() {
-    GTElement ele = GTElement();
-    gt_set_unity(ele.r);
-    return ele;
-}
-
-
-bool operator==(GTElement const& a, GTElement const& b)
-{
-    return gt_cmp(*(gt_t*)(a.r), *(gt_t*)(b.r)) == RLC_EQ;
-}
-
-bool operator!=(GTElement const& a, GTElement const& b) { return !(a == b); }
-
-std::ostream& operator<<(std::ostream& os, GTElement const& ele)
-{
-    return os << Util::HexStr(ele.Serialize());
-}
-
-GTElement operator&(const G1Element& a, const G2Element& b)
-{
-    G1Element nonConstA(a);
-    gt_t ans;
-    gt_new(ans);
-    g2_t tmp;
-    g2_null(tmp);
-    g2_new(tmp);
-    b.ToNative(&tmp);
-    pp_map_oatep_k12(ans, nonConstA.p, tmp);
-    GTElement ret = GTElement::FromNative(&ans);
-    gt_free(ans);
-    g2_free(tmp);
-    return ret;
-}
-
-void GTElement::Serialize(uint8_t* buffer) const
-{
-    gt_write_bin(buffer, GTElement::SIZE, *(gt_t*)&r, 1);
-}
-
-std::vector<uint8_t> GTElement::Serialize() const
-{
-    std::vector<uint8_t> data(GTElement::SIZE);
-    Serialize(data.data());
-    return data;
-}
 
 }  // end namespace bls

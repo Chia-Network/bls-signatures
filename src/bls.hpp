@@ -15,28 +15,12 @@
 #ifndef SRC_BLS_HPP_
 #define SRC_BLS_HPP_
 
-#include <vector>
-#include <map>
-#include <string>
-#include <stdexcept>
-
-#include "relic_conf.h"
-
-#if defined GMP && ARITH == GMP
-#include <gmp.h>
-#endif
-
 #include "privatekey.hpp"
 #include "util.hpp"
 #include "schemes.hpp"
 #include "elements.hpp"
 #include "hkdf.hpp"
 #include "hdkeys.hpp"
-
-extern "C" {
-#include "relic.h"
-}
-#include "relic_test.h"
 
 namespace bls {
 
@@ -46,8 +30,6 @@ namespace bls {
  */
 class BLS {
  public:
-    // Order of g1, g2, and gt. Private keys are in {0, GROUP_ORDER}.
-    static const char GROUP_ORDER[];
     static const size_t MESSAGE_HASH_LEN = 32;
 
     // Initializes the BLS library (called automatically)
