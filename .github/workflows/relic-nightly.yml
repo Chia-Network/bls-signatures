@@ -1,6 +1,8 @@
 name:  Build and Test C++ with Relic Nightly
 
-on: [push]
+on:
+  schedule:
+    - cron: "* 14 * * *"
 
 jobs:
   build_wheels:
