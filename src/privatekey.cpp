@@ -24,14 +24,14 @@ PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
     }
 
     PrivateKey k;
-    bn_read_bin(*k.keydata, bytes.begin(), PrivateKey::PRIVATE_KEY_SIZE);
+    bn_read_bin(k.keydata, bytes.begin(), PrivateKey::PRIVATE_KEY_SIZE);
     bn_t ord;
     bn_new(ord);
     g1_get_ord(ord);
     if (modOrder) {
-        bn_mod_basic(*k.keydata, *k.keydata, ord);
+        bn_mod_basic(k.keydata, k.keydata, ord);
     } else {
-        if (bn_cmp(*k.keydata, ord) > 0) {
+        if (bn_cmp(k.keydata, ord) > 0) {
             throw std::invalid_argument(
                 "PrivateKey byte data must be less than the group order");
         }
@@ -54,7 +54,7 @@ PrivateKey::PrivateKey(const PrivateKey &privateKey)
 {
     privateKey.CheckKeyData();
     AllocateKeyData();
-    bn_copy(*keydata, *privateKey.keydata);
+    bn_copy(keydata, privateKey.keydata);
 }
 
 PrivateKey::PrivateKey(PrivateKey &&k)
@@ -69,7 +69,6 @@ PrivateKey::~PrivateKey()
 void PrivateKey::DeallocateKeyData()
 {
     if(keydata != nullptr) {
-        bn_free(*keydata);
         Util::SecFree(keydata);
         keydata = nullptr;
     }
@@ -79,7 +78,7 @@ PrivateKey& PrivateKey::operator=(const PrivateKey& other)
 {
     CheckKeyData();
     other.CheckKeyData();
-    bn_copy(*keydata, *other.keydata);
+    bn_copy(keydata, other.keydata);
     return *this;
 }
 
@@ -94,7 +93,7 @@ G1Element PrivateKey::GetG1Element() const
 {
     CheckKeyData();
     g1_t *p = Util::SecAlloc<g1_t>(1);
-    g1_mul_gen(*p, *keydata);
+    g1_mul_gen(*p, keydata);
 
     const G1Element ret = G1Element::FromNative(p);
     Util::SecFree(*p);
@@ -105,7 +104,7 @@ G2Element PrivateKey::GetG2Element() const
 {
     CheckKeyData();
     g2_t *q = Util::SecAlloc<g2_t>(1);
-    g2_mul_gen(*q, *keydata);
+    g2_mul_gen(*q, keydata);
 
     const G2Element ret = G2Element::FromNative(q);
     Util::SecFree(*q);
@@ -117,7 +116,7 @@ G1Element operator*(const G1Element &a, const PrivateKey &k)
     k.CheckKeyData();
     g1_t ans;
     a.ToNative(&ans);
-    g1_mul(ans, ans, *(k.keydata));
+    g1_mul(ans, ans, k.keydata);
     return G1Element::FromNative(&ans);
 }
 
@@ -128,7 +127,7 @@ G2Element operator*(const G2Element &a, const PrivateKey &k)
     k.CheckKeyData();
     g2_t ans;
     a.ToNative(&ans);
-    g2_mul(ans, ans, *(k.keydata));
+    g2_mul(ans, ans, k.keydata);
     return G2Element::FromNative(&ans);
 }
 
@@ -139,7 +138,7 @@ G2Element PrivateKey::GetG2Power(const G2Element& element) const
     CheckKeyData();
     g2_t *q = Util::SecAlloc<g2_t>(1);
     element.ToNative(q);
-    g2_mul(*q, *q, *keydata);
+    g2_mul(*q, *q, keydata);
 
     const G2Element ret = G2Element::FromNative(q);
     Util::SecFree(*q);
@@ -160,22 +159,22 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
     ret.CheckKeyData();
     for (size_t i = 1; i < privateKeys.size(); i++) {
         privateKeys[i].CheckKeyData();
-        bn_add(*ret.keydata, *ret.keydata, *privateKeys[i].keydata);
-        bn_mod_basic(*ret.keydata, *ret.keydata, order);
+        bn_add(ret.keydata, ret.keydata, privateKeys[i].keydata);
+        bn_mod_basic(ret.keydata, ret.keydata, order);
     }
     return ret;
 }
 
 bool PrivateKey::IsZero() const {
     CheckKeyData();
-    return bn_is_zero(*keydata);
+    return bn_is_zero(keydata);
 }
 
 bool operator==(const PrivateKey &a, const PrivateKey &b)
 {
     a.CheckKeyData();
     b.CheckKeyData();
-    return bn_cmp(*a.keydata, *b.keydata) == RLC_EQ;
+    return bn_cmp(a.keydata, b.keydata) == RLC_EQ;
 }
 
 bool operator!=(const PrivateKey &a, const PrivateKey &b) { return !(a == b); }
@@ -186,7 +185,7 @@ void PrivateKey::Serialize(uint8_t *buffer) const
         throw std::runtime_error("PrivateKey::Serialize buffer invalid");
     }
     CheckKeyData();
-    bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, *keydata);
+    bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, keydata);
 }
 
 std::vector<uint8_t> PrivateKey::Serialize() const
@@ -208,16 +207,16 @@ G2Element PrivateKey::SignG2(
     g2_new(pt);
 
     ep2_map_dst(pt, msg, len, dst, dst_len);
-    g2_mul(pt, pt, *keydata);
+    g2_mul(pt, pt, keydata);
     return G2Element::FromNative(&pt);
 }
 
 void PrivateKey::AllocateKeyData()
 {
     assert(!keydata);
-    keydata = Util::SecAlloc<bn_t>(1);
-    bn_new(*keydata);  // Freed in destructor
-    bn_zero(*keydata);
+    keydata = Util::SecAlloc<bn_st>(1);
+    bn_init(keydata, RLC_BN_SIZE);
+    bn_zero(keydata);
 }
 
 void PrivateKey::CheckKeyData() const

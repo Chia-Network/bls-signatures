@@ -90,7 +90,7 @@ class PrivateKey {
     void DeallocateKeyData();
 
     // The actual byte data
-    bn_t *keydata{nullptr};
+    bn_st* keydata{nullptr};
 };
 }  // end namespace bls
 
