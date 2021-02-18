@@ -103,11 +103,11 @@ const G1Element& PrivateKey::GetG1Element() const
 {
     if (!fG1CacheValid) {
         CheckKeyData();
-        g1_t *p = Util::SecAlloc<g1_t>(1);
-        g1_mul_gen(*p, keydata);
+        g1_st *p = Util::SecAlloc<g1_st>(1);
+        g1_mul_gen(p, keydata);
 
         g1Cache = G1Element::FromNative(p);
-        Util::SecFree(*p);
+        Util::SecFree(p);
         fG1CacheValid = true;
     }
     return g1Cache;
@@ -117,11 +117,11 @@ const G2Element& PrivateKey::GetG2Element() const
 {
     if (!fG2CacheValid) {
         CheckKeyData();
-        g2_t *q = Util::SecAlloc<g2_t>(1);
-        g2_mul_gen(*q, keydata);
+        g2_st *q = Util::SecAlloc<g2_st>(1);
+        g2_mul_gen(q, keydata);
 
         g2Cache = G2Element::FromNative(q);
-        Util::SecFree(*q);
+        Util::SecFree(q);
         fG2CacheValid = true;
     }
     return g2Cache;
@@ -130,9 +130,9 @@ const G2Element& PrivateKey::GetG2Element() const
 G1Element operator*(const G1Element &a, const PrivateKey &k)
 {
     k.CheckKeyData();
-    g1_t* ans = Util::SecAlloc<g1_t>(1);
+    g1_st* ans = Util::SecAlloc<g1_st>(1);
     a.ToNative(ans);
-    g1_mul(*ans, *ans, k.keydata);
+    g1_mul(ans, ans, k.keydata);
     G1Element ret = G1Element::FromNative(ans);
     Util::SecFree(ans);
     return ret;
@@ -143,9 +143,9 @@ G1Element operator*(const PrivateKey &k, const G1Element &a) { return a * k; }
 G2Element operator*(const G2Element &a, const PrivateKey &k)
 {
     k.CheckKeyData();
-    g2_t* ans = Util::SecAlloc<g2_t>(1);
+    g2_st* ans = Util::SecAlloc<g2_st>(1);
     a.ToNative(ans);
-    g2_mul(*ans, *ans, k.keydata);
+    g2_mul(ans, ans, k.keydata);
     G2Element ret = G2Element::FromNative(ans);
     Util::SecFree(ans);
     return ret;
@@ -156,12 +156,12 @@ G2Element operator*(const PrivateKey &k, const G2Element &a) { return a * k; }
 G2Element PrivateKey::GetG2Power(const G2Element& element) const
 {
     CheckKeyData();
-    g2_t *q = Util::SecAlloc<g2_t>(1);
+    g2_st* q = Util::SecAlloc<g2_st>(1);
     element.ToNative(q);
-    g2_mul(*q, *q, keydata);
+    g2_mul(q, q, keydata);
 
     const G2Element ret = G2Element::FromNative(q);
-    Util::SecFree(*q);
+    Util::SecFree(q);
     return ret;
 }
 
@@ -223,10 +223,10 @@ G2Element PrivateKey::SignG2(
 {
     CheckKeyData();
 
-    g2_t* pt = Util::SecAlloc<g2_t>(1);
+    g2_st* pt = Util::SecAlloc<g2_st>(1);
 
-    ep2_map_dst(*pt, msg, len, dst, dst_len);
-    g2_mul(*pt, *pt, keydata);
+    ep2_map_dst(pt, msg, len, dst, dst_len);
+    g2_mul(pt, pt, keydata);
     G2Element ret = G2Element::FromNative(pt);
     Util::SecFree(pt);
     return ret;
