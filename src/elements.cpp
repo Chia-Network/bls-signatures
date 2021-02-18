@@ -184,6 +184,12 @@ std::ostream& operator<<(std::ostream& os, const G1Element &ele)
     return os << Util::HexStr(ele.Serialize());
 }
 
+G1Element& operator+=(G1Element& a, const G1Element& b)
+{
+    g1_add(a.p, a.p, b.p);
+    return a;
+}
+
 G1Element operator+(const G1Element& a, const G1Element& b)
 {
     g1_t ans;
@@ -380,6 +386,12 @@ bool operator!=(G2Element const& a, G2Element const& b) { return !(a == b); }
 std::ostream& operator<<(std::ostream& os, const G2Element & s)
 {
     return os << Util::HexStr(s.Serialize());
+}
+
+G2Element& operator+=(G2Element& a, const G2Element& b)
+{
+    g2_add(a.q, a.q, *(g2_t*)&b.q);
+    return a;
 }
 
 G2Element operator+(const G2Element& a, const G2Element& b)
