@@ -193,28 +193,16 @@ G1Element& operator+=(G1Element& a, const G1Element& b)
 
 G1Element operator+(const G1Element& a, const G1Element& b)
 {
-    g1_t ans;
-    g1_new(ans);
-    g1_add(ans, a.p, b.p);
-    G1Element ret = G1Element::FromNative(ans);
-    g1_free(ans);
-    return ret;
+    G1Element ans;
+    g1_add(ans.p, a.p, b.p);
+    return ans;
 }
 
 G1Element operator*(const G1Element& a, const bn_t& k)
 {
-    G1Element nonConstA(a);
-    bn_t* nonConstK = Util::SecAlloc<bn_t>(1);
-    bn_new(nonConstK[0]);
-    bn_copy(nonConstK[0], k);
-    g1_t ans;
-    g1_new(ans);
-    g1_mul(ans, nonConstA.p, nonConstK[0]);
-    bn_free(nonConstK[0]);
-    Util::SecFree(nonConstK);
-    G1Element ret =  G1Element::FromNative(ans);
-    g1_free(ans);
-    return ret;
+    G1Element ans;
+    g1_mul(ans.p, (g1_st*)a.p, (bn_st*)k);
+    return ans;
 }
 
 G1Element operator*(const bn_t& k, const G1Element& a) { return a * k; }
@@ -400,26 +388,16 @@ G2Element& operator+=(G2Element& a, const G2Element& b)
 
 G2Element operator+(const G2Element& a, const G2Element& b)
 {
-    G2Element nonConstA(a);
-    G2Element nonConstB(b);
-    g2_t ans;
-    g2_add(ans, nonConstA.q, nonConstB.q);
-    return G2Element::FromNative(ans);
+    G2Element ans;
+    g2_add(ans.q, (g2_st*)a.q, (g2_st*)b.q);
+    return ans;
 }
 
 G2Element operator*(const G2Element& a, const bn_t& k)
 {
-    G2Element nonConstA(a);
-    g2_t ans;
-    bn_t* nonConstK = Util::SecAlloc<bn_t>(1);
-    bn_new(nonConstK[0]);
-    bn_copy(nonConstK[0], k);
-    g2_mul(ans, nonConstA.q, nonConstK[0]);
-    bn_free(nonConstK[0]);
-    Util::SecFree(nonConstK);
-    G2Element ret = G2Element::FromNative(ans);
-    g2_free(ans);
-    return ret;
+    G2Element ans;
+    g2_mul(ans.q, (g2_st*)a.q, (bn_st*)k);
+    return ans;
 }
 
 G2Element operator*(const bn_t& k, const G2Element& a) { return a * k; }
