@@ -50,8 +50,8 @@ class PrivateKey {
 
     ~PrivateKey();
 
-    G1Element GetG1Element() const;
-    G2Element GetG2Element() const;
+    const G1Element& GetG1Element() const;
+    const G2Element& GetG2Element() const;
 
     G2Element GetG2Power(const G2Element& element) const;
 
@@ -89,8 +89,16 @@ class PrivateKey {
     /// Deallocate *keydata and keydata if requried
     void DeallocateKeyData();
 
+    void InvalidateCaches();
+
     // The actual byte data
     bn_st* keydata{nullptr};
+
+    mutable bool fG1CacheValid{false};
+    mutable G1Element g1Cache;
+
+    mutable bool fG2CacheValid{false};
+    mutable G2Element g2Cache;
 };
 }  // end namespace bls
 
