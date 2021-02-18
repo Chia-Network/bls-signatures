@@ -155,9 +155,9 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
     bn_new(order);
     g1_get_ord(order);
 
-    PrivateKey ret(privateKeys[0]);
-    ret.CheckKeyData();
-    for (size_t i = 1; i < privateKeys.size(); i++) {
+    PrivateKey ret;
+    assert(ret.IsZero());
+    for (size_t i = 0; i < privateKeys.size(); i++) {
         privateKeys[i].CheckKeyData();
         bn_add(ret.keydata, ret.keydata, privateKeys[i].keydata);
         bn_mod_basic(ret.keydata, ret.keydata, order);
