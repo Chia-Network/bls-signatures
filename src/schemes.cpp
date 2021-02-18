@@ -138,38 +138,20 @@ vector<uint8_t> CoreMPL::Aggregate(const vector<Bytes>& signatures)
 
 G2Element CoreMPL::Aggregate(const vector<G2Element> &signatures)
 {
-    g2_t ans, tmp;
-    size_t nSignatures = signatures.size();
-    if (nSignatures == 0) {
-        g2_set_infty(ans);
-        return G2Element::FromNative(&ans);
+    G2Element aggregated;
+    for (const G2Element& signature : signatures) {
+        aggregated += signature;
     }
-
-    signatures[0].ToNative(&ans);
-
-    for (size_t i = 1; i < nSignatures; ++i) {
-        signatures[i].ToNative(&tmp);
-        g2_add(ans, ans, tmp);
-    }
-    return G2Element::FromNative(&ans);
+    return aggregated;
 }
 
 G1Element CoreMPL::Aggregate(const vector<G1Element> &publicKeys)
 {
-    g1_t ans, tmp;
-    size_t nPubKeys = publicKeys.size();
-    if (nPubKeys == 0) {
-        g1_set_infty(ans);
-        return G1Element::FromNative(&ans);
+    G1Element aggregated;
+    for (const G1Element& publicKey : publicKeys) {
+        aggregated += publicKey;
     }
-
-    publicKeys[0].ToNative(&ans);
-
-    for (size_t i = 1; i < nPubKeys; ++i) {
-        publicKeys[i].ToNative(&tmp);
-        g1_add(ans, ans, tmp);
-    }
-    return G1Element::FromNative(&ans);
+    return aggregated;
 }
 
 bool CoreMPL::AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
