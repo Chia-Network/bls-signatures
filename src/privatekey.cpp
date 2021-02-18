@@ -59,7 +59,9 @@ PrivateKey::PrivateKey(const PrivateKey &privateKey)
 
 PrivateKey::PrivateKey(PrivateKey &&k)
     : keydata(std::exchange(k.keydata, nullptr))
-{}
+{
+    k.InvalidateCaches();
+}
 
 PrivateKey::~PrivateKey()
 {
@@ -72,6 +74,13 @@ void PrivateKey::DeallocateKeyData()
         Util::SecFree(keydata);
         keydata = nullptr;
     }
+    InvalidateCaches();
+}
+
+void PrivateKey::InvalidateCaches()
+{
+    fG1CacheValid = false;
+    fG2CacheValid = false;
 }
 
 PrivateKey& PrivateKey::operator=(const PrivateKey& other)
@@ -86,29 +95,36 @@ PrivateKey& PrivateKey::operator=(PrivateKey&& other)
 {
     DeallocateKeyData();
     keydata = std::exchange(other.keydata, nullptr);
+    other.InvalidateCaches();
     return *this;
 }
 
-G1Element PrivateKey::GetG1Element() const
+const G1Element& PrivateKey::GetG1Element() const
 {
-    CheckKeyData();
-    g1_t *p = Util::SecAlloc<g1_t>(1);
-    g1_mul_gen(*p, keydata);
+    if (!fG1CacheValid) {
+        CheckKeyData();
+        g1_t *p = Util::SecAlloc<g1_t>(1);
+        g1_mul_gen(*p, keydata);
 
-    const G1Element ret = G1Element::FromNative(p);
-    Util::SecFree(*p);
-    return ret;
+        g1Cache = G1Element::FromNative(p);
+        Util::SecFree(*p);
+        fG1CacheValid = true;
+    }
+    return g1Cache;
 }
 
-G2Element PrivateKey::GetG2Element() const
+const G2Element& PrivateKey::GetG2Element() const
 {
-    CheckKeyData();
-    g2_t *q = Util::SecAlloc<g2_t>(1);
-    g2_mul_gen(*q, keydata);
+    if (!fG2CacheValid) {
+        CheckKeyData();
+        g2_t *q = Util::SecAlloc<g2_t>(1);
+        g2_mul_gen(*q, keydata);
 
-    const G2Element ret = G2Element::FromNative(q);
-    Util::SecFree(*q);
-    return ret;
+        g2Cache = G2Element::FromNative(q);
+        Util::SecFree(*q);
+        fG2CacheValid = true;
+    }
+    return g2Cache;
 }
 
 G1Element operator*(const G1Element &a, const PrivateKey &k)
