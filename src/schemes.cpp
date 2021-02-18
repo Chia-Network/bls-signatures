@@ -103,19 +103,15 @@ bool CoreMPL::Verify(const G1Element& pubkey, const Bytes& message, const G2Elem
 {
     G2Element hashedPoint = G2Element::FromMessage(message, (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length());
 
-    g1_t *g1s = new g1_t[2];
-    g2_t *g2s = new g2_t[2];
+    std::vector<g1_st> vecG1(2);
+    std::vector<g2_st> vecG2(2);
 
-    G1Element::Generator().Negate().ToNative(g1s);
-    pubkey.ToNative(g1s + 1);
-    signature.ToNative(g2s);
-    hashedPoint.ToNative(g2s + 1);
+    G1Element::Generator().Negate().ToNative(&vecG1[0]);
+    pubkey.ToNative(&vecG1[1]);
+    signature.ToNative(&vecG2[0]);
+    hashedPoint.ToNative(&vecG2[1]);
 
-    bool ans = CoreMPL::NativeVerify(g1s, g2s, 2);
-
-    delete[] g1s;
-    delete[] g2s;
-    return ans;
+    return CoreMPL::NativeVerify((g1_t*)vecG1.data(), (g2_t*)vecG2.data(), 2);
 }
 
 vector<uint8_t> CoreMPL::Aggregate(const vector<vector<uint8_t>> &signatures)
@@ -198,21 +194,17 @@ bool CoreMPL::AggregateVerify(const vector<G1Element>& pubkeys,
         return arg_check;
     }
 
-    g1_t *g1s = new g1_t[nPubKeys + 1];
-    g2_t *g2s = new g2_t[nPubKeys + 1];
-
-    G1Element::Generator().Negate().ToNative(g1s);
-    signature.ToNative(g2s);
+    std::vector<g1_st> vecG1(nPubKeys + 1);
+    std::vector<g2_st> vecG2(nPubKeys + 1);
+    G1Element::Generator().Negate().ToNative(&vecG1[0]);
+    signature.ToNative(&vecG2[0]);
 
     for (size_t i = 0; i < nPubKeys; ++i) {
-        pubkeys[i].ToNative(g1s + i + 1);
-        G2Element::FromMessage(messages[i], (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length()).ToNative(g2s + i + 1);
+        pubkeys[i].ToNative(&vecG1[i + 1]);
+        G2Element::FromMessage(messages[i], (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length()).ToNative(&vecG2[i + 1]);
     }
 
-    bool ans = CoreMPL::NativeVerify(g1s, g2s, nPubKeys + 1);
-    delete[] g1s;
-    delete[] g2s;
-    return ans;
+    return CoreMPL::NativeVerify((g1_t*)vecG1.data(), (g2_t*)vecG2.data(), nPubKeys + 1);
 }
 
 bool CoreMPL::NativeVerify(g1_t *pubkeys, g2_t *mappedHashes, size_t length)
@@ -459,17 +451,15 @@ bool PopSchemeMPL::PopVerify(const G1Element &pubkey, const G2Element &signature
 {
     G2Element hashedPoint = G2Element::FromMessage(pubkey.Serialize(), (const uint8_t*)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
 
-    g1_t *g1s = new g1_t[2];
-    g2_t *g2s = new g2_t[2];
-    G1Element::Generator().Negate().ToNative(g1s);
-    pubkey.ToNative(g1s + 1);
-    signature_proof.ToNative(g2s);
-    hashedPoint.ToNative(g2s + 1);
+    g1_t g1s[2];
+    g2_t g2s[2];
 
-    bool ans = CoreMPL::NativeVerify(g1s, g2s, 2);
-    delete[] g1s;
-    delete[] g2s;
-    return ans;
+    G1Element::Generator().Negate().ToNative(g1s[0]);
+    pubkey.ToNative(g1s[1]);
+    signature_proof.ToNative(g2s[0]);
+    hashedPoint.ToNative(g2s[1]);
+
+    return CoreMPL::NativeVerify(g1s, g2s, 2);
 }
 
 bool PopSchemeMPL::PopVerify(const vector<uint8_t> &pubkey, const vector<uint8_t> &proof)
@@ -481,17 +471,15 @@ bool PopSchemeMPL::PopVerify(const Bytes& pubkey, const Bytes& proof)
 {
     G2Element hashedPoint = G2Element::FromMessage(pubkey, (const uint8_t*)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
 
-    g1_t* g1s = new g1_t[2];
-    g2_t* g2s = new g2_t[2];
-    G1Element::Generator().Negate().ToNative(g1s);
-    G1Element::FromBytes(pubkey).ToNative(g1s + 1);
-    G2Element::FromBytes(proof).ToNative(g2s);
-    hashedPoint.ToNative(g2s + 1);
+    g1_t g1s[2];
+    g2_t g2s[2];
 
-    bool ans = CoreMPL::NativeVerify(g1s, g2s, 2);
-    delete[] g1s;
-    delete[] g2s;
-    return ans;
+    G1Element::Generator().Negate().ToNative(g1s[0]);
+    G1Element::FromBytes(pubkey).ToNative(g1s[1]);
+    G2Element::FromBytes(proof).ToNative(g2s[0]);
+    hashedPoint.ToNative(g2s[1]);
+
+    return CoreMPL::NativeVerify(g1s, g2s, 2);
 }
 
 bool PopSchemeMPL::FastAggregateVerify(const vector<G1Element> &pubkeys,

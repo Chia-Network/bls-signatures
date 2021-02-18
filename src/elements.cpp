@@ -67,10 +67,10 @@ G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
     return G1Element::FromBytes({bytevec});
 }
 
-G1Element G1Element::FromNative(const g1_t* element)
+G1Element G1Element::FromNative(const g1_t element)
 {
     G1Element ele = G1Element();
-    g1_copy(ele.p, *element);
+    g1_copy(ele.p, element);
     ele.CheckValid();
     return ele;
 }
@@ -90,7 +90,7 @@ G1Element G1Element::FromMessage(const Bytes& message,
     g1_null(ans);
     g1_new(ans);
     ep_map_dst(ans, message.begin(), (int)message.size(), dst, dst_len);
-    G1Element ret = G1Element::FromNative(&ans);
+    G1Element ret = G1Element::FromNative(ans);
     g1_free(ans);
     return ret;
 }
@@ -136,8 +136,8 @@ void G1Element::CheckValid() const {
     BLS::CheckRelicErrors();
 }
 
-void G1Element::ToNative(g1_t* output) const {
-    g1_copy(*output, this->p);
+void G1Element::ToNative(g1_t output) const {
+    g1_copy(output, this->p);
 }
 
 G1Element G1Element::Negate() const
@@ -199,7 +199,7 @@ G1Element operator+(const G1Element& a, const G1Element& b)
     g1_t ans;
     g1_new(ans);
     g1_add(ans, a.p, b.p);
-    G1Element ret = G1Element::FromNative(&ans);
+    G1Element ret = G1Element::FromNative(ans);
     g1_free(ans);
     return ret;
 }
@@ -215,7 +215,7 @@ G1Element operator*(const G1Element& a, const bn_t& k)
     g1_mul(ans, nonConstA.p, nonConstK[0]);
     bn_free(nonConstK[0]);
     Util::SecFree(nonConstK);
-    G1Element ret =  G1Element::FromNative(&ans);
+    G1Element ret =  G1Element::FromNative(ans);
     g1_free(ans);
     return ret;
 }
@@ -280,10 +280,10 @@ G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
     return G2Element::FromBytes({bytevec});
 }
 
-G2Element G2Element::FromNative(const g2_t* element)
+G2Element G2Element::FromNative(const g2_t element)
 {
     G2Element ele = G2Element();
-    g2_copy(ele.q, *(g2_t*)element);
+    g2_copy(ele.q, (g2_st*)element);
     ele.CheckValid();
     return ele;
 }
@@ -303,7 +303,7 @@ G2Element G2Element::FromMessage(const Bytes& message,
     g2_null(ans);
     g2_new(ans);
     ep2_map_dst(ans, message.begin(), (int)message.size(), dst, dst_len);
-    G2Element ret = G2Element::FromNative(&ans);
+    G2Element ret = G2Element::FromNative(ans);
     g2_free(ans);
     return ret;
 }
@@ -345,8 +345,8 @@ void G2Element::CheckValid() const {
     BLS::CheckRelicErrors();
 }
 
-void G2Element::ToNative(g2_t* output) const {
-    g2_copy(*output, *(g2_t*)&this->q);
+void G2Element::ToNative(g2_t output) const {
+    g2_copy(output, *(g2_t*)&this->q);
 }
 
 G2Element G2Element::Negate() const
@@ -408,7 +408,7 @@ G2Element operator+(const G2Element& a, const G2Element& b)
     G2Element nonConstB(b);
     g2_t ans;
     g2_add(ans, nonConstA.q, nonConstB.q);
-    return G2Element::FromNative(&ans);
+    return G2Element::FromNative(ans);
 }
 
 G2Element operator*(const G2Element& a, const bn_t& k)
@@ -421,7 +421,7 @@ G2Element operator*(const G2Element& a, const bn_t& k)
     g2_mul(ans, nonConstA.q, nonConstK[0]);
     bn_free(nonConstK[0]);
     Util::SecFree(nonConstK);
-    G2Element ret = G2Element::FromNative(&ans);
+    G2Element ret = G2Element::FromNative(ans);
     g2_free(ans);
     return ret;
 }
