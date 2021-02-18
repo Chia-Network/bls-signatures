@@ -34,6 +34,11 @@ class G2Element;
 class G1Element {
 public:
     static const size_t SIZE = 48;
+
+    G1Element() {
+        g1_set_infty(p);
+    }
+
     static G1Element FromBytes(const Bytes& bytes);
     static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G1Element FromNative(const g1_t *element);
@@ -61,14 +66,16 @@ public:
 
 private:
     g1_t p;
-    G1Element() {
-        g1_set_infty(p);
-    }
 };
 
 class G2Element {
 public:
     static const size_t SIZE = 96;
+
+    G2Element() {
+        g2_set_infty(q);
+    }
+
     static G2Element FromBytes(const Bytes& bytes);
     static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G2Element FromNative(const g2_t *element);
@@ -95,9 +102,6 @@ public:
 
 private:
     g2_t q;
-    G2Element() {
-        g2_set_infty(q);
-    }
 };
 
 }  // end namespace bls
