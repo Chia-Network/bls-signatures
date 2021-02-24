@@ -336,9 +336,7 @@ void G2Element::ToNative(g2_t output) const {
 G2Element G2Element::Negate() const
 {
     G2Element ans;
-    G2Element thisCpy(*this);
-    g2_neg(ans.q, thisCpy.q);
-    ans.CheckValid();
+    g2_neg(ans.q, (g2_st*)q);
     return ans;
 }
 
