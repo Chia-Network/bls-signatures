@@ -316,7 +316,7 @@ def test_readme():
 
 
 def test_aggregate_verify_zero_items():
-    assert AugSchemeMPL.aggregate_verify([], [], G2Element.infinity())
+    assert AugSchemeMPL.aggregate_verify([], [], G2Element())
 
 
 test_schemes()

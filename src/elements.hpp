@@ -49,7 +49,6 @@ public:
                                  const uint8_t* dst,
                                  int dst_len);
     static G1Element Generator();
-    static G1Element Infinity();  // infinity / unity
 
     void CheckValid() const;
     void ToNative(g1_t* output) const;
@@ -87,7 +86,6 @@ public:
                                  const uint8_t* dst,
                                  int dst_len);
     static G2Element Generator();
-    static G2Element Infinity();  // infinity/unity
 
     void CheckValid() const;
     void ToNative(g2_t* output) const;

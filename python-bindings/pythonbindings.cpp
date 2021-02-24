@@ -274,6 +274,7 @@ PYBIND11_MODULE(blspy, m)
     py::class_<G1Element>(m, "G1Element")
         .def_property_readonly_static(
             "SIZE", [](py::object self) { return G1Element::SIZE; })
+        .def(py::init([](){ return G1Element();}))
         .def(py::init(&G1Element::FromByteVector))
         .def(py::init([](py::int_ pyint) {
             std::vector<uint8_t> buffer(G1Element::SIZE, 0);
@@ -319,7 +320,6 @@ PYBIND11_MODULE(blspy, m)
         .def("generator", &G1Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G1Element::FromMessage))
         .def("negate", &G1Element::Negate)
-        .def("infinity", &G1Element::Infinity)
         .def("get_fingerprint", &G1Element::GetFingerprint)
 
         .def(py::self == py::self)
@@ -374,6 +374,7 @@ PYBIND11_MODULE(blspy, m)
     py::class_<G2Element>(m, "G2Element")
         .def_property_readonly_static(
             "SIZE", [](py::object self) { return G2Element::SIZE; })
+        .def(py::init([](){ return G2Element();}))
         .def(py::init(&G2Element::FromByteVector))
         .def(py::init([](py::buffer const b) {
             py::buffer_info info = b.request();
@@ -419,7 +420,6 @@ PYBIND11_MODULE(blspy, m)
         .def("generator", &G2Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G2Element::FromMessage))
         .def("negate", &G2Element::Negate)
-        .def("infinity", &G2Element::Infinity)
         .def(
             "__deepcopy__",
             [](const G2Element &g2, const py::object &memo) {

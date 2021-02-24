@@ -34,7 +34,7 @@ InvariantResult VerifyAggregateSignatureArguments(
     const G2Element &signature)
 {
     if (nPubKeys == 0) {
-        return (nMessages == 0 && signature == G2Element::Infinity() ? GOOD : BAD);
+        return (nMessages == 0 && signature == G2Element() ? GOOD : BAD);
     }
     if (nPubKeys != nMessages) {
         return BAD;

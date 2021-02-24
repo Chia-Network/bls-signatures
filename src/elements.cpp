@@ -103,15 +103,6 @@ G1Element G1Element::Generator()
     return ele;
 }
 
-G1Element G1Element::Infinity() {
-    G1Element ele = G1Element();
-    g1_null(ele.p);
-    g1_new(ele.p);
-    g1_set_infty(ele.p);
-    ele.CheckValid();
-    return ele;
-}
-
 void G1Element::CheckValid() const {
     if (g1_is_valid(*(g1_t*)&this->p) == 0)
         throw std::invalid_argument(
@@ -310,13 +301,6 @@ G2Element G2Element::Generator()
     g2_get_gen(ele.q);
     ele.CheckValid();
     return ele;
-}
-
-G2Element G2Element::Infinity() {
-    G2Element ret = G2Element();
-    g2_set_infty(ret.q);
-    ret.CheckValid();
-    return ret;
 }
 
 void G2Element::CheckValid() const {
