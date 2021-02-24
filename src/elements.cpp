@@ -115,9 +115,9 @@ G1Element G1Element::Infinity() {
 void G1Element::CheckValid() const {
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (g1_is_infty((g1_st*)this->p) == 1)
+    if (g1_is_infty((g1_st*)p) == 1)
         return;
-    if (g1_is_valid((g1_st*)this->p) == 0)
+    if (g1_is_valid((g1_st*)p) == 0)
         throw std::invalid_argument(
             "Given G1 element failed g1_is_valid check");
 
@@ -134,13 +134,13 @@ void G1Element::CheckValid() const {
 }
 
 void G1Element::ToNative(g1_t output) const {
-    g1_copy(output, this->p);
+    g1_copy(output, p);
 }
 
 G1Element G1Element::Negate() const
 {
     G1Element ans;
-    g1_neg(ans.p, this->p);
+    g1_neg(ans.p, p);
     ans.CheckValid();
     return ans;
 }
@@ -156,7 +156,7 @@ uint32_t G1Element::GetFingerprint() const
 
 std::vector<uint8_t> G1Element::Serialize() const {
     uint8_t buffer[G1Element::SIZE + 1];
-    g1_write_bin(buffer, G1Element::SIZE + 1, this->p, 1);
+    g1_write_bin(buffer, G1Element::SIZE + 1, p, 1);
 
     if (buffer[0] == 0x00) {  // infinity
         std::vector<uint8_t> result(G1Element::SIZE, 0);
@@ -311,9 +311,9 @@ G2Element G2Element::Infinity() {
 void G2Element::CheckValid() const {
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (g2_is_infty((g2_st*)this->q) == 1)
+    if (g2_is_infty((g2_st*)q) == 1)
         return;
-    if (g2_is_valid((g2_st*)this->q) == 0)
+    if (g2_is_valid((g2_st*)q) == 0)
         throw std::invalid_argument(
             "Given G2 element failed g2_is_valid check");
 
@@ -330,7 +330,7 @@ void G2Element::CheckValid() const {
 }
 
 void G2Element::ToNative(g2_t output) const {
-    g2_copy(output, (g2_st*)this->q);
+    g2_copy(output, (g2_st*)q);
 }
 
 G2Element G2Element::Negate() const
