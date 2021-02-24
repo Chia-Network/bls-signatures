@@ -100,21 +100,21 @@ TEST_CASE("class PrivateKey") {
         PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
         pk1.Serialize(buffer);
         REQUIRE(memcmp(buffer, pk1.Serialize().data(), PrivateKey::PRIVATE_KEY_SIZE) == 0);
-        PrivateKey pk2 = PrivateKey:: FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, true);
+        PrivateKey pk2 = PrivateKey:: FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE), true);
         REQUIRE(pk1 == pk2);
-        REQUIRE_THROWS(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE - 1}, true));
-        REQUIRE_THROWS(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE + 1}, true));
-        REQUIRE_NOTHROW(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, true));
+        REQUIRE_THROWS(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE - 1), true));
+        REQUIRE_THROWS(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE + 1), true));
+        REQUIRE_NOTHROW(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE), true));
         bn_t order;
         bn_new(order);
         g1_get_ord(order);
         bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, order);
-        REQUIRE_NOTHROW(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, false));
-        REQUIRE_NOTHROW(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, true));
+        REQUIRE_NOTHROW(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE), false));
+        REQUIRE_NOTHROW(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE), true));
         bn_add(order, order, order);
         bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, order);
-        REQUIRE_THROWS(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, false));
-        REQUIRE_NOTHROW(PrivateKey::FromBytes({buffer, PrivateKey::PRIVATE_KEY_SIZE}, true));
+        REQUIRE_THROWS(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE), false));
+        REQUIRE_NOTHROW(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE), true));
     }
     SECTION("keydata checks") {
         PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
@@ -303,7 +303,7 @@ TEST_CASE("IETF test vectors") {
         string sig1BasicHex = "96ba34fac33c7f129d602a0bc8a3d43f9abc014eceaab7359146b4b150e57b808645738f35671e9e10e0d862a30cab70074eb5831d13e6a5b162d01eebe687d0164adbd0a864370a7c222a2768d7704da254f1bf1823665bc2361f9dd8c00e99";
         string sk = "0x0101010101010101010101010101010101010101010101010101010101010101";
         vector<uint8_t> msg = {3, 1, 4, 1, 5, 9};
-        auto skobj = PrivateKey::FromBytes({Util::HexToBytes(sk)});
+        auto skobj = PrivateKey::FromBytes(Bytes(Util::HexToBytes(sk)));
         G2Element sig = BasicSchemeMPL().Sign(skobj, msg);
         vector<uint8_t> sig1;
         for (const uint8_t byte : Util::HexToBytes(sig1BasicHex)) {
@@ -460,7 +460,7 @@ TEST_CASE("Error handling")
         uint8_t* skData = Util::SecAlloc<uint8_t>(G2Element::SIZE);
         sk1.Serialize(skData);
         skData[0] = 255;
-        REQUIRE_THROWS(PrivateKey::FromBytes({skData, PrivateKey::PRIVATE_KEY_SIZE}));
+        REQUIRE_THROWS(PrivateKey::FromBytes(Bytes(skData, PrivateKey::PRIVATE_KEY_SIZE)));
         Util::SecFree(skData);
     }
 
@@ -546,7 +546,7 @@ TEST_CASE("Signature tests")
 
         uint8_t skBytes[PrivateKey::PRIVATE_KEY_SIZE];
         sk2.Serialize(skBytes);
-        PrivateKey sk4 = PrivateKey::FromBytes({skBytes, PrivateKey::PRIVATE_KEY_SIZE});
+        PrivateKey sk4 = PrivateKey::FromBytes(Bytes(skBytes, PrivateKey::PRIVATE_KEY_SIZE));
 
         G1Element pk2 = G1Element(pk1);
         G2Element sig1 = BasicSchemeMPL().Sign(sk4, message1);
@@ -606,19 +606,19 @@ TEST_CASE("Signature tests")
 
         uint8_t* skData = Util::SecAlloc<uint8_t>(G2Element::SIZE);
         sk1.Serialize(skData);
-        PrivateKey sk2 = PrivateKey::FromBytes({skData, PrivateKey::PRIVATE_KEY_SIZE});
+        PrivateKey sk2 = PrivateKey::FromBytes(Bytes(skData, PrivateKey::PRIVATE_KEY_SIZE));
         REQUIRE(sk1 == sk2);
 
         auto pkData = pk1.Serialize();
 
-        G1Element pk2 = G1Element::FromBytes({pkData});
+        G1Element pk2 = G1Element::FromBytes(Bytes(pkData));
         REQUIRE(pk1 == pk2);
 
         G2Element sig1 = BasicSchemeMPL().Sign(sk1, message1);
 
         auto sigData = sig1.Serialize();
 
-        G2Element sig2 = G2Element::FromBytes({sigData});
+        G2Element sig2 = G2Element::FromBytes(Bytes(sigData));
         REQUIRE(sig1 == sig2);
 
         REQUIRE(BasicSchemeMPL().Verify(pk2, message1, sig2));

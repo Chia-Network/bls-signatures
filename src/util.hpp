@@ -29,11 +29,11 @@ class Bytes {
     const size_t nSize;
 
 public:
-    Bytes(const uint8_t* pDataIn, const size_t nSizeIn)
+    explicit Bytes(const uint8_t* pDataIn, const size_t nSizeIn)
         : pData(pDataIn), nSize(nSizeIn)
     {
     }
-    Bytes(const std::vector<uint8_t>& vecBytes)
+    explicit Bytes(const std::vector<uint8_t>& vecBytes)
         : pData(vecBytes.data()), nSize(vecBytes.size())
     {
     }

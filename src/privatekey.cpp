@@ -42,7 +42,7 @@ PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
 // Construct a private key from a bytearray.
 PrivateKey PrivateKey::FromByteVector(const std::vector<uint8_t> bytes, bool modOrder)
 {
-    return PrivateKey::FromBytes({bytes}, modOrder);
+    return PrivateKey::FromBytes(Bytes(bytes), modOrder);
 }
 
 PrivateKey::PrivateKey() {

@@ -64,7 +64,7 @@ G1Element G1Element::FromBytes(const Bytes& bytes)
 
 G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
 {
-    return G1Element::FromBytes({bytevec});
+    return G1Element::FromBytes(Bytes(bytevec));
 }
 
 G1Element G1Element::FromNative(const g1_t element)
@@ -261,7 +261,7 @@ G2Element G2Element::FromBytes(const Bytes& bytes)
 
 G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
 {
-    return G2Element::FromBytes({bytevec});
+    return G2Element::FromBytes(Bytes(bytevec));
 }
 
 G2Element G2Element::FromNative(const g2_t element)
