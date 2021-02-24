@@ -122,15 +122,12 @@ void G1Element::CheckValid() const {
             "Given G1 element failed g1_is_valid check");
 
     // check if inside subgroup
-    g1_t point, unity, thisP;
     bn_t order;
     bn_new(order);
-
     g1_get_ord(order);
-    g1_copy(thisP, this->p);
-    g1_mul(point, thisP, order);
-    ep_set_infty(unity);
-    if (g1_cmp(point, unity) != RLC_EQ)
+
+    G1Element point = *this * order;
+    if (point != G1Element())
         throw std::invalid_argument("Given G1 element failed in_subgroup check");
     bn_free(order);
     BLS::CheckRelicErrors();
@@ -333,13 +330,12 @@ void G2Element::CheckValid() const {
             "Given G2 element failed g2_is_valid check");
 
     // check if inside subgroup
-    g2_t point, unity;
     bn_t order;
     bn_new(order);
     g2_get_ord(order);
-    g2_mul(point, *(g2_t*)this->q, order);
-    ep2_set_infty(unity);
-    if (g2_cmp(point, unity) != RLC_EQ)
+
+    G2Element point = *this * order;
+    if (point != G2Element())
         throw std::invalid_argument("Given G2 element failed in_subgroup check");
     bn_free(order);
     BLS::CheckRelicErrors();
