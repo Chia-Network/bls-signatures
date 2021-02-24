@@ -86,13 +86,10 @@ G1Element G1Element::FromMessage(const Bytes& message,
                                  const uint8_t* dst,
                                  int dst_len)
 {
-    g1_t ans;
-    g1_null(ans);
-    g1_new(ans);
-    ep_map_dst(ans, message.begin(), (int)message.size(), dst, dst_len);
-    G1Element ret = G1Element::FromNative(ans);
-    g1_free(ans);
-    return ret;
+    G1Element ans;
+    ep_map_dst(ans.p, message.begin(), (int)message.size(), dst, dst_len);
+    ans.CheckValid();
+    return ans;
 }
 
 G1Element G1Element::Generator()
