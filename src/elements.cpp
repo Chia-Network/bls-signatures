@@ -100,15 +100,6 @@ G1Element G1Element::Generator()
     return ele;
 }
 
-G1Element G1Element::Infinity() {
-    G1Element ele = G1Element();
-    g1_null(ele.p);
-    g1_new(ele.p);
-    g1_set_infty(ele.p);
-    ele.CheckValid();
-    return ele;
-}
-
 void G1Element::CheckValid() const {
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
@@ -295,13 +286,6 @@ G2Element G2Element::Generator()
     g2_get_gen(ele.q);
     BLS::CheckRelicErrors();
     return ele;
-}
-
-G2Element G2Element::Infinity() {
-    G2Element ret = G2Element();
-    g2_set_infty(ret.q);
-    ret.CheckValid();
-    return ret;
 }
 
 void G2Element::CheckValid() const {

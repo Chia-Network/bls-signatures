@@ -558,11 +558,11 @@ TEST_CASE("Signature tests")
     SECTION("Should sign with the zero key") {
         vector<uint8_t> sk0(32, 0);
         PrivateKey sk = PrivateKey::FromByteVector(sk0);
-        REQUIRE(sk.GetG1Element() == G1Element::Infinity());  // Infinity
-        REQUIRE(sk.GetG2Element() == G2Element::Infinity());  // Infinity
-        REQUIRE(BasicSchemeMPL().Sign(sk, {1, 2, 3}) == G2Element::Infinity());
-        REQUIRE(AugSchemeMPL().Sign(sk, {1, 2, 3}) == G2Element::Infinity());
-        REQUIRE(PopSchemeMPL().Sign(sk, {1, 2, 3}) == G2Element::Infinity());
+        REQUIRE(sk.GetG1Element() == G1Element());  // Infinity
+        REQUIRE(sk.GetG2Element() == G2Element());  // Infinity
+        REQUIRE(BasicSchemeMPL().Sign(sk, {1, 2, 3}) == G2Element());
+        REQUIRE(AugSchemeMPL().Sign(sk, {1, 2, 3}) == G2Element());
+        REQUIRE(PopSchemeMPL().Sign(sk, {1, 2, 3}) == G2Element());
     }
 
     SECTION("Should use equality operators")
@@ -698,11 +698,11 @@ TEST_CASE("Signature tests")
         vector<vector<uint8_t> > msgs;
         vector<G2Element> sigs;
 
-        sigs.push_back(G2Element::Infinity());
+        sigs.push_back(G2Element());
         G2Element aggSig = AugSchemeMPL().Aggregate(sigs);
 
         REQUIRE(aggSig.Serialize().size() != 0);
-        REQUIRE(aggSig == G2Element::Infinity());
+        REQUIRE(aggSig == G2Element());
 
         REQUIRE(AugSchemeMPL().AggregateVerify(pks_as_g1, msgs, aggSig));
         REQUIRE(AugSchemeMPL().AggregateVerify(pks_as_bytes, msgs, aggSig.Serialize()));
