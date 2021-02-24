@@ -45,7 +45,7 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to PrivateKey::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                return PrivateKey::FromBytes({data_ptr, PrivateKey::PRIVATE_KEY_SIZE});
+                return PrivateKey::FromBytes(Bytes(data_ptr, PrivateKey::PRIVATE_KEY_SIZE));
             })
         .def(
             "__bytes__",
@@ -314,7 +314,7 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to G1Element::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                return G1Element::FromBytes({data_ptr, G1Element::SIZE});
+                return G1Element::FromBytes(Bytes(data_ptr, G1Element::SIZE));
             })
         .def("generator", &G1Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G1Element::FromMessage))
@@ -414,7 +414,7 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to G2Element::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                return G2Element::FromBytes({data_ptr, G2Element::SIZE});
+                return G2Element::FromBytes(Bytes(data_ptr, G2Element::SIZE));
             })
         .def("generator", &G2Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G2Element::FromMessage))
