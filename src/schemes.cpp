@@ -96,7 +96,7 @@ bool CoreMPL::Verify(const G1Element &pubkey,
                      const vector<uint8_t> &message,  // unhashed
                      const G2Element &signature)
 {
-    return CoreMPL::Verify(pubkey, Bytes{message}, signature);
+    return CoreMPL::Verify(pubkey, Bytes(message), signature);
 }
 
 bool CoreMPL::Verify(const G1Element& pubkey, const Bytes& message, const G2Element& signature)
@@ -368,14 +368,17 @@ bool AugSchemeMPL::Verify(const G1Element &pubkey,
                           const vector<uint8_t> &message,
                           const G2Element &signature)
 {
-    return AugSchemeMPL::Verify(pubkey.Serialize(), message, signature.Serialize());
+    return AugSchemeMPL::Verify(pubkey, Bytes{message}, signature);
 }
 
 bool AugSchemeMPL::Verify(const G1Element& pubkey,
                           const Bytes& message,
                           const G2Element& signature)
 {
-    return AugSchemeMPL::Verify({pubkey.Serialize()}, message, {signature.Serialize()});
+    vector<uint8_t> augMessage = pubkey.Serialize();
+    augMessage.reserve(augMessage.size() + message.size());
+    augMessage.insert(augMessage.end(), message.begin(), message.end());
+    return CoreMPL::Verify(pubkey, augMessage, signature);
 }
 
 bool AugSchemeMPL::AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
