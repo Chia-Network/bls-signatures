@@ -99,7 +99,6 @@ G1Element G1Element::Generator()
 {
     G1Element ele;
     g1_get_gen(ele.p);
-    ele.CheckValid();
     return ele;
 }
 
@@ -141,7 +140,6 @@ G1Element G1Element::Negate() const
 {
     G1Element ans;
     g1_neg(ans.p, p);
-    ans.CheckValid();
     return ans;
 }
 
@@ -297,7 +295,6 @@ G2Element G2Element::Generator()
 {
     G2Element ele;
     g2_get_gen(ele.q);
-    ele.CheckValid();
     return ele;
 }
 
