@@ -101,7 +101,7 @@ bool CoreMPL::Verify(const G1Element &pubkey,
 
 bool CoreMPL::Verify(const G1Element& pubkey, const Bytes& message, const G2Element& signature)
 {
-    G2Element hashedPoint = G2Element::FromMessage(message, (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length());
+    const G2Element hashedPoint = G2Element::FromMessage(message, (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length());
 
     std::vector<g1_st> vecG1(2);
     std::vector<g2_st> vecG2(2);
@@ -154,8 +154,8 @@ bool CoreMPL::AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
                               const vector<vector<uint8_t>> &messages,  // unhashed
                               const vector<uint8_t> &signature)
 {
-    std::vector<Bytes> vecPubKeyBytes(pubkeys.begin(), pubkeys.end());
-    std::vector<Bytes> vecMessagesBytes(messages.begin(), messages.end());
+    const std::vector<Bytes> vecPubKeyBytes(pubkeys.begin(), pubkeys.end());
+    const std::vector<Bytes> vecMessagesBytes(messages.begin(), messages.end());
     return CoreMPL::AggregateVerify(vecPubKeyBytes, vecMessagesBytes, Bytes{signature});
 }
 
@@ -163,9 +163,9 @@ bool CoreMPL::AggregateVerify(const vector<Bytes>& pubkeys,
                               const vector<Bytes>& messages,  // unhashed
                               const Bytes& signature)
 {
-    size_t nPubKeys = pubkeys.size();
-    G2Element signatureElement = G2Element::FromBytes(signature);
-    auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signatureElement);
+    const size_t nPubKeys = pubkeys.size();
+    const G2Element signatureElement = G2Element::FromBytes(signature);
+    const auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signatureElement);
     if (arg_check != CONTINUE) {
         return arg_check;
     }
@@ -188,8 +188,8 @@ bool CoreMPL::AggregateVerify(const vector<G1Element>& pubkeys,
                               const vector<Bytes> &messages,
                               const G2Element& signature)
 {
-    size_t nPubKeys = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
+    const size_t nPubKeys = pubkeys.size();
+    const auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
     if (arg_check != CONTINUE) {
         return arg_check;
     }
@@ -249,13 +249,13 @@ bool BasicSchemeMPL::AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
                                      const vector<vector<uint8_t>> &messages,
                                      const vector<uint8_t> &signature)
 {
-    size_t nPubKeys = pubkeys.size();
+    const size_t nPubKeys = pubkeys.size();
     auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), G2Element::FromByteVector(signature));
     if (arg_check != CONTINUE) {
         return arg_check;
     }
 
-    std::set<vector<uint8_t>> setMessages(messages.begin(), messages.end());
+    const std::set<vector<uint8_t>> setMessages(messages.begin(), messages.end());
     if (setMessages.size() != nPubKeys) {
         return false;
     }
@@ -266,8 +266,8 @@ bool BasicSchemeMPL::AggregateVerify(const vector<Bytes>& pubkeys,
                                      const vector<Bytes>& messages,
                                      const Bytes& signature)
 {
-    size_t nPubKeys = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), G2Element::FromBytes(signature));
+    const size_t nPubKeys = pubkeys.size();
+    const auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), G2Element::FromBytes(signature));
     if (arg_check != CONTINUE) return arg_check;
 
     std::set<vector<uint8_t>> setMessages;
@@ -284,13 +284,13 @@ bool BasicSchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
                                      const vector<vector<uint8_t>> &messages,
                                      const G2Element &signature)
 {
-    size_t nPubKeys = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
+    const size_t nPubKeys = pubkeys.size();
+    const auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
     if (arg_check != CONTINUE) {
         return arg_check;
     }
 
-    std::set<vector<uint8_t>> setMessages(messages.begin(), messages.end());
+    const std::set<vector<uint8_t>> setMessages(messages.begin(), messages.end());
     if (setMessages.size() != nPubKeys) {
         return false;
     }
@@ -301,8 +301,8 @@ bool BasicSchemeMPL::AggregateVerify(const vector<G1Element>& pubkeys,
                                      const vector<Bytes> &messages,
                                      const G2Element& signature)
 {
-    size_t nPubKeys = pubkeys.size();
-    auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
+    const size_t nPubKeys = pubkeys.size();
+    const auto arg_check = VerifyAggregateSignatureArguments(nPubKeys, messages.size(), signature);
     if (arg_check != CONTINUE) return arg_check;
 
     std::set<vector<uint8_t>> setMessages;
@@ -444,15 +444,15 @@ bool AugSchemeMPL::AggregateVerify(const vector<G1Element>& pubkeys,
 
 G2Element PopSchemeMPL::PopProve(const PrivateKey &seckey)
 {
-    G1Element pk = seckey.GetG1Element();
-    G2Element hashedKey = G2Element::FromMessage(pk.Serialize(), (const uint8_t *)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
+    const G1Element& pk = seckey.GetG1Element();
+    const G2Element hashedKey = G2Element::FromMessage(pk.Serialize(), (const uint8_t *)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
     return seckey.GetG2Power(hashedKey);
 }
 
 
 bool PopSchemeMPL::PopVerify(const G1Element &pubkey, const G2Element &signature_proof)
 {
-    G2Element hashedPoint = G2Element::FromMessage(pubkey.Serialize(), (const uint8_t*)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
+    const G2Element hashedPoint = G2Element::FromMessage(pubkey.Serialize(), (const uint8_t*)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
 
     g1_t g1s[2];
     g2_t g2s[2];
@@ -472,7 +472,7 @@ bool PopSchemeMPL::PopVerify(const vector<uint8_t> &pubkey, const vector<uint8_t
 
 bool PopSchemeMPL::PopVerify(const Bytes& pubkey, const Bytes& proof)
 {
-    G2Element hashedPoint = G2Element::FromMessage(pubkey, (const uint8_t*)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
+    const G2Element hashedPoint = G2Element::FromMessage(pubkey, (const uint8_t*)POP_CIPHERSUITE_ID.c_str(), POP_CIPHERSUITE_ID.length());
 
     g1_t g1s[2];
     g2_t g2s[2];
@@ -507,7 +507,7 @@ bool PopSchemeMPL::FastAggregateVerify(const vector<vector<uint8_t>> &pubkeys,
                                        const vector<uint8_t> &message,
                                        const vector<uint8_t> &signature)
 {
-    std::vector<Bytes> vecPubKeyBytes(pubkeys.begin(), pubkeys.end());
+    const std::vector<Bytes> vecPubKeyBytes(pubkeys.begin(), pubkeys.end());
     return PopSchemeMPL::FastAggregateVerify(vecPubKeyBytes, message, signature);
 }
 
@@ -515,7 +515,7 @@ bool PopSchemeMPL::FastAggregateVerify(const vector<Bytes>& pubkeys,
                                        const Bytes& message,
                                        const Bytes& signature)
 {
-    size_t nPubKeys = pubkeys.size();
+    const size_t nPubKeys = pubkeys.size();
     if (nPubKeys == 0) {
         return false;
     }
