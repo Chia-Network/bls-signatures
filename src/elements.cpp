@@ -279,13 +279,10 @@ G2Element G2Element::FromMessage(const Bytes& message,
                                  const uint8_t* dst,
                                  int dst_len)
 {
-    g2_t ans;
-    g2_null(ans);
-    g2_new(ans);
-    ep2_map_dst(ans, message.begin(), (int)message.size(), dst, dst_len);
-    G2Element ret = G2Element::FromNative(ans);
-    g2_free(ans);
-    return ret;
+    G2Element ans;
+    ep2_map_dst(ans.q, message.begin(), (int)message.size(), dst, dst_len);
+    ans.CheckValid();
+    return ans;
 }
 
 G2Element G2Element::Generator()
