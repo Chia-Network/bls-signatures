@@ -255,8 +255,8 @@ bool BasicSchemeMPL::AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
         return arg_check;
     }
 
-    std::set<vector<uint8_t>> s(messages.begin(), messages.end());
-    if (s.size() != nPubKeys) {
+    std::set<vector<uint8_t>> setMessages(messages.begin(), messages.end());
+    if (setMessages.size() != nPubKeys) {
         return false;
     }
     return CoreMPL::AggregateVerify(pubkeys, messages, signature);
@@ -290,8 +290,8 @@ bool BasicSchemeMPL::AggregateVerify(const vector<G1Element> &pubkeys,
         return arg_check;
     }
 
-    std::set<vector<uint8_t>> s(messages.begin(), messages.end());
-    if (s.size() != nPubKeys) {
+    std::set<vector<uint8_t>> setMessages(messages.begin(), messages.end());
+    if (setMessages.size() != nPubKeys) {
         return false;
     }
     return CoreMPL::AggregateVerify(pubkeys, messages, signature);
