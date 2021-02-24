@@ -115,9 +115,9 @@ G1Element G1Element::Infinity() {
 void G1Element::CheckValid() const {
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (g1_is_infty(*(g1_t*)&this->p) == 1)
+    if (g1_is_infty((g1_st*)this->p) == 1)
         return;
-    if (g1_is_valid(*(g1_t*)&this->p) == 0)
+    if (g1_is_valid((g1_st*)this->p) == 0)
         throw std::invalid_argument(
             "Given G1 element failed g1_is_valid check");
 
@@ -311,9 +311,9 @@ G2Element G2Element::Infinity() {
 void G2Element::CheckValid() const {
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (g2_is_infty(*(g2_t*)&this->q) == 1)
+    if (g2_is_infty((g2_st*)this->q) == 1)
         return;
-    if (g2_is_valid(*(g2_t*)&this->q) == 0)
+    if (g2_is_valid((g2_st*)this->q) == 0)
         throw std::invalid_argument(
             "Given G2 element failed g2_is_valid check");
 
@@ -330,7 +330,7 @@ void G2Element::CheckValid() const {
 }
 
 void G2Element::ToNative(g2_t output) const {
-    g2_copy(output, *(g2_t*)&this->q);
+    g2_copy(output, (g2_st*)this->q);
 }
 
 G2Element G2Element::Negate() const
@@ -344,7 +344,7 @@ G2Element G2Element::Negate() const
 
 std::vector<uint8_t> G2Element::Serialize() const {
     uint8_t buffer[G2Element::SIZE + 1];
-    g2_write_bin(buffer, G2Element::SIZE + 1, *(g2_t*)this->q, 1);
+    g2_write_bin(buffer, G2Element::SIZE + 1, (g2_st*)q, 1);
 
     if (buffer[0] == 0x00) {  // infinity
         std::vector<uint8_t> result(G2Element::SIZE, 0);
@@ -370,7 +370,7 @@ std::vector<uint8_t> G2Element::Serialize() const {
 
 bool operator==(G2Element const& a, G2Element const& b)
 {
-    return g2_cmp(*(g2_t*)&a.q, *(g2_t*)b.q) == RLC_EQ;
+    return g2_cmp((g2_st*)a.q, (g2_st*)b.q) == RLC_EQ;
 }
 
 bool operator!=(G2Element const& a, G2Element const& b) { return !(a == b); }
@@ -382,7 +382,7 @@ std::ostream& operator<<(std::ostream& os, const G2Element & s)
 
 G2Element& operator+=(G2Element& a, const G2Element& b)
 {
-    g2_add(a.q, a.q, *(g2_t*)&b.q);
+    g2_add(a.q, a.q, (g2_st*)b.q);
     return a;
 }
 
