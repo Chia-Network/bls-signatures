@@ -130,10 +130,12 @@ const G2Element& PrivateKey::GetG2Element() const
 G1Element operator*(const G1Element &a, const PrivateKey &k)
 {
     k.CheckKeyData();
-    g1_t ans;
-    a.ToNative(&ans);
-    g1_mul(ans, ans, k.keydata);
-    return G1Element::FromNative(&ans);
+    g1_t* ans = Util::SecAlloc<g1_t>(1);
+    a.ToNative(ans);
+    g1_mul(*ans, *ans, k.keydata);
+    G1Element ret = G1Element::FromNative(ans);
+    Util::SecFree(ans);
+    return ret;
 }
 
 G1Element operator*(const PrivateKey &k, const G1Element &a) { return a * k; }
@@ -141,10 +143,12 @@ G1Element operator*(const PrivateKey &k, const G1Element &a) { return a * k; }
 G2Element operator*(const G2Element &a, const PrivateKey &k)
 {
     k.CheckKeyData();
-    g2_t ans;
-    a.ToNative(&ans);
-    g2_mul(ans, ans, k.keydata);
-    return G2Element::FromNative(&ans);
+    g2_t* ans = Util::SecAlloc<g2_t>(1);
+    a.ToNative(ans);
+    g2_mul(*ans, *ans, k.keydata);
+    G2Element ret = G2Element::FromNative(ans);
+    Util::SecFree(ans);
+    return ret;
 }
 
 G2Element operator*(const PrivateKey &k, const G2Element &a) { return a * k; }
@@ -219,12 +223,13 @@ G2Element PrivateKey::SignG2(
 {
     CheckKeyData();
 
-    g2_t pt;
-    g2_new(pt);
+    g2_t* pt = Util::SecAlloc<g2_t>(1);
 
-    ep2_map_dst(pt, msg, len, dst, dst_len);
-    g2_mul(pt, pt, keydata);
-    return G2Element::FromNative(&pt);
+    ep2_map_dst(*pt, msg, len, dst, dst_len);
+    g2_mul(*pt, *pt, keydata);
+    G2Element ret = G2Element::FromNative(pt);
+    Util::SecFree(pt);
+    return ret;
 }
 
 void PrivateKey::AllocateKeyData()
