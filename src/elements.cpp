@@ -164,8 +164,7 @@ std::vector<uint8_t> G1Element::Serialize() const {
     }
 
     buffer[1] |= 0x80;  // indicate compression
-    std::vector<uint8_t> result(buffer + 1, buffer + 1 + G1Element::SIZE);
-    return result;
+    return std::vector<uint8_t>(buffer + 1, buffer + 1 + G1Element::SIZE);
 }
 
 bool operator==(const G1Element & a, const G1Element &b)
