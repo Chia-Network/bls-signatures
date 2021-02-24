@@ -24,7 +24,7 @@ G1Element G1Element::FromBytes(const Bytes& bytes)
         throw std::invalid_argument("G1Element::FromBytes: Invalid size");
     }
 
-    G1Element ele = G1Element();
+    G1Element ele;
 
     // convert bytes to relic form
     uint8_t buffer[G1Element::SIZE + 1];
@@ -69,7 +69,7 @@ G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
 
 G1Element G1Element::FromNative(const g1_t element)
 {
-    G1Element ele = G1Element();
+    G1Element ele;
     g1_copy(ele.p, element);
     ele.CheckValid();
     return ele;
@@ -97,7 +97,7 @@ G1Element G1Element::FromMessage(const Bytes& message,
 
 G1Element G1Element::Generator()
 {
-    G1Element ele = G1Element();
+    G1Element ele;
     g1_get_gen(ele.p);
     ele.CheckValid();
     return ele;
@@ -139,7 +139,7 @@ void G1Element::ToNative(g1_t output) const {
 
 G1Element G1Element::Negate() const
 {
-    G1Element ans = G1Element();
+    G1Element ans;
     g1_neg(ans.p, this->p);
     ans.CheckValid();
     return ans;
@@ -219,7 +219,7 @@ G2Element G2Element::FromBytes(const Bytes& bytes)
         throw std::invalid_argument("G2Element::FromBytes: Invalid size");
     }
 
-    G2Element ele = G2Element();
+    G2Element ele;
     uint8_t buffer[G2Element::SIZE + 1];
     std::memcpy(buffer + 1, bytes.begin() + G2Element::SIZE / 2, G2Element::SIZE / 2);
     std::memcpy(buffer + 1 + G2Element::SIZE / 2, bytes.begin(), G2Element::SIZE / 2);
@@ -267,7 +267,7 @@ G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
 
 G2Element G2Element::FromNative(const g2_t element)
 {
-    G2Element ele = G2Element();
+    G2Element ele;
     g2_copy(ele.q, (g2_st*)element);
     ele.CheckValid();
     return ele;
@@ -295,7 +295,7 @@ G2Element G2Element::FromMessage(const Bytes& message,
 
 G2Element G2Element::Generator()
 {
-    G2Element ele = G2Element();
+    G2Element ele;
     g2_get_gen(ele.q);
     ele.CheckValid();
     return ele;
@@ -335,7 +335,7 @@ void G2Element::ToNative(g2_t output) const {
 
 G2Element G2Element::Negate() const
 {
-    G2Element ans = G2Element();
+    G2Element ans;
     G2Element thisCpy(*this);
     g2_neg(ans.q, thisCpy.q);
     ans.CheckValid();
