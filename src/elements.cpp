@@ -96,6 +96,7 @@ G1Element G1Element::Generator()
 {
     G1Element ele;
     g1_get_gen(ele.p);
+    BLS::CheckRelicErrors();
     return ele;
 }
 
@@ -137,6 +138,7 @@ G1Element G1Element::Negate() const
 {
     G1Element ans;
     g1_neg(ans.p, p);
+    BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -182,6 +184,7 @@ std::ostream& operator<<(std::ostream& os, const G1Element &ele)
 G1Element& operator+=(G1Element& a, const G1Element& b)
 {
     g1_add(a.p, a.p, b.p);
+    BLS::CheckRelicErrors();
     return a;
 }
 
@@ -189,6 +192,7 @@ G1Element operator+(const G1Element& a, const G1Element& b)
 {
     G1Element ans;
     g1_add(ans.p, a.p, b.p);
+    BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -196,6 +200,7 @@ G1Element operator*(const G1Element& a, const bn_t& k)
 {
     G1Element ans;
     g1_mul(ans.p, (g1_st*)a.p, (bn_st*)k);
+    BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -288,6 +293,7 @@ G2Element G2Element::Generator()
 {
     G2Element ele;
     g2_get_gen(ele.q);
+    BLS::CheckRelicErrors();
     return ele;
 }
 
@@ -327,6 +333,7 @@ G2Element G2Element::Negate() const
 {
     G2Element ans;
     g2_neg(ans.q, (g2_st*)q);
+    BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -371,6 +378,7 @@ std::ostream& operator<<(std::ostream& os, const G2Element & s)
 G2Element& operator+=(G2Element& a, const G2Element& b)
 {
     g2_add(a.q, a.q, (g2_st*)b.q);
+    BLS::CheckRelicErrors();
     return a;
 }
 
@@ -378,6 +386,7 @@ G2Element operator+(const G2Element& a, const G2Element& b)
 {
     G2Element ans;
     g2_add(ans.q, (g2_st*)a.q, (g2_st*)b.q);
+    BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -385,6 +394,7 @@ G2Element operator*(const G2Element& a, const bn_t& k)
 {
     G2Element ans;
     g2_mul(ans.q, (g2_st*)a.q, (bn_st*)k);
+    BLS::CheckRelicErrors();
     return ans;
 }
 
