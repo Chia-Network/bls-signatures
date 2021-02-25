@@ -37,7 +37,7 @@ class HDKeys {
 
     static PrivateKey KeyGen(const std::vector<uint8_t>& seed)
     {
-        return KeyGen(Bytes{seed});
+        return KeyGen(Bytes(seed));
     }
     
     static PrivateKey KeyGen(const Bytes& seed)

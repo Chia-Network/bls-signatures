@@ -944,26 +944,26 @@ TEST_CASE("Advanced") {
     SECTION("Bytes overloads")
     {
         std::vector<uint8_t> vecHash = getRandomSeed();
-        PrivateKey pk1 = BasicSchemeMPL().KeyGen(Bytes{getRandomSeed()});
-        PrivateKey pk2 = AugSchemeMPL().KeyGen(Bytes{getRandomSeed()});
-        PrivateKey pk3 = PopSchemeMPL().KeyGen(Bytes{getRandomSeed()});
+        PrivateKey pk1 = BasicSchemeMPL().KeyGen(Bytes(getRandomSeed()));
+        PrivateKey pk2 = AugSchemeMPL().KeyGen(Bytes(getRandomSeed()));
+        PrivateKey pk3 = PopSchemeMPL().KeyGen(Bytes(getRandomSeed()));
 
         std::vector<uint8_t> vecG1Element = pk1.GetG1Element().Serialize();
         G1Element g1Vector = G1Element::FromByteVector(vecG1Element);
-        G1Element g1Bytes = G1Element::FromBytes(Bytes{vecG1Element});
+        G1Element g1Bytes = G1Element::FromBytes(Bytes(vecG1Element));
         REQUIRE(g1Vector == g1Bytes);
 
         std::vector<uint8_t> vecG2Element = pk1.GetG2Element().Serialize();
         G2Element g2Vector = G2Element::FromByteVector(vecG2Element);
-        G2Element g2Bytes = G2Element::FromBytes(Bytes{vecG2Element});
+        G2Element g2Bytes = G2Element::FromBytes(Bytes(vecG2Element));
         REQUIRE(g2Vector == g2Bytes);
 
         G1Element g1MessageVector = G1Element::FromMessage(vecHash, vecHash.data(), vecHash.size());
-        G1Element g1MessageBytes = G1Element::FromMessage(Bytes{vecHash}, vecHash.data(), vecHash.size());
+        G1Element g1MessageBytes = G1Element::FromMessage(Bytes(vecHash), vecHash.data(), vecHash.size());
         REQUIRE(g1MessageVector == g1MessageBytes);
 
         G2Element g2MessageVector = G2Element::FromMessage(vecHash, vecHash.data(), vecHash.size());
-        G2Element g2MessageBytes = G2Element::FromMessage(Bytes{vecHash}, vecHash.data(), vecHash.size());
+        G2Element g2MessageBytes = G2Element::FromMessage(Bytes(vecHash), vecHash.data(), vecHash.size());
         REQUIRE(g2MessageVector == g2MessageBytes);
 
         G1Element g1_1 = pk1.GetG1Element();
@@ -971,14 +971,14 @@ TEST_CASE("Advanced") {
         G1Element g1_3 = pk3.GetG1Element();
 
         G2Element g2BasicSignVector1 = BasicSchemeMPL().Sign(pk1, vecHash);
-        G2Element g2BasicSignBytes1 = BasicSchemeMPL().Sign(pk1, Bytes{vecHash});
+        G2Element g2BasicSignBytes1 = BasicSchemeMPL().Sign(pk1, Bytes(vecHash));
         REQUIRE(g2BasicSignVector1 == g2BasicSignBytes1);
-        G2Element g2BasicSign2 = BasicSchemeMPL().Sign(pk2, Bytes{vecHash});
-        G2Element g2BasicSign3 = BasicSchemeMPL().Sign(pk3, Bytes{vecG2Element});
+        G2Element g2BasicSign2 = BasicSchemeMPL().Sign(pk2, Bytes(vecHash));
+        G2Element g2BasicSign3 = BasicSchemeMPL().Sign(pk3, Bytes(vecG2Element));
         REQUIRE(g2BasicSignVector1 != g2BasicSign2);
 
-        REQUIRE(BasicSchemeMPL().Verify(Bytes{g1_1.Serialize()}, Bytes{vecHash}, Bytes{g2BasicSignVector1.Serialize()}));
-        REQUIRE(BasicSchemeMPL().Verify(g1_1, Bytes{vecHash}, g2BasicSignVector1));
+        REQUIRE(BasicSchemeMPL().Verify(Bytes(g1_1.Serialize()), Bytes(vecHash), Bytes(g2BasicSignVector1.Serialize())));
+        REQUIRE(BasicSchemeMPL().Verify(g1_1, Bytes(vecHash), g2BasicSignVector1));
 
         vector<vector<uint8_t>> vecG1Vector = {g1_1.Serialize(), g1_3.Serialize()};
         vector<vector<uint8_t>> vecG2Vector = {g2BasicSignVector1.Serialize(), g2BasicSign3.Serialize()};
@@ -990,19 +990,19 @@ TEST_CASE("Advanced") {
 
         REQUIRE(BasicSchemeMPL().AggregateVerify(vector<Bytes>{vecG1Vector.begin(), vecG1Vector.end()},
                                                  vector<Bytes>{vecHashes.begin(), vecHashes.end()},
-                                                 Bytes{aggVector}));
+                                                 Bytes(aggVector)));
         REQUIRE(BasicSchemeMPL().AggregateVerify({g1_1, g1_3},
                                                  vector<Bytes>{vecHashes.begin(), vecHashes.end()},
                                                  G2Element::FromByteVector(aggVector)));
 
         G2Element g2AugSignVector1 = AugSchemeMPL().Sign(pk1, vecHash);
-        G2Element g2AugSignBytes1 = AugSchemeMPL().Sign(pk1, Bytes{vecHash});
+        G2Element g2AugSignBytes1 = AugSchemeMPL().Sign(pk1, Bytes(vecHash));
         G2Element g2AugSign2 = AugSchemeMPL().Sign(pk2, vecG2Element);
         REQUIRE(g2AugSignVector1 == g2AugSignBytes1);
         REQUIRE(g2AugSignVector1 != g2AugSign2);
 
-        REQUIRE(AugSchemeMPL().Verify(Bytes{g1_1.Serialize()}, Bytes{vecHash}, Bytes{g2AugSignVector1.Serialize()}));
-        REQUIRE(AugSchemeMPL().Verify(g1_1, Bytes{vecHash}, g2AugSignVector1));
+        REQUIRE(AugSchemeMPL().Verify(Bytes(g1_1.Serialize()), Bytes(vecHash), Bytes(g2AugSignVector1.Serialize())));
+        REQUIRE(AugSchemeMPL().Verify(g1_1, Bytes(vecHash), g2AugSignVector1));
 
         vector<vector<uint8_t>> vecG1AugVector = {g1_1.Serialize(), g1_2.Serialize()};
         vector<vector<uint8_t>> vecG2AugVector = {g2AugSignVector1.Serialize(), g2AugSign2.Serialize()};
@@ -1013,22 +1013,22 @@ TEST_CASE("Advanced") {
 
         REQUIRE(AugSchemeMPL().AggregateVerify(vector<Bytes>{vecG1AugVector.begin(), vecG1AugVector.end()},
                                                  vector<Bytes>{vecHashes.begin(), vecHashes.end()},
-                                                 Bytes{aggAugVector}));
+                                                 Bytes(aggAugVector)));
         REQUIRE(AugSchemeMPL().AggregateVerify({g1_1, g1_2},
                                                  vector<Bytes>{vecHashes.begin(), vecHashes.end()},
                                                  G2Element::FromByteVector(aggAugVector)));
 
         G2Element proof = PopSchemeMPL().PopProve(pk1);
         REQUIRE(PopSchemeMPL().PopVerify(g1_1, proof));
-        REQUIRE(PopSchemeMPL().PopVerify(Bytes{g1_1.Serialize()}, Bytes{proof.Serialize()}));
+        REQUIRE(PopSchemeMPL().PopVerify(Bytes(g1_1.Serialize()), Bytes(proof.Serialize())));
 
         G2Element g2Pop1 = PopSchemeMPL().Sign(pk1, vecHash);
         G2Element g2Pop2 = PopSchemeMPL().Sign(pk2, vecHash);
         G2Element g2PopAgg = PopSchemeMPL().Aggregate({g2Pop1, g2Pop2});
         vecG1Vector = {g1_1.Serialize(), g1_2.Serialize()};
-        REQUIRE(PopSchemeMPL().FastAggregateVerify({g1_1, g1_2}, Bytes{vecHash}, g2PopAgg));
+        REQUIRE(PopSchemeMPL().FastAggregateVerify({g1_1, g1_2}, Bytes(vecHash), g2PopAgg));
         REQUIRE(PopSchemeMPL().FastAggregateVerify(vector<Bytes>{vecG1Vector.begin(), vecG1Vector.end()},
-                                                   Bytes{vecHash}, Bytes{g2PopAgg.Serialize()}));
+                                                   Bytes(vecHash), Bytes(g2PopAgg.Serialize())));
     }
 }
 

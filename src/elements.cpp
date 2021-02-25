@@ -79,7 +79,7 @@ G1Element G1Element::FromMessage(const std::vector<uint8_t>& message,
                                  const uint8_t* dst,
                                  int dst_len)
 {
-    return FromMessage(Bytes{message}, dst, dst_len);
+    return FromMessage(Bytes(message), dst, dst_len);
 }
 
 G1Element G1Element::FromMessage(const Bytes& message,
@@ -276,7 +276,7 @@ G2Element G2Element::FromMessage(const std::vector<uint8_t>& message,
                                  const uint8_t* dst,
                                  int dst_len)
 {
-    return FromMessage(Bytes{message}, dst, dst_len);
+    return FromMessage(Bytes(message), dst, dst_len);
 }
 
 G2Element G2Element::FromMessage(const Bytes& message,
