@@ -70,7 +70,7 @@ G1Element CoreMPL::SkToG1(const PrivateKey &seckey)
 
 G2Element CoreMPL::Sign(const PrivateKey &seckey, const vector<uint8_t> &message)
 {
-    return CoreMPL::Sign(seckey, Bytes{message});
+    return CoreMPL::Sign(seckey, Bytes(message));
 }
 
 G2Element CoreMPL::Sign(const PrivateKey& seckey, const Bytes& message)
@@ -83,7 +83,7 @@ bool CoreMPL::Verify(const vector<uint8_t> &pubkey,
                      const vector<uint8_t> &signature)
 {
     return CoreMPL::Verify(G1Element::FromBytes(Bytes(pubkey)),
-                           Bytes{message},
+                           Bytes(message),
                            G2Element::FromBytes(Bytes(signature)));
 }
 
@@ -156,7 +156,7 @@ bool CoreMPL::AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
 {
     const std::vector<Bytes> vecPubKeyBytes(pubkeys.begin(), pubkeys.end());
     const std::vector<Bytes> vecMessagesBytes(messages.begin(), messages.end());
-    return CoreMPL::AggregateVerify(vecPubKeyBytes, vecMessagesBytes, Bytes{signature});
+    return CoreMPL::AggregateVerify(vecPubKeyBytes, vecMessagesBytes, Bytes(signature));
 }
 
 bool CoreMPL::AggregateVerify(const vector<Bytes>& pubkeys,
@@ -330,7 +330,7 @@ G2Element AugSchemeMPL::Sign(const PrivateKey &seckey,
                              const vector<uint8_t> &message,
                              const G1Element &prepend_pk)
 {
-    return AugSchemeMPL::Sign(seckey, Bytes{message}, prepend_pk);
+    return AugSchemeMPL::Sign(seckey, Bytes(message), prepend_pk);
 }
 
 // Used for prepending different augMessage
@@ -368,7 +368,7 @@ bool AugSchemeMPL::Verify(const G1Element &pubkey,
                           const vector<uint8_t> &message,
                           const G2Element &signature)
 {
-    return AugSchemeMPL::Verify(pubkey, Bytes{message}, signature);
+    return AugSchemeMPL::Verify(pubkey, Bytes(message), signature);
 }
 
 bool AugSchemeMPL::Verify(const G1Element& pubkey,
@@ -467,7 +467,7 @@ bool PopSchemeMPL::PopVerify(const G1Element &pubkey, const G2Element &signature
 
 bool PopSchemeMPL::PopVerify(const vector<uint8_t> &pubkey, const vector<uint8_t> &proof)
 {
-    return PopSchemeMPL::PopVerify(Bytes{pubkey}, Bytes{proof});
+    return PopSchemeMPL::PopVerify(Bytes(pubkey), Bytes(proof));
 }
 
 bool PopSchemeMPL::PopVerify(const Bytes& pubkey, const Bytes& proof)
@@ -489,7 +489,7 @@ bool PopSchemeMPL::FastAggregateVerify(const vector<G1Element> &pubkeys,
                                        const vector<uint8_t> &message,
                                        const G2Element &signature)
 {
-    return PopSchemeMPL::FastAggregateVerify(pubkeys, Bytes{message}, signature);
+    return PopSchemeMPL::FastAggregateVerify(pubkeys, Bytes(message), signature);
 }
 
 bool PopSchemeMPL::FastAggregateVerify(const vector<G1Element>& pubkeys,
