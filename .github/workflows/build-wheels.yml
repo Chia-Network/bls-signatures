@@ -83,7 +83,7 @@ jobs:
         CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.14"
         # GH hosted MacOS runner has gmp and libsodium natively
         # CIBW_ARCHS_MACOS: x86_64 arm64 universal2
-        CIBW_ARCHS_MACOS: x86_64 universal2
+        CIBW_ARCHS_MACOS: x86_64
         CIBW_TEST_SKIP: '*_arm64 *_universal2:arm64'
         CIBW_BEFORE_BUILD_MACOS: >
           python -m pip install --upgrade pip
