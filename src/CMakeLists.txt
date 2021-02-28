@@ -4,9 +4,18 @@ set (CMAKE_CXX_STANDARD 17)
 # CMake 3.14+
 include(FetchContent)
 
+if (DEFINED ENV{RELIC_MASTER})
+  set(RELIC_GIT_TAG "origin/master")
+else ()
+  set(RELIC_GIT_TAG "696f12fddd384ab5a77386d96b84607d1cc29469")
+endif ()
+
+message(STATUS "Relic will be build from: ${RELIC_GIT_TAG}")
+
 FetchContent_Declare(
   relic
   GIT_REPOSITORY https://github.com/relic-toolkit/relic.git
+  GIT_TAG        ${RELIC_GIT_TAG}
 )
 FetchContent_MakeAvailable(relic)
 
