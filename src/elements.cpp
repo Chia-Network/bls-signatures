@@ -113,6 +113,10 @@ G1Element G1Element::Infinity() {
 }
 
 void G1Element::CheckValid() const {
+    // Infinity no longer valid in Relic
+    // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
+    if (g1_is_infty(*(g1_t*)&this->p) == 1)
+        return;
     if (g1_is_valid(*(g1_t*)&this->p) == 0)
         throw std::invalid_argument(
             "Given G1 element failed g1_is_valid check");
@@ -320,6 +324,10 @@ G2Element G2Element::Infinity() {
 }
 
 void G2Element::CheckValid() const {
+    // Infinity no longer valid in Relic
+    // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
+    if (g2_is_infty(*(g2_t*)&this->q) == 1)
+        return;
     if (g2_is_valid(*(g2_t*)&this->q) == 0)
         throw std::invalid_argument(
             "Given G2 element failed g2_is_valid check");

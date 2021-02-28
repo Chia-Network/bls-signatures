@@ -7,7 +7,6 @@ include(FetchContent)
 FetchContent_Declare(
   relic
   GIT_REPOSITORY https://github.com/relic-toolkit/relic.git
-  GIT_TAG        cdd71de5392aadac29e8b3be27bf605baaf4ad25
 )
 FetchContent_MakeAvailable(relic)
 
