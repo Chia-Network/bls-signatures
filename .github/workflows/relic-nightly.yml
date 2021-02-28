@@ -3,6 +3,7 @@ name:  Build and Test C++ with Relic Nightly
 on:
   schedule:
     - cron: "* 14 * * *"
+  workflow_dispatch:
 
 jobs:
   build_wheels:
