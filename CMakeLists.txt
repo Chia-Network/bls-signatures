@@ -8,6 +8,9 @@ ENDIF()
 
 project(BLS)
 
+set(BUILD_BLS_PYTHON_BINDINGS 1 CACHE INTEGER "")
+message(STATUS "Build python bindings: ${BUILD_BLS_PYTHON_BINDINGS}")
+
 # Add path for custom modules
 set(CMAKE_MODULE_PATH
 	${CMAKE_MODULE_PATH}
@@ -89,5 +92,7 @@ if (EMSCRIPTEN)
 else()
   # emscripten can't build python bindings, it produces only javascript
   # add_subdirectory(contrib/pybind11)
-  add_subdirectory(python-bindings)
+  if (BUILD_BLS_PYTHON_BINDINGS)
+    add_subdirectory(python-bindings)
+  endif()
 endif()
