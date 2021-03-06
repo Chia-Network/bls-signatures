@@ -9,7 +9,12 @@ ENDIF()
 project(BLS)
 
 set(BUILD_BLS_PYTHON_BINDINGS 1 CACHE INTEGER "")
+set(BUILD_BLS_TESTS 1 CACHE INTEGER "")
+set(BUILD_BLS_BENCHMARKS 1 CACHE INTEGER "")
+
 message(STATUS "Build python bindings: ${BUILD_BLS_PYTHON_BINDINGS}")
+message(STATUS "Build tests: ${BUILD_BLS_TESTS}")
+message(STATUS "Build benchmarks: ${BUILD_BLS_BENCHMARKS}")
 
 # Add path for custom modules
 set(CMAKE_MODULE_PATH
