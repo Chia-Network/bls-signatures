@@ -27,6 +27,10 @@ jobs:
     - name: Ubuntu build C++ and test Relic at origin/master
       if: startsWith(matrix.os, 'ubuntu')
       run: |
+        echo "Relic origin/master commit:"
+        curl -H "application/vnd.github.v3.sha" \
+        https://api.github.com/repos/relic-toolkit/relic/commits/master | \
+        head -10      
         sudo apt-get update
         sudo apt-get install snap -y
         sudo apt-get remove --purge cmake -y
@@ -51,6 +55,3 @@ jobs:
         cmake --build . -- -j 6
         echo "Running ./src/runtest"
         ./src/runtest
-        curl -H "application/vnd.github.v3.sha" \
-        https://api.github.com/repos/relic-toolkit/relic/commits/master | \
-        head -10
