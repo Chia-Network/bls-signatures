@@ -51,3 +51,4 @@ jobs:
         cmake --build . -- -j 6
         echo "Running ./src/runtest"
         ./src/runtest
+        git log -n 1 --format=fuller
