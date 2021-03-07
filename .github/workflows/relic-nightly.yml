@@ -51,4 +51,6 @@ jobs:
         cmake --build . -- -j 6
         echo "Running ./src/runtest"
         ./src/runtest
-        git log -n 1 --format=fuller
+        curl -H "application/vnd.github.v3.sha" \
+        https://api.github.com/repos/relic-toolkit/relic/commits/master | \
+        head -10
