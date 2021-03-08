@@ -490,25 +490,24 @@ TEST_CASE("Error handling")
         REQUIRE(core_get()->code == 10);
 
         ctx_t* ctx1 = core_get();
-        bool ctxError = false;
 
-        // spawn a thread and make sure it uses a different context
+        // spawn a thread and make sure it uses a different/same context depending on relic's multithreading setup
         std::thread([&]() {
-            if (ctx1 == core_get()) {
-                ctxError = true;
-            }
-            if (core_get()->code != RLC_OK) {
-                ctxError = true;
-            }
-            // this should not modify the code of the main thread
+#if MULTI != RELIC_NONE
+            REQUIRE(ctx1 != core_get());
+            REQUIRE(core_get()->code == RLC_OK);
+#else
+            REQUIRE(ctx1 == core_get());
+            REQUIRE(core_get()->code != RLC_OK);
+#endif
             core_get()->code = 1;
         }).join();
 
-        REQUIRE(!ctxError);
-
-        // other thread should not modify code
+#if MULTI != RELIC_NONE
         REQUIRE(core_get()->code == 10);
-
+#else
+        REQUIRE(core_get()->code == 1);
+#endif
         // reset so that future test cases don't fail
         core_get()->code = RLC_OK;
     }
