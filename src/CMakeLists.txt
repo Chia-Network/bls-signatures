@@ -7,7 +7,7 @@ include(FetchContent)
 if (DEFINED ENV{RELIC_MASTER})
   set(RELIC_GIT_TAG "origin/master")
 else ()
-  set(RELIC_GIT_TAG "9384f1c80cb80878aaafa7a64b7a6703d8d94f4c")
+  set(RELIC_GIT_TAG "03a7c3b7fa43c0da6f3720e341f7d4f6a6d6f21e")
 endif ()
 
 message(STATUS "Relic will be built from: ${RELIC_GIT_TAG}")
