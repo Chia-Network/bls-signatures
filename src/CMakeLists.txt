@@ -10,7 +10,7 @@ else ()
   set(RELIC_GIT_TAG "9384f1c80cb80878aaafa7a64b7a6703d8d94f4c")
 endif ()
 
-message(STATUS "Relic will be build from: ${RELIC_GIT_TAG}")
+message(STATUS "Relic will be built from: ${RELIC_GIT_TAG}")
 
 FetchContent_Declare(
   relic
