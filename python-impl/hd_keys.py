@@ -1,7 +1,7 @@
+from ec import G1Generator, G2Generator, JacobianPoint, default_ec
 from hkdf import extract_expand
 from private_key import PrivateKey
 from util import hash256
-from ec import JacobianPoint, default_ec, G1Generator, G2Generator
 
 
 def key_gen(seed: bytes) -> PrivateKey:

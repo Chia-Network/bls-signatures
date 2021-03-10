@@ -1,23 +1,28 @@
-## Python bindings
+# Python bindings
+
 Use the full power and efficiency of the C++ bls library, but in a few lines of python!
 
 ## Install
+
 ```bash
 pip3 install blspy
+
 ```
+
 Alternatively, to install from source, run the following, in the project root directory:
 
 ```bash
 pip3 install .
 ```
+
 Cmake, a c++ compiler, and a recent version of pip3 (v18) are required for source install.
 GMP(speed) and libsodium(secure memory alloc) are optional dependencies.
 Public keys are G1Elements, and signatures are G2Elements.
 
-
 Then, to use:
 
 ## Import the library
+
 ```python
 from blspy import (PrivateKey, Util, AugSchemeMPL, PopSchemeMPL,
                    G1Element, G2Element)
@@ -41,7 +46,9 @@ signature: G2Element = AugSchemeMPL.sign(sk, message)
 ok: bool = AugSchemeMPL.verify(pk, message, signature)
 assert ok
 ```
+
 ## Serializing keys and signatures to bytes
+
 ```python
 sk_bytes: bytes = bytes(sk)  # 32 bytes
 pk_bytes: bytes = bytes(pk)  # 48 bytes
@@ -51,6 +58,7 @@ print(sk_bytes.hex(), pk_bytes.hex(), signature_bytes.hex())
 ```
 
 ## Loading keys and signatures from bytes
+
 ```python
 sk = PrivateKey.from_bytes(sk_bytes)
 pk = G1Element.from_bytes(pk_bytes)
@@ -58,6 +66,7 @@ signature = G2Element.from_bytes(signature_bytes)
 ```
 
 ## Create aggregate signatures
+
 ```python
 # Generate some more private keys
 seed = bytes([1]) + seed[1:]
@@ -81,6 +90,7 @@ ok = AugSchemeMPL.aggregate_verify([pk1, pk2], [message, message2], agg_sig)
 ```
 
 ## Arbitrary trees of aggregates
+
 ```python
 seed = bytes([3]) + seed[1:]
 sk3: PrivateKey = AugSchemeMPL.key_gen(seed)
@@ -93,6 +103,7 @@ ok = AugSchemeMPL.aggregate_verify([pk1, pk2, pk3], [message, message2, message3
 ```
 
 ## Very fast verification with Proof of Possession scheme
+
 ```python
 # If the same message is signed, you can use Proof of Posession (PopScheme) for efficiency
 # A proof of possession MUST be passed around with the PK to ensure security.
@@ -121,6 +132,7 @@ ok = PopSchemeMPL.sign(pop_agg_sk, message) == pop_sig_agg
 ```
 
 ## HD keys using [EIP-2333](https://github.com/ethereum/EIPs/pull/2333)
+
 ```python
 master_sk: PrivateKey = AugSchemeMPL.key_gen(seed)
 child: PrivateKey = AugSchemeMPL.derive_child_sk(master_sk, 152)

@@ -1,15 +1,16 @@
 # flake8: noqa: E501
+import binascii
+from copy import deepcopy
+
 from blspy import (
-    PrivateKey,
-    Util,
-    BasicSchemeMPL,
     AugSchemeMPL,
-    PopSchemeMPL,
+    BasicSchemeMPL,
     G1Element,
     G2Element,
+    PopSchemeMPL,
+    PrivateKey,
+    Util,
 )
-from copy import deepcopy
-import binascii
 
 
 def test_schemes():
@@ -68,6 +69,7 @@ def test_schemes():
 
         sigU_child = Scheme.sign(childU, msg)
         assert Scheme.verify(childUPk, msg, sigU_child)
+
 
 def test_vectors_invalid():
     # Invalid inputs from https://github.com/algorand/bls_sigs_ref/blob/master/python-impl/serdesZ.py

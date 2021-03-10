@@ -1,16 +1,12 @@
 from typing import List
-from private_key import PrivateKey
-from ec import JacobianPoint, G1Generator, default_ec
-from hd_keys import (
-    key_gen,
-    derive_child_sk,
-    derive_child_sk_unhardened,
-    derive_child_g1_unhardened,
-)
+
+from ec import G1Generator, JacobianPoint, default_ec
+from fields import Fq12
+from hd_keys import (derive_child_g1_unhardened, derive_child_sk,
+                     derive_child_sk_unhardened, key_gen)
 from op_swu_g2 import g2_map
 from pairing import ate_pairing_multi
-from fields import Fq12
-
+from private_key import PrivateKey
 
 basic_scheme_dst = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_NUL_"
 aug_scheme_dst = b"BLS_SIG_BLS12381G2_XMD:SHA-256_SSWU_RO_AUG_"

@@ -10,12 +10,15 @@
 [![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/context:python)
 [![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/Chia-Network/bls-signatures.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Chia-Network/bls-signatures/context:cpp)
 
-NOTE: THIS LIBRARY IS A DRAFT AND NOT YET REVIEWED FOR SECURITY
+NOTE: THIS LIBRARY IS NOT YET FORMALLY REVIEWED FOR SECURITY
 
 NOTE: THIS LIBRARY WAS SHIFTED TO THE IETF BLS SPECIFICATION ON 7/16/20
 
 Implements BLS signatures with aggregation using [relic toolkit](https://github.com/relic-toolkit/relic)
-for cryptographic primitives (pairings, EC, hashing) according to the [IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/) with [these curve parameters](https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/) for BLS12-381.
+for cryptographic primitives (pairings, EC, hashing) according to the
+[IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/)
+with [these curve parameters](https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/)
+for BLS12-381.
 
 Features:
 
@@ -23,14 +26,15 @@ Features:
 * Works on Windows, Mac, Linux, BSD
 * Efficient verification using Proof of Posssesion (only one pairing per distinct message)
 * Aggregate public keys and private keys
-* EIP-2333 key derivation (including unhardened BIP-32-like keys)
+* [EIP-2333](https://eips.ethereum.org/EIPS/eip-2333) key derivation (including unhardened BIP-32-like keys)
 * Key and signature serialization
 * Batch verification
-* [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/master/python-bindings)
-* [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/master/python-impl)
-* [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/master/js-bindings) (currently out of date)
+* [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/main/python-bindings)
+* [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/main/python-impl)
+* [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/main/js-bindings) (currently out of date - a great first issue!)
 
 ## Before you start
+
 This library uses minimum public key sizes (MPL). A G2Element is a signature (96 bytes), and a G1Element is a public key (48 bytes). A private key is a 32 byte integer. There are three schemes: Basic, Augmented, and ProofOfPossession. Augmented should be enough for most use cases, and ProofOfPossession can be used where verification must be fast.
 
 ## Import the library
@@ -194,6 +198,7 @@ cmake --build . -- -j 6
 ```bash
 ./build/src/runbench
 ```
+
 On a 3.5 GHz i7 Mac, verification takes about 1.1ms per signature, and signing takes 1.3ms.
 
 ### Link the library to use it
@@ -205,12 +210,13 @@ g++ -Wl,-no_pie -std=c++11  -Ibls-signatures/build/_deps/relic-src/include -Ibls
 ## Notes on dependencies
 
 Libsodium and GMP are optional dependencies: libsodium gives secure memory
-allocation, and GMP speeds up the library by ~ 3x. To install them, either
-download them from github and follow the instructions for each repo, or use
-a package manager like APT or brew. You can follow the recipe used to build
-python wheels for multiple platforms in `.github/workflows/`. libsodium is
-dynamically linked unless the environment variable $CIBUILDWHEEL is set which
-will then cause libsodium to statically link.
+allocation, and GMP speeds up the library by ~ 3x. MPIR is used on Windows via
+GitHub Actions instead. To install them, either download them from github and
+follow the instructions for each repo, or use a package manager like APT or
+brew. You can follow the recipe used to build python wheels for multiple
+platforms in `.github/workflows/`. libsodium is dynamically linked unless
+the environment variable $CIBUILDWHEEL is set which will then cause
+libsodium to statically link.
 
 ## Discussion
 
@@ -228,39 +234,39 @@ channel of Chia's [public Keybase channels](https://keybase.io/team/chia_network
 * Use cpplint with default rules
 * Use SecAlloc and SecFree when handling secrets
 
-
 ## ci Building
 
 The primary build process for this repository is to use GitHub Actions to
 build binary wheels for MacOS, Linux (x64 and aarch64), and Windows and publish
-them with a source wheel on PyPi. See `.github/workflows/build.yml`. CMake uses
+them with a source wheel on PyPi. MacOS ARM64 is supported but not automated
+due to a lack of M1 CI runners. See `.github/workflows/build.yml`. CMake uses
 [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)
 to download [pybind11](https://github.com/pybind/pybind11) for the Python
-bindings and relic from a chia relic forked repository. Building is then
-managed by [cibuildwheel](https://github.com/joerick/cibuildwheel).
+bindings and relic from a chia relic forked repository for Windows. Building
+is then managed by [cibuildwheel](https://github.com/joerick/cibuildwheel).
 Further installation is then available via `pip install blspy` e.g. The ci
 builds include GMP and a statically linked libsodium.
 
 ## Contributing and workflow
 
 Contributions are welcome and more details are available in chia-blockchain's
-[CONTRIBUTING.md](https://github.com/Chia-Network/chia-blockchain/blob/master/CONTRIBUTING.md).
+[CONTRIBUTING.md](https://github.com/Chia-Network/chia-blockchain/blob/main/CONTRIBUTING.md).
 
-The master branch is usually the currently released latest version on PyPI.
+The main branch is usually the currently released latest version on PyPI.
 Note that at times bls-signatures/blspy will be ahead of the release version
-that chia-blockchain requires in it's master/release version in preparation
-for a new chia-blockchain release. Please branch or fork master and then create
-a pull request to the master branch. Linear merging is enforced on master and
-merging requires a completed review. PRs will kick off a GitHub actions ci build
-and analysis of bls-signatures at
+that chia-blockchain requires in it's main/release version in preparation
+for a new chia-blockchain release. Please branch or fork main and then create
+a pull request to the main branch. Linear merging is enforced on main and
+merging requires a completed review. PRs will kick off a GitHub actions ci
+build and analysis of bls-signatures at
 [lgtm.com](https://lgtm.com/projects/g/Chia-Network/bls-signatures/?mode=list).
 Please make sure your build is passing and that it does not increase alerts
 at lgtm.
 
 ## Specification and test vectors
 
-The [IETF bls draft](https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve/) is followed.
-Test vectors can also be seen in the python and cpp test files.
+The [IETF bls draft](https://datatracker.ietf.org/doc/draft-irtf-cfrg-hash-to-curve/)
+is followed. Test vectors can also be seen in the python and cpp test files.
 
 ## Libsodium license
 
@@ -286,7 +292,10 @@ the following copyright notice.
 
 ## GMP license
 
-GMP is distributed under the [GNU LGPL v3 license](https://www.gnu.org/licenses/lgpl-3.0.html)
+GMP is distributed under the
+[GNU LGPL v3 license](https://www.gnu.org/licenses/lgpl-3.0.html)
 
 ## Relic license
-Relic is used with the [Apache 2.0 license](https://github.com/relic-toolkit/relic/blob/master/LICENSE.Apache-2.0)
+
+Relic is used with the
+[Apache 2.0 license](https://github.com/relic-toolkit/relic/blob/master/LICENSE.Apache-2.0)

@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Cancel previous runs on the same branch
-      if: ${{ github.ref != 'refs/heads/master' }}
+      if: ${{ github.ref != 'refs/heads/main' }}
       uses: styfle/cancel-workflow-action@0.7.0
       with:
         access_token: ${{ github.token }}
@@ -30,7 +30,7 @@ jobs:
         echo "Relic origin/master commit:"
         curl -H "application/vnd.github.v3.sha" \
         https://api.github.com/repos/relic-toolkit/relic/commits/master | \
-        head -10      
+        head -10
         sudo apt-get update
         sudo apt-get install snap -y
         sudo apt-get remove --purge cmake -y
