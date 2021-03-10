@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Cancel previous runs on the same branch
-      if: ${{ github.ref != 'refs/heads/master' }}
+      if: ${{ github.ref != 'refs/heads/main' }}
       uses: styfle/cancel-workflow-action@0.7.0
       with:
         access_token: ${{ github.token }}

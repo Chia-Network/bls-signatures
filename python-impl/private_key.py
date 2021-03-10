@@ -1,5 +1,6 @@
 from __future__ import annotations
-from ec import default_ec, G1Generator
+
+from ec import G1Generator, default_ec
 from hkdf import extract_expand
 
 

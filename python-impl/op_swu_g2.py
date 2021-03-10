@@ -17,8 +17,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from bls12381 import q, h_eff
-from ec import JacobianPoint, eval_iso, default_ec_twist
+from bls12381 import h_eff, q
+from ec import JacobianPoint, default_ec_twist, eval_iso
 from fields import Fq, Fq2, roots_of_unity
 from hash_to_field import Hp2
 

@@ -1,8 +1,10 @@
 from __future__ import annotations
-from typing import List, Optional
-import bls12381
+
 from collections import namedtuple
 from copy import deepcopy
+from typing import List, Optional
+
+import bls12381
 from fields import FieldExtBase, Fq, Fq2, Fq6, Fq12
 from util import hash256
 

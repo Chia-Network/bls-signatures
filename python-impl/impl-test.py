@@ -1,29 +1,17 @@
+import hashlib
 from copy import deepcopy
 from secrets import token_bytes
-import hashlib
 
+from ec import (G1FromBytes, G1Generator, G1Infinity, G2FromBytes, G2Generator,
+                G2Infinity, JacobianPoint, default_ec, default_ec_twist,
+                sign_Fq2, twist, untwist, y_for_x)
 from fields import Fq, Fq2, Fq6, Fq12
-from ec import (
-    JacobianPoint,
-    G1Generator,
-    G2Generator,
-    G1Infinity,
-    G2Infinity,
-    G1FromBytes,
-    G2FromBytes,
-    default_ec,
-    default_ec_twist,
-    sign_Fq2,
-    twist,
-    untwist,
-    y_for_x,
-)
-from pairing import ate_pairing
 from hash_to_field import expand_message_xmd
+from hkdf import expand, extract
 from op_swu_g2 import g2_map
-from schemes import AugSchemeMPL, PopSchemeMPL, BasicSchemeMPL
+from pairing import ate_pairing
 from private_key import PrivateKey
-from hkdf import extract, expand
+from schemes import AugSchemeMPL, BasicSchemeMPL, PopSchemeMPL
 
 G1Element = JacobianPoint
 G2Element = JacobianPoint
