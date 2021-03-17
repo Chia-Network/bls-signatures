@@ -29,7 +29,7 @@ using namespace bls;
 
 
 void benchSigs() {
-    string testName = "Sigining";
+    string testName = "Signing";
     double numIters = 5000;
     PrivateKey sk = AugSchemeMPL().KeyGen(getRandomSeed());
     vector<uint8_t> message1 = sk.GetG1Element().Serialize();
