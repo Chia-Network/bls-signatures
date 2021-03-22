@@ -30,7 +30,7 @@ std::chrono::time_point<std::chrono::steady_clock> startStopwatch() {
 
 void endStopwatch(string testName,
                   std::chrono::time_point<std::chrono::steady_clock> start,
-                  double numIters) {
+                  int numIters) {
     auto end = std::chrono::steady_clock::now();
     auto now_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
             end - start);
@@ -38,7 +38,7 @@ void endStopwatch(string testName,
     cout << endl << testName << endl;
     cout << "Total: " << numIters << " runs in " << now_ms.count()
          << " ms" << endl;
-    cout << "Avg: " << now_ms.count() / numIters
+    cout << "Avg: " << now_ms.count() / static_cast<double>(numIters)
          << " ms" << endl;
 }
 
