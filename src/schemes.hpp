@@ -26,13 +26,12 @@
 
 #include "elements.hpp"
 #include "privatekey.hpp"
+#include "util.hpp"
 
 using std::vector;
 
 // These are all MPL schemes
 namespace bls {
-
-class Bytes;
 
 class CoreMPL {
 
@@ -41,50 +40,40 @@ public:
     CoreMPL(const std::string& strId) : strCiphersuiteId(strId) {}
     // Generates a private key from a seed, similar to HD key generation
     // (hashes the seed), and reduces it mod the group order
-    virtual PrivateKey KeyGen(const vector<uint8_t>& seed);
-    virtual PrivateKey KeyGen(const Bytes& seed);
+    virtual PrivateKey KeyGen(Bytes seed);
 
     // Generates a public key from a secret key
     virtual vector<uint8_t> SkToPk(const PrivateKey &seckey);
 
     virtual G1Element SkToG1(const PrivateKey &seckey);
 
-    virtual G2Element Sign(const PrivateKey &seckey, const vector<uint8_t> &message);
-    virtual G2Element Sign(const PrivateKey& seckey, const Bytes& message);
+    virtual G2Element Sign(const PrivateKey& seckey, Bytes message);
 
-    virtual bool Verify(const vector<uint8_t> &pubkey,
-                        const vector<uint8_t> &message,
-                        const vector<uint8_t> &signature);
+    virtual bool Verify(Bytes pubkey, Bytes message, Bytes signature);
 
-    virtual bool Verify(const Bytes& pubkey, const Bytes& message, const Bytes& signature);
+    virtual bool Verify(const G1Element& pubkey, Bytes message, const G2Element& signature);
 
-    virtual bool Verify(const G1Element &pubkey,
-                        const vector<uint8_t> &message,
-                        const G2Element &signature);
+    virtual vector<uint8_t> Aggregate(span<const vector<uint8_t>> signatures);
+    virtual vector<uint8_t> Aggregate(span<const Bytes> signatures);
 
-    virtual bool Verify(const G1Element& pubkey, const Bytes& message, const G2Element& signature);
+    virtual G2Element Aggregate(span<const G2Element> signatures);
 
-    virtual vector<uint8_t> Aggregate(const vector<vector<uint8_t>> &signatures);
-    virtual vector<uint8_t> Aggregate(const vector<Bytes>& signatures);
+    virtual G1Element Aggregate(span<const G1Element> publicKeys);
 
-    virtual G2Element Aggregate(const vector<G2Element> &signatures);
+    virtual bool AggregateVerify(span<const vector<uint8_t>> pubkeys,
+                                 span<const vector<uint8_t>> messages,
+                                 Bytes signature);
 
-    virtual G1Element Aggregate(const vector<G1Element> &publicKeys);
+    virtual bool AggregateVerify(span<const Bytes> pubkeys,
+                                 span<const Bytes> messages,
+                                 Bytes signature);
 
-    virtual bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
-                                 const vector<vector<uint8_t>> &messages,
-                                 const vector<uint8_t> &signature);
-
-    virtual bool AggregateVerify(const vector<Bytes>& pubkeys,
-                                 const vector<Bytes>& messages,
-                                 const Bytes& signature);
-
-    virtual bool AggregateVerify(const vector<G1Element> &pubkeys,
-                                 const vector<vector<uint8_t>> &messages,
+    virtual bool AggregateVerify(span<const G1Element> pubkeys,
+                                 span<const vector<uint8_t>> messages,
                                  const G2Element &signature);
 
-     virtual bool AggregateVerify(const vector<G1Element>& pubkeys,
-                                  const vector<Bytes>& messages,
+     virtual bool AggregateVerify(span<const G1Element> pubkeys,
+                                  span<const Bytes> messages,
                                   const G2Element& signature);
 
     PrivateKey DeriveChildSk(const PrivateKey& sk, uint32_t index);
@@ -100,20 +89,20 @@ class BasicSchemeMPL : public CoreMPL {
 public:
     static const std::string CIPHERSUITE_ID;
     BasicSchemeMPL() : CoreMPL(BasicSchemeMPL::CIPHERSUITE_ID) {}
-    bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
-                         const vector<vector<uint8_t>> &messages,
-                         const vector<uint8_t> &signature) override;
+    bool AggregateVerify(span<const vector<uint8_t>> pubkeys,
+                         span<const vector<uint8_t>> messages,
+                         Bytes signature) override;
 
-    bool AggregateVerify(const vector<Bytes>& pubkeys,
-                         const vector<Bytes>& messages,
-                         const Bytes& signature) override;
+    bool AggregateVerify(span<const Bytes> pubkeys,
+                         span<const Bytes> messages,
+                         Bytes signature) override;
 
-    bool AggregateVerify(const vector<G1Element> &pubkeys,
-                         const vector<vector<uint8_t>> &messages,
+    bool AggregateVerify(span<const G1Element> pubkeys,
+                         span<const vector<uint8_t>> messages,
                          const G2Element &signature) override;
 
-    bool AggregateVerify(const vector<G1Element>& pubkeys,
-                         const vector<Bytes>& messages,
+    bool AggregateVerify(span<const G1Element> pubkeys,
+                         span<const Bytes> messages,
                          const G2Element& signature) override;
 };
 
@@ -123,50 +112,35 @@ public:
     static const std::string CIPHERSUITE_ID;
     AugSchemeMPL() : CoreMPL(AugSchemeMPL::CIPHERSUITE_ID) {}
 
-    G2Element Sign(const PrivateKey &seckey, const vector<uint8_t> &message) override;
-
-    G2Element Sign(const PrivateKey& seckey, const Bytes& message) override;
-
-    // Used for prepending different augMessage
-    G2Element Sign(const PrivateKey &seckey,
-                   const vector<uint8_t> &message,
-                   const G1Element &prepend_pk);
+    G2Element Sign(const PrivateKey& seckey, Bytes message) override;
 
     // Used for prepending different augMessage
     G2Element Sign(const PrivateKey& seckey,
-                   const Bytes& message,
+                   Bytes message,
                    const G1Element& prepend_pk);
 
-    bool Verify(const vector<uint8_t> &pubkey,
-                const vector<uint8_t> &message,
-                const vector<uint8_t> &signature) override;
-
-    bool Verify(const Bytes& pubkey,
-                const Bytes& message,
-                const Bytes& signature) override;
-
-    bool Verify(const G1Element &pubkey,
-                const vector<uint8_t> &message,
-                const G2Element &signature) override;
+    bool Verify(Bytes pubkey,
+                Bytes message,
+                Bytes signature) override;
 
     bool Verify(const G1Element& pubkey,
-                const Bytes& message,
+                Bytes message,
                 const G2Element& signature) override;
 
-    bool AggregateVerify(const vector<vector<uint8_t>> &pubkeys,
-                         const vector<vector<uint8_t>> &messages,
-                         const vector<uint8_t> &signature) override;
+    bool AggregateVerify(span<const vector<uint8_t>> pubkeys,
+                         span<const vector<uint8_t>> messages,
+                         Bytes signature) override;
 
-    bool AggregateVerify(const vector<Bytes>& pubkeys,
-                         const vector<Bytes>& messages,
-                         const Bytes& signature) override;
+    bool AggregateVerify(span<const Bytes> pubkeys,
+                         span<const Bytes> messages,
+                         Bytes signature) override;
 
-    bool AggregateVerify(const vector<G1Element> &pubkeys,
-                         const vector<vector<uint8_t>> &messages,
+    bool AggregateVerify(span<const G1Element> pubkeys,
+                         span<const vector<uint8_t>> messages,
                          const G2Element &signature) override;
 
-    bool AggregateVerify(const vector<G1Element>& pubkeys,
-                         const vector<Bytes>& messages,
+    bool AggregateVerify(span<const G1Element> pubkeys,
+                         span<const Bytes> messages,
                          const G2Element& signature) override;
 };
 
@@ -181,25 +155,19 @@ public:
 
     bool PopVerify(const G1Element &pubkey, const G2Element &signature_proof);
 
-    bool PopVerify(const vector<uint8_t> &pubkey, const vector<uint8_t> &proof);
+    bool PopVerify(Bytes pubkey, Bytes proof);
 
-    bool PopVerify(const Bytes& pubkey, const Bytes& proof);
-
-    bool FastAggregateVerify(const vector<G1Element> &pubkeys,
-                             const vector<uint8_t> &message,
-                             const G2Element &signature);
-
-    bool FastAggregateVerify(const vector<G1Element>& pubkeys,
-                             const Bytes& message,
+    bool FastAggregateVerify(span<const G1Element> pubkeys,
+                             Bytes message,
                              const G2Element& signature);
 
-    bool FastAggregateVerify(const vector<vector<uint8_t>> &pubkeys,
-                             const vector<uint8_t> &message,
-                             const vector<uint8_t> &signature);
+    bool FastAggregateVerify(span<const vector<uint8_t>> pubkeys,
+                             Bytes message,
+                             Bytes signature);
 
-    bool FastAggregateVerify(const vector<Bytes>& pubkeys,
-                             const Bytes& message,
-                             const Bytes& signature);
+    bool FastAggregateVerify(span<const Bytes> pubkeys,
+                             Bytes message,
+                             Bytes signature);
 };
 
 }  // end namespace bls

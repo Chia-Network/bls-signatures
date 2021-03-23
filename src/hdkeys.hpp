@@ -34,13 +34,7 @@ class HDKeys {
      **/
  public:
     static const uint8_t HASH_LEN = 32;
-
-    static PrivateKey KeyGen(const std::vector<uint8_t>& seed)
-    {
-        return KeyGen(Bytes(seed));
-    }
-    
-    static PrivateKey KeyGen(const Bytes& seed)
+    static PrivateKey KeyGen(const Bytes seed)
     {
         // KeyGen
         // 1. PRK = HKDF-Extract("BLS-SIG-KEYGEN-SALT-", IKM || I2OSP(0, 1))
