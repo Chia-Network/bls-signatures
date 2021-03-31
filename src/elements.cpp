@@ -106,17 +106,8 @@ bool G1Element::IsValid() const {
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
     if (g1_is_infty((g1_st*)p) == 1)
         return true;
-    if (g1_is_valid((g1_st*)p) == 0)
-        return false;
 
-    // check if inside subgroup
-    bn_t order;
-    bn_new(order);
-    g1_get_ord(order);
-
-    const G1Element point = *this * order;
-    bn_free(order);
-    return point == G1Element();
+    return g1_is_valid((g1_st*)p);
 }
 
 void G1Element::CheckValid() const {
@@ -298,17 +289,8 @@ bool G2Element::IsValid() const {
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
     if (g2_is_infty((g2_st*)q) == 1)
         return true;
-    if (g2_is_valid((g2_st*)q) == 0)
-        return false;
 
-    // check if inside subgroup
-    bn_t order;
-    bn_new(order);
-    g2_get_ord(order);
-
-    G2Element point = *this * order;
-    bn_free(order);
-    return point == G2Element();
+    return g2_is_valid((g2_st*)q);
 }
 
 void G2Element::CheckValid() const {
