@@ -21,7 +21,6 @@
 extern "C" {
 #include "relic.h"
 }
-#include "relic_test.h"
 #include "test-utils.hpp"
 using std::cout;
 using std::endl;
