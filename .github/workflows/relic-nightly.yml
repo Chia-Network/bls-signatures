@@ -24,12 +24,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Ubuntu build C++ and test Relic at origin/master
+    - name: Ubuntu build C++ and test Relic at origin/main
       if: startsWith(matrix.os, 'ubuntu')
       run: |
-        echo "Relic origin/master commit:"
+        echo "Relic origin/main commit:"
         curl -H "application/vnd.github.v3.sha" \
-        https://api.github.com/repos/relic-toolkit/relic/commits/master | \
+        https://api.github.com/repos/relic-toolkit/relic/commits/main | \
         head -10
         sudo apt-get update
         sudo apt-get install snap -y
@@ -48,7 +48,7 @@ jobs:
         cd ..
         echo "Setting libsodium to static compile."
         export CIBUILDWHEEL=1
-        export RELIC_MASTER=1
+        export RELIC_MAIN=1
         mkdir -p build
         cd build
         cmake ../
