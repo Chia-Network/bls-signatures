@@ -88,6 +88,7 @@ G1Element G1Element::FromMessage(const Bytes& message,
 {
     G1Element ans;
     ep_map_dst(ans.p, message.begin(), (int)message.size(), dst, dst_len);
+    BLS::CheckRelicErrors();
     assert(ans.IsValid());
     return ans;
 }
@@ -279,6 +280,7 @@ G2Element G2Element::FromMessage(const Bytes& message,
 {
     G2Element ans;
     ep2_map_dst(ans.q, message.begin(), (int)message.size(), dst, dst_len);
+    BLS::CheckRelicErrors();
     assert(ans.IsValid());
     return ans;
 }
