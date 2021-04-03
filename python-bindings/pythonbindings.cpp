@@ -26,6 +26,9 @@ namespace py = pybind11;
 using namespace bls;
 using std::vector;
 
+
+/* This class releases the Python GIL until the end of the scope.
+   This is different from gil_scoped_release in that it can't  be reacquired early. */
 class PythonGIL {
 public:
     PythonGIL() { _save = PyEval_SaveThread(); }
@@ -53,13 +56,13 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to PrivateKey::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-		PythonGIL release_lock;
+                PythonGIL release_lock;
                 return PrivateKey::FromBytes(Bytes(data_ptr, PrivateKey::PRIVATE_KEY_SIZE));
             })
         .def(
             "__bytes__",
             [](const PrivateKey &k) {
-	        PythonGIL release_lock;
+                PythonGIL release_lock;
                 uint8_t *output =
                     Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
                 k.Serialize(output);
@@ -163,7 +166,7 @@ PYBIND11_MODULE(blspy, m)
                 return AugSchemeMPL().KeyGen(inputVec);
             })
         .def("derive_child_sk", [](const PrivateKey& sk, uint32_t index){
-	    PythonGIL release_lock;
+            PythonGIL release_lock;
             return AugSchemeMPL().DeriveChildSk(sk, index);
         })
         .def("derive_child_sk_unhardened", [](const PrivateKey& sk, uint32_t index){
@@ -326,7 +329,7 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to G1Element::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-		PythonGIL release_lock;
+                PythonGIL release_lock;
                 return G1Element::FromBytes(Bytes(data_ptr, G1Element::SIZE));
             })
         .def("generator", &G1Element::Generator)
@@ -374,7 +377,7 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__bytes__",
             [](const G1Element &ele) {
-	        PythonGIL release_lock;
+                PythonGIL release_lock;
                 vector<uint8_t> out = ele.Serialize();
                 py::bytes ans = py::bytes(
                     reinterpret_cast<const char *>(out.data()), G1Element::SIZE);
