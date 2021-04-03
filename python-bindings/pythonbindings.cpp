@@ -377,8 +377,9 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__bytes__",
             [](const G1Element &ele) {
+                vector<uint8_t> out;
                 Py_BEGIN_ALLOW_THREADS
-                vector<uint8_t> out = ele.Serialize();
+                out = ele.Serialize();
                 Py_END_ALLOW_THREADS
                 py::bytes ans = py::bytes(
                     reinterpret_cast<const char *>(out.data()), G1Element::SIZE);
