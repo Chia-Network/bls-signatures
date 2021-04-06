@@ -137,6 +137,7 @@ PYBIND11_MODULE(blspy, m)
                const py::bytes &msg,
                const G2Element &sig) {
                 std::string s(msg);
+                PythonGIL release_lock;
                 vector<uint8_t> v(s.begin(), s.end());
                 return BasicSchemeMPL().Verify(pk, v, sig);
             })
@@ -150,7 +151,7 @@ PYBIND11_MODULE(blspy, m)
                     std::string s(msgs[i]);
                     vecs[i] = vector<uint8_t>(s.begin(), s.end());
                 }
-
+                PythonGIL release_lock;
                 return BasicSchemeMPL().AggregateVerify(pks, vecs, sig);
             });
 
@@ -200,6 +201,7 @@ PYBIND11_MODULE(blspy, m)
                const py::bytes &msg,
                const G2Element &sig) {
                 std::string s(msg);
+                PythonGIL release_lock;
                 vector<uint8_t> v(s.begin(), s.end());
                 return AugSchemeMPL().Verify(pk, v, sig);
             })
@@ -213,7 +215,7 @@ PYBIND11_MODULE(blspy, m)
                     std::string s(msgs[i]);
                     vecs[i] = vector<uint8_t>(s.begin(), s.end());
                 }
-
+                PythonGIL release_lock;
                 return AugSchemeMPL().AggregateVerify(pks, vecs, sig);
             });
 
@@ -253,6 +255,7 @@ PYBIND11_MODULE(blspy, m)
                const py::bytes &msg,
                const G2Element &sig) {
                 std::string s(msg);
+                PythonGIL release_lock;
                 vector<uint8_t> v(s.begin(), s.end());
                 return PopSchemeMPL().Verify(pk, v, sig);
             })
@@ -266,13 +269,14 @@ PYBIND11_MODULE(blspy, m)
                     std::string s(msgs[i]);
                     vecs[i] = vector<uint8_t>(s.begin(), s.end());
                 }
-
+                PythonGIL release_lock;
                 return PopSchemeMPL().AggregateVerify(pks, vecs, sig);
             })
         .def("pop_prove", [](const PrivateKey& privateKey){
             return PopSchemeMPL().PopProve(privateKey);
         })
         .def("pop_verify", [](const G1Element& pubkey, const G2Element& signature){
+            PythonGIL release_lock;
             return PopSchemeMPL().PopVerify(pubkey, signature);
         })
         .def(
@@ -281,6 +285,7 @@ PYBIND11_MODULE(blspy, m)
                const py::bytes &msg,
                const G2Element &sig) {
                 std::string s(msg);
+                PythonGIL release_lock;
                 vector<uint8_t> v(s.begin(), s.end());
                 return PopSchemeMPL().FastAggregateVerify(pks, v, sig);
             });
