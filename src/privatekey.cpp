@@ -236,6 +236,7 @@ void PrivateKey::AllocateKeyData()
 {
     assert(!keydata);
     keydata = Util::SecAlloc<bn_st>(1);
+    keydata->alloc = RLC_BN_SIZE;
     bn_zero(keydata);
 }
 
