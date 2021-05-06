@@ -17,7 +17,7 @@
 namespace js_wrappers {
 PublicKeyWrapper::PublicKeyWrapper(const PublicKey &publicKey) : JSWrapper(publicKey) {}
 
-const size_t PublicKeyWrapper::PUBLIC_KEY_SIZE = PublicKey::PUBLIC_KEY_SIZE;
+const size_t PublicKeyWrapper::PUBLIC_KEY_SIZE = PublicKey::SIZE;
 
 std::vector <PublicKey> PublicKeyWrapper::Unwrap(std::vector <PublicKeyWrapper> wrappers) {
     std::vector <PublicKey> unwrapped;
@@ -29,22 +29,9 @@ std::vector <PublicKey> PublicKeyWrapper::Unwrap(std::vector <PublicKeyWrapper> 
 
 PublicKeyWrapper PublicKeyWrapper::FromBytes(val buffer) {
     std::vector <uint8_t> bytes = helpers::toVector(buffer);
-    PublicKey pk = PublicKey::FromBytes(bytes.data());
+    const bls::Bytes bytesView(bytes);
+    PublicKey pk = PublicKey::FromBytes(bytesView);
     return PublicKeyWrapper(pk);
-}
-
-PublicKeyWrapper PublicKeyWrapper::Aggregate(val pubKeysWrappers) {
-    std::vector <PublicKey> pubKeys = PublicKeyWrapper::Unwrap(
-            helpers::toVectorFromJSArray<PublicKeyWrapper>(pubKeysWrappers));
-    PublicKey aggregatedPk = PublicKey::Aggregate(pubKeys);
-    return PublicKeyWrapper(aggregatedPk);
-}
-
-PublicKeyWrapper PublicKeyWrapper::AggregateInsecure(val pubKeysWrappers) {
-    std::vector <PublicKey> pubKeys = PublicKeyWrapper::Unwrap(
-            helpers::toVectorFromJSArray<PublicKeyWrapper>(pubKeysWrappers));
-    PublicKey aggregatedPk = PublicKey::AggregateInsecure(pubKeys);
-    return PublicKeyWrapper(aggregatedPk);
 }
 
 val PublicKeyWrapper::Serialize() const {

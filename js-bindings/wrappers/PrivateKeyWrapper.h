@@ -29,23 +29,13 @@ class PrivateKeyWrapper : public JSWrapper<PrivateKey> {
 
     static std::vector<PrivateKey> Unwrap(std::vector<PrivateKeyWrapper> wrappers);
 
-    static PrivateKeyWrapper FromSeed(val buffer);
-
     static PrivateKeyWrapper FromBytes(val buffer, bool modOrder);
 
-    static PrivateKeyWrapper Aggregate(val privateKeysArray, val publicKeysArray);
-
-    static PrivateKeyWrapper AggregateInsecure(val privateKeysArray);
+    static PrivateKeyWrapper Aggregate(val privateKeysArray);
 
     val Serialize() const;
 
-    SignatureWrapper Sign(val messageBuffer) const;
-
-    InsecureSignatureWrapper SignInsecure(val messageBuffer) const;
-
-    SignatureWrapper SignPrehashed(val messageHashBuffer) const;
-
-    PublicKeyWrapper GetPublicKey() const;
+    PublicKeyWrapper GetG1() const;
 };
 }  // namespace js_wrappers
 

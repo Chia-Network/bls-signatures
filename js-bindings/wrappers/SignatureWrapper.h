@@ -16,27 +16,10 @@
 #define JS_BINDINGS_WRAPPERS_SIGNATUREWRAPPER_H_
 
 #include "../helpers.h"
-#include "AggregationInfoWrapper.h"
+#include "JSWrapper.h"
 
 namespace js_wrappers {
-class InsecureSignatureWrapper : public JSWrapper<InsecureSignature> {
- public:
-    explicit InsecureSignatureWrapper(const InsecureSignature &signature);
-
-    static const size_t SIGNATURE_SIZE;
-
-    static std::vector <InsecureSignature> Unwrap(std::vector <InsecureSignatureWrapper> sigWrappers);
-
-    static InsecureSignatureWrapper FromBytes(val buffer);
-
-    static InsecureSignatureWrapper Aggregate(val insecureSignatureWrappers);
-
-    bool Verify(val hashesBuffers, val pubKeyWrappersArray) const;
-
-    InsecureSignatureWrapper DivideBy(val insecureSignatureWrappers) const;
-
-    val Serialize() const;
-};
+using helpers::Signature;
 
 class SignatureWrapper : public JSWrapper<Signature> {
  public:
@@ -52,22 +35,7 @@ class SignatureWrapper : public JSWrapper<Signature> {
 
     static SignatureWrapper AggregateSigs(val signatureWrappers);
 
-    static SignatureWrapper FromBytesAndAggregationInfo(val buffer, const AggregationInfoWrapper &infoWrapper);
-
-    static SignatureWrapper FromInsecureSignature(InsecureSignatureWrapper signature);
-
-    static SignatureWrapper
-    FromInsecureSignatureAndInfo(InsecureSignatureWrapper signature, AggregationInfoWrapper info);
-
-    bool Verify() const;
-
     val Serialize() const;
-
-    AggregationInfoWrapper GetAggregationInfo() const;
-
-    void SetAggregationInfo(const AggregationInfoWrapper &newAggregationInfo);
-
-    SignatureWrapper DivideBy(val signatureWrappers) const;
 };
 }  // namespace js_wrappers
 

@@ -19,6 +19,8 @@
 #include "JSWrapper.h"
 
 namespace js_wrappers {
+using helpers::PublicKey;
+
 class PublicKeyWrapper : public JSWrapper<PublicKey> {
  public:
     explicit PublicKeyWrapper(const PublicKey &publicKey);
@@ -28,10 +30,6 @@ class PublicKeyWrapper : public JSWrapper<PublicKey> {
     static std::vector <PublicKey> Unwrap(std::vector <PublicKeyWrapper> wrappers);
 
     static PublicKeyWrapper FromBytes(val buffer);
-
-    static PublicKeyWrapper Aggregate(val pubKeysWrappers);
-
-    static PublicKeyWrapper AggregateInsecure(val pubKeysWrappers);
 
     val Serialize() const;
 
