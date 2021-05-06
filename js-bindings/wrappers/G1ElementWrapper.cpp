@@ -38,6 +38,10 @@ val G1ElementWrapper::Serialize() const {
     return helpers::toUint8Array(wrapped.Serialize());
 }
 
+G1ElementWrapper G1ElementWrapper::Add(const G1ElementWrapper &other) {
+    return G1ElementWrapper(GetWrappedInstance() + other.GetWrappedInstance());
+}
+
 uint32_t G1ElementWrapper::GetFingerprint() const {
     return wrapped.GetFingerprint();
 }

@@ -26,14 +26,70 @@ namespace js_wrappers {
 template <typename SchemeMPL> class SchemeMPLWrapper : public JSWrapper<SchemeMPL> {
  public:
   static G1ElementWrapper SkToG1(const PrivateKeyWrapper &seckey) {
-    auto mpl = SchemeMPL();
     return G1ElementWrapper(mpl.SkToG1(seckey.GetWrappedInstance()));
   }
 
   static PrivateKeyWrapper KeyGen(val seedVal) {
-    auto mpl = SchemeMPL();
     std::vector <uint8_t> seed = helpers::toVector(seedVal);
     return PrivateKeyWrapper(mpl.KeyGen(seed));
+  }
+
+  static G2ElementWrapper Sign(const PrivateKeyWrapper &seckey, val messageVal) {
+    std::vector <uint8_t> message = helpers::toVector(messageVal);
+    return G2ElementWrapper(mpl.Sign(seckey.GetWrappedInstance(), message));
+  }
+
+  static bool Verify(const G1ElementWrapper &pubkey, val messageVal, const G2ElementWrapper &signature) {
+    std::vector <uint8_t> message = helpers::toVector(messageVal);
+    return mpl.Verify(pubkey.GetWrappedInstance(), message, signature.GetWrappedInstance());
+  }
+
+  static std::vector<G2Element> Unwrap(const std::vector<G2ElementWrapper> &wrappers) {
+    std::vector<G2Element> unwrapped;
+    for (auto &wrapper : wrappers) {
+      unwrapped.push_back(wrapper.GetWrappedInstance());
+    }
+    return unwrapped;
+  }
+
+  static G2ElementWrapper Aggregate(val g2Elements) {
+    std::vector<G2Element> signatures = G2ElementWrapper::Unwrap
+      (helpers::toVectorFromJSArray<G2ElementWrapper>(g2Elements));
+    return G2ElementWrapper(mpl.Aggregate(signatures));
+  }
+
+  static bool AggregateVerify(val pubkeyArray, val messagesVal, const G2ElementWrapper &signature) {
+    std::vector<G1Element> pubkeys = G1ElementWrapper::Unwrap
+      (helpers::toVectorFromJSArray<G1ElementWrapper>(pubkeyArray));
+    std::vector<val> messagesVec = helpers::toVectorFromJSArray<val>(messagesVal);
+    std::vector<std::vector<uint8_t>> messages;
+    for (auto msgVal : messagesVec) {
+      messages.push_back(helpers::toVector(msgVal));
+    }
+    return mpl.AggregateVerify(pubkeys, messages, signature.GetWrappedInstance());
+  }
+
+  static PrivateKeyWrapper DeriveChildSk(const PrivateKeyWrapper &sk, uint32_t index) {
+    return PrivateKeyWrapper(mpl.DeriveChildSk(sk.GetWrappedInstance(), index));
+  }
+
+  static PrivateKeyWrapper DeriveChildSkUnhardened(const PrivateKeyWrapper &sk, uint32_t index) {
+    return PrivateKeyWrapper(mpl.DeriveChildSkUnhardened(sk.GetWrappedInstance(), index));
+  }
+
+  static G1ElementWrapper DeriveChildPkUnhardened(const G1ElementWrapper &pk, uint32_t index) {
+    return G1ElementWrapper(mpl.DeriveChildPkUnhardened(pk.GetWrappedInstance(), index));
+  }
+
+protected:
+  static inline SchemeMPL mpl;
+};
+
+  class AugSchemeMPLWrapper : public SchemeMPLWrapper<AugSchemeMPL> {
+public:
+  static G2ElementWrapper SignPrepend(const PrivateKeyWrapper &seckey, val messageVal, const G1ElementWrapper &prependPk) {
+    std::vector <uint8_t> message = helpers::toVector(messageVal);
+    return G2ElementWrapper(mpl.Sign(seckey.GetWrappedInstance(), message, prependPk.GetWrappedInstance()));
   }
 };
 

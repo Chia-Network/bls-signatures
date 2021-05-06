@@ -31,6 +31,8 @@ class G1ElementWrapper : public JSWrapper<G1Element> {
 
     val Serialize() const;
 
+    G1ElementWrapper Add(const G1ElementWrapper &other);
+
     uint32_t GetFingerprint() const;
 };
 }  // namespace js_wrappers
