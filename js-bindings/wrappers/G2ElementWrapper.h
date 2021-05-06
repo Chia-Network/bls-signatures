@@ -23,6 +23,8 @@ class G2ElementWrapper : public JSWrapper<G2Element> {
  public:
     explicit G2ElementWrapper(const G2Element &signature);
 
+    G2ElementWrapper();
+
     static const size_t SIZE;
 
     static std::vector <G2Element> Unwrap(std::vector <G2ElementWrapper> sigWrappers);

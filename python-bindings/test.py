@@ -295,6 +295,7 @@ def test_readme():
     assert ok
 
     pop_agg_pk: G1Element = pk1 + pk2 + pk3
+    print(message)
     ok = PopSchemeMPL.verify(pop_agg_pk, message, pop_sig_agg)
     assert ok
 

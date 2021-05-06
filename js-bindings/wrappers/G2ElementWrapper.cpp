@@ -17,6 +17,8 @@
 namespace js_wrappers {
 G2ElementWrapper::G2ElementWrapper(const G2Element &signature) : JSWrapper(signature) {}
 
+G2ElementWrapper::G2ElementWrapper() : JSWrapper(G2Element()) { }
+
 const size_t G2ElementWrapper::SIZE = G2Element::SIZE;
 
 

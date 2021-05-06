@@ -85,11 +85,32 @@ protected:
   static inline SchemeMPL mpl;
 };
 
-  class AugSchemeMPLWrapper : public SchemeMPLWrapper<AugSchemeMPL> {
+class AugSchemeMPLWrapper : public SchemeMPLWrapper<AugSchemeMPL> {
 public:
   static G2ElementWrapper SignPrepend(const PrivateKeyWrapper &seckey, val messageVal, const G1ElementWrapper &prependPk) {
     std::vector <uint8_t> message = helpers::toVector(messageVal);
     return G2ElementWrapper(mpl.Sign(seckey.GetWrappedInstance(), message, prependPk.GetWrappedInstance()));
+  }
+};
+
+class PopSchemeMPLWrapper : public SchemeMPLWrapper<PopSchemeMPL> {
+public:
+  static G2ElementWrapper PopProve(const PrivateKeyWrapper &seckey) {
+    return G2ElementWrapper(mpl.PopProve(seckey.GetWrappedInstance()));
+  }
+
+  static bool PopVerify(const G1ElementWrapper &pubkey, const G2ElementWrapper &signatureProof) {
+    return mpl.PopVerify(pubkey.GetWrappedInstance(), signatureProof.GetWrappedInstance());
+  }
+
+  static bool FastAggregateVerify
+  (val pubkeyArray,
+   val messageVal,
+   const G2ElementWrapper &signature) {
+    std::vector<G1Element> pubkeys = G1ElementWrapper::Unwrap
+      (helpers::toVectorFromJSArray<G1ElementWrapper>(pubkeyArray));
+    std::vector<uint8_t> message = helpers::toVector(messageVal);
+    return mpl.FastAggregateVerify(pubkeys, message, signature.GetWrappedInstance());
   }
 };
 

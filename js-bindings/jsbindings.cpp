@@ -44,32 +44,37 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .class_function("derive_child_sk_unhardened", &SchemeMPLWrapper<BasicSchemeMPL>::DeriveChildSkUnhardened)
         .class_function("derive_child_pk_unhardened", &SchemeMPLWrapper<BasicSchemeMPL>::DeriveChildPkUnhardened);
 
-
-    class_<SchemeMPLWrapper<PopSchemeMPL>>("PopSchemeMPL")
-        .class_function("sk_to_g1", &SchemeMPLWrapper<PopSchemeMPL>::SkToG1)
-        .class_function("key_gen", &SchemeMPLWrapper<PopSchemeMPL>::KeyGen)
-        .class_function("sign", &SchemeMPLWrapper<PopSchemeMPL>::Sign)
-        .class_function("verify", &SchemeMPLWrapper<PopSchemeMPL>::Verify)
-        .class_function("aggregate", &SchemeMPLWrapper<PopSchemeMPL>::Aggregate)
-        .class_function("aggregate_verify", &SchemeMPLWrapper<PopSchemeMPL>::AggregateVerify)
-        .class_function("derive_child_sk", &SchemeMPLWrapper<PopSchemeMPL>::DeriveChildSk)
-        .class_function("derive_child_sk_unhardened", &SchemeMPLWrapper<PopSchemeMPL>::DeriveChildSkUnhardened)
-        .class_function("derive_child_pk_unhardened", &SchemeMPLWrapper<PopSchemeMPL>::DeriveChildPkUnhardened);
+    class_<PopSchemeMPLWrapper>("PopSchemeMPL")
+        .class_function("sk_to_g1", &PopSchemeMPLWrapper::SkToG1)
+        .class_function("key_gen", &PopSchemeMPLWrapper::KeyGen)
+        .class_function("sign", &PopSchemeMPLWrapper::Sign)
+        .class_function("verify", &PopSchemeMPLWrapper::Verify)
+        .class_function("aggregate", &PopSchemeMPLWrapper::Aggregate)
+        .class_function("aggregate_verify", &PopSchemeMPLWrapper::AggregateVerify)
+        .class_function("derive_child_sk", &PopSchemeMPLWrapper::DeriveChildSk)
+        .class_function("derive_child_sk_unhardened", &PopSchemeMPLWrapper::DeriveChildSkUnhardened)
+        .class_function("derive_child_pk_unhardened", &PopSchemeMPLWrapper::DeriveChildPkUnhardened)
+        .class_function("pop_prove", &PopSchemeMPLWrapper::PopProve)
+        .class_function("pop_verify", &PopSchemeMPLWrapper::PopVerify)
+        .class_function("fast_aggregate_verify", &PopSchemeMPLWrapper::FastAggregateVerify);
 
 
     class_<G1ElementWrapper>("G1Element")
         .class_property("SIZE", &G1ElementWrapper::SIZE)
+        .constructor<>()
         .class_function("fromBytes", &G1ElementWrapper::FromBytes)
         .function("serialize", &G1ElementWrapper::Serialize)
         .function("add", &G1ElementWrapper::Add);
 
     class_<G2ElementWrapper>("G2Element")
         .class_property("SIZE", &G2ElementWrapper::SIZE)
+        .constructor<>()
         .class_function("fromBytes", &G2ElementWrapper::FromBytes)
         .function("serialize", &G2ElementWrapper::Serialize);
 
     class_<PrivateKeyWrapper>("PrivateKey")
         .class_property("PRIVATE_KEY_SIZE", &PrivateKeyWrapper::PRIVATE_KEY_SIZE)
+        .class_property("SIZE", &PrivateKeyWrapper::PRIVATE_KEY_SIZE)
         .class_function("fromBytes", &PrivateKeyWrapper::FromBytes)
         .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
         .function("serialize", &PrivateKeyWrapper::Serialize)

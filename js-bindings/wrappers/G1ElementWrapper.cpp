@@ -17,6 +17,8 @@
 namespace js_wrappers {
 G1ElementWrapper::G1ElementWrapper(const G1Element &publicKey) : JSWrapper(publicKey) {}
 
+G1ElementWrapper::G1ElementWrapper() : JSWrapper(G1Element()) { }
+
 const size_t G1ElementWrapper::SIZE = G1Element::SIZE;
 
 std::vector <G1Element> G1ElementWrapper::Unwrap(std::vector <G1ElementWrapper> wrappers) {

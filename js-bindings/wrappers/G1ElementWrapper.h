@@ -23,6 +23,8 @@ class G1ElementWrapper : public JSWrapper<G1Element> {
  public:
     explicit G1ElementWrapper(const G1Element &publicKey);
 
+    G1ElementWrapper();
+
     static const size_t SIZE;
 
     static std::vector <G1Element> Unwrap(std::vector <G1ElementWrapper> wrappers);
