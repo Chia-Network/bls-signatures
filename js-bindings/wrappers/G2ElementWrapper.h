@@ -12,31 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef JS_BINDINGS_WRAPPERS_SIGNATUREWRAPPER_H_
-#define JS_BINDINGS_WRAPPERS_SIGNATUREWRAPPER_H_
+#ifndef JS_BINDINGS_WRAPPERS_G2ELEMENTWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_G2ELEMENTWRAPPER_H_
 
 #include "../helpers.h"
 #include "JSWrapper.h"
 
 namespace js_wrappers {
-using helpers::Signature;
-
-class SignatureWrapper : public JSWrapper<Signature> {
+class G2ElementWrapper : public JSWrapper<G2Element> {
  public:
-    explicit SignatureWrapper(const Signature &signature);
+    explicit G2ElementWrapper(const G2Element &signature);
 
-    static const size_t SIGNATURE_SIZE;
+    static const size_t SIZE;
 
-    static std::vector <Signature> Unwrap(std::vector <SignatureWrapper> sigWrappers);
+    static std::vector <G2Element> Unwrap(std::vector <G2ElementWrapper> sigWrappers);
 
-    static SignatureWrapper FromSignature(const Signature &signature);
+    static G2ElementWrapper FromG2Element(const G2Element &signature);
 
-    static SignatureWrapper FromBytes(val buffer);
+    static G2ElementWrapper FromBytes(val buffer);
 
-    static SignatureWrapper AggregateSigs(val signatureWrappers);
+    static G2ElementWrapper AggregateSigs(val signatureWrappers);
 
     val Serialize() const;
 };
 }  // namespace js_wrappers
 
-#endif  // JS_BINDINGS_WRAPPERS_SIGNATUREWRAPPER_H_
+#endif  // JS_BINDINGS_WRAPPERS_G2ELEMENTWRAPPER_H_

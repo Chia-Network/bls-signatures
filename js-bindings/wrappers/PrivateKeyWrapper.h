@@ -17,8 +17,8 @@
 
 #include "../helpers.h"
 #include "JSWrapper.h"
-#include "SignatureWrapper.h"
-#include "PublicKeyWrapper.h"
+#include "G1ElementWrapper.h"
+#include "G2ElementWrapper.h"
 
 namespace js_wrappers {
 class PrivateKeyWrapper : public JSWrapper<PrivateKey> {
@@ -35,7 +35,7 @@ class PrivateKeyWrapper : public JSWrapper<PrivateKey> {
 
     val Serialize() const;
 
-    PublicKeyWrapper GetG1() const;
+    G1ElementWrapper GetG1() const;
 };
 }  // namespace js_wrappers
 

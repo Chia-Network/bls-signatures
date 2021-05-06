@@ -12,40 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "SignatureWrapper.h"
+#include "G2ElementWrapper.h"
 
 namespace js_wrappers {
-SignatureWrapper::SignatureWrapper(const Signature &signature) : JSWrapper(signature) {}
+G2ElementWrapper::G2ElementWrapper(const G2Element &signature) : JSWrapper(signature) {}
 
-const size_t SignatureWrapper::SIGNATURE_SIZE = Signature::SIZE;
+const size_t G2ElementWrapper::SIZE = G2Element::SIZE;
 
 
-std::vector <Signature> SignatureWrapper::Unwrap(std::vector <js_wrappers::SignatureWrapper> sigWrappers) {
-    std::vector <Signature> signatures;
+std::vector <G2Element> G2ElementWrapper::Unwrap(std::vector <js_wrappers::G2ElementWrapper> sigWrappers) {
+    std::vector <G2Element> signatures;
     for (auto &sigWrapper : sigWrappers) {
         signatures.push_back(sigWrapper.GetWrappedInstance());
     }
     return signatures;
 }
 
-SignatureWrapper SignatureWrapper::FromSignature(const Signature &signature) {
-    return SignatureWrapper(signature);
+G2ElementWrapper G2ElementWrapper::FromG2Element(const G2Element &signature) {
+    return G2ElementWrapper(signature);
 }
 
-SignatureWrapper SignatureWrapper::FromBytes(val buffer) {
+G2ElementWrapper G2ElementWrapper::FromBytes(val buffer) {
     std::vector <uint8_t> bytes = helpers::toVector(buffer);
     const bls::Bytes bytesView(bytes);
-    Signature sig = Signature::FromBytes(bytesView);
-    return SignatureWrapper(sig);
+    G2Element sig = G2Element::FromBytes(bytesView);
+    return G2ElementWrapper(sig);
 }
 
-SignatureWrapper SignatureWrapper::AggregateSigs(val signatureWrappers) {
-    std::vector <Signature> signatures = SignatureWrapper::Unwrap(
-            helpers::toVectorFromJSArray<SignatureWrapper>(signatureWrappers));
-    return SignatureWrapper::FromSignature(BasicSchemeMPL().Aggregate(signatures));
+G2ElementWrapper G2ElementWrapper::AggregateSigs(val signatureWrappers) {
+    std::vector <G2Element> signatures = G2ElementWrapper::Unwrap(
+            helpers::toVectorFromJSArray<G2ElementWrapper>(signatureWrappers));
+    return G2ElementWrapper::FromG2Element(BasicSchemeMPL().Aggregate(signatures));
 }
 
-val SignatureWrapper::Serialize() const {
+val G2ElementWrapper::Serialize() const {
     return helpers::toUint8Array(wrapped.Serialize());
 }
 }  // namespace js_wrappers

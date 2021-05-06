@@ -12,24 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef JS_BINDINGS_WRAPPERS_PUBLICKEYWRAPPER_H_
-#define JS_BINDINGS_WRAPPERS_PUBLICKEYWRAPPER_H_
+#ifndef JS_BINDINGS_WRAPPERS_G1ELEMENTWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_G1ELEMENTWRAPPER_H_
 
 #include "../helpers.h"
 #include "JSWrapper.h"
 
 namespace js_wrappers {
-using helpers::PublicKey;
-
-class PublicKeyWrapper : public JSWrapper<PublicKey> {
+class G1ElementWrapper : public JSWrapper<G1Element> {
  public:
-    explicit PublicKeyWrapper(const PublicKey &publicKey);
+    explicit G1ElementWrapper(const G1Element &publicKey);
 
-    static const size_t PUBLIC_KEY_SIZE;
+    static const size_t SIZE;
 
-    static std::vector <PublicKey> Unwrap(std::vector <PublicKeyWrapper> wrappers);
+    static std::vector <G1Element> Unwrap(std::vector <G1ElementWrapper> wrappers);
 
-    static PublicKeyWrapper FromBytes(val buffer);
+    static G1ElementWrapper FromBytes(val buffer);
 
     val Serialize() const;
 
@@ -37,4 +35,4 @@ class PublicKeyWrapper : public JSWrapper<PublicKey> {
 };
 }  // namespace js_wrappers
 
-#endif  // JS_BINDINGS_WRAPPERS_PUBLICKEYWRAPPER_H_
+#endif  // JS_BINDINGS_WRAPPERS_G1ELEMENTWRAPPER_H_

@@ -12,33 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "PublicKeyWrapper.h"
+#include "G1ElementWrapper.h"
 
 namespace js_wrappers {
-PublicKeyWrapper::PublicKeyWrapper(const PublicKey &publicKey) : JSWrapper(publicKey) {}
+G1ElementWrapper::G1ElementWrapper(const G1Element &publicKey) : JSWrapper(publicKey) {}
 
-const size_t PublicKeyWrapper::PUBLIC_KEY_SIZE = PublicKey::SIZE;
+const size_t G1ElementWrapper::SIZE = G1Element::SIZE;
 
-std::vector <PublicKey> PublicKeyWrapper::Unwrap(std::vector <PublicKeyWrapper> wrappers) {
-    std::vector <PublicKey> unwrapped;
+std::vector <G1Element> G1ElementWrapper::Unwrap(std::vector <G1ElementWrapper> wrappers) {
+    std::vector <G1Element> unwrapped;
     for (auto &wrapper : wrappers) {
         unwrapped.push_back(wrapper.GetWrappedInstance());
     }
     return unwrapped;
 }
 
-PublicKeyWrapper PublicKeyWrapper::FromBytes(val buffer) {
+G1ElementWrapper G1ElementWrapper::FromBytes(val buffer) {
     std::vector <uint8_t> bytes = helpers::toVector(buffer);
     const bls::Bytes bytesView(bytes);
-    PublicKey pk = PublicKey::FromBytes(bytesView);
-    return PublicKeyWrapper(pk);
+    G1Element pk = G1Element::FromBytes(bytesView);
+    return G1ElementWrapper(pk);
 }
 
-val PublicKeyWrapper::Serialize() const {
+val G1ElementWrapper::Serialize() const {
     return helpers::toUint8Array(wrapped.Serialize());
 }
 
-uint32_t PublicKeyWrapper::GetFingerprint() const {
+uint32_t G1ElementWrapper::GetFingerprint() const {
     return wrapped.GetFingerprint();
 }
 }  // namespace js_wrappers

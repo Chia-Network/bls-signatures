@@ -46,8 +46,8 @@ val PrivateKeyWrapper::Serialize() const {
     return helpers::toUint8Array(wrapped.Serialize());
 }
 
-PublicKeyWrapper PrivateKeyWrapper::GetG1() const {
-    PublicKey pk = wrapped.GetG1Element();
-    return PublicKeyWrapper(pk);
+G1ElementWrapper PrivateKeyWrapper::GetG1() const {
+    G1Element pk = wrapped.GetG1Element();
+    return G1ElementWrapper(pk);
 }
 }  // namespace js_wrappers
