@@ -7,4 +7,4 @@ mkdir -p js_build
 cd js_build
 
 emcmake cmake -G "Unix Makefiles" ..
-emmake make VERBOSE=1
+emmake make
