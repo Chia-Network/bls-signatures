@@ -17,10 +17,11 @@
 
 #include "../helpers.h"
 #include "JSWrapper.h"
+#include "BignumWrapper.h"
 
 namespace js_wrappers {
 class G1ElementWrapper : public JSWrapper<G1Element> {
- public:
+public:
     explicit G1ElementWrapper(const G1Element &publicKey);
 
     G1ElementWrapper();
@@ -31,9 +32,17 @@ class G1ElementWrapper : public JSWrapper<G1Element> {
 
     static G1ElementWrapper FromBytes(val buffer);
 
+    static G1ElementWrapper Generator();
+
     val Serialize() const;
 
     G1ElementWrapper Add(const G1ElementWrapper &other);
+
+    G1ElementWrapper Mul(const BignumWrapper &other);
+
+    G1ElementWrapper Negate();
+
+    G1ElementWrapper Deepcopy();
 
     uint32_t GetFingerprint() const;
 };

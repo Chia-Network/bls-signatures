@@ -35,6 +35,12 @@ class G2ElementWrapper : public JSWrapper<G2Element> {
 
     static G2ElementWrapper AggregateSigs(val signatureWrappers);
 
+    static G2ElementWrapper Generator();
+
+    G2ElementWrapper Deepcopy();
+
+    G2ElementWrapper Negate();
+
     val Serialize() const;
 };
 }  // namespace js_wrappers

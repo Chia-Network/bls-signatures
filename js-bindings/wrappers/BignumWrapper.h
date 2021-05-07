@@ -12,16 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef JS_BINDINGS_WRAPPERS_UTILWRAPPER_H_
-#define JS_BINDINGS_WRAPPERS_UTILWRAPPER_H_
+#ifndef JS_BINDINGS_WRAPPERS_BIGNUMWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_BIGNUMWRAPPER_H_
 
 #include "../helpers.h"
 #include "JSWrapper.h"
 
 namespace js_wrappers {
-class UtilWrapper : public JSWrapper<Util> {
+class Bignum {
 public:
-    static val Hash256(val message);
+    Bignum();
+    ~Bignum();
+    Bignum(const Bignum &other);
+    Bignum(Bignum &&other) : content(std::move(other.content)) { }
+
+    bn_st *operator &();
+
+private:
+    bn_st content;
+};
+
+class BignumWrapper : public JSWrapper<Bignum> {
+public:
+    explicit BignumWrapper(const Bignum &bn);
+    static BignumWrapper FromString(const std::string &s, int radix);
+    std::string ToString(int radix);
 };
 }  // namespace js_wrappers
 

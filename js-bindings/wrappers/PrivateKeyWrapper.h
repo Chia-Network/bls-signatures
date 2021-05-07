@@ -35,6 +35,8 @@ class PrivateKeyWrapper : public JSWrapper<PrivateKey> {
 
     val Serialize() const;
 
+    PrivateKeyWrapper Deepcopy();
+
     G1ElementWrapper GetG1() const;
 };
 }  // namespace js_wrappers

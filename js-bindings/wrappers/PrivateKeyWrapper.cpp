@@ -46,6 +46,10 @@ val PrivateKeyWrapper::Serialize() const {
     return helpers::toUint8Array(wrapped.Serialize());
 }
 
+PrivateKeyWrapper PrivateKeyWrapper::Deepcopy() {
+    return PrivateKeyWrapper(GetWrappedInstance());
+}
+
 G1ElementWrapper PrivateKeyWrapper::GetG1() const {
     G1Element pk = wrapped.GetG1Element();
     return G1ElementWrapper(pk);

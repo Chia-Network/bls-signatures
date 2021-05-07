@@ -2,12 +2,6 @@
   "name": "bls-signature-tests",
   "dependencies": {
     "assert": "^2.0.0",
-    "binascii": "^0.0.2",
-    "brython": "^3.9.2",
-    "jsdom": "^16.5.3",
-    "xmlhttprequest": "^1.8.0"
-  },
-  "devDependencies": {
-    "browserify": "^17.0.0"
+    "binascii": "^0.0.2"
   }
 }

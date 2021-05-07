@@ -47,6 +47,18 @@ G2ElementWrapper G2ElementWrapper::AggregateSigs(val signatureWrappers) {
     return G2ElementWrapper::FromG2Element(BasicSchemeMPL().Aggregate(signatures));
 }
 
+G2ElementWrapper G2ElementWrapper::Generator() {
+    return G2ElementWrapper(G2Element::Generator());
+}
+
+G2ElementWrapper G2ElementWrapper::Deepcopy() {
+    return G2ElementWrapper(GetWrappedInstance());
+}
+
+G2ElementWrapper G2ElementWrapper::Negate() {
+    return G2ElementWrapper(GetWrappedInstance().Negate());
+}
+
 val G2ElementWrapper::Serialize() const {
     return helpers::toUint8Array(wrapped.Serialize());
 }
