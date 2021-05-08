@@ -24,7 +24,6 @@ public:
     Bignum();
     ~Bignum();
     Bignum(const Bignum &other);
-    Bignum(Bignum &&other) : content(std::move(other.content)) { }
 
     bn_st *operator &();
 
