@@ -3,8 +3,8 @@ set(CMAKE_CXX_STANDARD 17)
 
 include_directories(
         ${INCLUDE_DIRECTORIES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/relic/include
-        ${CMAKE_BINARY_DIR}/contrib/relic/include
+	${CMAKE_BINARY_DIR}/_deps/relic-src/include
+        ${CMAKE_BINARY_DIR}/_deps/relic-build/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch
 )
 
@@ -30,7 +30,7 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/blsjs.d.ts blsjs.d.ts COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/README.md README.md COPYONLY)
 
 # Copy test files
-file(GLOB JS_BINDINGS_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/ ${CMAKE_CURRENT_SOURCE_DIR}/tests/*)
+file(GLOB JS_BINDINGS_TESTS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/tests/ ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.js)
 foreach(file ${JS_BINDINGS_TESTS})
     message(FILE ${file})
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/tests/${file} tests/${file} COPYONLY)

@@ -12,31 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef JS_BINDINGS_WRAPPERS_PUBLICKEYWRAPPER_H_
-#define JS_BINDINGS_WRAPPERS_PUBLICKEYWRAPPER_H_
+#ifndef JS_BINDINGS_WRAPPERS_G1ELEMENTWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_G1ELEMENTWRAPPER_H_
 
 #include "../helpers.h"
 #include "JSWrapper.h"
+#include "BignumWrapper.h"
 
 namespace js_wrappers {
-class PublicKeyWrapper : public JSWrapper<PublicKey> {
- public:
-    explicit PublicKeyWrapper(const PublicKey &publicKey);
+class G1ElementWrapper : public JSWrapper<G1Element> {
+public:
+    explicit G1ElementWrapper(const G1Element &publicKey);
 
-    static const size_t PUBLIC_KEY_SIZE;
+    G1ElementWrapper();
 
-    static std::vector <PublicKey> Unwrap(std::vector <PublicKeyWrapper> wrappers);
+    static const size_t SIZE;
 
-    static PublicKeyWrapper FromBytes(val buffer);
+    static std::vector <G1Element> Unwrap(std::vector <G1ElementWrapper> wrappers);
 
-    static PublicKeyWrapper Aggregate(val pubKeysWrappers);
+    static G1ElementWrapper FromBytes(val buffer);
 
-    static PublicKeyWrapper AggregateInsecure(val pubKeysWrappers);
+    static G1ElementWrapper Generator();
 
     val Serialize() const;
+
+    G1ElementWrapper Add(const G1ElementWrapper &other);
+
+    G1ElementWrapper Mul(const BignumWrapper &other);
+
+    G1ElementWrapper Negate();
+
+    G1ElementWrapper Deepcopy();
 
     uint32_t GetFingerprint() const;
 };
 }  // namespace js_wrappers
 
-#endif  // JS_BINDINGS_WRAPPERS_PUBLICKEYWRAPPER_H_
+#endif  // JS_BINDINGS_WRAPPERS_G1ELEMENTWRAPPER_H_

@@ -12,24 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef JS_BINDINGS_WRAPPERS_CHAINCODEWRAPPER_H_
-#define JS_BINDINGS_WRAPPERS_CHAINCODEWRAPPER_H_
+#ifndef JS_BINDINGS_WRAPPERS_UTILWRAPPER_H_
+#define JS_BINDINGS_WRAPPERS_UTILWRAPPER_H_
 
 #include "../helpers.h"
 #include "JSWrapper.h"
 
 namespace js_wrappers {
-class ChainCodeWrapper : public JSWrapper<ChainCode> {
- public:
-    static const size_t CHAIN_CODE_SIZE;
-
-    explicit ChainCodeWrapper(const ChainCode &chainCode);
-
-    static ChainCodeWrapper FromBytes(val jsBuffer);
-
-    val Serialize() const;
+class UtilWrapper : public JSWrapper<Util> {
+public:
+    static val Hash256(val message);
 };
 }  // namespace js_wrappers
 
-
-#endif  // JS_BINDINGS_WRAPPERS_CHAINCODEWRAPPER_H_
+#endif  // JS_BINDINGS_WRAPPERS_SIGNATUREWRAPPER_H_
