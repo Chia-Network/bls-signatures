@@ -1,10 +1,10 @@
-name:  Build and Test C++ and Python
+name:  Build and Test C++, Javascript, and Python
 
 on: [push, pull_request]
 
 jobs:
   build_wheels:
-    name: Build and Test C++ and Python on ${{ matrix.os }}
+    name: Build and Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -71,3 +71,12 @@ jobs:
     - name: Test pure python implementation
       run: |
         python python-impl/impl-test.py
+        
+    - name: Install emsdk
+      uses: mymindstorm/setup-emsdk@v9
+      
+    - name: Test javascript bindings
+      run: |
+        emcc -v
+        sh emsdk_build.sh
+        sh js_test.sh
