@@ -191,42 +191,12 @@ def test_vectors_valid():
 
 
 def test_readme():
-    seed: bytes = bytes(
-        [
-            0,
-            50,
-            6,
-            244,
-            24,
-            199,
-            1,
-            25,
-            52,
-            88,
-            192,
-            19,
-            18,
-            12,
-            89,
-            6,
-            220,
-            18,
-            102,
-            58,
-            209,
-            82,
-            12,
-            62,
-            89,
-            110,
-            182,
-            9,
-            44,
-            20,
-            254,
-            22,
-        ]
-    )
+    # fmt: off
+    seed = bytes([
+        0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192, 19, 18, 12, 89, 6,
+        220, 18, 102, 58, 209, 82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22
+    ])
+    # fmt: on
     sk: PrivateKey = AugSchemeMPL.key_gen(seed)
     pk: G1Element = sk.get_g1()
 
@@ -260,7 +230,7 @@ def test_readme():
 
     agg_sig: G2Element = AugSchemeMPL.aggregate([sig1, sig2])
 
-    ok = AugSchemeMPL.aggregate_verify([pk1, pk2], [message, message2], agg_sig)
+    ok: bool = AugSchemeMPL.aggregate_verify([pk1, pk2], [message, message2], agg_sig)
     assert ok
 
     seed = bytes([3]) + seed[1:]
@@ -270,50 +240,51 @@ def test_readme():
     sig3: G2Element = AugSchemeMPL.sign(sk3, message3)
 
     agg_sig_final: G2Element = AugSchemeMPL.aggregate([agg_sig, sig3])
-    ok = AugSchemeMPL.aggregate_verify(
+    ok: bool = AugSchemeMPL.aggregate_verify(
         [pk1, pk2, pk3], [message, message2, message3], agg_sig_final
     )
+    assert ok
+
+    pop1: G2Element = PopSchemeMPL.pop_prove(sk1)
+    pop2: G2Element = PopSchemeMPL.pop_prove(sk2)
+    pop3: G2Element = PopSchemeMPL.pop_prove(sk3)
+
+    ok: bool = PopSchemeMPL.pop_verify(pk1, pop1)
+    assert ok
+    ok: bool = PopSchemeMPL.pop_verify(pk2, pop2)
+    assert ok
+    ok: bool = PopSchemeMPL.pop_verify(pk3, pop3)
     assert ok
 
     pop_sig1: G2Element = PopSchemeMPL.sign(sk1, message)
     pop_sig2: G2Element = PopSchemeMPL.sign(sk2, message)
     pop_sig3: G2Element = PopSchemeMPL.sign(sk3, message)
-    pop1: G2Element = PopSchemeMPL.pop_prove(sk1)
-    pop2: G2Element = PopSchemeMPL.pop_prove(sk2)
-    pop3: G2Element = PopSchemeMPL.pop_prove(sk3)
-
-    ok = PopSchemeMPL.pop_verify(pk1, pop1)
-    assert ok
-    ok = PopSchemeMPL.pop_verify(pk2, pop2)
-    assert ok
-    ok = PopSchemeMPL.pop_verify(pk3, pop3)
-    assert ok
 
     pop_sig_agg: G2Element = PopSchemeMPL.aggregate([pop_sig1, pop_sig2, pop_sig3])
 
-    ok = PopSchemeMPL.fast_aggregate_verify([pk1, pk2, pk3], message, pop_sig_agg)
+    ok: bool = PopSchemeMPL.fast_aggregate_verify([pk1, pk2, pk3], message, pop_sig_agg)
     assert ok
 
     pop_agg_pk: G1Element = pk1 + pk2 + pk3
-    ok = PopSchemeMPL.verify(pop_agg_pk, message, pop_sig_agg)
+    ok: bool = PopSchemeMPL.verify(pop_agg_pk, message, pop_sig_agg)
     assert ok
 
     pop_agg_sk: PrivateKey = PrivateKey.aggregate([sk1, sk2, sk3])
-    ok = PopSchemeMPL.sign(pop_agg_sk, message) == pop_sig_agg
+    ok: bool = PopSchemeMPL.sign(pop_agg_sk, message) == pop_sig_agg
     assert ok
 
     master_sk: PrivateKey = AugSchemeMPL.key_gen(seed)
     child: PrivateKey = AugSchemeMPL.derive_child_sk(master_sk, 152)
     grandchild: PrivateKey = AugSchemeMPL.derive_child_sk(child, 952)
 
-    master_pk: G1Element = master_sk.get_g1()
     child_u: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(master_sk, 22)
     grandchild_u: PrivateKey = AugSchemeMPL.derive_child_sk_unhardened(child_u, 0)
 
+    master_pk: G1Element = master_sk.get_g1()
     child_u_pk: G1Element = AugSchemeMPL.derive_child_pk_unhardened(master_pk, 22)
     grandchild_u_pk: G1Element = AugSchemeMPL.derive_child_pk_unhardened(child_u_pk, 0)
 
-    ok = grandchild_u_pk == grandchild_u.get_g1()
+    ok: bool = grandchild_u_pk == grandchild_u.get_g1()
     assert ok
 
 

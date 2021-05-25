@@ -112,14 +112,18 @@ assert ok
 pop1: G2Element = PopSchemeMPL.pop_prove(sk1)
 pop2: G2Element = PopSchemeMPL.pop_prove(sk2)
 pop3: G2Element = PopSchemeMPL.pop_prove(sk3)
-ok1: bool = PopSchemeMPL.pop_verify(pk1, pop1)
-ok2: bool = PopSchemeMPL.pop_verify(pk2, pop2)
-ok3: bool = PopSchemeMPL.pop_verify(pk3, pop3)
-assert ok1 and ok2 and ok3
+
+ok: bool = PopSchemeMPL.pop_verify(pk1, pop1)
+assert ok
+ok: bool = PopSchemeMPL.pop_verify(pk2, pop2)
+assert ok
+ok: bool = PopSchemeMPL.pop_verify(pk3, pop3)
+assert ok
 
 pop_sig1: G2Element = PopSchemeMPL.sign(sk1, message)
 pop_sig2: G2Element = PopSchemeMPL.sign(sk2, message)
 pop_sig3: G2Element = PopSchemeMPL.sign(sk3, message)
+
 pop_sig_agg: G2Element = PopSchemeMPL.aggregate([pop_sig1, pop_sig2, pop_sig3])
 
 ok: bool = PopSchemeMPL.fast_aggregate_verify([pk1, pk2, pk3], message, pop_sig_agg)
