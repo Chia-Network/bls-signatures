@@ -15,10 +15,22 @@
 #ifndef SRC_BLSUTIL_HPP_
 #define SRC_BLSUTIL_HPP_
 
+#include <iostream>
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <vector>
+#include <cstdlib>
+
+#include "relic_conf.h"
+
+#if defined GMP && ARITH == GMP
+#include <gmp.h>
+#endif
+
+extern "C" {
+#include "relic.h"
+}
+#include "relic_test.h"
 
 namespace bls {
 

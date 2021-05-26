@@ -26,13 +26,12 @@
 
 #include "elements.hpp"
 #include "privatekey.hpp"
+#include "util.hpp"
 
 using std::vector;
 
 // These are all MPL schemes
 namespace bls {
-
-class Bytes;
 
 class CoreMPL {
 

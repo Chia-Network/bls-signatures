@@ -13,7 +13,9 @@
 // limitations under the License.
 
 #include <algorithm>
+#include <cstring>
 #include <set>
+#include <string>
 
 #include "bls.hpp"
 #include "elements.hpp"
