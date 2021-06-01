@@ -543,7 +543,7 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to GTElement::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                return GTElement::FromBytes({data_ptr, GTElement::SIZE});
+                return GTElement::FromBytes(Bytes(data_ptr, GTElement::SIZE));
             })
         .def("unity", &GTElement::Unity)
         .def(py::self == py::self)

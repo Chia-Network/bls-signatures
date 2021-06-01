@@ -404,7 +404,7 @@ GTElement GTElement::FromBytes(const Bytes& bytes)
 
 GTElement GTElement::FromByteVector(const std::vector<uint8_t>& bytevec)
 {
-    return GTElement::FromBytes({bytevec});
+    return GTElement::FromBytes(Bytes(bytevec));
 }
 
 GTElement GTElement::FromNative(const gt_t* element)
@@ -441,7 +441,7 @@ GTElement operator&(const G1Element& a, const G2Element& b)
     g2_t tmp;
     g2_null(tmp);
     g2_new(tmp);
-    b.ToNative(&tmp);
+    b.ToNative(tmp);
     pp_map_oatep_k12(ans, nonConstA.p, tmp);
     GTElement ret = GTElement::FromNative(&ans);
     gt_free(ans);
