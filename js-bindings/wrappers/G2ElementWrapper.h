@@ -17,6 +17,7 @@
 
 #include "../helpers.h"
 #include "JSWrapper.h"
+#include "BignumWrapper.h"
 
 namespace js_wrappers {
 class G2ElementWrapper : public JSWrapper<G2Element> {
