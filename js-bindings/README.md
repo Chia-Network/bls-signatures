@@ -139,7 +139,7 @@ npm i bls-signatures --save # or yarn add bls-signatures
   const childUPk = BLS.AugSchemeMPL.derive_child_pk_unhardened(masterPk, 22);
   const grandchildUPk = BLS.AugSchemeMPL.derive_child_pk_unhardened(childUPk, 0);
   
-  ok = (grandchildUPk.equalTo(grandchildU.get_g1()));
+  ok = (grandchildUPk.equal_to(grandchildU.get_g1()));
   console.log(ok); // true
 ```
 
