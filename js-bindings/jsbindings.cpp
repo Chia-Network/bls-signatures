@@ -69,16 +69,22 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("deepcopy", &G1ElementWrapper::Deepcopy)
         .function("get_fingerprint", &G1ElementWrapper::GetFingerprint)
         .function("add", &G1ElementWrapper::Add)
-        .function("mul", &G1ElementWrapper::Mul);
+        .function("mul", &G1ElementWrapper::Mul)
+        .function("eqaulTo", &G1ElementWrapper::EqualTo);
 
     class_<G2ElementWrapper>("G2Element")
         .class_property("SIZE", &G2ElementWrapper::SIZE)
         .constructor<>()
+        .class_function("fromG2Element", &G2ElementWrapper::FromG2Element)
         .class_function("fromBytes", &G2ElementWrapper::FromBytes)
+        .class_function("aggregateSigs", &G2ElementWrapper::AggregateSigs)
         .class_function("generator", &G2ElementWrapper::Generator)
         .function("serialize", &G2ElementWrapper::Serialize)
         .function("negate", &G2ElementWrapper::Negate)
-        .function("deepcopy", &G2ElementWrapper::Deepcopy);
+        .function("deepcopy", &G2ElementWrapper::Deepcopy)
+        .function("add", &G2ElementWrapper::Add)
+        .function("mul", &G2ElementWrapper::Mul)
+        .function("eqaulTo", &G2ElementWrapper::EqualTo);
 
     class_<PrivateKeyWrapper>("PrivateKey")
         .class_property("PRIVATE_KEY_SIZE", &PrivateKeyWrapper::PRIVATE_KEY_SIZE)
@@ -86,7 +92,11 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
         .function("deepcopy", &PrivateKeyWrapper::Deepcopy)
         .function("serialize", &PrivateKeyWrapper::Serialize)
-        .function("get_g1", &PrivateKeyWrapper::GetG1);
+        .function("get_g1", &PrivateKeyWrapper::GetG1)
+        .function("get_g2", &PrivateKeyWrapper::GetG2)
+        .function("mul_g1", &PrivateKeyWrapper::MulG1)
+        .function("mul_g2", &PrivateKeyWrapper::MulG2)
+        .function("eqaulTo", &PrivateKeyWrapper::EqualTo);
 
     class_<BignumWrapper>("Bignum")
         .class_function("fromString", &BignumWrapper::FromString)
