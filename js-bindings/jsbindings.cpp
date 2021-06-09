@@ -70,7 +70,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("get_fingerprint", &G1ElementWrapper::GetFingerprint)
         .function("add", &G1ElementWrapper::Add)
         .function("mul", &G1ElementWrapper::Mul)
-        .function("eqaulTo", &G1ElementWrapper::EqualTo);
+        .function("equalTo", &G1ElementWrapper::EqualTo);
 
     class_<G2ElementWrapper>("G2Element")
         .class_property("SIZE", &G2ElementWrapper::SIZE)
@@ -84,7 +84,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("deepcopy", &G2ElementWrapper::Deepcopy)
         .function("add", &G2ElementWrapper::Add)
         .function("mul", &G2ElementWrapper::Mul)
-        .function("eqaulTo", &G2ElementWrapper::EqualTo);
+        .function("equalTo", &G2ElementWrapper::EqualTo);
 
     class_<PrivateKeyWrapper>("PrivateKey")
         .class_property("PRIVATE_KEY_SIZE", &PrivateKeyWrapper::PRIVATE_KEY_SIZE)
@@ -96,7 +96,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("get_g2", &PrivateKeyWrapper::GetG2)
         .function("mul_g1", &PrivateKeyWrapper::MulG1)
         .function("mul_g2", &PrivateKeyWrapper::MulG2)
-        .function("eqaulTo", &PrivateKeyWrapper::EqualTo);
+        .function("equalTo", &PrivateKeyWrapper::EqualTo);
 
     class_<BignumWrapper>("Bignum")
         .class_function("fromString", &BignumWrapper::FromString)
