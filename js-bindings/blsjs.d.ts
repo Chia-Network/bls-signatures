@@ -48,6 +48,7 @@ declare class G1Element {
   get_fingerprint(): number;
   add(): G1Element;
   mul(): G1Element;
+  delete(): void;
 }
 
 declare class G2Element {
@@ -57,20 +58,23 @@ declare class G2Element {
   serialize(): Uint8Array;
   negate(): G2Element;
   deepcopy(): G2Element;
+  delete(): void;
 }
 
 declare class PrivateKey {
-    static PRIVATE_KEY_SIZE: number;
-    static fromBytes(bytes: Uint8Array, modOrder: boolean): PrivateKey;
-    static aggregate(pks: PrivateKey[]): PrivateKey;
-    deepcopy(): PrivateKey;
-    serialize(): Uint8Array;
-    get_g1(): G1Element;
+  static PRIVATE_KEY_SIZE: number;
+  static fromBytes(bytes: Uint8Array, modOrder: boolean): PrivateKey;
+  static aggregate(pks: PrivateKey[]): PrivateKey;
+  deepcopy(): PrivateKey;
+  serialize(): Uint8Array;
+  get_g1(): G1Element;
+  delete(): void;
 }
 
 declare class Bignum {
   static fromString(s: string, radix: number): Bignum;
   toString(radix: number): string;
+  delete(): void;
 }
 
 declare class Util {
