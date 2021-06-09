@@ -22,6 +22,7 @@ namespace js_wrappers {
 class UtilWrapper : public JSWrapper<Util> {
 public:
     static val Hash256(val message);
+    static std::string HexStr(val message);
 };
 }  // namespace js_wrappers
 

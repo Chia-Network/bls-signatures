@@ -93,6 +93,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("toString", &BignumWrapper::ToString);
 
     class_<UtilWrapper>("Util")
-        .class_function("hash256", &UtilWrapper::Hash256);
+        .class_function("hash256", &UtilWrapper::Hash256)
+        .class_function("hexStr", &UtilWrapper::HexStr);
 };
 }  // namespace js_wrappers

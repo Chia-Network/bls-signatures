@@ -21,4 +21,8 @@ val UtilWrapper::Hash256(val msg) {
     Util::Hash256(&output[0], (const uint8_t *)bytes.data(), bytes.size());
     return helpers::toUint8Array(&output[0], output.size());
 }
+std::string UtilWrapper::HexStr(val msg) {
+    std::vector<uint8_t> bytes = helpers::toVector(msg);
+    return Util::HexStr(bytes);
+}
 }  // namespace js_wrappers
