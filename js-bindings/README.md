@@ -1,11 +1,3 @@
-## Important Notice
-
-This is unofficial patch build for js-bindings of [bls-signatures](https://github.com/Chia-Network/bls-signatures).  
-Consider this branch as a temporary solution for current **[broken js build](https://github.com/Chia-Network/bls-signatures/issues/220)**
-until my PR will be merged to original repository. 
-
----
-
 ## bls-signatures
 
 JavaScript library that implements BLS signatures with aggregation as in [Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html), using the relic toolkit for cryptographic primitives (pairings, EC, hashing).
@@ -15,7 +7,7 @@ This library is a JavaScript port of the [Chia Network's BLS lib](https://github
 ### Usage
 
 ```bash
-npm i Chia-Mine/bls-signatures#npm --save # or yarn add Chia-Mine/bls-signatures#npm
+npm i bls-signatures --save # or yarn add bls-signatures
 ```
 
 ### Creating keys and signatures
