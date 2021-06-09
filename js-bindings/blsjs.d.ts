@@ -40,8 +40,8 @@ declare class PopSchemeMPL {
 
 declare class G1Element {
   static SIZE: number;
-  fromBytes(msg: Uint8Array): G1Element;
-  generator(): G2Element;
+  static fromBytes(msg: Uint8Array): G1Element;
+  static generator(): G2Element;
   serialize(): Uint8Array;
   negate(): G1Element;
   deepcopy(): G1Element;
@@ -53,8 +53,8 @@ declare class G1Element {
 
 declare class G2Element {
   static SIZE: number;
-  fromBytes(): G2Element;
-  generator(): G2Element;
+  static fromBytes(): G2Element;
+  static generator(): G2Element;
   serialize(): Uint8Array;
   negate(): G2Element;
   deepcopy(): G2Element;
