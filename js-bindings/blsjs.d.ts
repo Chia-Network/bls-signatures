@@ -40,7 +40,7 @@ declare class PopSchemeMPL {
 
 declare class G1Element {
   static SIZE: number;
-  static fromBytes(bytes: Uint8Array): G1Element;
+  static from_bytes(bytes: Uint8Array): G1Element;
   static generator(): G2Element;
   serialize(): Uint8Array;
   negate(): G1Element;
@@ -48,28 +48,28 @@ declare class G1Element {
   get_fingerprint(): number;
   add(el: G1Element): G1Element;
   mul(bn: Bignum): G1Element;
-  equalTo(el: G1Element): boolean;
+  equal_to(el: G1Element): boolean;
   delete(): void;
 }
 
 declare class G2Element {
   static SIZE: number;
-  static fromBytes(bytes: Uint8Array): G2Element;
-  static fromG2Element(sk: G2Element): G2Element;
-  static aggregateSigs(sigs: G2Element[]): G2Element;
+  static from_bytes(bytes: Uint8Array): G2Element;
+  static from_g2(sk: G2Element): G2Element;
+  static aggregate_sigs(sigs: G2Element[]): G2Element;
   static generator(): G2Element;
   serialize(): Uint8Array;
   negate(): G2Element;
   deepcopy(): G2Element;
   add(el: G2Element): G2Element;
   mul(bn: Bignum): G2Element;
-  equalTo(el: G2Element): boolean;
+  equal_to(el: G2Element): boolean;
   delete(): void;
 }
 
 declare class PrivateKey {
   static PRIVATE_KEY_SIZE: number;
-  static fromBytes(bytes: Uint8Array, modOrder: boolean): PrivateKey;
+  static from_bytes(bytes: Uint8Array, modOrder: boolean): PrivateKey;
   static aggregate(pks: PrivateKey[]): PrivateKey;
   deepcopy(): PrivateKey;
   serialize(): Uint8Array;
@@ -77,19 +77,19 @@ declare class PrivateKey {
   get_g2(): G2Element;
   mul_g1(el: G1Element): G1Element;
   mul_g2(el: G2Element): G2Element;
-  equalTo(key: PrivateKey): boolean;
+  equal_to(key: PrivateKey): boolean;
   delete(): void;
 }
 
 declare class Bignum {
-  static fromString(s: string, radix: number): Bignum;
+  static from_string(s: string, radix: number): Bignum;
   toString(radix: number): string;
   delete(): void;
 }
 
 declare class Util {
   static hash256(msg: Uint8Array): Uint8Array;
-  static hexStr(msg: Uint8Array): string;
+  static hex_str(msg: Uint8Array): string;
 }
 
 interface ModuleInstance {

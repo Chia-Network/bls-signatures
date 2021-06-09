@@ -37,18 +37,18 @@ npm i bls-signatures --save # or yarn add bls-signatures
   const pkBytes = pk.serialize();
   const signatureBytes = signature.serialize();
   
-  console.log(BLS.Util.hexStr(skBytes)); // true
-  console.log(BLS.Util.hexStr(pkBytes)); // true
-  console.log(BLS.Util.hexStr(signatureBytes)); // true
+  console.log(BLS.Util.hex_str(skBytes)); // true
+  console.log(BLS.Util.hex_str(pkBytes)); // true
+  console.log(BLS.Util.hex_str(signatureBytes)); // true
   
 ```
 
 ### Loading keys and signatures from bytes
 ```javascript
-  const skc = BLS.PrivateKey.fromBytes(skBytes, false);
-  const pk = BLS.G1Element.fromBytes(pkBytes);
+  const skc = BLS.PrivateKey.from_bytes(skBytes, false);
+  const pk = BLS.G1Element.from_bytes(pkBytes);
 
-  const signature = BLS.G2Element.fromBytes(signatureBytes);
+  const signature = BLS.G2Element.from_bytes(signatureBytes);
 ```
 
 ### Create aggregate signatures
@@ -92,7 +92,7 @@ npm i bls-signatures --save # or yarn add bls-signatures
 ### Very fast verification with Proof of Possession scheme
 ```javascript
 
-// If the same message is signed, you can use Proof of Posession (PopScheme) for efficiency
+  // If the same message is signed, you can use Proof of Posession (PopScheme) for efficiency
   // A proof of possession MUST be passed around with the PK to ensure security.
   const popSig1 = BLS.PopSchemeMPL.sign(sk1, message);
   const popSig2 = BLS.PopSchemeMPL.sign(sk2, message);
@@ -119,7 +119,7 @@ npm i bls-signatures --save # or yarn add bls-signatures
   
   // Aggregate private keys
   const aggSk = BLS.PrivateKey.aggregate([sk1, sk2, sk3]);
-  ok = (BLS.PopSchemeMPL.sign(aggSk, message).equalTo(popSigAgg));
+  ok = (BLS.PopSchemeMPL.sign(aggSk, message).equal_to(popSigAgg));
   console.log(ok); // true
 ```
 
