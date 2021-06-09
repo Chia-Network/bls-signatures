@@ -75,6 +75,7 @@ declare class Bignum {
 
 declare class Util {
   static hash256(msg: Uint8Array): Uint8Array;
+  static hexStr(msg: Uint8Array): string;
 }
 
 interface ModuleInstance {
