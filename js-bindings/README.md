@@ -1,7 +1,9 @@
-## Important Noice
+## Important Notice
+
 This is unofficial patch build for js-bindings of [bls-signatures](https://github.com/Chia-Network/bls-signatures).  
 Consider this branch as a temporary solution for current **[broken js build](https://github.com/Chia-Network/bls-signatures/issues/220)**
 until my PR will be merged to original repository. 
+
 ---
 
 ## bls-signatures
