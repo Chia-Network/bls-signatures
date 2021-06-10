@@ -31,7 +31,7 @@ Features:
 * Batch verification
 * [Python bindings](https://github.com/Chia-Network/bls-signatures/tree/main/python-bindings)
 * [Pure python bls12-381 and signatures](https://github.com/Chia-Network/bls-signatures/tree/main/python-impl)
-* [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/main/js-bindings) (currently out of date - a great first issue!)
+* [JavaScript bindings](https://github.com/Chia-Network/bls-signatures/tree/main/js-bindings)
 
 ## Before you start
 
