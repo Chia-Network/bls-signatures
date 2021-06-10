@@ -1,4 +1,4 @@
-declare class AugSchemeMPL {
+export declare class AugSchemeMPL {
   static sk_to_g1(sk: PrivateKey): G1Element;
   static key_gen(msg: Uint8Array): PrivateKey;
   static sign(sk: PrivateKey, msg: Uint8Array): G2Element;
@@ -11,7 +11,7 @@ declare class AugSchemeMPL {
   static derive_child_pk_unhardened(pk: G1Element, index: number): G1Element;
 }
 
-declare class BasicSchemeMPL {
+export declare class BasicSchemeMPL {
   static sk_to_g1(sk: PrivateKey): G1Element;
   static key_gen(msg: Uint8Array): PrivateKey;
   static sign(sk: PrivateKey, msg: Uint8Array): G2Element;
@@ -23,7 +23,7 @@ declare class BasicSchemeMPL {
   static derive_child_pk_unhardened(pk: G1Element, index: number): G1Element;
 }
 
-declare class PopSchemeMPL {
+export declare class PopSchemeMPL {
   static sk_to_g1(sk: PrivateKey): G1Element;
   static key_gen(msg: Uint8Array): PrivateKey;
   static sign(sk: PrivateKey, msg: Uint8Array): G2Element;
@@ -38,7 +38,7 @@ declare class PopSchemeMPL {
   static fast_aggregate_verify(pks: G1Element[], msg: Uint8Array, sig: G2Element): boolean;
 }
 
-declare class G1Element {
+export declare class G1Element {
   static SIZE: number;
   static from_bytes(bytes: Uint8Array): G1Element;
   static generator(): G2Element;
@@ -52,7 +52,7 @@ declare class G1Element {
   delete(): void;
 }
 
-declare class G2Element {
+export declare class G2Element {
   static SIZE: number;
   static from_bytes(bytes: Uint8Array): G2Element;
   static from_g2(sk: G2Element): G2Element;
@@ -67,7 +67,7 @@ declare class G2Element {
   delete(): void;
 }
 
-declare class PrivateKey {
+export declare class PrivateKey {
   static PRIVATE_KEY_SIZE: number;
   static from_bytes(bytes: Uint8Array, modOrder: boolean): PrivateKey;
   static aggregate(pks: PrivateKey[]): PrivateKey;
@@ -81,13 +81,13 @@ declare class PrivateKey {
   delete(): void;
 }
 
-declare class Bignum {
+export declare class Bignum {
   static from_string(s: string, radix: number): Bignum;
   toString(radix: number): string;
   delete(): void;
 }
 
-declare class Util {
+export declare class Util {
   static hash256(msg: Uint8Array): Uint8Array;
   static hex_str(msg: Uint8Array): string;
 }
@@ -105,4 +105,4 @@ interface ModuleInstance {
 
 declare function createModule(options?: {}): Promise<ModuleInstance>;
 
-export = createModule;
+export default createModule;
