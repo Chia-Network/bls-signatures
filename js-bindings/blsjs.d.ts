@@ -92,7 +92,7 @@ export declare class Util {
   static hex_str(msg: Uint8Array): string;
 }
 
-interface ModuleInstance {
+export interface ModuleInstance {
   AugSchemeMPL: typeof AugSchemeMPL;
   BasicSchemeMPL: typeof BasicSchemeMPL;
   PopSchemeMPL: typeof PopSchemeMPL;
