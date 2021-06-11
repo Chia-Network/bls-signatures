@@ -62,6 +62,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
     class_<G1ElementWrapper>("G1Element")
         .class_property("SIZE", &G1ElementWrapper::SIZE)
         .constructor<>()
+        .class_function("fromBytes", &G1ElementWrapper::FromBytes) // Not removing this for compatibility
         .class_function("from_bytes", &G1ElementWrapper::FromBytes)
         .class_function("generator", &G2ElementWrapper::Generator)
         .function("serialize", &G1ElementWrapper::Serialize)
@@ -75,8 +76,9 @@ EMSCRIPTEN_BINDINGS(blsjs) {
     class_<G2ElementWrapper>("G2Element")
         .class_property("SIZE", &G2ElementWrapper::SIZE)
         .constructor<>()
-        .class_function("from_g2", &G2ElementWrapper::FromG2Element)
+        .class_function("fromBytes", &G2ElementWrapper::FromBytes) // Not removing this for compatibility
         .class_function("from_bytes", &G2ElementWrapper::FromBytes)
+        .class_function("from_g2", &G2ElementWrapper::FromG2Element)
         .class_function("aggregate_sigs", &G2ElementWrapper::AggregateSigs)
         .class_function("generator", &G2ElementWrapper::Generator)
         .function("serialize", &G2ElementWrapper::Serialize)
@@ -88,8 +90,8 @@ EMSCRIPTEN_BINDINGS(blsjs) {
 
     class_<PrivateKeyWrapper>("PrivateKey")
         .class_property("PRIVATE_KEY_SIZE", &PrivateKeyWrapper::PRIVATE_KEY_SIZE)
+        .class_function("fromBytes", &PrivateKeyWrapper::FromBytes) // Not removing this for compatibility
         .class_function("from_bytes", &PrivateKeyWrapper::FromBytes)
-        .class_function("fromBytes", &PrivateKeyWrapper::FromBytes) // Cancel to remove this for compatibility
         .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
         .function("deepcopy", &PrivateKeyWrapper::Deepcopy)
         .function("serialize", &PrivateKeyWrapper::Serialize)
