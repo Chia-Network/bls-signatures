@@ -89,6 +89,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
     class_<PrivateKeyWrapper>("PrivateKey")
         .class_property("PRIVATE_KEY_SIZE", &PrivateKeyWrapper::PRIVATE_KEY_SIZE)
         .class_function("from_bytes", &PrivateKeyWrapper::FromBytes)
+        .class_function("fromBytes", &PrivateKeyWrapper::FromBytes) // Cancel to remove this for compatibility
         .class_function("aggregate", &PrivateKeyWrapper::Aggregate)
         .function("deepcopy", &PrivateKeyWrapper::Deepcopy)
         .function("serialize", &PrivateKeyWrapper::Serialize)
