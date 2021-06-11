@@ -102,6 +102,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("equal_to", &PrivateKeyWrapper::EqualTo);
 
     class_<BignumWrapper>("Bignum")
+        .class_function("fromString", &BignumWrapper::FromString) // Not removing this for compatibility
         .class_function("from_string", &BignumWrapper::FromString)
         .function("toString", &BignumWrapper::ToString);
 
