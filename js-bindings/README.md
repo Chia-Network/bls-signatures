@@ -12,20 +12,20 @@ npm i bls-signatures --save # or yarn add bls-signatures
 
 ### Creating keys and signatures
 ```javascript
-  const loadBls = require("bls-signatures");
-  const BLS = await loadBls();
+  var loadBls = require("bls-signatures");
+  var BLS = await loadBls();
   
-  const seed = Uint8Array.from([
+  var seed = Uint8Array.from([
     0,  50, 6,  244, 24,  199, 1,  25,  52,  88,  192,
     19, 18, 12, 89,  6,   220, 18, 102, 58,  209, 82,
     12, 62, 89, 110, 182, 9,   44, 20,  254, 22
   ]);
   
-  const sk = BLS.AugSchemeMPL.key_gen(seed);
-  const pk = sk.get_g1();
+  var sk = BLS.AugSchemeMPL.key_gen(seed);
+  var pk = sk.get_g1();
   
-  const message = Uint8Array.from([1,2,3,4,5]);
-  const signature = BLS.AugSchemeMPL.sign(sk, message);
+  var message = Uint8Array.from([1,2,3,4,5]);
+  var signature = BLS.AugSchemeMPL.sign(sk, message);
   
   let ok = BLS.AugSchemeMPL.verify(pk, message, signature);
   console.log(ok); // true
@@ -33,9 +33,9 @@ npm i bls-signatures --save # or yarn add bls-signatures
 
 ### Serializing keys and signatures to bytes
 ```javascript  
-  const skBytes = sk.serialize();
-  const pkBytes = pk.serialize();
-  const signatureBytes = signature.serialize();
+  var skBytes = sk.serialize();
+  var pkBytes = pk.serialize();
+  var signatureBytes = signature.serialize();
   
   console.log(BLS.Util.hex_str(skBytes));
   console.log(BLS.Util.hex_str(pkBytes));
@@ -45,31 +45,31 @@ npm i bls-signatures --save # or yarn add bls-signatures
 
 ### Loading keys and signatures from bytes
 ```javascript
-  const skc = BLS.PrivateKey.from_bytes(skBytes, false);
-  const pk = BLS.G1Element.from_bytes(pkBytes);
+  var skc = BLS.PrivateKey.from_bytes(skBytes, false);
+  var pk = BLS.G1Element.from_bytes(pkBytes);
 
-  const signature = BLS.G2Element.from_bytes(signatureBytes);
+  var signature = BLS.G2Element.from_bytes(signatureBytes);
 ```
 
 ### Create aggregate signatures
 ```javascript
   // Generate some more private keys
   seed[0] = 1;
-  const sk1 = BLS.AugSchemeMPL.key_gen(seed);
+  var sk1 = BLS.AugSchemeMPL.key_gen(seed);
   seed[0] = 2;
-  const sk2 = BLS.AugSchemeMPL.key_gen(seed);
-  const message2 = Uint8Array.from([1,2,3,4,5,6,7]);
+  var sk2 = BLS.AugSchemeMPL.key_gen(seed);
+  var message2 = Uint8Array.from([1,2,3,4,5,6,7]);
   
   // Generate first sig
-  const pk1 = sk1.get_g1();
-  const sig1 = BLS.AugSchemeMPL.sign(sk1, message);
+  var pk1 = sk1.get_g1();
+  var sig1 = BLS.AugSchemeMPL.sign(sk1, message);
   
   // Generate second sig
-  const pk2 = sk2.get_g1();
-  const sig2 = BLS.AugSchemeMPL.sign(sk2, message2);
+  var pk2 = sk2.get_g1();
+  var sig2 = BLS.AugSchemeMPL.sign(sk2, message2);
   
   // Signatures can be non-interactively combined by anyone
-  const aggSig = BLS.AugSchemeMPL.aggregate([sig1, sig2]);
+  var aggSig = BLS.AugSchemeMPL.aggregate([sig1, sig2]);
   
   ok = BLS.AugSchemeMPL.aggregate_verify([pk1, pk2], [message, message2], aggSig);
   console.log(ok); // true
@@ -79,12 +79,12 @@ npm i bls-signatures --save # or yarn add bls-signatures
 ### Arbitrary trees of aggregates
 ```javascript
   seed[0] = 3;
-  const sk3 = BLS.AugSchemeMPL.key_gen(seed);
-  const pk3 = sk3.get_g1();
-  const message3 = Uint8Array.from([100, 2, 254, 88, 90, 45, 23]);
-  const sig3 = BLS.AugSchemeMPL.sign(sk3, message3);
+  var sk3 = BLS.AugSchemeMPL.key_gen(seed);
+  var pk3 = sk3.get_g1();
+  var message3 = Uint8Array.from([100, 2, 254, 88, 90, 45, 23]);
+  var sig3 = BLS.AugSchemeMPL.sign(sk3, message3);
   
-  const aggSigFinal = BLS.AugSchemeMPL.aggregate([aggSig, sig3]);
+  var aggSigFinal = BLS.AugSchemeMPL.aggregate([aggSig, sig3]);
   ok = BLS.AugSchemeMPL.aggregate_verify([pk1, pk2, pk3], [message, message2, message3], aggSigFinal);
   console.log(ok); // true
 ```
@@ -94,12 +94,12 @@ npm i bls-signatures --save # or yarn add bls-signatures
 
   // If the same message is signed, you can use Proof of Posession (PopScheme) for efficiency
   // A proof of possession MUST be passed around with the PK to ensure security.
-  const popSig1 = BLS.PopSchemeMPL.sign(sk1, message);
-  const popSig2 = BLS.PopSchemeMPL.sign(sk2, message);
-  const popSig3 = BLS.PopSchemeMPL.sign(sk3, message);
-  const pop1 = BLS.PopSchemeMPL.pop_prove(sk1);
-  const pop2 = BLS.PopSchemeMPL.pop_prove(sk2);
-  const pop3 = BLS.PopSchemeMPL.pop_prove(sk3);
+  var popSig1 = BLS.PopSchemeMPL.sign(sk1, message);
+  var popSig2 = BLS.PopSchemeMPL.sign(sk2, message);
+  var popSig3 = BLS.PopSchemeMPL.sign(sk3, message);
+  var pop1 = BLS.PopSchemeMPL.pop_prove(sk1);
+  var pop2 = BLS.PopSchemeMPL.pop_prove(sk2);
+  var pop3 = BLS.PopSchemeMPL.pop_prove(sk3);
   
   ok = BLS.PopSchemeMPL.pop_verify(pk1, pop1);
   console.log(ok); // true
@@ -108,17 +108,17 @@ npm i bls-signatures --save # or yarn add bls-signatures
   ok = BLS.PopSchemeMPL.pop_verify(pk3, pop3);
   console.log(ok); // true
   
-  const popSigAgg = BLS.PopSchemeMPL.aggregate([popSig1, popSig2, popSig3]);
+  var popSigAgg = BLS.PopSchemeMPL.aggregate([popSig1, popSig2, popSig3]);
   ok = BLS.PopSchemeMPL.fast_aggregate_verify([pk1, pk2, pk3], message, popSigAgg);
   console.log(ok); // true
   
   // Aggregate public key, indistinguishable from a single public key
-  const popAggPk = pk1.add(pk2).add(pk3);
+  var popAggPk = pk1.add(pk2).add(pk3);
   ok = BLS.PopSchemeMPL.verify(popAggPk, message, popSigAgg);
   console.log(ok); // true
   
   // Aggregate private keys
-  const aggSk = BLS.PrivateKey.aggregate([sk1, sk2, sk3]);
+  var aggSk = BLS.PrivateKey.aggregate([sk1, sk2, sk3]);
   ok = (BLS.PopSchemeMPL.sign(aggSk, message).equal_to(popSigAgg));
   console.log(ok); // true
 ```
@@ -127,17 +127,17 @@ npm i bls-signatures --save # or yarn add bls-signatures
 ```javascript
   // You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indeces are used.
   // Hardened (more secure, but no parent pk -> child pk)
-  const masterSk = BLS.AugSchemeMPL.key_gen(seed);
-  const child = BLS.AugSchemeMPL.derive_child_sk(masterSk, 152);
-  const grandChild = BLS.AugSchemeMPL.derive_child_sk(child, 952);
+  var masterSk = BLS.AugSchemeMPL.key_gen(seed);
+  var child = BLS.AugSchemeMPL.derive_child_sk(masterSk, 152);
+  var grandChild = BLS.AugSchemeMPL.derive_child_sk(child, 952);
   
   // Unhardened (less secure, but can go from parent pk -> child pk), BIP32 style
-  const masterPk = masterSk.get_g1();
-  const childU = BLS.AugSchemeMPL.derive_child_sk_unhardened(masterSk, 22);
-  const grandchildU = BLS.AugSchemeMPL.derive_child_sk_unhardened(childU, 0);
+  var masterPk = masterSk.get_g1();
+  var childU = BLS.AugSchemeMPL.derive_child_sk_unhardened(masterSk, 22);
+  var grandchildU = BLS.AugSchemeMPL.derive_child_sk_unhardened(childU, 0);
   
-  const childUPk = BLS.AugSchemeMPL.derive_child_pk_unhardened(masterPk, 22);
-  const grandchildUPk = BLS.AugSchemeMPL.derive_child_pk_unhardened(childUPk, 0);
+  var childUPk = BLS.AugSchemeMPL.derive_child_pk_unhardened(masterPk, 22);
+  var grandchildUPk = BLS.AugSchemeMPL.derive_child_pk_unhardened(childUPk, 0);
   
   ok = (grandchildUPk.equal_to(grandchildU.get_g1()));
   console.log(ok); // true
