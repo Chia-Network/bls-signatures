@@ -37,9 +37,9 @@ npm i bls-signatures --save # or yarn add bls-signatures
   const pkBytes = pk.serialize();
   const signatureBytes = signature.serialize();
   
-  console.log(BLS.Util.hex_str(skBytes)); // true
-  console.log(BLS.Util.hex_str(pkBytes)); // true
-  console.log(BLS.Util.hex_str(signatureBytes)); // true
+  console.log(BLS.Util.hex_str(skBytes));
+  console.log(BLS.Util.hex_str(pkBytes));
+  console.log(BLS.Util.hex_str(signatureBytes));
   
 ```
 
