@@ -44,18 +44,19 @@ add_library(blstmp ${HEADERS}
 )
 
 set(OPREFIX object_)
-find_library(GMP_NAME NAMES libgmp.a gmp)
-find_library(SODIUM_NAME NAMES libsodium.a sodium)
+find_library(GMP_NAME NAMES libgmp.a)
+find_library(SODIUM_NAME NAMES libsodium.a)
 
 set(LIBRARIES_TO_COMBINE
       COMMAND mkdir ${OPREFIX}$<TARGET_NAME:blstmp> || true && cd ${OPREFIX}$<TARGET_NAME:blstmp> &&  ${CMAKE_AR} -x $<TARGET_FILE:blstmp>
       COMMAND mkdir ${OPREFIX}$<TARGET_NAME:relic_s> || true && cd ${OPREFIX}$<TARGET_NAME:relic_s> &&  ${CMAKE_AR} -x $<TARGET_FILE:relic_s>
 )
 
-if (GMP_FOUND)
+if (NOT ${GMP_NAME} STREQUAL "GMP_NAME-NOTFOUND")
   list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}gmp || true && cd ${OPREFIX}gmp &&  ${CMAKE_AR} -x ${GMP_NAME})
 endif()
-if (SODIUM_FOUND)
+
+if (NOT ${SODIUM_NAME} STREQUAL "SODIUM_NAME-NOTFOUND")
   message("SODIUM_FOUND in src/CMakeLists.txt")
   list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}sodium || true && cd ${OPREFIX}sodium &&  ${CMAKE_AR} -x ${SODIUM_NAME})
   target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1)
