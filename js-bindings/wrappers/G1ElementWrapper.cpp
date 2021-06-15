@@ -54,6 +54,10 @@ G1ElementWrapper G1ElementWrapper::Mul(const BignumWrapper &other) {
     return G1ElementWrapper(GetWrappedInstance() * factor);
 }
 
+bool G1ElementWrapper::EqualTo(const G1ElementWrapper &others) {
+    return GetWrappedInstance() == others.GetWrappedInstance();
+}
+
 G1ElementWrapper G1ElementWrapper::Negate() {
     return G1ElementWrapper(GetWrappedInstance().Negate());
 }

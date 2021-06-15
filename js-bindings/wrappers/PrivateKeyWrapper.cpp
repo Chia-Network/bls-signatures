@@ -54,4 +54,26 @@ G1ElementWrapper PrivateKeyWrapper::GetG1() const {
     G1Element pk = wrapped.GetG1Element();
     return G1ElementWrapper(pk);
 }
+
+G2ElementWrapper PrivateKeyWrapper::GetG2() const {
+    G2Element sk = wrapped.GetG2Element();
+    return G2ElementWrapper(sk);
+}
+
+G2ElementWrapper PrivateKeyWrapper::GetG2Power(const G2ElementWrapper& element) const {
+    return G2ElementWrapper(GetWrappedInstance().GetG2Power(element.GetWrappedInstance()));
+}
+
+G1ElementWrapper PrivateKeyWrapper::MulG1(const G1ElementWrapper& other) {
+    return G1ElementWrapper(GetWrappedInstance() * other.GetWrappedInstance());
+}
+
+G2ElementWrapper PrivateKeyWrapper::MulG2(const G2ElementWrapper& other) {
+    return G2ElementWrapper(GetWrappedInstance() * other.GetWrappedInstance());
+}
+
+bool PrivateKeyWrapper::EqualTo(const PrivateKeyWrapper& others) {
+    return GetWrappedInstance() == others.GetWrappedInstance();
+}
+
 }  // namespace js_wrappers

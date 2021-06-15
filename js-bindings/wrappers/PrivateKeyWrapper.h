@@ -38,6 +38,16 @@ class PrivateKeyWrapper : public JSWrapper<PrivateKey> {
     PrivateKeyWrapper Deepcopy();
 
     G1ElementWrapper GetG1() const;
+
+    G2ElementWrapper GetG2() const;
+
+    G2ElementWrapper GetG2Power(const G2ElementWrapper &element) const;
+
+    G1ElementWrapper MulG1(const G1ElementWrapper &other);
+
+    G2ElementWrapper MulG2(const G2ElementWrapper &other);
+
+    bool EqualTo(const PrivateKeyWrapper &others);
 };
 }  // namespace js_wrappers
 

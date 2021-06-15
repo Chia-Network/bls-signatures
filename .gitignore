@@ -57,3 +57,6 @@ blsbench.*
 *.whl
 venv
 yarn-error.log
+
+.vs/
+out/
