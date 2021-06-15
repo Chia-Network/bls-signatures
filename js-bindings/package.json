@@ -45,6 +45,6 @@
     "karma-webpack": "^3.0.5",
     "mocha": "^8.4.0",
     "typescript": "^3.6.5",
-    "webpack": "^4.43.0"
+    "webpack": "^5.39.0"
   }
 }
