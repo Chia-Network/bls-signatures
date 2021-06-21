@@ -17,7 +17,7 @@
 
 namespace js_wrappers {
 Bignum::Bignum() {
-    bn_init(&content, 1);
+    bn_make(&content, 1);
 }
 
 Bignum::~Bignum() {
