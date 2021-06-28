@@ -25,12 +25,12 @@ jobs:
       run: |
         arch -arm64 python -m pip install --upgrade pip
         arch -arm64 pip install flake8
-        arch -arm64 flake8 tests setup.py
+        arch -arm64 flake8 src setup.py python-bindings python-impl
 
     - name: Lint source with mypy
       run: |
         arch -arm64 pip install mypy
-        arch -arm64 mypy --config-file mypi.ini setup.py tests
+        arch -arm64 mypy --config-file mypi.ini python-bindings python-impl
 
     - name: Build m1 wheels
       run: |
