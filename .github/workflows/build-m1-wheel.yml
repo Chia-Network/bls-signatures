@@ -1,0 +1,95 @@
+name: Build M1 Wheels
+
+on: [push, pull_request]
+
+jobs:
+  build_wheels:
+    name: Build wheel on Mac M1
+    runs-on: [m1]
+    strategy:
+      fail-fast: false
+
+    steps:
+    - name: Cancel previous runs on the same branch
+      if: ${{ github.ref != 'refs/heads/main' }}
+      uses: styfle/cancel-workflow-action@0.7.0
+      with:
+        access_token: ${{ github.token }}
+
+    - name: Checkout code
+      uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Lint source with flake8
+      run: |
+        arch -arm64 python -m pip install --upgrade pip
+        arch -arm64 pip install flake8
+        arch -arm64 flake8 src setup.py python-bindings python-impl
+
+    - name: Lint source with mypy
+      run: |
+        arch -arm64 pip install mypy
+        arch -arm64 mypy --config-file mypi.ini python-bindings python-impl
+
+    - name: Build m1 wheels
+      run: |
+        arch -arm64 pip wheel -w dist --no-deps .
+        arch -arm64 delocate-wheel -v dist/*.whl
+
+    - name: Test wheel
+      run: |
+        arch -arm64 python3 -m venv venv
+        . ./venv/bin/activate
+        arch -arm64 pip install ./dist/*.whl
+        arch -arm64 pip install pytest
+        arch -arm64 ./venv/bin/pytest -v ./python-bindings/test.py
+
+    - name: Create sha256 hash
+      run: |
+        mkdir hashes
+        cd ./dist
+        shasum -a 256 *
+        shasum -a 256 * > ../hashes/blspy-wheel-m1-sha256.txt
+
+    - name: Upload hashes
+      uses: actions/upload-artifact@v2
+      with:
+        name: blspy-hashes
+        path: ./hashes
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v2
+      with:
+        name: wheels
+        path: ./dist
+
+    - name: Test for secrets access
+      id: check_secrets
+      shell: bash
+      run: |
+        unset HAS_SECRET
+        if [ -n "$SECRET" ]; then HAS_SECRET='true' ; fi
+        echo ::set-output name=HAS_SECRET::${HAS_SECRET}
+      env:
+        SECRET: "${{ secrets.test_pypi_password }}"
+
+    - name: Install twine
+      run: arch -arm64 pip install twine
+
+    - name: Publish distribution to PyPI
+      if: startsWith(github.event.ref, 'refs/tags') && steps.check_secrets.outputs.HAS_SECRET
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_NON_INTERACTIVE: 1
+        TWINE_PASSWORD: ${{ secrets.pypi_password }}
+      run: arch -arm64 twine upload --non-interactive --skip-existing --verbose 'dist/*'
+
+    - name: Publish distribution to Test PyPI
+      if: steps.check_secrets.outputs.HAS_SECRET
+      env:
+        TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+        TWINE_USERNAME: __token__
+        TWINE_NON_INTERACTIVE: 1
+        TWINE_PASSWORD: ${{ secrets.test_pypi_password }}
+      run: arch -arm64 twine upload --non-interactive --skip-existing --verbose 'dist/*'
