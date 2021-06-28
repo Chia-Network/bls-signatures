@@ -34,7 +34,7 @@ jobs:
 
     - name: Build m1 wheels
       run: |
-        arch -arm64 pip wheel -w dist .
+        arch -arm64 pip wheel -w dist --no-deps .
         arch -arm64 delocate-wheel -v dist/*.whl
 
     - name: Test wheel
@@ -49,8 +49,8 @@ jobs:
       run: |
         mkdir hashes
         cd ./dist
-        shasum -a 256 blspy*
-        shasum -a 256 blspy* > ../hashes/blspy-wheel-m1-sha256.txt
+        shasum -a 256 *
+        shasum -a 256 * > ../hashes/blspy-wheel-m1-sha256.txt
 
     - name: Upload hashes
       uses: actions/upload-artifact@v2
@@ -62,7 +62,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: wheels
-        path: ./dist/blspy*
+        path: ./dist
 
     - name: Test for secrets access
       id: check_secrets
