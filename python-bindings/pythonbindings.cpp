@@ -153,6 +153,17 @@ PYBIND11_MODULE(blspy, m)
                 }
                 PythonGIL release_lock;
                 return BasicSchemeMPL().AggregateVerify(pks, vecs, sig);
+            })
+        .def(
+            "g2_from_message",
+            [](const py::bytes &msg) {
+                const auto msg_str = std::string(msg);
+                const auto msg_bytes = Bytes((const uint8_t *)msg_str.c_str(), msg_str.size());
+                return G2Element::FromMessage(
+                    msg_bytes,
+                    (const uint8_t *)BasicSchemeMPL::CIPHERSUITE_ID.c_str(),
+                    BasicSchemeMPL::CIPHERSUITE_ID.size()
+                );
             });
 
     py::class_<AugSchemeMPL>(m, "AugSchemeMPL")
@@ -217,6 +228,17 @@ PYBIND11_MODULE(blspy, m)
                 }
                 PythonGIL release_lock;
                 return AugSchemeMPL().AggregateVerify(pks, vecs, sig);
+            })
+        .def(
+            "g2_from_message",
+            [](const py::bytes &msg) {
+                const auto msg_str = std::string(msg);
+                const auto msg_bytes = Bytes((const uint8_t *)msg_str.c_str(), msg_str.size());
+                return G2Element::FromMessage(
+                    msg_bytes,
+                    (const uint8_t *)AugSchemeMPL::CIPHERSUITE_ID.c_str(),
+                    AugSchemeMPL::CIPHERSUITE_ID.size()
+                );
             });
 
     py::class_<PopSchemeMPL>(m, "PopSchemeMPL")
@@ -271,6 +293,17 @@ PYBIND11_MODULE(blspy, m)
                 }
                 PythonGIL release_lock;
                 return PopSchemeMPL().AggregateVerify(pks, vecs, sig);
+            })
+        .def(
+            "g2_from_message",
+            [](const py::bytes &msg) {
+                const auto msg_str = std::string(msg);
+                const auto msg_bytes = Bytes((const uint8_t *)msg_str.c_str(), msg_str.size());
+                return G2Element::FromMessage(
+                    msg_bytes,
+                    (const uint8_t *)PopSchemeMPL::CIPHERSUITE_ID.c_str(),
+                    PopSchemeMPL::CIPHERSUITE_ID.size()
+                );
             })
         .def("pop_prove", [](const PrivateKey& privateKey){
             return PopSchemeMPL().PopProve(privateKey);
@@ -577,6 +610,12 @@ PYBIND11_MODULE(blspy, m)
                 delete[] out;
                 return ans;
             })
+        .def(
+            "__mul__",
+            [](GTElement &self, GTElement &other) {
+                return self * other;
+            },
+            py::is_operator())
         .def("__deepcopy__", [](const GTElement &ele, const py::object &memo) {
             return GTElement(ele);
         });

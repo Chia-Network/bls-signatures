@@ -125,6 +125,7 @@ public:
     friend bool operator==(GTElement const &a, GTElement const &b);
     friend bool operator!=(GTElement const &a, GTElement const &b);
     friend std::ostream &operator<<(std::ostream &os, const GTElement &s);
+    friend GTElement operator*(GTElement &a, GTElement &b);
     GTElement &operator=(const GTElement &rhs);
 
 private:

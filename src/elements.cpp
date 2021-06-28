@@ -449,6 +449,14 @@ GTElement operator&(const G1Element& a, const G2Element& b)
     return ret;
 }
 
+GTElement operator*(GTElement& a, GTElement& b)
+{
+    GTElement ans;
+    fp12_mul(ans.r, a.r, b.r);
+    BLS::CheckRelicErrors();
+    return ans;
+}
+
 void GTElement::Serialize(uint8_t* buffer) const
 {
     gt_write_bin(buffer, GTElement::SIZE, *(gt_t*)&r, 1);
