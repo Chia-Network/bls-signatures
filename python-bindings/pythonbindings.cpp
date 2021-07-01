@@ -39,49 +39,6 @@ private:
 
 PYBIND11_MODULE(blspy, m)
 {
-    py::class_<BNWrapper>(m, "BNWrapper")
-        .def(py::init(&BNWrapper::FromByteVector))
-        .def(py::init([](py::int_ pyint) {
-            size_t n_bytes = 1 + ((_PyLong_NumBits(pyint.ptr()) + 7) / 8);
-            std::vector<uint8_t> buffer(n_bytes, 0);
-            if (_PyLong_AsByteArray(
-                    (PyLongObject *)pyint.ptr(), buffer.data(), n_bytes, 0, 0) <
-                0) {
-                throw std::invalid_argument("Failed to cast int to BNWrapper");
-            }
-            return BNWrapper::FromByteVector(buffer);
-        }))
-        .def(
-            "__repr__",
-            [](const BNWrapper &b) {
-                std::stringstream s;
-                s << b;
-                return "<BNWrapper " + s.str() + ">";
-            })
-        .def(
-            "__deepcopy__",
-            [](const BNWrapper &k, const py::object &memo) {
-                return BNWrapper(k);
-            })
-        .def(
-            "__str__",
-            [](const BNWrapper &b) {
-                std::stringstream s;
-                s << b;
-                return s.str();
-            })
-        .def("__bytes__", [](const BNWrapper &b) {
-            std::stringstream s;
-            int length = bn_size_bin(*b.b);
-            uint8_t *out = new uint8_t[length];
-            bn_write_bin(out, length, *b.b);
-            s << out;
-            delete[] out;
-            return py::bytes(s.str());
-        });
-
-    py::implicitly_convertible<py::int_, BNWrapper>();
-
     py::class_<PrivateKey>(m, "PrivateKey")
         .def_property_readonly_static(
             "PRIVATE_KEY_SIZE",
@@ -404,18 +361,10 @@ PYBIND11_MODULE(blspy, m)
             },
             py::is_operator())
         .def(
-            "__mul__",
-            [](G1Element &self, BNWrapper other) { return self * (*other.b); },
-            py::is_operator())
-        .def(
             "__rmul__",
             [](G1Element &self, bn_t other) {
                 return self * (*(bn_t *)&other);
             },
-            py::is_operator())
-        .def(
-            "__rmul__",
-            [](G1Element &self, BNWrapper other) { return self * (*other.b); },
             py::is_operator())
         .def(
             "__and__",
@@ -519,18 +468,10 @@ PYBIND11_MODULE(blspy, m)
             },
             py::is_operator())
         .def(
-            "__mul__",
-            [](G2Element &self, BNWrapper other) { return self * (*other.b); },
-            py::is_operator())
-        .def(
             "__rmul__",
             [](G2Element &self, bn_t other) {
                 return self * (*(bn_t *)&other);
             },
-            py::is_operator())
-        .def(
-            "__rmul__",
-            [](G2Element &self, BNWrapper other) { return self * (*other.b); },
             py::is_operator())
 
         .def(

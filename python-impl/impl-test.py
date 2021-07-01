@@ -262,12 +262,6 @@ def test_elements():
     y1 = g2 * b1
     y2 = g2 * b2
 
-    # Implicit conversion from python ints to BNWrapper
-    assert x1 == g1 * i1 == i1 * g1
-    assert x2 == g1 * i2 == i2 * g1
-    assert y1 == g2 * i1 == i1 * g2
-    assert y2 == g2 * i2 == i2 * g2
-
     # G1
     assert x1 != x2
     assert x1 * b1 == b1 * x1

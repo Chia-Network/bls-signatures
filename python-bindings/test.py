@@ -5,10 +5,8 @@ from copy import deepcopy
 from blspy import (
     AugSchemeMPL,
     BasicSchemeMPL,
-    BNWrapper,
     G1Element,
     G2Element,
-    GTElement,
     PopSchemeMPL,
     PrivateKey,
     Util,
@@ -71,77 +69,6 @@ def test_schemes():
 
         sigU_child = Scheme.sign(childU, msg)
         assert Scheme.verify(childUPk, msg, sigU_child)
-
-
-def test_elements():
-    b1 = BNWrapper([1, 2])
-    b2 = BNWrapper([3, 1, 4, 1, 5, 9])
-    i1 = int.from_bytes(bytes([1, 2]), byteorder="big")
-    i2 = int.from_bytes(bytes([3, 1, 4, 1, 5, 9]), byteorder="big")
-    g1 = G1Element.generator()
-    g2 = G2Element.generator()
-    u1 = G1Element.infinity()  # unity
-    u2 = G2Element.infinity()
-
-    # Does not allow construction
-    try:
-        i = G1Element()
-        assert False
-    except Exception:
-        pass
-    try:
-        i = G2Element()
-        assert False
-    except Exception:
-        pass
-
-    x1 = g1 * b1
-    x2 = g1 * b2
-    y1 = g2 * b1
-    y2 = g2 * b2
-
-    # Implicit conversion from python ints to BNWrapperWrapperWrapper
-    assert x1 == g1 * i1 == i1 * g1
-    assert x2 == g1 * i2 == i2 * g1
-    assert y1 == g2 * i1 == i1 * g2
-    assert y2 == g2 * i2 == i2 * g2
-
-    # G1
-    assert x1 != x2
-    assert x1 * b1 == b1 * x1
-    assert x1 * b1 != x1 * b2
-    assert x1 + u1 == x1
-    assert x1 + x2 == x2 + x1
-    assert x1 + x1.negate() == u1
-    assert x1 == G1Element(bytes(x1))
-    copy = deepcopy(x1)
-    assert x1 == copy
-    x1 += x2
-    assert x1 != copy
-
-    # G2
-    assert y1 != y2
-    assert y1 * b1 == b1 * y1
-    assert y1 * b1 != y1 * b2
-    assert y1 + u2 == y1
-    assert y1 + y2 == y2 + y1
-    assert y1 + y1.negate() == u2
-    assert y1 == G2Element(bytes(y1))
-    copy = deepcopy(y1)
-    assert y1 == copy
-    y1 += y2
-    assert y1 != copy
-
-    # pairing operation
-    pair = x1 & y1
-    assert pair != x1 & y2
-    assert pair != x2 & y1
-    assert pair == x1.pair(y1)
-    assert pair == GTElement(bytes(pair))
-    copy = deepcopy(pair)
-    assert pair == copy
-    pair = None
-    assert pair != copy
 
 
 def test_vectors_invalid():
@@ -395,7 +322,6 @@ def test_aggregate_verify_zero_items():
 
 
 test_schemes()
-test_elements()
 test_vectors_invalid()
 test_vectors_valid()
 test_readme()
