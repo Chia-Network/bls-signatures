@@ -12,17 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <algorithm>
 #include <cstring>
-#include <string>
 
 #include "bls.hpp"
-#include "elements.hpp"
-#include "privatekey.hpp"
-#include "util.hpp"
 
 namespace bls {
-
 
 G1Element G1Element::FromBytes(const Bytes& bytes)
 {
@@ -144,7 +138,6 @@ uint32_t G1Element::GetFingerprint() const
     Util::Hash256(hash, buffer, G1Element::SIZE);
     return Util::FourBytesToInt(hash);
 }
-
 
 std::vector<uint8_t> G1Element::Serialize() const {
     uint8_t buffer[G1Element::SIZE + 1];

@@ -106,7 +106,6 @@ public:
     friend G2Element operator*(const G2Element &a, const bn_t &k);
     friend G2Element operator*(const bn_t &k, const G2Element &a);
 
-
 private:
     g2_t q;
 };
