@@ -153,6 +153,17 @@ PYBIND11_MODULE(blspy, m)
                 }
                 PythonGIL release_lock;
                 return BasicSchemeMPL().AggregateVerify(pks, vecs, sig);
+            })
+        .def(
+            "g2_from_message",
+            [](const py::bytes &msg) {
+                const auto msg_str = std::string(msg);
+                const auto msg_bytes = Bytes((const uint8_t *)msg_str.c_str(), msg_str.size());
+                return G2Element::FromMessage(
+                    msg_bytes,
+                    (const uint8_t *)BasicSchemeMPL::CIPHERSUITE_ID.c_str(),
+                    BasicSchemeMPL::CIPHERSUITE_ID.size()
+                );
             });
 
     py::class_<AugSchemeMPL>(m, "AugSchemeMPL")
@@ -217,6 +228,17 @@ PYBIND11_MODULE(blspy, m)
                 }
                 PythonGIL release_lock;
                 return AugSchemeMPL().AggregateVerify(pks, vecs, sig);
+            })
+        .def(
+            "g2_from_message",
+            [](const py::bytes &msg) {
+                const auto msg_str = std::string(msg);
+                const auto msg_bytes = Bytes((const uint8_t *)msg_str.c_str(), msg_str.size());
+                return G2Element::FromMessage(
+                    msg_bytes,
+                    (const uint8_t *)AugSchemeMPL::CIPHERSUITE_ID.c_str(),
+                    AugSchemeMPL::CIPHERSUITE_ID.size()
+                );
             });
 
     py::class_<PopSchemeMPL>(m, "PopSchemeMPL")
@@ -271,6 +293,17 @@ PYBIND11_MODULE(blspy, m)
                 }
                 PythonGIL release_lock;
                 return PopSchemeMPL().AggregateVerify(pks, vecs, sig);
+            })
+        .def(
+            "g2_from_message",
+            [](const py::bytes &msg) {
+                const auto msg_str = std::string(msg);
+                const auto msg_bytes = Bytes((const uint8_t *)msg_str.c_str(), msg_str.size());
+                return G2Element::FromMessage(
+                    msg_bytes,
+                    (const uint8_t *)PopSchemeMPL::CIPHERSUITE_ID.c_str(),
+                    PopSchemeMPL::CIPHERSUITE_ID.size()
+                );
             })
         .def("pop_prove", [](const PrivateKey& privateKey){
             return PopSchemeMPL().PopProve(privateKey);
@@ -339,6 +372,7 @@ PYBIND11_MODULE(blspy, m)
             })
         .def("generator", &G1Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G1Element::FromMessage))
+        .def("pair", &G1Element::Pair)
         .def("negate", &G1Element::Negate)
         .def("get_fingerprint", &G1Element::GetFingerprint)
 
@@ -364,6 +398,10 @@ PYBIND11_MODULE(blspy, m)
             [](G1Element &self, bn_t other) {
                 return self * (*(bn_t *)&other);
             },
+            py::is_operator())
+        .def(
+            "__and__",
+            [](G1Element &self, G2Element &other) { return self & other; },
             py::is_operator())
         .def(
             "__repr__",
@@ -442,6 +480,7 @@ PYBIND11_MODULE(blspy, m)
             })
         .def("generator", &G2Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G2Element::FromMessage))
+        .def("pair", &G2Element::Pair)
         .def("negate", &G2Element::Negate)
         .def(
             "__deepcopy__",
@@ -492,6 +531,93 @@ PYBIND11_MODULE(blspy, m)
             })
         .def("__deepcopy__", [](const G2Element &ele, const py::object &memo) {
             return G2Element(ele);
+        });
+
+    py::class_<GTElement>(m, "GTElement")
+        .def_property_readonly_static(
+            "SIZE", [](py::object self) { return GTElement::SIZE; })
+        .def(py::init(&GTElement::FromByteVector))
+        .def(py::init([](py::buffer const b) {
+            py::buffer_info info = b.request();
+            if (info.format != py::format_descriptor<uint8_t>::format() ||
+                info.ndim != 1)
+                throw std::runtime_error("Incompatible buffer format!");
+
+            if ((int)info.size != GTElement::SIZE) {
+                throw std::invalid_argument(
+                    "Length of bytes object not equal to G2Element::SIZE");
+            }
+            auto data_ptr = static_cast<uint8_t *>(info.ptr);
+            std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+            return GTElement::FromByteVector(data);
+        }))
+        .def(py::init([](py::int_ pyint) {
+            std::vector<uint8_t> buffer(GTElement::SIZE, 0);
+            if (_PyLong_AsByteArray(
+                    (PyLongObject *)pyint.ptr(),
+                    buffer.data(),
+                    GTElement::SIZE,
+                    0,
+                    0) < 0) {
+                throw std::invalid_argument("Failed to cast int to GTElement");
+            }
+            return GTElement::FromByteVector(buffer);
+        }))
+        .def(
+            "from_bytes",
+            [](py::buffer const b) {
+                py::buffer_info info = b.request();
+                if (info.format != py::format_descriptor<uint8_t>::format() ||
+                    info.ndim != 1)
+                    throw std::runtime_error("Incompatible buffer format!");
+
+                if ((int)info.size != GTElement::SIZE) {
+                    throw std::invalid_argument(
+                        "Length of bytes object not equal to GTElement::SIZE");
+                }
+                auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
+                return GTElement::FromBytes(Bytes(data_ptr, GTElement::SIZE));
+            })
+        .def("unity", &GTElement::Unity)
+        .def(py::self == py::self)
+        .def(py::self != py::self)
+        .def(
+            "__deepcopy__",
+            [](const GTElement &gt, const py::object &memo) {
+                return GTElement(gt);
+            })
+        .def(
+            "__repr__",
+            [](const GTElement &ele) {
+                std::stringstream s;
+                s << ele;
+                return "<GTElement " + s.str() + ">";
+            })
+        .def(
+            "__str__",
+            [](const GTElement &ele) {
+                std::stringstream s;
+                s << ele;
+                return s.str();
+            })
+        .def(
+            "__bytes__",
+            [](const GTElement &ele) {
+                uint8_t *out = new uint8_t[GTElement::SIZE];
+                ele.Serialize(out);
+                py::bytes ans =
+                    py::bytes(reinterpret_cast<char *>(out), GTElement::SIZE);
+                delete[] out;
+                return ans;
+            })
+        .def(
+            "__mul__",
+            [](GTElement &self, GTElement &other) {
+                return self * other;
+            },
+            py::is_operator())
+        .def("__deepcopy__", [](const GTElement &ele, const py::object &memo) {
+            return GTElement(ele);
         });
 
     m.attr("PublicKeyMPL") = m.attr("G1Element");
