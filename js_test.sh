@@ -1,16 +1,8 @@
 #!/bin/sh
 
-YARN=yarn
-if which yarn >/dev/null ; then
-    YARN=yarn
+if which npm >/dev/null ; then
+    cd js-bindings && npm install && exec npm run test
 else
-    if which npm >/dev/null ; then
-        YARN=npm
-    else
-        echo "No yarn or npm installed."
-        exit 1
-    fi
+    echo "npm is not installed."
+    exit 1
 fi
-
-cd js-bindings/tests && ${YARN} install && exec node ./test.js
-
