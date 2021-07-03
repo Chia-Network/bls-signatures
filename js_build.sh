@@ -4,7 +4,7 @@ git submodule update --init --recursive
 
 if [[ -e js_build ]]
 then
-  rm -r js_build
+  rm -rf js_build
 fi
 
 mkdir js_build
