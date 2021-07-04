@@ -13,7 +13,7 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "node tests/test.js"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -35,6 +35,7 @@
   ],
   "devDependencies": {
     "assert": "^2.0.0",
-    "binascii": "^0.0.2"
+    "binascii": "^0.0.2",
+    "jest": "^27.0.6"
   }
 }
