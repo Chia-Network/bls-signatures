@@ -8,6 +8,7 @@ describe("Test code sample in README.md", () => {
     12, 62, 89, 110, 182, 9,   44, 20,  254, 22
   ]);
   
+  // context of variables which can be accessed from tests in this block.
   const var_ = {
     sk: undefined,
     pk: undefined,
@@ -182,22 +183,14 @@ describe("Test code sample in README.md", () => {
   });
   
   afterAll(() => {
-    const del = (k) => {
-      if(k && typeof k.delete === "function"){
-        k.delete();
+    // sk.delete();
+    // pk.delete();
+    // sig1.delete();
+    // ...
+    Object.values(var_).forEach(blsVariable => {
+      if(blsVariable && typeof blsVariable.delete === "function"){
+        blsVariable.delete();
       }
-    }
-  
-    /*
-      sk.delete();
-      // ...
-      pk.delete();
-      // ...
-      sig1.delete();
-      // ...
-     */
-    Object.values(var_).forEach(v => {
-      del(v);
     });
   });
 });
