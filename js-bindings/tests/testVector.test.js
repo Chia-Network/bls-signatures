@@ -1,5 +1,5 @@
 const loadBLS = require("../../js_build/js-bindings/blsjs.js");
-const {Hex} = require("jscrypto");
+const {Hex} = require("jscrypto/Hex");
 
 let BLS;
 

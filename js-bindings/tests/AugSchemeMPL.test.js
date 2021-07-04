@@ -1,5 +1,4 @@
 const loadBLS = require("../../js_build/js-bindings/blsjs.js");
-const {Hex} = require("jscrypto");
 
 describe("AugSchemeMPL", () => {
   let BLS;
