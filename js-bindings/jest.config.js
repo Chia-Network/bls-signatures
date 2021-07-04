@@ -25,22 +25,6 @@ module.exports = {
   // A set of global variables that need to be available in all test environments
   // globals: {},
 
-  // An array of file extensions your modules use
-  // moduleFileExtensions: [
-  //   "js",
-  //   "jsx",
-  //   "ts",
-  //   "tsx",
-  //   "json",
-  //   "node"
-  // ],
-
-  // A map from regular expressions to module names or to arrays of module names that allow to stub out resources with a single module
-  // moduleNameMapper: {},
-
-  // An array of regexp pattern strings, matched against all module paths before considered 'visible' to the module loader
-  // modulePathIgnorePatterns: [],
-
   // A preset that is used as a base for Jest's configuration
   // preset: undefined,
 
@@ -60,7 +44,7 @@ module.exports = {
 
   // The glob patterns Jest uses to detect test files
   testMatch: [
-    "tests/**/*.test.js"
+    "<rootDir>/tests/**/*.test.js",
   ],
 
   // An array of regexp pattern strings that are matched against all test paths, matched tests are skipped
