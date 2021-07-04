@@ -1,4 +1,5 @@
 const loadBLS = require("../../js_build/js-bindings/blsjs.js");
+
 let BLS;
 
 beforeAll(async () => {
