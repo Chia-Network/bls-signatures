@@ -116,23 +116,37 @@ test("test_vectors_valid", () => {
   const sk2 = BLS.PrivateKey.from_bytes(secret2, false);
   
   const msg = Uint8Array.from([3, 1, 4, 1, 5, 9]);
-  const sig1Basic = BLS.BasicSchemeMPL.sign(sk1, msg)
-  const sig2Basic = BLS.BasicSchemeMPL.sign(sk2, msg)
-  const sigABasic = BLS.BasicSchemeMPL.aggregate([sig1Basic, sig2Basic])
-  const sig1Aug = BLS.AugSchemeMPL.sign(sk1, msg)
-  const sig2Aug = BLS.AugSchemeMPL.sign(sk2, msg)
-  const sigAAug = BLS.AugSchemeMPL.aggregate([sig1Aug, sig2Aug])
-  const sig1Pop = BLS.PopSchemeMPL.sign(sk1, msg)
-  const sig2Pop = BLS.PopSchemeMPL.sign(sk2, msg)
-  const sigAPop = BLS.PopSchemeMPL.aggregate([sig1Pop, sig2Pop])
+  const sig1Basic = BLS.BasicSchemeMPL.sign(sk1, msg);
+  const sig2Basic = BLS.BasicSchemeMPL.sign(sk2, msg);
+  const sigABasic = BLS.BasicSchemeMPL.aggregate([sig1Basic, sig2Basic]);
+  const sig1Aug = BLS.AugSchemeMPL.sign(sk1, msg);
+  const sig2Aug = BLS.AugSchemeMPL.sign(sk2, msg);
+  const sigAAug = BLS.AugSchemeMPL.aggregate([sig1Aug, sig2Aug]);
+  const sig1Pop = BLS.PopSchemeMPL.sign(sk1, msg);
+  const sig2Pop = BLS.PopSchemeMPL.sign(sk2, msg);
+  const sigAPop = BLS.PopSchemeMPL.aggregate([sig1Pop, sig2Pop]);
   
-  expect(Uint8Array.from(sig1Basic.serialize())).toEqual(ref_sig1Basic);
-  expect(Uint8Array.from(sig2Basic.serialize())).toEqual(ref_sig2Basic);
-  expect(Uint8Array.from(sigABasic.serialize())).toEqual(ref_sigABasic);
-  expect(Uint8Array.from(sig1Aug.serialize())).toEqual(ref_sig1Aug);
-  expect(Uint8Array.from(sig2Aug.serialize())).toEqual(ref_sig2Aug);
-  expect(Uint8Array.from(sigAAug.serialize())).toEqual(ref_sigAAug);
-  expect(Uint8Array.from(sig1Pop.serialize())).toEqual(ref_sig1Pop);
-  expect(Uint8Array.from(sig2Pop.serialize())).toEqual(ref_sig2Pop);
-  expect(Uint8Array.from(sigAPop.serialize())).toEqual(ref_sigAPop);
+  const testSerialize = (g2Element, ref) => {
+    expect(Uint8Array.from(g2Element.serialize())).toEqual(ref);
+  };
+  
+  testSerialize(sig1Basic, ref_sig1Basic);
+  testSerialize(sig2Basic, ref_sig2Basic);
+  testSerialize(sigABasic, ref_sigABasic);
+  testSerialize(sig1Aug, ref_sig1Aug);
+  testSerialize(sig2Aug, ref_sig2Aug);
+  testSerialize(sigAAug, ref_sigAAug);
+  testSerialize(sig1Pop, ref_sig1Pop);
+  testSerialize(sig2Pop, ref_sig2Pop);
+  testSerialize(sigAPop, ref_sigAPop);
+  
+  sig1Basic.delete();
+  sig2Basic.delete();
+  sigABasic.delete();
+  sig1Aug.delete();
+  sig2Aug.delete();
+  sigAAug.delete();
+  sig1Pop.delete();
+  sig2Pop.delete();
+  sigAPop.delete();
 });

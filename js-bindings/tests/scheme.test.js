@@ -19,6 +19,7 @@ test("test_schemes", () => {
   [BLS.BasicSchemeMPL, BLS.AugSchemeMPL, BLS.PopSchemeMPL].forEach(Scheme => {
     const sig = Scheme.sign(sk, msg);
     expect(Scheme.verify(pk, msg, sig)).toBeTruthy();
+    sig.delete();
   });
   
   const seed1 = Uint8Array.of(1, ...seed.slice(1));
@@ -43,12 +44,18 @@ test("test_schemes", () => {
     
     let agg_sig = Scheme.aggregate([sig1, sig2]);
     expect(Scheme.verify(agg_pk, msg, agg_sig)).toBeTruthy();
+    sig1.delete();
+    sig2.delete();
+    agg_pk.delete();
     
     // Aggregate different message
     sig1 = Scheme.sign(sk1, msg)
     sig2 = Scheme.sign(sk2, msg2)
     agg_sig = Scheme.aggregate([sig1, sig2])
     expect(Scheme.aggregate_verify([pk1, pk2], [msg, msg2], agg_sig)).toBeTruthy();
+    sig1.delete();
+    sig2.delete();
+    agg_sig.delete();
     
     // HD keys
     const child = Scheme.derive_child_sk(sk1, 123);
@@ -57,8 +64,20 @@ test("test_schemes", () => {
     
     const sig_child = Scheme.sign(child, msg);
     expect(Scheme.verify(child.get_g1(), msg, sig_child)).toBeTruthy();
+    child.delete();
+    sig_child.delete();
     
     const sigU_child = Scheme.sign(childU, msg);
     expect(Scheme.verify(childUPk, msg, sigU_child)).toBeTruthy();
+    childU.delete();
+    sigU_child.delete();
+    childUPk.delete();
   });
+  
+  sk.delete();
+  pk.delete();
+  sk1.delete();
+  pk1.delete();
+  sk2.delete();
+  pk2.delete();
 });
