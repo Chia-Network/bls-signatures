@@ -34,8 +34,7 @@
     "cryptography"
   ],
   "devDependencies": {
-    "assert": "^2.0.0",
-    "binascii": "^0.0.2",
-    "jest": "^27.0.6"
+    "jest": "^27.0.6",
+    "jscrypto": "^1.0.1"
   }
 }
