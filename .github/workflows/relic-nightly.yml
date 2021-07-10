@@ -86,5 +86,6 @@ jobs:
     - name: Test javascript bindings
       run: |
         emcc -v
+        export RELIC_MAIN=1
         sh emsdk_build.sh
         sh js_test.sh
