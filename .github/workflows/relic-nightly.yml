@@ -71,6 +71,11 @@ jobs:
         echo "Running ./src/runtest"
         ./src/runtest
 
+    - uses: actions/setup-python@v2
+      name: Install Python
+      with:
+        python-version: '3.8'
+
     - name: Test pure python implementation
       run: |
         python python-impl/impl-test.py
