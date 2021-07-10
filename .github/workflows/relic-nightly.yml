@@ -1,4 +1,4 @@
-name:  Build and Test C++ with Relic Nightly
+name:  Build and Test with Relic Nightly
 
 on:
   schedule:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_wheels:
-    name: Build and Test C++ with Relic Nightly
+    name: Build and Test with Relic Nightly
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
