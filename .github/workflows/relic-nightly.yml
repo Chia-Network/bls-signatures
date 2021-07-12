@@ -1,4 +1,4 @@
-name:  Build and Test C++ with Relic Nightly
+name:  Build and Test with Relic Nightly
 
 on:
   schedule:
@@ -7,12 +7,12 @@ on:
 
 jobs:
   build_wheels:
-    name: Build and Test C++ with Relic Nightly
+    name: Build and Test with Relic Nightly
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [macos-latest, ubuntu-latest]
 
     steps:
     - name: Cancel previous runs on the same branch
@@ -55,3 +55,37 @@ jobs:
         cmake --build . -- -j 6
         echo "Running ./src/runtest"
         ./src/runtest
+
+    - name: Mac OS build C++ and test
+      if: startsWith(matrix.os, 'macos')
+      run: |
+        ls -l
+        export MACOSX_DEPLOYMENT_TARGET=10.14
+        export CIBUILDWHEEL=1
+        export RELIC_MAIN=1
+        mkdir -p build
+        ls -l build
+        cd build
+        cmake ../
+        cmake --build . -- -j 6
+        echo "Running ./src/runtest"
+        ./src/runtest
+
+    - uses: actions/setup-python@v2
+      name: Install Python
+      with:
+        python-version: '3.8'
+
+    - name: Test pure python implementation
+      run: |
+        python python-impl/impl-test.py
+
+    - name: Install emsdk
+      uses: mymindstorm/setup-emsdk@v9
+
+    - name: Test javascript bindings
+      run: |
+        emcc -v
+        export RELIC_MAIN=1
+        sh emsdk_build.sh
+        sh js_test.sh
