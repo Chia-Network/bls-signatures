@@ -1,7 +1,0 @@
-{
-  "name": "bls-signature-tests",
-  "dependencies": {
-    "assert": "^2.0.0",
-    "binascii": "^0.0.2"
-  }
-}
