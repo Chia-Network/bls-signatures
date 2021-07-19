@@ -103,6 +103,4 @@ export interface ModuleInstance {
   Util: typeof Util;
 }
 
-declare function createModule(options?: {}): Promise<ModuleInstance>;
-
-export default createModule;
+export default function createModule(options?: {}): Promise<ModuleInstance>;
