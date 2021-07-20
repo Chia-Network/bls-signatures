@@ -15,6 +15,7 @@
 #ifndef SRC_BLSUTIL_HPP_
 #define SRC_BLSUTIL_HPP_
 
+#include <algorithm>
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -140,6 +141,10 @@ class Util {
             sum += addend;
         }
         return sum;
+    }
+
+    static bool HasOnlyZeros(const Bytes& bytes) {
+        return std::all_of(bytes.begin(), bytes.end(), [](uint8_t byte){ return byte == 0x00; });
     }
 
  private:
