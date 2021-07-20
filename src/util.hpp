@@ -19,32 +19,38 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <type_traits>
 
 namespace bls {
 
 class BLS;
 
-class Bytes {
-    const uint8_t* pData;
-    const size_t nSize;
+template <typename T>
+class span {
+    T* pData;
+    size_t nSize;
 
 public:
-    explicit Bytes(const uint8_t* pDataIn, const size_t nSizeIn)
+    explicit span(const T* pDataIn, const size_t nSizeIn)
         : pData(pDataIn), nSize(nSizeIn)
     {
     }
-    explicit Bytes(const std::vector<uint8_t>& vecBytes)
-        : pData(vecBytes.data()), nSize(vecBytes.size())
+
+    span(const std::vector<typename std::remove_const<T>::type>& cont)
+        : pData(cont.data()), nSize(cont.size())
     {
     }
 
-    inline const uint8_t* begin() const { return pData; }
-    inline const uint8_t* end() const { return pData + nSize; }
+    inline const T* begin() const { return pData; }
+    inline const T* end() const { return pData + nSize; }
 
+    inline const T* data() const { return pData; }
     inline size_t size() const { return nSize; }
 
-    const uint8_t& operator[](const int nIndex) const { return pData[nIndex]; }
+    const T& operator[](const int nIndex) const { return pData[nIndex]; }
 };
+
+using Bytes = span<const uint8_t>;
 
 class Util {
  public:
