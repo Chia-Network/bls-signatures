@@ -37,7 +37,7 @@ void TestHKDF(string ikm_hex, string salt_hex, string info_hex, string prk_expec
     vector<uint8_t> okm_expected = Util::HexToBytes(okm_expected_hex);
     uint8_t prk[32];
     HKDF256::Extract(prk, salt.data(), salt.size(), ikm.data(), ikm.size());
-    uint8_t okm[L];
+    uint8_t* okm = new uint8_t[L];
     HKDF256::Expand(okm, L, prk, info.data(), info.size());
 
     REQUIRE(32 == prk_expected.size());
@@ -49,6 +49,8 @@ void TestHKDF(string ikm_hex, string salt_hex, string info_hex, string prk_expec
     for (size_t i=0; i < L; i++) {
         REQUIRE(okm[i] == okm_expected[i]);
     }
+
+    delete[] okm;
 }
 
 TEST_CASE("class PrivateKey") {
