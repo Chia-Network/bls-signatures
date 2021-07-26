@@ -14,6 +14,7 @@ python-impl/__pycache__/
 blspy.*.so
 .mypy_cache/
 .pytest_chache/
+.eggs/
 
 js_build
 node_modules
@@ -56,6 +57,7 @@ blsbench.*
 
 *.whl
 venv
+env/
 yarn-error.log
 
 .vs/
