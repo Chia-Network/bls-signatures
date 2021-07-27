@@ -5,9 +5,12 @@ set(CMAKE_C_STANDARD 99)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-IF(NOT CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE "RELEASE")
-ENDIF()
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE "Release"
+    CACHE STRING "Possible values are empty, Debug, Release, RelWithDebInfo, MinSizeRel, ..."
+    FORCE
+  )
+endif()
 
 project(BLS)
 
