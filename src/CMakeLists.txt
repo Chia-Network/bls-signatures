@@ -48,37 +48,37 @@ find_library(GMP_NAME NAMES libgmp.a)
 find_library(SODIUM_NAME NAMES libsodium.a)
 
 set(LIBRARIES_TO_COMBINE
-      COMMAND mkdir ${OPREFIX}$<TARGET_NAME:blstmp> || true && cd ${OPREFIX}$<TARGET_NAME:blstmp> &&  ${CMAKE_AR} -x $<TARGET_FILE:blstmp>
-      COMMAND mkdir ${OPREFIX}$<TARGET_NAME:relic_s> || true && cd ${OPREFIX}$<TARGET_NAME:relic_s> &&  ${CMAKE_AR} -x $<TARGET_FILE:relic_s>
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPREFIX}$<TARGET_NAME:blstmp> && cd ${OPREFIX}$<TARGET_NAME:blstmp> && ${CMAKE_AR} -x $<TARGET_FILE:blstmp>
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${OPREFIX}$<TARGET_NAME:relic_s> && cd ${OPREFIX}$<TARGET_NAME:relic_s> && ${CMAKE_AR} -x $<TARGET_FILE:relic_s>
 )
 
-if (NOT ${GMP_NAME} STREQUAL "GMP_NAME-NOTFOUND")
-  list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}gmp || true && cd ${OPREFIX}gmp &&  ${CMAKE_AR} -x ${GMP_NAME})
+if(NOT ${GMP_NAME} STREQUAL "GMP_NAME-NOTFOUND")
+  list(APPEND LIBRARIES_TO_COMBINE COMMAND ${CMAKE_COMMAND} -E make_directory ${OPREFIX}gmp && cd ${OPREFIX}gmp && ${CMAKE_AR} -x ${GMP_NAME})
 endif()
 
-if (NOT ${SODIUM_NAME} STREQUAL "SODIUM_NAME-NOTFOUND")
+if(NOT ${SODIUM_NAME} STREQUAL "SODIUM_NAME-NOTFOUND")
   message("SODIUM_FOUND in src/CMakeLists.txt")
-  list(APPEND LIBRARIES_TO_COMBINE COMMAND mkdir ${OPREFIX}sodium || true && cd ${OPREFIX}sodium &&  ${CMAKE_AR} -x ${SODIUM_NAME})
+  list(APPEND LIBRARIES_TO_COMBINE COMMAND ${CMAKE_COMMAND} -E make_directory ${OPREFIX}sodium && cd ${OPREFIX}sodium && ${CMAKE_AR} -x ${SODIUM_NAME})
   target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1)
 else()
   target_compile_definitions(blstmp PRIVATE)
 endif()
 
 add_custom_target(combined_custom
-        ${LIBRARIES_TO_COMBINE}
-        COMMAND ${CMAKE_AR} -rs ${C_LIB} ${OPREFIX}*/*${CMAKE_C_OUTPUT_EXTENSION}
-        WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-        DEPENDS blstmp relic_s
-        )
+  ${LIBRARIES_TO_COMBINE}
+  COMMAND ${CMAKE_AR} -rs ${C_LIB} ${OPREFIX}*/*${CMAKE_C_OUTPUT_EXTENSION}
+  WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+  DEPENDS blstmp relic_s
+)
 
 add_library(combined STATIC IMPORTED GLOBAL)
 add_dependencies(combined combined_custom)
 target_link_libraries(bls combined)
 
 set_target_properties(combined
-        PROPERTIES
-        IMPORTED_LOCATION ${C_LIB}
-        )
+  PROPERTIES
+  IMPORTED_LOCATION ${C_LIB}
+)
 
 file(GLOB includes "${CMAKE_CURRENT_SOURCE_DIR}/*.hpp")
 install(DIRECTORY ${relic_SOURCE_DIR}/include/ DESTINATION include/chiabls)
