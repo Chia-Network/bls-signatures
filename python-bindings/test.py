@@ -1,5 +1,6 @@
 # flake8: noqa: E501
 import binascii
+import pickle
 from copy import deepcopy
 
 from blspy import (
@@ -335,11 +336,24 @@ def test_aggregate_verify_zero_items():
     assert AugSchemeMPL.aggregate_verify([], [], G2Element())
 
 
+def test_pickle_support():
+    seed = bytes([
+        0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192, 19, 18, 12, 89, 6,
+        220, 18, 102, 58, 209, 82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22
+    ])
+    key: PrivateKey = AugSchemeMPL.key_gen(seed)
+    g1: G1Element = key.get_g1()
+    g1_data = pickle.dumps(g1)
+    g1_restored = pickle.loads(g1_data)
+    assert g1 == g1_restored
+
+
 test_schemes()
 test_vectors_invalid()
 test_vectors_valid()
 test_readme()
 test_aggregate_verify_zero_items()
+test_pickle_support()
 
 print("\nAll tests passed.")
 

@@ -373,6 +373,16 @@ PYBIND11_MODULE(blspy, m)
                 // PythonGIL release_lock;
                 return G1Element::FromBytes(Bytes(data_ptr, G1Element::SIZE));
             })
+        .def(py::pickle(
+        [](const G1Element &dp) { // __getstate__
+            return py::make_tuple(dp.Serialize());
+            },
+            [](py::tuple t) { // __setstate__
+            if (t.size() != 1)
+                throw std::runtime_error("Invalid state!");
+            auto vecBytes = t[0].cast<std::vector<uint8_t>>();
+            return G1Element::FromByteVector(vecBytes);
+        }))
         .def("generator", &G1Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G1Element::FromMessage))
         .def("pair", &G1Element::Pair)
