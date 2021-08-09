@@ -36,17 +36,6 @@ jobs:
         sudo snap install cmake --classic
         hash -r
         cmake --version
-        echo "attempting to curl"
-        curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz | tar xz
-        echo "curl complete."
-        cd libsodium-stable
-        ls -l
-        ./configure --with-pic="yes"
-        make
-        sudo make install
-        cd ..
-        echo "Setting libsodium to static compile."
-        export CIBUILDWHEEL=1
         mkdir -p build
         cd build
         cmake ../

@@ -64,9 +64,6 @@ jobs:
           && curl -L https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz | lzip -dc | tar x
           && cd gmp-6.2.1 && ./configure --enable-fat
           && make && make install && cd .. && rm -rf gmp-6.2.1
-          && curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable.tar.gz | tar xz
-          && cd libsodium-stable && ./configure --with-pic="yes"
-          && make && make install && cd .. && rm -rf libsodium-stable
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: pytest -v {project}/python-bindings/test.py
 

@@ -209,14 +209,12 @@ g++ -Wl,-no_pie -std=c++11  -Ibls-signatures/build/_deps/relic-src/include -Ibls
 
 ## Notes on dependencies
 
-Libsodium and GMP are optional dependencies: libsodium gives secure memory
+We use Libsodium and have GMP as an optional dependency: libsodium gives secure memory
 allocation, and GMP speeds up the library by ~ 3x. MPIR is used on Windows via
 GitHub Actions instead. To install them, either download them from github and
 follow the instructions for each repo, or use a package manager like APT or
 brew. You can follow the recipe used to build python wheels for multiple
-platforms in `.github/workflows/`. libsodium is dynamically linked unless
-the environment variable $CIBUILDWHEEL is set which will then cause
-libsodium to statically link.
+platforms in `.github/workflows/`.
 
 ## Discussion
 

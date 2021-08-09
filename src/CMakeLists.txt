@@ -1,9 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14 FATAL_ERROR)
 set (CMAKE_CXX_STANDARD 17)
 
-# CMake 3.14+
-include(FetchContent)
-
 if (DEFINED ENV{RELIC_MAIN})
   set(RELIC_GIT_TAG "origin/main")
 else ()
@@ -43,6 +40,9 @@ add_library(blstmp ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
 )
 
+target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1)
+target_link_libraries(blstmp PUBLIC sodium)
+
 if(MSVC)
   add_custom_command(
     OUTPUT ${C_LIB}
@@ -62,15 +62,6 @@ else()
   find_library(GMP_NAME NAMES libgmp.a)
   if(NOT ${GMP_NAME} STREQUAL "GMP_NAME-NOTFOUND")
     list(APPEND LIBRARIES_TO_COMBINE COMMAND ${CMAKE_COMMAND} -E make_directory ${OPREFIX}gmp && cd ${OPREFIX}gmp && ${CMAKE_AR} -x ${GMP_NAME})
-  endif()
-
-  find_library(SODIUM_NAME NAMES libsodium.a)
-  if(NOT ${SODIUM_NAME} STREQUAL "SODIUM_NAME-NOTFOUND")
-    message("SODIUM_FOUND in src/CMakeLists.txt")
-    list(APPEND LIBRARIES_TO_COMBINE COMMAND ${CMAKE_COMMAND} -E make_directory ${OPREFIX}sodium && cd ${OPREFIX}sodium && ${CMAKE_AR} -x ${SODIUM_NAME})
-    target_compile_definitions(blstmp PRIVATE BLSALLOC_SODIUM=1)
-  else()
-    target_compile_definitions(blstmp PRIVATE)
   endif()
 
   add_custom_target(combined_custom
@@ -99,18 +90,10 @@ install(FILES ${C_LIB} DESTINATION lib)
 if(BUILD_BLS_TESTS)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch)
   add_executable(runtest test.cpp)
-  if(SODIUM_FOUND)
-    target_link_libraries(runtest blstmp relic_s sodium)
-  else()
-    target_link_libraries(runtest blstmp relic_s)
-  endif()
+  target_link_libraries(runtest blstmp relic_s)
 endif()
 
 if(BUILD_BLS_BENCHMARKS)
   add_executable(runbench test-bench.cpp)
-  if(SODIUM_FOUND)
-    target_link_libraries(runbench blstmp relic_s sodium)
-  else()
-    target_link_libraries(runbench blstmp relic_s)
-  endif()
+  target_link_libraries(runbench blstmp relic_s)
 endif()
