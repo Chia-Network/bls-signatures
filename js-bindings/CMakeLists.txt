@@ -16,12 +16,7 @@ add_executable(blsjs ${CMAKE_CURRENT_SOURCE_DIR}/jsbindings.cpp
         )
 add_custom_target(install_npm_dependencies npm ci)
 add_dependencies(blsjs install_npm_dependencies)
-
-if (SODIUM_FOUND)
-    target_link_libraries(blsjs PRIVATE blstmp relic_s sodium)
-else ()
-    target_link_libraries(blsjs PRIVATE blstmp relic_s)
-endif ()
+target_link_libraries(blsjs PRIVATE blstmp relic_s)
 
 # Copy necessary files for the npm package
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/package.json package.json COPYONLY)
