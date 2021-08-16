@@ -88,7 +88,7 @@ set(STBIN "OFF" CACHE STRING "")
 set(FP_METHD "INTEG;INTEG;INTEG;MONTY;LOWER;SLIDE" CACHE STRING "")
 
 if(NOT MSVC)
-  set(CFLAGS "-O3 -funroll-loops -fomit-frame-pointer" CACHE STRING "")
+  set(COMP_FLAGS "-O3 -funroll-loops -fomit-frame-pointer" CACHE STRING "")
 endif()
 
 set(FP_PMERS "off" CACHE STRING "")
