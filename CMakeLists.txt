@@ -41,6 +41,23 @@ set(SODIUM_DISABLE_TESTS "on" CACHE STRING "")
 set(SODIUM_CHIA_MINIMAL "on" CACHE STRING "")
 FetchContent_MakeAvailable(Sodium)
 
+if (DEFINED ENV{RELIC_MAIN})
+  set(RELIC_GIT_TAG "origin/main")
+else ()
+  # This is currently anchored to upstream b7b2266a0e4ee6f628f61d3ab638f524a18b52f1
+  set(RELIC_GIT_TAG "d20d97c046da2c1689916569e9895b48a4693624")
+endif ()
+
+message(STATUS "Relic will be built from: ${RELIC_GIT_TAG}")
+
+FetchContent_Declare(
+  relic
+  GIT_REPOSITORY https://github.com/AmineKhaldi/relic.git
+  GIT_TAG ${RELIC_GIT_TAG}
+)
+
+# Relic related options
+
 set(STBIN TRUE)
 find_package(gmp)
 if (GMP_FOUND)
@@ -63,31 +80,39 @@ if(EMSCRIPTEN)
   set(WSIZE "32" CACHE STRING "Relic - Processor word size")
 endif()
 
-set(TIMER "CYCLE" CACHE STRING "")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+  set(TIMER "ANSI" CACHE STRING "")
+  set(MULTI "" CACHE STRING "")
+else()
+  set(TIMER "CYCLE" CACHE STRING "")
+  set(MULTI "PTHREAD" CACHE STRING "")
+endif()
+
 set(CHECK "off" CACHE STRING "")
 set(VERBS "off" CACHE STRING "")
 set(ALLOC "AUTO" CACHE STRING "")
-set(SHLIB "OFF" CACHE STRING "")
-set(MULTI "PTHREAD" CACHE STRING "")
+set(SHLIB "off" CACHE STRING "")
 set(DOCUM "off" CACHE STRING "")
-
 set(FP_PRIME "381" CACHE STRING "Relic - Prime modulus size")
 
-IF (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(SEED "UDEV" CACHE STRING "")
   set(FP_QNRES "off" CACHE STRING "")
-ELSEIF (${CMAKE_SYSTEM_NAME} MATCHES "Windows")
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(SEED "WCGR" CACHE STRING "")
   set(FP_QNRES "on" CACHE STRING "")
-ELSE()
+else()
   set(SEED "UDEV" CACHE STRING "")
   set(FP_QNRES "on" CACHE STRING "")
-ENDIF()
+endif()
+
 set(STBIN "OFF" CACHE STRING "")
 
 set(FP_METHD "INTEG;INTEG;INTEG;MONTY;LOWER;SLIDE" CACHE STRING "")
 
-if(NOT MSVC)
+if(MSVC)
+  set(COMP_FLAGS "" CACHE STRING "")
+else()
   set(COMP_FLAGS "-O3 -funroll-loops -fomit-frame-pointer" CACHE STRING "")
 endif()
 
@@ -103,6 +128,8 @@ set(QUIET "on" CACHE STRING "Relic - Build with printing disabled")
 
 set(PP_EXT "LAZYR" CACHE STRING "")
 set(PP_METHD "LAZYR;OATEP" CACHE STRING "")
+
+FetchContent_MakeAvailable(relic)
 
 add_subdirectory(src)
 

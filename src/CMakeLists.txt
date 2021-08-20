@@ -1,22 +1,6 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.14 FATAL_ERROR)
 set (CMAKE_CXX_STANDARD 17)
 
-if (DEFINED ENV{RELIC_MAIN})
-  set(RELIC_GIT_TAG "origin/main")
-else ()
-  # This is currently anchored to upstream b7b2266a0e4ee6f628f61d3ab638f524a18b52f1
-  set(RELIC_GIT_TAG "d20d97c046da2c1689916569e9895b48a4693624")
-endif ()
-
-message(STATUS "Relic will be built from: ${RELIC_GIT_TAG}")
-
-FetchContent_Declare(
-  relic
-  GIT_REPOSITORY https://github.com/AmineKhaldi/relic.git
-  GIT_TAG        ${RELIC_GIT_TAG}
-)
-FetchContent_MakeAvailable(relic)
-
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 source_group("SrcHeaders" FILES ${HEADERS})
 
