@@ -45,14 +45,14 @@ if (DEFINED ENV{RELIC_MAIN})
   set(RELIC_GIT_TAG "origin/main")
 else ()
   # This is currently anchored to upstream b7b2266a0e4ee6f628f61d3ab638f524a18b52f1
-  set(RELIC_GIT_TAG "d20d97c046da2c1689916569e9895b48a4693624")
+  set(RELIC_GIT_TAG "31ca41446528f4c35525d5690da249ce6c0d43a1")
 endif ()
 
 message(STATUS "Relic will be built from: ${RELIC_GIT_TAG}")
 
 FetchContent_Declare(
   relic
-  GIT_REPOSITORY https://github.com/AmineKhaldi/relic.git
+  GIT_REPOSITORY https://github.com/Chia-Network/relic.git
   GIT_TAG ${RELIC_GIT_TAG}
 )
 
