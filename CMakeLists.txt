@@ -24,8 +24,8 @@ message(STATUS "Build benchmarks: ${BUILD_BLS_BENCHMARKS}")
 
 # Add path for custom modules
 set(CMAKE_MODULE_PATH
-	${CMAKE_MODULE_PATH}
-	${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules
+  ${CMAKE_MODULE_PATH}
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake_modules
 )
 
 include(FetchContent)
