@@ -44,8 +44,7 @@ FetchContent_MakeAvailable(Sodium)
 if (DEFINED ENV{RELIC_MAIN})
   set(RELIC_GIT_TAG "origin/main")
 else ()
-  # This is currently anchored to upstream b7b2266a0e4ee6f628f61d3ab638f524a18b52f1
-  set(RELIC_GIT_TAG "31ca41446528f4c35525d5690da249ce6c0d43a1")
+  set(RELIC_GIT_TAG "0a0a5934d2f6c63b478b99c02f0abbe04ca9f548")
 endif ()
 
 message(STATUS "Relic will be built from: ${RELIC_GIT_TAG}")
