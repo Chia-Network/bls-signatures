@@ -16,6 +16,8 @@
 
 namespace bls {
 
+const size_t PrivateKey::PRIVATE_KEY_SIZE;
+
 // Construct a private key from a bytearray.
 PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
 {
