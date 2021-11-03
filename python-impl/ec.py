@@ -346,7 +346,7 @@ def add_points(p1: AffinePoint, p2: AffinePoint, ec=default_ec, FE=Fq) -> Affine
     if p1 == p2:
         return double_point(p1, ec, FE)
     if p1.x == p2.x:
-        return AffinePoint(FE.zero(), FE.zero(), True, ec)
+        return AffinePoint(FE.zero(ec.q), FE.zero(ec.q), True, ec)
 
     x1, y1 = p1.x, p1.y
     x2, y2 = p2.x, p2.y
