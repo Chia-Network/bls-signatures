@@ -65,8 +65,12 @@ TEST_CASE("class PrivateKey") {
         REQUIRE(!pk3.IsZero());
         REQUIRE(pk1 != pk2);
         REQUIRE(pk3 == pk2);
+        REQUIRE(pk2.GetG1Element().IsValid()); // cache previous g1
+        REQUIRE(pk2.GetG2Element().IsValid()); // cache previous g2
         pk2 = pk1;
         REQUIRE(pk1 == pk2);
+        REQUIRE(pk1.GetG1Element() == pk2.GetG1Element());
+        REQUIRE(pk1.GetG2Element() == pk2.GetG2Element());
         REQUIRE(pk3 != pk2);
     }
     SECTION("Move {constructor|assignment operator}") {

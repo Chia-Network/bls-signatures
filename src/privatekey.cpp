@@ -87,6 +87,7 @@ PrivateKey& PrivateKey::operator=(const PrivateKey& other)
 {
     CheckKeyData();
     other.CheckKeyData();
+    InvalidateCaches();
     bn_copy(keydata, other.keydata);
     return *this;
 }
