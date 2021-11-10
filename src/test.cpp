@@ -69,7 +69,7 @@ TEST_CASE("class PrivateKey") {
         REQUIRE(pk2.GetG2Element().IsValid()); // cache previous g2
         pk2 = pk1;
         REQUIRE(pk1 == pk2);
-        REQUIRE(pk1.GetG1Element() == pk2.GetG1Element());  // currently failing
+        REQUIRE(pk1.GetG1Element() == pk2.GetG1Element());
         REQUIRE(pk1.GetG2Element() == pk2.GetG2Element());
         REQUIRE(pk3 != pk2);
     }
