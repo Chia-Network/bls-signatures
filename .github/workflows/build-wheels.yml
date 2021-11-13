@@ -53,8 +53,7 @@ jobs:
         CIBW_BUILD_VERBOSITY_MACOS: 0
         CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_BUILD_VERBOSITY_WINDOWS: 0
-        # Python 3.7 and 3.8
-        CIBW_BUILD: cp37-* cp38-* cp39-*
+        CIBW_BUILD: cp37-* cp38-* cp39-* cp310-*
         CIBW_SKIP: '*-manylinux_i686 *-win32'
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
