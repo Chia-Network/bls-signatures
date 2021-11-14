@@ -4,13 +4,12 @@ on: [push, pull_request]
 
 jobs:
   build_wheels:
-    name: Build and Test on ${{ matrix.os }} CPython ${{ matrix.python }}
+    name: Build and Test on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest]
-        python: ['3.7', '3.8', '3.9', '3.10']
 
     steps:
     - name: Cancel previous runs on the same branch
@@ -25,7 +24,7 @@ jobs:
     - uses: actions/setup-python@v2
       name: Install Python
       with:
-        python-version: ${{ matrix.python }}
+        python-version: '3.8'
 
     - name: Ubuntu build C++ and test with valgrind
       if: startsWith(matrix.os, 'ubuntu')
