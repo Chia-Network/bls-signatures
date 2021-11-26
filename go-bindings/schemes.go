@@ -45,7 +45,7 @@ type Deriver interface {
 	DeriveChildPkUnhardened(el *G1Element, index int) *G1Element
 }
 
-// Scheme  a schema interface
+// Scheme is a schema interface
 type Scheme interface {
 	Signer
 	Generator
@@ -58,7 +58,7 @@ type coreMLP struct {
 	val C.CCoreMPL
 }
 
-// KeyGen returns a new generated PrivateKey using passed a seed data
+// KeyGen returns a new generated PrivateKey using passed a genSeed data
 func (s *coreMLP) KeyGen(seed []byte) (*PrivateKey, error) {
 	cSeedPtr := C.CBytes(seed)
 	defer C.free(cSeedPtr)
@@ -125,7 +125,7 @@ func (s *coreMLP) AggregateSigs(sigs ...*G2Element) *G2Element {
 	return &aggSig
 }
 
-// DeriveChildSk ...
+// DeriveChildSk returns a child PrivateKey using the passed as a master key
 func (s *coreMLP) DeriveChildSk(sk *PrivateKey, index int) *PrivateKey {
 	res := PrivateKey{
 		val: C.CCoreMPLDeriveChildSk(s.val, sk.val, C.uint32_t(index)),

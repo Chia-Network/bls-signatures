@@ -8,6 +8,7 @@ package blschia
 // #include "blschia.h"
 import "C"
 import (
+	"encoding/hex"
 	"runtime"
 	"unsafe"
 )
@@ -93,7 +94,12 @@ func PrivateKeyAggregate(sks ...*PrivateKey) *PrivateKey {
 	return &sk
 }
 
-// IsEqual tests if one PrivateKey is equal to another
-func (sk *PrivateKey) IsEqual(other *PrivateKey) bool {
+// EqualTo tests if one PrivateKey is equal to another
+func (sk *PrivateKey) EqualTo(other *PrivateKey) bool {
 	return bool(C.CPrivateKeyIsEqual(sk.val, other.val))
+}
+
+// HexString returns a hex string representation of serialized data
+func (sk *PrivateKey) HexString() string {
+	return hex.EncodeToString(sk.Serialize())
 }

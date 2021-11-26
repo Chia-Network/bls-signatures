@@ -8,6 +8,7 @@ package blschia
 // #include "blschia.h"
 import "C"
 import (
+	"encoding/hex"
 	"runtime"
 	"unsafe"
 )
@@ -47,8 +48,8 @@ func (g *G1Element) Free() {
 	C.CG1ElementFree(g.val)
 }
 
-// IsEqual returns true if the elements are equal otherwise returns false
-func (g *G1Element) IsEqual(el *G1Element) bool {
+// EqualTo returns true if the elements are equal otherwise returns false
+func (g *G1Element) EqualTo(el *G1Element) bool {
 	return bool(C.CG1ElementIsEqual(g.val, el.val))
 }
 
@@ -78,6 +79,11 @@ func (g *G1Element) Serialize() []byte {
 	return C.GoBytes(ptr, C.CG1ElementSize())
 }
 
+// HexString returns a hex string representation of serialized data
+func (g *G1Element) HexString() string {
+	return hex.EncodeToString(g.Serialize())
+}
+
 // G2Element represents a bls::G2Element (96 bytes)
 // in fact G2Element is corresponding to a signature
 type G2Element struct {
@@ -104,8 +110,8 @@ func (g *G2Element) Free() {
 	C.CG2ElementFree(g.val)
 }
 
-// IsEqual returns true if the elements are equal, otherwise returns false
-func (g *G2Element) IsEqual(el *G2Element) bool {
+// EqualTo returns true if the elements are equal, otherwise returns false
+func (g *G2Element) EqualTo(el *G2Element) bool {
 	isEqual := bool(C.CG2ElementIsEqual(g.val, el.val))
 	return isEqual
 }
@@ -132,6 +138,10 @@ func (g *G2Element) Mul(sk *PrivateKey) *G2Element {
 func (g *G2Element) Serialize() []byte {
 	ptr := C.CG2ElementSerialize(g.val)
 	defer C.free(unsafe.Pointer(ptr))
-	runtime.KeepAlive(g)
 	return C.GoBytes(ptr, C.CG2ElementSize())
+}
+
+// HexString returns a hex string representation of serialized data
+func (g *G2Element) HexString() string {
+	return hex.EncodeToString(g.Serialize())
 }

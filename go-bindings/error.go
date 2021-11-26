@@ -1,9 +1,6 @@
 package blschia
 
-// #cgo LDFLAGS: -lstdc++ -lgmp -lbls -lrelic_s
-// #cgo CXXFLAGS: -std=c++14
-// #include <stdbool.h>
-// #include <stdlib.h>
+// #cgo LDFLAGS: -lbls
 // #include "blschia.h"
 import "C"
 import "errors"

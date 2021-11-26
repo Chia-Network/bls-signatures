@@ -9,58 +9,67 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	seed = []byte{
-		0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192, 19, 18, 12, 89, 6,
-		220, 18, 102, 58, 209, 82, 12, 62, 89, 110, 182, 9, 44, 20, 254, 22,
-	}
-)
-
 func TestSchemesSignAndVerify(t *testing.T) {
 	msg := []byte{100, 2, 254, 88, 90, 45, 23}
 	testCases := []struct {
+		name   string
 		scheme Scheme
 	}{
 		{
+			name:   "test a verification of basic scheme",
 			scheme: NewBasicSchemeMPL(),
 		},
 		{
+			name:   "test a verification of augmented scheme",
 			scheme: NewAugSchemeMPL(),
 		},
 		{
+			name:   "test a verification of proof of possession scheme",
 			scheme: NewPopSchemeMPL(),
 		},
 	}
 	for _, tc := range testCases {
-		sk, err := tc.scheme.KeyGen(seed)
-		assert.NoError(t, err)
-		pk, err := sk.G1Element()
-		assert.NoError(t, err)
-		sig := tc.scheme.Sign(sk, msg)
-		assert.True(t, tc.scheme.Verify(pk, msg, sig))
+		t.Run(tc.name, func(t *testing.T) {
+			sk, err := tc.scheme.KeyGen(genSeed(1))
+			assert.NoError(t, err)
+			pk, err := sk.G1Element()
+			assert.NoError(t, err)
+			sig := tc.scheme.Sign(sk, msg)
+			assert.True(t, tc.scheme.Verify(pk, msg, sig))
+		})
 	}
 }
 
 func TestSchemeAggregate(t *testing.T) {
+	seed := []byte{
+		0, 50, 6, 244, 24, 199, 1, 25,
+		52, 88, 192, 19, 18, 12, 89, 6,
+		220, 18, 102, 58, 209, 82, 12, 62,
+		89, 110, 182, 9, 44, 20, 254, 22,
+	}
 	msg1 := []byte{100, 2, 254, 88, 90, 45, 23}
 	msg2 := []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 	testCases := []struct {
+		name   string
 		scheme Scheme
 	}{
 		{
+			name:   "testing of the basic scheme aggregation",
 			scheme: NewBasicSchemeMPL(),
 		},
 		{
+			name:   "testing of the augmented scheme aggregation",
 			scheme: NewAugSchemeMPL(),
 		},
 		{
+			name:   "testing of the proof of possession scheme aggregation",
 			scheme: NewPopSchemeMPL(),
 		},
 	}
-	for i, tc := range testCases {
-		t.Run(fmt.Sprintf("test case #%d", i), func(t *testing.T) {
-			seed1 := append([]byte{1}, seed[1:]...)
-			seed2 := append([]byte{2}, seed[1:]...)
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			seed1 := replLeft(seed, []byte{1})
+			seed2 := replLeft(seed, []byte{2})
 
 			sk1, _ := tc.scheme.KeyGen(seed1)
 			pk1, _ := sk1.G1Element()
@@ -104,6 +113,146 @@ func TestSchemeAggregate(t *testing.T) {
 	}
 }
 
+func TestVectorInvalid(t *testing.T) {
+	type testCase struct {
+		name string
+		data []string
+	}
+	// Invalid inputs from https://github.com/algorand/bls_sigs_ref/blob/master/python-impl/serdesZ.py
+	g1TestCases := []testCase{
+		{
+			name: "infinity points: too short",
+			data: []string{
+				// temporary disabled
+				//"c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+			},
+		},
+		{
+			name: "infinity points: not all zeros",
+			data: []string{
+				"c00000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000",
+				"400000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+				"400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000",
+			},
+		},
+		{
+			name: "bad tags",
+			data: []string{
+				"3a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa",
+				"7a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa",
+				"fa0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa",
+			},
+		},
+		{
+			name: "wrong length for compressed point",
+			data: []string{
+				"9a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaa",
+				"9a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaaaa",
+			},
+		},
+		{
+			name: "wrong length for uncompressed point",
+			data: []string{
+				"1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+				"1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+			},
+		},
+		{
+			name: "invalid x-coord",
+			data: []string{
+				"9a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa",
+			},
+		},
+		{
+			name: "invalid elm of Fp --- equal to p (must be strictly less)",
+			data: []string{
+				"9a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab",
+			},
+		},
+		{
+			name: "point not on curve",
+			data: []string{
+				"1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa",
+			},
+		},
+	}
+	g2TestCases := []testCase{
+		{
+			name: "infinity points: too short",
+			data: []string{
+				"c000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+			},
+		},
+		{
+			name: "infinity points: not all zeros",
+			data: []string{
+				"c00000000000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+				"c00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000000000000000000000",
+			},
+		},
+		{
+			name: "bad tags 1",
+			data: []string{
+				"3a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+				"7a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+				"fa0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+			},
+		},
+		{
+			name: "invalid x-coord",
+			data: []string{
+				"9a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaa7",
+			},
+		},
+		{
+			name: "invalid elm of Fp --- equal to p (must be strictly less)",
+			data: []string{
+				"9a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+				"9a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaab",
+			},
+		},
+		{
+			name: "point not on curve",
+			data: []string{
+				"1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa1a0111ea397fe69a4b1ba7b6434bacd764774b84f38512bf6730d2a0f6b0f6241eabfffeb153ffffb9feffffffffaaaa",
+			},
+		},
+	}
+	testCases := []struct {
+		name  string
+		cases []testCase
+		fn    func(data []byte) error
+	}{
+		{
+			name:  "G1Element: ",
+			cases: g1TestCases,
+			fn: func(data []byte) error {
+				_, err := G1ElementFromBytes(data)
+				return err
+			},
+		},
+		{
+			name:  "G2Element: ",
+			cases: g2TestCases,
+			fn: func(data []byte) error {
+				_, err := G2ElementFromBytes(data)
+				return err
+			},
+		},
+	}
+	for _, tc := range testCases {
+		for _, c := range tc.cases {
+			t.Run(tc.name+c.name, func(t *testing.T) {
+				for _, in := range c.data {
+					data, _ := hex.DecodeString(in)
+					err := tc.fn(data)
+					assert.Error(t, err)
+				}
+			})
+		}
+	}
+}
+
 func TestVectorValid(t *testing.T) {
 	secret1 := make([]byte, 32)
 	secret2 := make([]byte, 32)
@@ -117,28 +266,50 @@ func TestVectorValid(t *testing.T) {
 	assert.NoError(t, err)
 	msg := []byte{3, 1, 4, 1, 5, 9}
 	testCases := []struct {
+		name    string
 		scheme  Scheme
 		refSig1 string
 		refSig2 string
 		refSigA string
 	}{
 		{
-			scheme:  NewBasicSchemeMPL(),
-			refSig1: "96ba34fac33c7f129d602a0bc8a3d43f9abc014eceaab7359146b4b150e57b808645738f35671e9e10e0d862a30cab70074eb5831d13e6a5b162d01eebe687d0164adbd0a864370a7c222a2768d7704da254f1bf1823665bc2361f9dd8c00e99",
-			refSig2: "a402790932130f766af11ba716536683d8c4cfa51947e4f9081fedd692d6dc0cac5b904bee5ea6e25569e36d7be4ca59069a96e34b7f700758b716f9494aaa59a96e74d14a3b552a9a6bc129e717195b9d6006fd6d5cef4768c022e0f7316abf",
-			refSigA: "987cfd3bcd62280287027483f29c55245ed831f51dd6bd999a6ff1a1f1f1f0b647778b0167359c71505558a76e158e66181ee5125905a642246b01e7fa5ee53d68a4fe9bfb29a8e26601f0b9ad577ddd18876a73317c216ea61f430414ec51c5",
+			name:   "testing of signature serialization of the basic scheme",
+			scheme: NewBasicSchemeMPL(),
+			refSig1: "96ba34fac33c7f129d602a0bc8a3d43f9abc014eceaab7359146b4b150e57b80" +
+				"8645738f35671e9e10e0d862a30cab70074eb5831d13e6a5b162d01eebe687d0" +
+				"164adbd0a864370a7c222a2768d7704da254f1bf1823665bc2361f9dd8c00e99",
+			refSig2: "a402790932130f766af11ba716536683d8c4cfa51947e4f9081fedd692d6dc0c" +
+				"ac5b904bee5ea6e25569e36d7be4ca59069a96e34b7f700758b716f9494aaa59" +
+				"a96e74d14a3b552a9a6bc129e717195b9d6006fd6d5cef4768c022e0f7316abf",
+			refSigA: "987cfd3bcd62280287027483f29c55245ed831f51dd6bd999a6ff1a1f1f1f0b6" +
+				"47778b0167359c71505558a76e158e66181ee5125905a642246b01e7fa5ee53d" +
+				"68a4fe9bfb29a8e26601f0b9ad577ddd18876a73317c216ea61f430414ec51c5",
 		},
 		{
-			scheme:  NewAugSchemeMPL(),
-			refSig1: "8180f02ccb72e922b152fcedbe0e1d195210354f70703658e8e08cbebf11d4970eab6ac3ccf715f3fb876df9a9797abd0c1af61aaeadc92c2cfe5c0a56c146cc8c3f7151a073cf5f16df38246724c4aed73ff30ef5daa6aacaed1a26ecaa336b",
-			refSig2: "99111eeafb412da61e4c37d3e806c6fd6ac9f3870e54da9222ba4e494822c5b7656731fa7a645934d04b559e9261b86201bbee57055250a459a2da10e51f9c1a6941297ffc5d970a557236d0bdeb7cf8ff18800b08633871a0f0a7ea42f47480",
-			refSigA: "8c5d03f9dae77e19a5945a06a214836edb8e03b851525d84b9de6440e68fc0ca7303eeed390d863c9b55a8cf6d59140a01b58847881eb5af67734d44b2555646c6616c39ab88d253299acc1eb1b19ddb9bfcbe76e28addf671d116c052bb1847",
+			name:   "testing of signature serialization of the augmented scheme",
+			scheme: NewAugSchemeMPL(),
+			refSig1: "8180f02ccb72e922b152fcedbe0e1d195210354f70703658e8e08cbebf11d497" +
+				"0eab6ac3ccf715f3fb876df9a9797abd0c1af61aaeadc92c2cfe5c0a56c146cc" +
+				"8c3f7151a073cf5f16df38246724c4aed73ff30ef5daa6aacaed1a26ecaa336b",
+			refSig2: "99111eeafb412da61e4c37d3e806c6fd6ac9f3870e54da9222ba4e494822c5b7" +
+				"656731fa7a645934d04b559e9261b86201bbee57055250a459a2da10e51f9c1a" +
+				"6941297ffc5d970a557236d0bdeb7cf8ff18800b08633871a0f0a7ea42f47480",
+			refSigA: "8c5d03f9dae77e19a5945a06a214836edb8e03b851525d84b9de6440e68fc0ca" +
+				"7303eeed390d863c9b55a8cf6d59140a01b58847881eb5af67734d44b2555646" +
+				"c6616c39ab88d253299acc1eb1b19ddb9bfcbe76e28addf671d116c052bb1847",
 		},
 		{
-			scheme:  NewPopSchemeMPL(),
-			refSig1: "9550fb4e7f7e8cc4a90be8560ab5a798b0b23000b6a54a2117520210f986f3f281b376f259c0b78062d1eb3192b3d9bb049f59ecc1b03a7049eb665e0df36494ae4cb5f1136ccaeefc9958cb30c3333d3d43f07148c386299a7b1bfc0dc5cf7c",
-			refSig2: "a69036bc11ae5efcbf6180afe39addde7e27731ec40257bfdc3c37f17b8df68306a34ebd10e9e32a35253750df5c87c2142f8207e8d5654712b4e554f585fb6846ff3804e429a9f8a1b4c56b75d0869ed67580d789870babe2c7c8a9d51e7b2a",
-			refSigA: "a4ea742bcdc1553e9ca4e560be7e5e6c6efa6a64dddf9ca3bb2854233d85a6aac1b76ec7d103db4e33148b82af9923db05934a6ece9a7101cd8a9d47ce27978056b0f5900021818c45698afdd6cf8a6b6f7fee1f0b43716f55e413d4b87a6039",
+			name:   "testing of signature serialization of the proof of possession scheme",
+			scheme: NewPopSchemeMPL(),
+			refSig1: "9550fb4e7f7e8cc4a90be8560ab5a798b0b23000b6a54a2117520210f986f3f2" +
+				"81b376f259c0b78062d1eb3192b3d9bb049f59ecc1b03a7049eb665e0df36494" +
+				"ae4cb5f1136ccaeefc9958cb30c3333d3d43f07148c386299a7b1bfc0dc5cf7c",
+			refSig2: "a69036bc11ae5efcbf6180afe39addde7e27731ec40257bfdc3c37f17b8df683" +
+				"06a34ebd10e9e32a35253750df5c87c2142f8207e8d5654712b4e554f585fb68" +
+				"46ff3804e429a9f8a1b4c56b75d0869ed67580d789870babe2c7c8a9d51e7b2a",
+			refSigA: "a4ea742bcdc1553e9ca4e560be7e5e6c6efa6a64dddf9ca3bb2854233d85a6aa" +
+				"c1b76ec7d103db4e33148b82af9923db05934a6ece9a7101cd8a9d47ce279780" +
+				"56b0f5900021818c45698afdd6cf8a6b6f7fee1f0b43716f55e413d4b87a6039",
 		},
 	}
 	for i, tc := range testCases {
@@ -146,20 +317,14 @@ func TestVectorValid(t *testing.T) {
 			sig1 := tc.scheme.Sign(sk1, msg)
 			sig2 := tc.scheme.Sign(sk2, msg)
 			sigA := tc.scheme.AggregateSigs(sig1, sig2)
-			assert.Equal(t, hex.EncodeToString(sig1.Serialize()), tc.refSig1)
-			assert.Equal(t, hex.EncodeToString(sig2.Serialize()), tc.refSig2)
-			assert.Equal(t, hex.EncodeToString(sigA.Serialize()), tc.refSigA)
+			assert.Equal(t, sig1.HexString(), tc.refSig1)
+			assert.Equal(t, sig2.HexString(), tc.refSig2)
+			assert.Equal(t, sigA.HexString(), tc.refSigA)
 		})
 	}
 }
 
 func TestBasicSchemeMPL(t *testing.T) {
-	seed1 := make([]byte, 32)
-	seed2 := make([]byte, 32)
-	for i := 0; i < 32; i++ {
-		seed1[i] = 0
-		seed2[i] = 1
-	}
 	testCases := []struct {
 		scheme         Scheme
 		msgs           [][]byte
@@ -197,14 +362,14 @@ func TestBasicSchemeMPL(t *testing.T) {
 	for i, tc := range testCases {
 		t.Run(fmt.Sprintf("test case #%d", i), func(t *testing.T) {
 			scheme := tc.scheme
-			sk1, err := scheme.KeyGen(seed1)
+			sk1, err := scheme.KeyGen(genSeed(0))
 			assert.NoError(t, err)
 			pk1, err := sk1.G1Element()
 			assert.NoError(t, err)
 			sig1 := scheme.Sign(sk1, tc.msgs[0])
 			assert.NoError(t, err)
 
-			sk2, err := scheme.KeyGen(seed2)
+			sk2, err := scheme.KeyGen(genSeed(1))
 			assert.NoError(t, err)
 			pk2, err := sk2.G1Element()
 			assert.NoError(t, err)
@@ -214,14 +379,14 @@ func TestBasicSchemeMPL(t *testing.T) {
 			assert.Equal(t, pk1.Fingerprint(), 0xb40dd58a)
 			assert.Equal(t, pk2.Fingerprint(), 0xb839add1)
 
-			assert.Equal(t, hex.EncodeToString(sig1.Serialize()), tc.refSig1)
-			assert.Equal(t, hex.EncodeToString(sig2.Serialize()), tc.refSig2)
-			assert.Equal(t, hex.EncodeToString(sk1.Serialize()), tc.refSk1)
-			assert.Equal(t, hex.EncodeToString(pk1.Serialize()), tc.refPk1)
+			assert.Equal(t, sig1.HexString(), tc.refSig1)
+			assert.Equal(t, sig2.HexString(), tc.refSig2)
+			assert.Equal(t, sk1.HexString(), tc.refSk1)
+			assert.Equal(t, pk1.HexString(), tc.refPk1)
 
 			aggSig1 := scheme.AggregateSigs(sig1, sig2)
 			assert.NoError(t, err)
-			assert.Equal(t, hex.EncodeToString(aggSig1.Serialize()), tc.refAggSig1)
+			assert.Equal(t, aggSig1.HexString(), tc.refAggSig1)
 
 			pks := []*G1Element{pk1, pk2}
 			assert.True(t, scheme.AggregateVerify(pks, [][]byte{tc.msgs[0], tc.msgs[1]}, aggSig1))
@@ -239,7 +404,7 @@ func TestBasicSchemeMPL(t *testing.T) {
 			aggSig2 := scheme.AggregateSigs(sig3, sig4, sig5)
 			assert.NoError(t, err)
 
-			assert.Equal(t, tc.refAggSig2, hex.EncodeToString(aggSig2.Serialize()))
+			assert.Equal(t, tc.refAggSig2, aggSig2.HexString())
 
 			assert.True(t, scheme.AggregateVerify([]*G1Element{pk1, pk1, pk2}, tc.msgs[2:], aggSig2))
 			assert.False(t, scheme.AggregateVerify([]*G1Element{pk1, pk1, pk2}, tc.msgs[2:], aggSig1))
@@ -265,12 +430,9 @@ func TestAugSchemeMPL(t *testing.T) {
 	msg3 := []byte{9, 10, 11, 12, 13}
 	msg4 := []byte{15, 63, 244, 92, 0, 1}
 
-	seed1 := genByteSlice(2, 32)
-	seed2 := genByteSlice(3, 32)
-
 	scheme := NewAugSchemeMPL()
-	sk1, _ := scheme.KeyGen(seed1)
-	sk2, _ := scheme.KeyGen(seed2)
+	sk1, _ := scheme.KeyGen(genSeed(2))
+	sk2, _ := scheme.KeyGen(genSeed(3))
 
 	pk1, _ := sk1.G1Element()
 	pk2, _ := sk2.G1Element()
@@ -290,7 +452,7 @@ func TestAugSchemeMPL(t *testing.T) {
 	msgs := [][]byte{msg1, msg2, msg1, msg3, msg1, msg4}
 	assert.True(t, scheme.AggregateVerify(pks, msgs, aggSig))
 
-	aggSigHex := hex.EncodeToString(aggSig.Serialize())
+	aggSigHex := aggSig.HexString()
 	assert.Equal(t,
 		aggSigHex,
 		"a1d5360dcb418d33b29b90b912b4accde535cf0e52caf467a005dc632d9f7af44b6c4e9acd4"+
@@ -300,13 +462,12 @@ func TestAugSchemeMPL(t *testing.T) {
 }
 
 func TestPopSchemeMPL(t *testing.T) {
-	seed1 := genByteSlice(4, 32)
 	scheme := NewPopSchemeMPL()
-	sk1, _ := scheme.KeyGen(seed1)
+	sk1, _ := scheme.KeyGen(genSeed(4))
 	pop := scheme.PopProve(sk1)
 	pk1, _ := sk1.G1Element()
 	assert.True(t, scheme.PopVerify(pk1, pop))
-	hexStrActual := hex.EncodeToString(pop.Serialize())
+	hexStrActual := pop.HexString()
 	assert.Equal(t,
 		hexStrActual,
 		"84f709159435f0dc73b3e8bf6c78d85282d19231555a8ee3b6e2573aaf66872d9203fefa1ef"+
@@ -317,31 +478,25 @@ func TestPopSchemeMPL(t *testing.T) {
 
 func TestAggSks(t *testing.T) {
 	msg := []byte{100, 2, 254, 88, 90, 45, 23}
-	seed := make([]byte, 32)
-	seed2 := make([]byte, 32)
-	for i := 0; i < 32; i++ {
-		seed[i] = 7
-		seed2[i] = 8
-	}
 	scheme := NewBasicSchemeMPL()
-	sk1, _ := scheme.KeyGen(seed)
+	sk1, _ := scheme.KeyGen(genSeed(7))
 	pk1, _ := sk1.G1Element()
-	sk2, _ := scheme.KeyGen(seed2)
+	sk2, _ := scheme.KeyGen(genSeed(8))
 	pk2, _ := sk2.G1Element()
 	aggSk := PrivateKeyAggregate(sk1, sk2)
 	aggSkAlt := PrivateKeyAggregate(sk2, sk1)
 
-	assert.True(t, aggSk.IsEqual(aggSkAlt))
+	assert.True(t, aggSk.EqualTo(aggSkAlt))
 
 	aggPubKey := pk1.Add(pk2)
 	aggPk, _ := aggSk.G1Element()
-	assert.True(t, aggPubKey.IsEqual(aggPk))
+	assert.True(t, aggPubKey.EqualTo(aggPk))
 
 	sig1 := scheme.Sign(sk1, msg)
 	sig2 := scheme.Sign(sk2, msg)
 	aggSig2 := scheme.Sign(aggSk, msg)
 	aggSig := scheme.AggregateSigs(sig1, sig2)
-	assert.True(t, aggSig.IsEqual(aggSig2))
+	assert.True(t, aggSig.EqualTo(aggSig2))
 
 	// Verify as a single G2Element
 	assert.True(t, scheme.Verify(aggPubKey, msg, aggSig))
@@ -356,20 +511,20 @@ func TestAggSks(t *testing.T) {
 	aggSigFinal := scheme.AggregateSigs(aggSig, sig3)
 	aggSigAlt := scheme.AggregateSigs(sig1, sig2, sig3)
 	aggSigAlt2 := scheme.AggregateSigs(sig1, sig3, sig2)
-	assert.True(t, aggSigFinal.IsEqual(aggSigAlt))
-	assert.True(t, aggSigFinal.IsEqual(aggSigAlt2))
+	assert.True(t, aggSigFinal.EqualTo(aggSigAlt))
+	assert.True(t, aggSigFinal.EqualTo(aggSigAlt2))
 
 	skFinal := PrivateKeyAggregate(aggSk, sk2)
 	skFinalAlt := PrivateKeyAggregate(sk2, sk1, sk2)
-	assert.True(t, skFinal.IsEqual(skFinalAlt))
-	assert.True(t, !skFinal.IsEqual(aggSk))
+	assert.True(t, skFinal.EqualTo(skFinalAlt))
+	assert.True(t, !skFinal.EqualTo(aggSk))
 
 	pkFinal := aggPubKey.Add(pk2)
 	pkFinalAlt := pk2.Add(pk1).Add(pk2)
-	assert.True(t, pkFinal.IsEqual(pkFinalAlt))
-	assert.True(t, !pkFinal.IsEqual(aggPubKey))
+	assert.True(t, pkFinal.EqualTo(pkFinalAlt))
+	assert.True(t, !pkFinal.EqualTo(aggPubKey))
 
-	// Cannot verify with aggPubKey (since we have multiple msgs)
+	// Cannot verify with aggPubKey (since we have multiple messages)
 	assert.True(t, scheme.AggregateVerify([]*G1Element{aggPubKey, pk2}, [][]byte{msg, msg2}, aggSigFinal))
 }
 
@@ -396,8 +551,8 @@ func TestReadme(t *testing.T) {
 	pk, _ = G1ElementFromBytes(pkRaw)
 	sig, _ = G2ElementFromBytes(sigRaw)
 
-	sk1, _ := scheme.KeyGen(append([]byte{1}, seed[1:]...))
-	sk2, _ := scheme.KeyGen(append([]byte{2}, seed[1:]...))
+	sk1, _ := scheme.KeyGen(replLeft(seed, []byte{1}))
+	sk2, _ := scheme.KeyGen(replLeft(seed, []byte{2}))
 
 	msg2 := []byte{1, 2, 3, 4, 5, 6, 7}
 
@@ -411,7 +566,7 @@ func TestReadme(t *testing.T) {
 
 	assert.True(t, scheme.AggregateVerify([]*G1Element{pk1, pk2}, [][]byte{msg, msg2}, aggSig))
 
-	sk3, _ := scheme.KeyGen(append([]byte{2}, seed[1:]...))
+	sk3, _ := scheme.KeyGen(replLeft(seed, []byte{2}))
 	pk3, _ := sk3.G1Element()
 	msg3 := []byte{100, 2, 254, 88, 90, 45, 23}
 	sig3 := scheme.Sign(sk3, msg3)
@@ -449,7 +604,7 @@ func TestReadme(t *testing.T) {
 	assert.True(t, popScheme.Verify(popAggPk, msg, popSigAgg))
 
 	popAggSk := PrivateKeyAggregate(sk1, sk2, sk3)
-	assert.True(t, popScheme.Sign(popAggSk, msg).IsEqual(popSigAgg))
+	assert.True(t, popScheme.Sign(popAggSk, msg).EqualTo(popSigAgg))
 	assert.Equal(t, popScheme.Sign(popAggSk, msg).Serialize(), popSigAgg.Serialize())
 
 	masterSk, _ := scheme.KeyGen(seed)
@@ -465,12 +620,20 @@ func TestReadme(t *testing.T) {
 	assert.Equal(t, grandChildUPk.Serialize(), grandChildUPkAlt.Serialize())
 }
 
+func genSeed(v byte) []byte {
+	return genByteSlice(v, 32)
+}
+
 func genByteSlice(v byte, l int) []byte {
 	data := make([]byte, l)
 	for i := 0; i < l; i++ {
 		data[i] = v
 	}
 	return data
+}
+
+func replLeft(arr []byte, r []byte) []byte {
+	return append(r, arr[len(r):]...)
 }
 
 func checkError(err error, wantErr string) bool {
