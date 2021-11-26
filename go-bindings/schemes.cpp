@@ -21,7 +21,6 @@
 #include "error.h"
 
 // helper functions
-
 std::vector<bls::G1Element> toVectorG1Elements(void** elems, const size_t len) {
     std::vector<bls::G1Element> vec;
     for (int i = 0 ; i < len; ++i) {
@@ -53,10 +52,9 @@ std::vector<bls::Bytes> toVectorBytes(void** elems, const size_t len, const std:
 
 CPrivateKey CCoreMPLKeyGen(const CCoreMPL scheme, const void* seed, const size_t seedLen, bool* didErr) {
     bls::CoreMPL* schemePtr = (bls::CoreMPL*)scheme;
-    const uint8_t* seedPtr = (uint8_t*)seed;
     bls::PrivateKey* sk = nullptr;
     try {
-        sk = new bls::PrivateKey(schemePtr->KeyGen(bls::Bytes(seedPtr, seedLen)));
+        sk = new bls::PrivateKey(schemePtr->KeyGen(bls::Bytes((uint8_t*)seed, seedLen)));
     } catch (const std::exception& ex) {
         gErrMsg = ex.what();
         *didErr = true;

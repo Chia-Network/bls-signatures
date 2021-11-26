@@ -39,7 +39,7 @@ msg := []byte{1, 2, 3, 4, 5}
 // make a signature for a message
 sig := scheme.Sign(sk, msg)
 
-// verify the message' signature 
+// verify the message signature 
 if !scheme.Verify(pk, msg, sig) {
     panic("failed the signature verification")
 }
@@ -49,9 +49,7 @@ if !scheme.Verify(pk, msg, sig) {
 ```go  
 skBytes := sk.Serialize()
 pkBytes := pk.Serialize()
-sigBytes := sig.Serialize()
-
-fmt.Printf("Private ket: %x\nPublic key: %x\nSignature: %x", skBytes, pkBytes, sigBytes)  
+sigBytes := sig.Serialize()  
 ```
 
 ### Loading keys and signatures from bytes
@@ -63,7 +61,7 @@ sig1, _ := G2ElementFromBytes(sigBytes)
 
 ### Create aggregate signatures
 ```go
-	// Generate some more private keys
+// Generate some more private keys
 seed[0] = 1
 sk1, _ := scheme.KeyGen(seed)
 seed[0] = 2
@@ -107,7 +105,7 @@ if !ok {
 // create a proof possession scheme
 popScheme := NewPopSchemeMPL()
 
-// If the same msg is Signed, you can use Proof of Possession (PopScheme) for efficiency
+// If the same msg is signed, you can use Proof of Possession (PopScheme) for efficiency
 // A proof of possession MUST be passed around with the PK to ensure security.
 popSig1 := popScheme.Sign(sk1, msg)
 popSig2 := popScheme.Sign(sk2, msg)

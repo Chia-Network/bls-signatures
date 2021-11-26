@@ -19,7 +19,7 @@
 #include "error.h"
 
 // helper functions
-std::vector<bls::PrivateKey> convertToVectorPrivKeys(const void** sks, const size_t len) {
+std::vector<bls::PrivateKey> toVectorPrivKeys(const void** sks, const size_t len) {
     std::vector<bls::PrivateKey> vecPrivKeys;
     for (int i = 0 ; i < len; ++i) {
         bls::PrivateKey* key = (bls::PrivateKey*)sks[i];
@@ -50,7 +50,7 @@ CPrivateKey CPrivateKeyFromBytes(const void* data, const bool modOrder, bool* di
 
 CPrivateKey CPrivateKeyAggregate(const void** sks, const size_t len) {
     return new bls::PrivateKey(
-        bls::PrivateKey::Aggregate(convertToVectorPrivKeys(sks, len))
+        bls::PrivateKey::Aggregate(toVectorPrivKeys(sks, len))
     );
 }
 
