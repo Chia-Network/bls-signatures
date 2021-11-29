@@ -53,4 +53,4 @@ void CG2ElementFree(const CG2Element el);
 #ifdef __cplusplus
 }
 #endif
-#endif // GO_BINDINGS_PRIVATEKEY_H_
+#endif // GO_BINDINGS_ELEMENTS_H_
