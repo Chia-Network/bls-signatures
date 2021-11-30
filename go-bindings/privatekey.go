@@ -19,6 +19,7 @@ type PrivateKey struct {
 }
 
 // PrivateKeyFromBytes returns a new PrivateKey from bytes
+// this method allocates the new bls::PrivateKey object and keeps its pointer
 func PrivateKeyFromBytes(data []byte, modOrder bool) (*PrivateKey, error) {
 	cBytesPtr := C.CBytes(data)
 	defer C.free(cBytesPtr)
@@ -29,11 +30,12 @@ func PrivateKeyFromBytes(data []byte, modOrder bool) (*PrivateKey, error) {
 	if bool(cDidErr) {
 		return nil, errFromC()
 	}
-	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.Free() })
+	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.free() })
 	return &sk, nil
 }
 
 // G1Element returns a G1Element (public key) using a state of the current private key
+// this method is a binding of the bls::PrivateKey::G1Element
 func (sk *PrivateKey) G1Element() (*G1Element, error) {
 	var cDidErr C.bool
 	el := G1Element{
@@ -42,38 +44,36 @@ func (sk *PrivateKey) G1Element() (*G1Element, error) {
 	if bool(cDidErr) {
 		return nil, errFromC()
 	}
-	runtime.SetFinalizer(&el, func(el *G1Element) { el.Free() })
+	runtime.SetFinalizer(&el, func(el *G1Element) { el.free() })
 	return &el, nil
 }
 
 // G2Element returns a G2Element (signature) using a state of the current private key
+// this method is a binding of the bls::PrivateKey::G2Element
 func (sk *PrivateKey) G2Element() (*G2Element, error) {
 	var cDidErr C.bool
 	el := G2Element{
 		val: C.CPrivateKeyGetG2Element(sk.val, &cDidErr),
 	}
-	runtime.SetFinalizer(&el, func(el *G2Element) { el.Free() })
+	runtime.SetFinalizer(&el, func(el *G2Element) { el.free() })
 	if bool(cDidErr) {
 		return nil, errFromC()
 	}
 	return &el, nil
 }
 
-// G2Power ...
+// G2Power returns a power of G2Element (signature)
+// this method is a binding of the bls::PrivateKey::G2Power
 func (sk *PrivateKey) G2Power(el *G2Element) *G2Element {
 	sig := G2Element{
 		val: C.CPrivateKeyGetG2Power(sk.val, el.val),
 	}
-	runtime.SetFinalizer(&sig, func() { sig.Free() })
+	runtime.SetFinalizer(&sig, func() { sig.free() })
 	return &sig
 }
 
-// Free releases memory allocated by the key
-func (sk *PrivateKey) Free() {
-	C.CPrivateKeyFree(sk.val)
-}
-
 // Serialize returns the byte representation of the private key
+// this method is a binding of the bls::PrivateKey::Serialize
 func (sk *PrivateKey) Serialize() []byte {
 	ptr := C.CPrivateKeySerialize(sk.val)
 	defer C.SecFree(ptr)
@@ -81,6 +81,7 @@ func (sk *PrivateKey) Serialize() []byte {
 }
 
 // PrivateKeyAggregate securely aggregates multiple private keys into one
+// this method is a binding of the bls::PrivateKey::Aggregate
 func PrivateKeyAggregate(sks ...*PrivateKey) *PrivateKey {
 	cPrivKeyArrPtr := C.AllocPtrArray(C.size_t(len(sks)))
 	for i, privKey := range sks {
@@ -90,11 +91,12 @@ func PrivateKeyAggregate(sks ...*PrivateKey) *PrivateKey {
 	sk := PrivateKey{
 		val: C.CPrivateKeyAggregate(cPrivKeyArrPtr, C.size_t(len(sks))),
 	}
-	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.Free() })
+	runtime.SetFinalizer(&sk, func(p *PrivateKey) { p.free() })
 	return &sk
 }
 
 // EqualTo tests if one PrivateKey is equal to another
+// this method is the binding of the equality operation
 func (sk *PrivateKey) EqualTo(other *PrivateKey) bool {
 	return bool(C.CPrivateKeyIsEqual(sk.val, other.val))
 }
@@ -102,4 +104,9 @@ func (sk *PrivateKey) EqualTo(other *PrivateKey) bool {
 // HexString returns a hex string representation of serialized data
 func (sk *PrivateKey) HexString() string {
 	return hex.EncodeToString(sk.Serialize())
+}
+
+// free calls CPrivateKeyFree "C" function to release a memory allocated for bls::PrivateKey
+func (sk *PrivateKey) free() {
+	C.CPrivateKeyFree(sk.val)
 }

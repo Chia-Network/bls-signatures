@@ -56,7 +56,7 @@ void* CG1ElementSerialize(const CG1Element el) {
     const bls::G1Element* elPtr = (bls::G1Element*)el;
     const std::vector<uint8_t> serialized = elPtr->Serialize();
     uint8_t* buffer = (uint8_t*)malloc(bls::G1Element::SIZE);
-    std::memcpy(buffer, serialized.data(), bls::G1Element::SIZE);
+    memcpy(buffer, serialized.data(), bls::G1Element::SIZE);
     return (void*)buffer;
 }
 
@@ -72,7 +72,7 @@ CG1Element CG1ElementAdd(const CG1Element el1, const CG1Element el2) {
     return new bls::G1Element((*el1Ptr) + (*el2Ptr));
 }
 
-CG1Element CG1ElementMul(const CG1Element el, CPrivateKey sk) {
+CG1Element CG1ElementMul(const CG1Element el, const CPrivateKey sk) {
     const bls::G1Element* elPtr = (bls::G1Element*)el;
     const bls::PrivateKey* skPtr = (bls::PrivateKey*)sk;
     return new bls::G1Element(*elPtr * *skPtr);
@@ -121,7 +121,7 @@ void* CG2ElementSerialize(const CG2Element el) {
     const bls::G2Element* elPtr = (bls::G2Element*)el;
     const std::vector<uint8_t> serialized = elPtr->Serialize();
     uint8_t* buffer = (uint8_t*)malloc(bls::G2Element::SIZE);
-    std::memcpy(buffer, serialized.data(), bls::G2Element::SIZE);
+    memcpy(buffer, serialized.data(), bls::G2Element::SIZE);
     return (void*)buffer;
 }
 

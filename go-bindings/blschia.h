@@ -15,6 +15,7 @@
 #ifndef GO_BINDINGS_BLSCHIA_H_
 #define GO_BINDINGS_BLSCHIA_H_
 #include <stdbool.h>
+#include <stdint.h>
 #include "privatekey.h"
 
 #ifdef __cplusplus

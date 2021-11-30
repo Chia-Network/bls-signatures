@@ -16,6 +16,7 @@
 #define GO_BINDINGS_ELEMENTS_H_
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdint.h>
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,7 +33,7 @@ bool CG1ElementIsValid(const CG1Element el);
 uint32_t CG1ElementGetFingerprint(const CG1Element el);
 bool CG1ElementIsEqual(const CG1Element el1, const CG1Element el2);
 CG1Element CG1ElementAdd(const CG1Element el1, const CG1Element el2);
-CG1Element CG1ElementMul(const CG1Element el, CPrivateKey sk);
+CG1Element CG1ElementMul(const CG1Element el, const CPrivateKey sk);
 CG1Element CG1ElementNegate(const CG1Element el);
 void* CG1ElementSerialize(const CG1Element el);
 void CG1ElementFree(const CG1Element el);

@@ -38,7 +38,7 @@ type Aggregator interface {
 	AggregateSigs(sigs ...*G2Element) *G2Element
 }
 
-// Deriver ...
+// Deriver is an interface for describing some methods for the derivation of children
 type Deriver interface {
 	DeriveChildSk(sk *PrivateKey, index int) *PrivateKey
 	DeriveChildSkUnhardened(sk *PrivateKey, index int) *PrivateKey
@@ -54,12 +54,13 @@ type Scheme interface {
 	Deriver
 }
 
-type coreMLP struct {
+type coreMPL struct {
 	val C.CCoreMPL
 }
 
 // KeyGen returns a new generated PrivateKey using passed a genSeed data
-func (s *coreMLP) KeyGen(seed []byte) (*PrivateKey, error) {
+// this method is a binding of bls::CoreMPL::KeyGen
+func (s *coreMPL) KeyGen(seed []byte) (*PrivateKey, error) {
 	cSeedPtr := C.CBytes(seed)
 	defer C.free(cSeedPtr)
 	var cDidErr C.bool
@@ -69,30 +70,33 @@ func (s *coreMLP) KeyGen(seed []byte) (*PrivateKey, error) {
 	if cDidErr {
 		return nil, errFromC()
 	}
-	runtime.SetFinalizer(&sk, func(sk *PrivateKey) { sk.Free() })
+	runtime.SetFinalizer(&sk, func(sk *PrivateKey) { sk.free() })
 	return &sk, nil
 }
 
 // SkToG1 converts PrivateKey into G1Element (public key)
-func (s *coreMLP) SkToG1(sk *PrivateKey) *G1Element {
+// this method is a binding of bls::CoreMPL::SkToG1
+func (s *coreMPL) SkToG1(sk *PrivateKey) *G1Element {
 	return &G1Element{
 		val: C.CCoreMPSkToG1(s.val, sk.val),
 	}
 }
 
 // Sign signs a message using a PrivateKey and returns the G2Element as a signature
-func (s *coreMLP) Sign(sk *PrivateKey, msg []byte) *G2Element {
+// this method is a binding of bls::CoreMPL::Sign
+func (s *coreMPL) Sign(sk *PrivateKey, msg []byte) *G2Element {
 	cMsgPtr := C.CBytes(msg)
 	defer C.free(cMsgPtr)
 	sig := G2Element{
 		val: C.CCoreMPLSign(s.val, sk.val, cMsgPtr, C.size_t(len(msg))),
 	}
-	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.Free() })
+	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
 	return &sig
 }
 
 // Verify verifies a signature for a message with a G1Element as a public key
-func (s *coreMLP) Verify(pk *G1Element, msg []byte, sig *G2Element) bool {
+// this method is a binding of bls::CoreMPL::Verify
+func (s *coreMPL) Verify(pk *G1Element, msg []byte, sig *G2Element) bool {
 	cMsgPtr := C.CBytes(msg)
 	defer C.free(cMsgPtr)
 	isVerified := bool(C.CCoreMPLVerify(s.val, pk.val, cMsgPtr, C.size_t(len(msg)), sig.val))
@@ -100,19 +104,21 @@ func (s *coreMLP) Verify(pk *G1Element, msg []byte, sig *G2Element) bool {
 }
 
 // AggregatePubKeys returns a new G1Element (public key) as an aggregated public keys
-func (s *coreMLP) AggregatePubKeys(pks ...*G1Element) *G1Element {
+// this method is a binding of bls::CoreMPL::AggregatePubKeys
+func (s *coreMPL) AggregatePubKeys(pks ...*G1Element) *G1Element {
 	cPkArrPtr := cAllocPubKeys(pks...)
 	defer C.FreePtrArray(cPkArrPtr)
 	aggSig := G1Element{
 		val: C.CCoreMPLAggregatePubKeys(s.val, cPkArrPtr, C.size_t(len(pks))),
 	}
-	runtime.SetFinalizer(&aggSig, func(aggSig *G1Element) { aggSig.Free() })
+	runtime.SetFinalizer(&aggSig, func(aggSig *G1Element) { aggSig.free() })
 	return &aggSig
 }
 
 // AggregateSigs returns a new G1Element (aggregated public keys)
 // as a result of the aggregation of the passed public keys
-func (s *coreMLP) AggregateSigs(sigs ...*G2Element) *G2Element {
+// this method is a binding of bls::CoreMPL::AggregateSigs
+func (s *coreMPL) AggregateSigs(sigs ...*G2Element) *G2Element {
 	cSigArrayPtr := C.AllocPtrArray(C.size_t(len(sigs)))
 	defer C.FreePtrArray(cSigArrayPtr)
 	for i, sig := range sigs {
@@ -121,40 +127,44 @@ func (s *coreMLP) AggregateSigs(sigs ...*G2Element) *G2Element {
 	aggSig := G2Element{
 		val: C.CCoreMPLAggregateSigs(s.val, cSigArrayPtr, C.size_t(len(sigs))),
 	}
-	runtime.SetFinalizer(&aggSig, func(aggSig *G2Element) { aggSig.Free() })
+	runtime.SetFinalizer(&aggSig, func(aggSig *G2Element) { aggSig.free() })
 	return &aggSig
 }
 
 // DeriveChildSk returns a child PrivateKey using the passed as a master key
-func (s *coreMLP) DeriveChildSk(sk *PrivateKey, index int) *PrivateKey {
+// this method is a binding of bls::CoreMPL::DeriveChildSk
+func (s *coreMPL) DeriveChildSk(sk *PrivateKey, index int) *PrivateKey {
 	res := PrivateKey{
 		val: C.CCoreMPLDeriveChildSk(s.val, sk.val, C.uint32_t(index)),
 	}
-	runtime.SetFinalizer(&res, func(res *PrivateKey) { res.Free() })
+	runtime.SetFinalizer(&res, func(res *PrivateKey) { res.free() })
 	return &res
 }
 
-// DeriveChildSkUnhardened ...
-func (s *coreMLP) DeriveChildSkUnhardened(sk *PrivateKey, index int) *PrivateKey {
+// DeriveChildSkUnhardened returns a child PrivateKey of the passed master PrivateKey
+// this method is a binding of bls::CoreMPL::DeriveChildSkUnhardened
+func (s *coreMPL) DeriveChildSkUnhardened(sk *PrivateKey, index int) *PrivateKey {
 	res := PrivateKey{
 		val: C.CCoreMPLDeriveChildSkUnhardened(s.val, sk.val, C.uint32_t(index)),
 	}
-	runtime.SetFinalizer(&res, func(res *PrivateKey) { res.Free() })
+	runtime.SetFinalizer(&res, func(res *PrivateKey) { res.free() })
 	return &res
 }
 
-// DeriveChildPkUnhardened ...
-func (s *coreMLP) DeriveChildPkUnhardened(el *G1Element, index int) *G1Element {
+// DeriveChildPkUnhardened returns a child G1Element of the passed master G1Element
+// this method is a binding of bls::CoreMPL::DeriveChildPkUnhardened
+func (s *coreMPL) DeriveChildPkUnhardened(el *G1Element, index int) *G1Element {
 	res := G1Element{
 		val: C.CCoreMPLDeriveChildPkUnhardened(s.val, el.val, C.uint32_t(index)),
 	}
-	runtime.SetFinalizer(&res, func(res *G1Element) { res.Free() })
+	runtime.SetFinalizer(&res, func(res *G1Element) { res.free() })
 	return &res
 }
 
 // AggregateVerify verifies the aggregated signature for a list of messages with public keys
 // returns true if the signature is a valid otherwise returns false
-func (s *coreMLP) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G2Element) bool {
+// this method is a binding of bls::CoreMPL::AggregateVerify
+func (s *coreMPL) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G2Element) bool {
 	cPkArrPtr := cAllocPubKeys(pks...)
 	defer C.FreePtrArray(cPkArrPtr)
 	cMsgArrPtr, msgLens := cAllocMsgs(msgs)
@@ -173,21 +183,23 @@ func (s *coreMLP) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G2Elemen
 
 // BasicSchemeMPL represents bls::BasicSchemeMPL (basic scheme using minimum public key sizes)
 type BasicSchemeMPL struct {
-	coreMLP
+	coreMPL
 }
 
 // NewBasicSchemeMPL returns a new BasicSchemeMPL
+// this method allocates the bls::BasicSchemeMPL object and keeps its pointer
 func NewBasicSchemeMPL() *BasicSchemeMPL {
 	scheme := BasicSchemeMPL{
-		coreMLP{
+		coreMPL{
 			val: C.NewCBasicSchemeMPL(),
 		},
 	}
-	runtime.SetFinalizer(&scheme, func(scheme *BasicSchemeMPL) { scheme.Free() })
+	runtime.SetFinalizer(&scheme, func(scheme *BasicSchemeMPL) { scheme.free() })
 	return &scheme
 }
 
 // AggregateVerify verifies the aggregated signature for a list of messages with public keys
+// this method is a binding of bls::BasicSchemeMPL::AggregateVerify
 func (s *BasicSchemeMPL) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G2Element) bool {
 	cPkArrPtr := cAllocPubKeys(pks...)
 	defer C.FreePtrArray(cPkArrPtr)
@@ -205,49 +217,53 @@ func (s *BasicSchemeMPL) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G
 	return bool(val)
 }
 
-// Free releases a memory of bls::BasicSchemeMPL
-func (s *BasicSchemeMPL) Free() {
+// free calls CPopSchemeMPLFree "C" function to release a memory allocated for bls::BasicSchemeMPL
+func (s *BasicSchemeMPL) free() {
 	C.CBasicSchemeMPLFree(s.val)
 }
 
 // AugSchemeMPL represents bls::AugSchemeMPL (augmented scheme using)
 // augmented should be enough for most use cases
 type AugSchemeMPL struct {
-	coreMLP
+	coreMPL
 }
 
 // NewAugSchemeMPL returns a new AugSchemeMPL
+// this method allocates the bls::AugSchemeMPL object and keeps its pointer
 func NewAugSchemeMPL() *AugSchemeMPL {
 	scheme := AugSchemeMPL{
-		coreMLP: coreMLP{
+		coreMPL: coreMPL{
 			val: C.NewCAugSchemeMPL(),
 		},
 	}
-	runtime.SetFinalizer(&scheme, func(scheme *AugSchemeMPL) { scheme.Free() })
+	runtime.SetFinalizer(&scheme, func(scheme *AugSchemeMPL) { scheme.free() })
 	return &scheme
 }
 
 // Sign signs a message with a PrivateKey
+// this method is a binding of bls::AugSchemeMPL::Sign
 func (s *AugSchemeMPL) Sign(sk *PrivateKey, msg []byte) *G2Element {
 	cMsgPtr := C.CBytes(msg)
 	defer C.free(cMsgPtr)
 	sig := G2Element{
 		val: C.CAugSchemeMPLSign(s.val, sk.val, cMsgPtr, C.size_t(len(msg))),
 	}
-	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.Free() })
+	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
 	return &sig
 }
 
 // SignPrepend ...
+// this method is a binding of bls::AugSchemeMPL::SignPrepend
 func (s *AugSchemeMPL) SignPrepend(sk *PrivateKey, msg []byte, prepPk *G1Element) *G2Element {
 	sig := G2Element{
 		val: C.CAugSchemeMPLSignPrepend(s.val, sk.val, C.CBytes(msg), C.size_t(len(msg)), prepPk.val),
 	}
-	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.Free() })
+	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
 	return &sig
 }
 
 // Verify verifies a G2Element (signature) for a message with a G1Element (public key)
+// this method is a binding of bls::AugSchemeMPL::Verify
 func (s *AugSchemeMPL) Verify(pk *G1Element, msg []byte, sig *G2Element) bool {
 	cMsgPtr := C.CBytes(msg)
 	defer C.free(cMsgPtr)
@@ -256,6 +272,7 @@ func (s *AugSchemeMPL) Verify(pk *G1Element, msg []byte, sig *G2Element) bool {
 }
 
 // AggregateVerify verifies the aggregated signature for a list of messages with public keys
+// this method is a binding of bls::AugSchemeMPL::AggregateVerify
 func (s *AugSchemeMPL) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G2Element) bool {
 	cPkArrPtr := cAllocPubKeys(pks...)
 	defer C.FreePtrArray(cPkArrPtr)
@@ -273,43 +290,47 @@ func (s *AugSchemeMPL) AggregateVerify(pks []*G1Element, msgs [][]byte, sig *G2E
 	return bool(val)
 }
 
-// Free releases allocated memory bls::AugSchemeMPL
-func (s *AugSchemeMPL) Free() {
+// free calls CAugSchemeMPLFree "C" function to release a memory allocated for bls::AugSchemeMPL
+func (s *AugSchemeMPL) free() {
 	C.CAugSchemeMPLFree(s.val)
 }
 
 // PopSchemeMPL represents bls::PopSchemeMPL (proof of possession scheme)
 // proof of possession can be used where verification must be fast
 type PopSchemeMPL struct {
-	coreMLP
+	coreMPL
 }
 
 // NewPopSchemeMPL returns a new bls::PopSchemeMPL
+// this method allocates the new bls::PopSchemeMPL object and keeps its pointer
 func NewPopSchemeMPL() *PopSchemeMPL {
 	scheme := PopSchemeMPL{
-		coreMLP: coreMLP{
+		coreMPL: coreMPL{
 			val: C.NewCPopSchemeMPL(),
 		},
 	}
-	runtime.SetFinalizer(&scheme, func(scheme *PopSchemeMPL) { scheme.Free() })
+	runtime.SetFinalizer(&scheme, func(scheme *PopSchemeMPL) { scheme.free() })
 	return &scheme
 }
 
-// PopProve ...
+// PopProve proves using the PrivateKey
+// this method is a binding of bls::PopSchemeMPL::PopProve
 func (s *PopSchemeMPL) PopProve(sk *PrivateKey) *G2Element {
 	sig := G2Element{
 		val: C.CPopSchemeMPLPopProve(s.val, sk.val),
 	}
-	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.Free() })
+	runtime.SetFinalizer(&sig, func(sig *G2Element) { sig.free() })
 	return &sig
 }
 
-// PopVerify ...
+// PopVerify verifies of a signature using proof of possession
+// this method is a binding of bls::PopSchemeMPL::PopVerify
 func (s *PopSchemeMPL) PopVerify(pk *G1Element, sig *G2Element) bool {
 	return bool(C.CPopSchemeMPLPopVerify(s.val, pk.val, sig.val))
 }
 
 // FastAggregateVerify uses for a fast verification
+// this method is a binding of bls::PopSchemeMPL::FastAggregateVerify
 func (s *PopSchemeMPL) FastAggregateVerify(pks []*G1Element, msg []byte, sig *G2Element) bool {
 	msgPtr := C.CBytes(msg)
 	cPkArrPtr := cAllocPubKeys(pks...)
@@ -325,8 +346,8 @@ func (s *PopSchemeMPL) FastAggregateVerify(pks []*G1Element, msg []byte, sig *G2
 	return bool(isVerified)
 }
 
-// Free ...
-func (s *PopSchemeMPL) Free() {
+// free calls CPopSchemeMPLFree "C" function to release a memory allocated for bls::PopSchemeMPL
+func (s *PopSchemeMPL) free() {
 	C.CPopSchemeMPLFree(s.val)
 }
 

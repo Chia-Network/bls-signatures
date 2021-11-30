@@ -1,6 +1,8 @@
 ## bls-signatures
 
-Go library that implements BLS signatures with aggregation as in [Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html), using the relic toolkit for cryptographic primitives (pairings, EC, hashing).
+Go library that implements BLS signatures with aggregation as
+in [Boneh, Drijvers, Neven 2018](https://crypto.stanford.edu/~dabo/pubs/papers/BLSmultisig.html), using the relic
+toolkit for cryptographic primitives (pairings, EC, hashing).
 
 This library is a Go port of the [Chia Network's BLS lib](https://github.com/Chia-Network/bls-signatures).
 
@@ -10,7 +12,15 @@ This library is a Go port of the [Chia Network's BLS lib](https://github.com/Chi
 go get github.com/shotonoff/bls-signatures/go-bindings
 ```
 
+Install dependencies:
+
+1. **g++** C++ compiler and libraries
+2. **cmake**
+3. **sodium-dev** [github](https://github.com/jedisct1/libsodium)
+4. **libgmp-dev** [github](https://github.com/sethtroisi/libgmp)
+
 ### Creating keys and signatures
+
 ```go
 // seed data must not be less 32 bytes length
 seed := []byte{
@@ -46,6 +56,7 @@ if !scheme.Verify(pk, msg, sig) {
 ```
 
 ### Serializing keys and signatures to bytes
+
 ```go  
 skBytes := sk.Serialize()
 pkBytes := pk.Serialize()
@@ -53,6 +64,7 @@ sigBytes := sig.Serialize()
 ```
 
 ### Loading keys and signatures from bytes
+
 ```go
 sk1, _ := PrivateKeyFromBytes(skBytes, false)
 pk1, _ := G1ElementFromBytes(pkBytes)
@@ -60,13 +72,14 @@ sig1, _ := G2ElementFromBytes(sigBytes)
 ```
 
 ### Create aggregate signatures
+
 ```go
 // Generate some more private keys
 seed[0] = 1
 sk1, _ := scheme.KeyGen(seed)
 seed[0] = 2
 sk2, _ := scheme.KeyGen(seed)
-msg2 := []byte{1,2,3,4,5,6,7}
+msg2 := []byte{1, 2, 3, 4, 5,6, 7}
 
 // Generate first sig
 pk1, _ := sk1.G1Element()
@@ -86,6 +99,7 @@ if !ok {
 ```
 
 ### Arbitrary trees of aggregates
+
 ```go
 seed[0] = 3
 sk3, _ := scheme.KeyGen(seed)
@@ -101,6 +115,7 @@ if !ok {
 ```
 
 ### Very fast verification with Proof of Possession scheme
+
 ```go
 // create a proof possession scheme
 popScheme := NewPopSchemeMPL()
@@ -149,6 +164,7 @@ if !ok {
 ```
 
 ### HD keys using [EIP-2333](https://github.com/ethereum/EIPs/pull/2333)
+
 ```go
 // You can derive 'child' keys from any key, to create arbitrary trees. 4 byte indeces are used.
 // Hardened (more secure, but no parent pk -> child pk)
@@ -173,12 +189,14 @@ Do not forget to handle the errors properly, this part of the code was omitted d
 
 Use cases can be found in the [original lib's readme](../README.md).
 
-__Important note:__ Since this library is a port of the c++ library, so every a piece of memory allocated by the 
-library MUST be released manually. To release memory is used GC finalizer callback, that will be invoked before GC 
-release a memory allocated by GO.
+__Important note:__ Since this library is a port of the c++ library, so every piece of memory allocated by the library
+MUST be released on our own in GO. To release the memory is used `runtime.SetFinalizer` function, that will invoke
+automatically before GC release a memory allocated by GO.
 
 ### Run tests
+
 To run tests, build the library, then go to the `go-bindings` folder in the build directory and run
+
 ```bash
 make test
 ```

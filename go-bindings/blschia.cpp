@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <string>
+#include <stdlib.h>
 #include "chiabls/bls.hpp"
 #include "error.h"
 #include "blschia.h"
@@ -25,23 +26,23 @@ void SecFree(void *p) {
 
 void** AllocPtrArray(size_t len) {
     // caller to free
-    return static_cast<void**>(malloc(sizeof(void*) * len));
+    return (void**)bls::Util::SecAlloc<uint8_t>(sizeof(void*) * len);
 }
 
-void SetPtrArray(void **arrPtr, void *elemPtr, int index) {
+void SetPtrArray(void** arrPtr, void* elemPtr, int index) {
     arrPtr[index] = elemPtr;
 }
 
-void FreePtrArray(void **inPtr) {
-    free(inPtr);
+void FreePtrArray(void** inPtr) {
+    bls::Util::SecFree(inPtr);
 }
 
-void* GetPtrAtIndex(void **arrPtr, int index) {
+void* GetPtrAtIndex(void** arrPtr, int index) {
     return arrPtr[index];
 }
 
-void* GetAddressAtIndex(uint8_t *ptr, int index) {
-    return static_cast<void*>(&ptr[index]);
+void* GetAddressAtIndex(uint8_t* ptr, int index) {
+    return (void*)&ptr[index];
 }
 
 const char* GetLastErrorMsg() {
