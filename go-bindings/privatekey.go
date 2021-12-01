@@ -1,7 +1,5 @@
 package blschia
 
-// #cgo LDFLAGS: -lstdc++ -lgmp -lbls -lrelic_s -lsodium
-// #cgo CXXFLAGS: -std=c++14
 // #include <stdbool.h>
 // #include <stdlib.h>
 // #include "privatekey.h"

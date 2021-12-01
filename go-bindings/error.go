@@ -1,6 +1,5 @@
 package blschia
 
-// #cgo LDFLAGS: -lbls
 // #include "blschia.h"
 import "C"
 import "errors"
