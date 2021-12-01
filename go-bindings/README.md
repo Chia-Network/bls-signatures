@@ -9,7 +9,7 @@ This library is a Go port of the [Chia Network's BLS lib](https://github.com/Chi
 ### Usage
 
 ```bash
-go get github.com/shotonoff/bls-signatures/go-bindings
+go get github.com/Chia-Network/bls-signatures/go-bindings
 ```
 
 ### Creating keys and signatures
