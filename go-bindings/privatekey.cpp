@@ -15,16 +15,7 @@
 #include "privatekey.h"
 #include "blschia.h"
 #include "error.h"
-
-// helper functions
-std::vector<bls::PrivateKey> toVectorPrivKeys(const void** sks, const size_t len) {
-    std::vector<bls::PrivateKey> vecPrivKeys;
-    for (int i = 0 ; i < len; ++i) {
-        bls::PrivateKey* key = (bls::PrivateKey*)sks[i];
-        vecPrivKeys.push_back(*key);
-    }
-    return vecPrivKeys;
-}
+#include "utils.hpp"
 
 // private key bindings implementation
 CPrivateKey CPrivateKeyFromBytes(const void* data, const bool modOrder, bool* didErr) {
@@ -46,9 +37,9 @@ CPrivateKey CPrivateKeyFromBytes(const void* data, const bool modOrder, bool* di
     return skPtr;
 }
 
-CPrivateKey CPrivateKeyAggregate(const void** sks, const size_t len) {
+CPrivateKey CPrivateKeyAggregate(void** sks, const size_t len) {
     return new bls::PrivateKey(
-        bls::PrivateKey::Aggregate(toVectorPrivKeys(sks, len))
+        bls::PrivateKey::Aggregate(toBLSVector<bls::PrivateKey>(sks, len))
     );
 }
 

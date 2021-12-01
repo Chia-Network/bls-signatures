@@ -17,34 +17,7 @@
 #include "schemes.h"
 #include "blschia.h"
 #include "error.h"
-
-// helper functions
-std::vector<bls::G1Element> toVectorG1Elements(void** elems, const size_t len) {
-    std::vector<bls::G1Element> vec;
-    for (int i = 0 ; i < len; ++i) {
-        const bls::G1Element* el = (bls::G1Element*)elems[i];
-        vec.push_back(*el);
-    }
-    return vec;
-}
-
-std::vector<bls::G2Element> toVectorG2Elements(void** elems, const size_t len) {
-    std::vector<bls::G2Element> vec;
-    for (int i = 0 ; i < len; ++i) {
-        const bls::G2Element* el = (bls::G2Element*)elems[i];
-        vec.push_back(*el);
-    }
-    return vec;
-}
-
-std::vector<bls::Bytes> toVectorBytes(void** elems, const size_t len, const std::vector<size_t> vecElemsLens) {
-    std::vector<bls::Bytes> vec;
-    for (int i = 0 ; i < len; ++i) {
-        uint8_t* elPtr = (uint8_t*)elems[i];
-        vec.push_back(bls::Bytes(elPtr, vecElemsLens[i]));
-    }
-    return vec;
-}
+#include "utils.hpp"
 
 // Implementation of bindings for CoreMPL class
 
@@ -91,13 +64,13 @@ bool CCoreMPLVerify(const CCoreMPL scheme,
 
 CG1Element CCoreMPLAggregatePubKeys(const CCoreMPL scheme, void** pks, const size_t pksLen) {
     bls::CoreMPL* schemePtr = (bls::CoreMPL*)scheme;
-    return new bls::G1Element(schemePtr->Aggregate(toVectorG1Elements(pks, pksLen)));
+    return new bls::G1Element(schemePtr->Aggregate(toBLSVector<bls::G1Element>(pks, pksLen)));
 }
 
 CG2Element CCoreMPLAggregateSigs(const CCoreMPL scheme, void** sigs, const size_t sigsLen) {
     bls::CoreMPL* schemePtr = (bls::CoreMPL*)scheme;
     return new bls::G2Element(
-        schemePtr->Aggregate(toVectorG2Elements(sigs, sigsLen))
+        schemePtr->Aggregate(toBLSVector<bls::G2Element>(sigs, sigsLen))
     );
 }
 
@@ -129,7 +102,7 @@ bool CCoreMPLAggregateVerify(const CCoreMPL scheme,
     bls::CoreMPL* schemePtr = (bls::CoreMPL*)scheme;
     const size_t* msgLensPtr = (size_t*)msgsLens;
     const bls::G2Element* sigPtr = (bls::G2Element*)sig;
-    const std::vector<bls::G1Element> vecPubKeys = toVectorG1Elements(pks, pksLen);
+    const std::vector<bls::G1Element> vecPubKeys = toBLSVector<bls::G1Element>(pks, pksLen);
     const std::vector<size_t> vecMsgsLens = std::vector<size_t>(msgLensPtr, msgLensPtr + msgsLen);
     const std::vector<bls::Bytes> vecMsgs = toVectorBytes(msgs, msgsLen, vecMsgsLens);
     return schemePtr->AggregateVerify(vecPubKeys, vecMsgs, *sigPtr);
@@ -150,7 +123,7 @@ bool CBasicSchemeMPLAggregateVerify(CBasicSchemeMPL scheme,
     bls::BasicSchemeMPL* schemePtr = (bls::BasicSchemeMPL*)scheme;
     const size_t* msgLensPtr = (size_t*)msgsLens;
     const bls::G2Element* sigPtr = (bls::G2Element*)sig;
-    const std::vector<bls::G1Element> vecPubKeys = toVectorG1Elements(pks, pksLen);
+    const std::vector<bls::G1Element> vecPubKeys = toBLSVector<bls::G1Element>(pks, pksLen);
     const std::vector<size_t> vecMsgsLens = std::vector<size_t>(msgLensPtr, msgLensPtr + msgsLen);
     const std::vector<bls::Bytes> vecMsgs = toVectorBytes(msgs, msgsLen, vecMsgsLens);
     return schemePtr->AggregateVerify(vecPubKeys, vecMsgs, *sigPtr);
@@ -207,7 +180,7 @@ bool CAugSchemeMPLAggregateVerify(const CAugSchemeMPL scheme,
     bls::AugSchemeMPL* schemePtr = (bls::AugSchemeMPL*)scheme;
     const size_t* msgLensPtr = (size_t*)msgsLens;
     const bls::G2Element* sigPtr = (bls::G2Element*)sig;
-    const std::vector<bls::G1Element> vecPubKeys = toVectorG1Elements(pks, pksLen);
+    const std::vector<bls::G1Element> vecPubKeys = toBLSVector<bls::G1Element>(pks, pksLen);
     const std::vector<size_t> vecMsgsLens = std::vector<size_t>(msgLensPtr, msgLensPtr + msgsLen);
     const std::vector<bls::Bytes> vecMsgs = toVectorBytes(msgs, msgsLen, vecMsgsLens);
     return schemePtr->AggregateVerify(vecPubKeys, vecMsgs, *sigPtr);
@@ -244,7 +217,7 @@ bool CPopSchemeMPLFastAggregateVerify(const CPopSchemeMPL scheme,
                                       const CG2Element sig) {
     bls::PopSchemeMPL* schemePtr = (bls::PopSchemeMPL*)scheme;
     const bls::G2Element* sigPtr = (bls::G2Element*)sig;
-    const std::vector<bls::G1Element> vecPubKeys = toVectorG1Elements(pks, pksLen);
+    const std::vector<bls::G1Element> vecPubKeys = toBLSVector<bls::G1Element>(pks, pksLen);
     return schemePtr->FastAggregateVerify(vecPubKeys, bls::Bytes((uint8_t*)msg, msgLen), *sigPtr);
 }
 
