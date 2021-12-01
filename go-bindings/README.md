@@ -12,13 +12,6 @@ This library is a Go port of the [Chia Network's BLS lib](https://github.com/Chi
 go get github.com/shotonoff/bls-signatures/go-bindings
 ```
 
-Install dependencies:
-
-1. **g++** C++ compiler and libraries
-2. **cmake**
-3. **sodium-dev** [github](https://github.com/jedisct1/libsodium)
-4. **libgmp-dev** [github](https://github.com/sethtroisi/libgmp)
-
 ### Creating keys and signatures
 
 ```go
