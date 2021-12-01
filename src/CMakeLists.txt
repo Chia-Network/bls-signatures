@@ -35,9 +35,14 @@ install(FILES ${HEADERS} DESTINATION include/chiabls)
 install(FILES $<TARGET_FILE:bls> DESTINATION lib)
 
 if(BUILD_BLS_TESTS)
-  include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../contrib/catch)
+  FetchContent_Declare(
+    Catch2
+    GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+    GIT_TAG        v2.13.7
+  )
+  FetchContent_MakeAvailable(Catch2)
   add_executable(runtest test.cpp)
-  target_link_libraries(runtest PRIVATE bls)
+  target_link_libraries(runtest PRIVATE bls Catch2::Catch2)
 endif()
 
 if(BUILD_BLS_BENCHMARKS)
