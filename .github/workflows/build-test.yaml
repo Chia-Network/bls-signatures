@@ -71,8 +71,11 @@ jobs:
         sh emsdk_build.sh
         sh js_test.sh
 
+    - uses: actions/setup-go@v2
+      with:
+        go-version: "^1.17"
+
     - name: Test go bindings
       run: |
         cd go-bindings
-        make test
-
+        make
