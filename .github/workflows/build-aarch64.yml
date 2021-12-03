@@ -30,7 +30,7 @@ jobs:
         python3 -m venv venv
         source venv/bin/activate
         python -m pip install --upgrade pip
-        python -m pip install cibuildwheel==1.10.0
+        python -m pip install cibuildwheel==2.2.2
 
     - name: Lint source with flake8
       run: |
@@ -49,8 +49,8 @@ jobs:
         source venv/bin/activate
         python -m cibuildwheel --output-dir dist
       env:
-        # build python 3.7 and 3.8
-        CIBW_BUILD: cp37-* cp38-* cp39-*
+        CIBW_BUILD: cp37-* cp38-* cp39-* cp310-*
+        CIBW_SKIP: '*-musllinux_*'
         CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
         CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_BEFORE_BUILD_LINUX: >

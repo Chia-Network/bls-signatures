@@ -46,16 +46,15 @@ jobs:
         python -m build --sdist --outdir dist .
 
     - name: Build ${{ matrix.os }} wheels and test
-      uses: joerick/cibuildwheel@v1.10.0
+      uses: joerick/cibuildwheel@v2.2.2
       with:
         output-dir: dist
       env:
         CIBW_BUILD_VERBOSITY_MACOS: 0
         CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_BUILD_VERBOSITY_WINDOWS: 0
-        # Python 3.7 and 3.8
-        CIBW_BUILD: cp37-* cp38-* cp39-*
-        CIBW_SKIP: '*-manylinux_i686 *-win32'
+        CIBW_BUILD: cp37-* cp38-* cp39-* cp310-*
+        CIBW_SKIP: '*-manylinux_i686 *-win32 *-musllinux_*'
         CIBW_TEST_REQUIRES: pytest
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
         CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
