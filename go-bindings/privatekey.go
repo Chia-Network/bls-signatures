@@ -19,8 +19,8 @@ type PrivateKey struct {
 // PrivateKeyFromBytes returns a new PrivateKey from bytes
 // this method allocates the new bls::PrivateKey object and keeps its pointer
 func PrivateKeyFromBytes(data []byte, modOrder bool) (*PrivateKey, error) {
-	cBytesPtr := C.CBytes(data)
-	defer C.free(cBytesPtr)
+	cBytesPtr := cAllocBytes(data)
+	defer C.SecFree(cBytesPtr)
 	var cDidErr C.bool
 	sk := PrivateKey{
 		val: C.CPrivateKeyFromBytes(cBytesPtr, C.bool(modOrder), &cDidErr),
@@ -75,7 +75,7 @@ func (sk *PrivateKey) G2Power(el *G2Element) *G2Element {
 func (sk *PrivateKey) Serialize() []byte {
 	ptr := C.CPrivateKeySerialize(sk.val)
 	defer C.SecFree(ptr)
-	return C.GoBytes(ptr, C.CPrivateKeySizeBytes())
+	return C.GoBytes(ptr, C.int(C.CPrivateKeySizeBytes()))
 }
 
 // PrivateKeyAggregate securely aggregates multiple private keys into one

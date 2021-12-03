@@ -59,7 +59,7 @@ void* CPrivateKeySerialize(const CPrivateKey sk) {
     return (void*)buffer;
 }
 
-int CPrivateKeySizeBytes() {
+size_t CPrivateKeySizeBytes() {
     return bls::PrivateKey::PRIVATE_KEY_SIZE;
 }
 

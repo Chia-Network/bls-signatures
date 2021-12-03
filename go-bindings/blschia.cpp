@@ -39,6 +39,10 @@ void* GetPtrAtIndex(void** arrPtr, int index) {
     return arrPtr[index];
 }
 
+uint8_t* SecAllocBytes(size_t len) {
+    return (uint8_t*)bls::Util::SecAlloc<uint8_t>(sizeof(uint8_t) * len);
+}
+
 void* GetAddressAtIndex(uint8_t* ptr, int index) {
     return (void*)&ptr[index];
 }

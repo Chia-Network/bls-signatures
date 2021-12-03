@@ -29,7 +29,7 @@ CG2Element CPrivateKeyGetG2Power(const CPrivateKey sk, const CG2Element el);
 bool CPrivateKeyIsEqual(const CPrivateKey sk1, const CPrivateKey sk2);
 void* CPrivateKeySerialize(const CPrivateKey sk);
 void CPrivateKeyFree(const CPrivateKey sk);
-int CPrivateKeySizeBytes();
+size_t CPrivateKeySizeBytes();
 
 #ifdef __cplusplus
 }

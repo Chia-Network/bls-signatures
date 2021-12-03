@@ -31,6 +31,9 @@ void SetPtrArray(void **arrPtr, void *elemPtr, int index);
 void FreePtrArray(void **inPtr);
 void* GetPtrAtIndex(void **arrPtr, int index);
 
+// Allocates an array of bytes with size of passed in len argument
+uint8_t* SecAllocBytes(size_t len);
+
 void* GetAddressAtIndex(uint8_t *ptr, int index);
 
 const char* GetLastErrorMsg();
