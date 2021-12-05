@@ -12,6 +12,8 @@
 
 package blschia
 
+// #cgo LDFLAGS: -lbls -lrelic_s -lsodium
+// #cgo CXXFLAGS: -std=c++14
 // #include <stdbool.h>
 // #include <stdlib.h>
 // #include "schemes.h"
@@ -129,13 +131,10 @@ func (s *coreMPL) AggregatePubKeys(pks ...*G1Element) *G1Element {
 // as a result of the aggregation of the passed public keys
 // this method is a binding of bls::CoreMPL::AggregateSigs
 func (s *coreMPL) AggregateSigs(sigs ...*G2Element) *G2Element {
-	cSigArrayPtr := C.AllocPtrArray(C.size_t(len(sigs)))
-	defer C.FreePtrArray(cSigArrayPtr)
-	for i, sig := range sigs {
-		C.SetPtrArray(cSigArrayPtr, unsafe.Pointer(sig.val), C.int(i))
-	}
+	cSigArrPtr := cAllocSigs(sigs...)
+	defer C.FreePtrArray(cSigArrPtr)
 	aggSig := G2Element{
-		val: C.CCoreMPLAggregateSigs(s.val, cSigArrayPtr, C.size_t(len(sigs))),
+		val: C.CCoreMPLAggregateSigs(s.val, cSigArrPtr, C.size_t(len(sigs))),
 	}
 	runtime.SetFinalizer(&aggSig, func(aggSig *G2Element) { aggSig.free() })
 	return &aggSig
@@ -367,15 +366,4 @@ func cAllocPubKeys(pks ...*G1Element) *unsafe.Pointer {
 		C.SetPtrArray(arr, unsafe.Pointer(pk.val), C.int(i))
 	}
 	return arr
-}
-
-func cAllocMsgs(msgs [][]byte) (*unsafe.Pointer, []int) {
-	msgLens := make([]int, len(msgs))
-	cMsgArrPtr := C.AllocPtrArray(C.size_t(len(msgs)))
-	for i, msg := range msgs {
-		cMsgPtr := C.CBytes(msg)
-		C.SetPtrArray(cMsgArrPtr, unsafe.Pointer(cMsgPtr), C.int(i))
-		msgLens[i] = len(msg)
-	}
-	return cMsgArrPtr, msgLens
 }

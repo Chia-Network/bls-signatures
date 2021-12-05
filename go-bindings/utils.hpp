@@ -13,7 +13,7 @@
 #pragma once
 
 #include <vector>
-#include "bls.hpp"
+#include "chiabls/bls.hpp"
 #include "privatekey.h"
 #include "elements.h"
 

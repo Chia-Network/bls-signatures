@@ -12,7 +12,7 @@
 
 #include <string>
 #include <stdlib.h>
-#include "bls.hpp"
+#include "chiabls/bls.hpp"
 #include "error.h"
 #include "blschia.h"
 

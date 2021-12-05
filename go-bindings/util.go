@@ -12,6 +12,8 @@
 
 package blschia
 
+// #cgo LDFLAGS: -lbls -lrelic_s -lsodium
+// #cgo CXXFLAGS: -std=c++14
 // #include "blschia.h"
 // #include <string.h>
 import "C"
@@ -24,4 +26,31 @@ func cAllocBytes(data []byte) unsafe.Pointer {
 	ptr := unsafe.Pointer(C.SecAllocBytes(l))
 	C.memcpy(ptr, unsafe.Pointer(&data[0]), l)
 	return ptr
+}
+
+func cAllocSigs(sigs ...*G2Element) *unsafe.Pointer {
+	arr := C.AllocPtrArray(C.size_t(len(sigs)))
+	for i, pk := range sigs {
+		C.SetPtrArray(arr, unsafe.Pointer(pk.val), C.int(i))
+	}
+	return arr
+}
+
+func cAllocPrivKeys(sks ...*PrivateKey) *unsafe.Pointer {
+	arr := C.AllocPtrArray(C.size_t(len(sks)))
+	for i, sk := range sks {
+		C.SetPtrArray(arr, unsafe.Pointer(sk.val), C.int(i))
+	}
+	return arr
+}
+
+func cAllocMsgs(msgs [][]byte) (*unsafe.Pointer, []int) {
+	msgLens := make([]int, len(msgs))
+	cMsgArrPtr := C.AllocPtrArray(C.size_t(len(msgs)))
+	for i, msg := range msgs {
+		cMsgPtr := C.CBytes(msg)
+		C.SetPtrArray(cMsgArrPtr, unsafe.Pointer(cMsgPtr), C.int(i))
+		msgLens[i] = len(msg)
+	}
+	return cMsgArrPtr, msgLens
 }

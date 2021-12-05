@@ -12,6 +12,8 @@
 
 package blschia
 
+// #cgo LDFLAGS: -lbls -lrelic_s -lsodium
+// #cgo CXXFLAGS: -std=c++14
 // #include <stdbool.h>
 // #include <stdlib.h>
 // #include "privatekey.h"
@@ -20,7 +22,6 @@ import "C"
 import (
 	"encoding/hex"
 	"runtime"
-	"unsafe"
 )
 
 // PrivateKey represents a bls::PrivateKey (32 byte integer)
@@ -93,10 +94,7 @@ func (sk *PrivateKey) Serialize() []byte {
 // PrivateKeyAggregate securely aggregates multiple private keys into one
 // this method is a binding of the bls::PrivateKey::Aggregate
 func PrivateKeyAggregate(sks ...*PrivateKey) *PrivateKey {
-	cPrivKeyArrPtr := C.AllocPtrArray(C.size_t(len(sks)))
-	for i, privKey := range sks {
-		C.SetPtrArray(cPrivKeyArrPtr, unsafe.Pointer(privKey.val), C.int(i))
-	}
+	cPrivKeyArrPtr := cAllocPrivKeys(sks...)
 	defer C.FreePtrArray(cPrivKeyArrPtr)
 	sk := PrivateKey{
 		val: C.CPrivateKeyAggregate(cPrivKeyArrPtr, C.size_t(len(sks))),
