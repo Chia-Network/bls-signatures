@@ -43,16 +43,18 @@ FetchContent_MakeAvailable(Sodium)
 
 if (DEFINED ENV{RELIC_MAIN})
   set(RELIC_GIT_TAG "origin/main")
+  set(RELIC_REPOSITORY "https://github.com/Chia-Network/relic.git"
 else ()
   # This is currently anchored to upstream aecdcae7956f542fbee2392c1f0feb0a8ac41dc5
   set(RELIC_GIT_TAG "1d98e5abf3ca5b14fd729bd5bcced88ea70ecfd7")
+  set(RELIC_REPOSITORY "https://github.com/relic-toolkit/relic.git"
 endif ()
 
-message(STATUS "Relic will be built from: ${RELIC_GIT_TAG}")
+message(STATUS "Relic will be built from: ${RELIC_GIT_TAG} and repository ${RELIC_REPOSITORY}")
 
 FetchContent_Declare(
   relic
-  GIT_REPOSITORY https://github.com/Chia-Network/relic.git
+  GIT_REPOSITORY ${RELIC_REPOSITORY}
   GIT_TAG ${RELIC_GIT_TAG}
 )
 
