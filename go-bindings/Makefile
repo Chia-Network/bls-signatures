@@ -2,7 +2,7 @@ SRC_DIR=$(PWD)/../src
 BUILD_DIR=$(PWD)/../build
 CACHE_DIR=$(PWD)/cache
 
-CGO_LDFLAGS="-L$(CACHE_DIR)/lib"
+CGO_LDFLAGS="-L$(CACHE_DIR)/lib -lbls-dash -lrelic_s -lgmp"
 CGO_CXXFLAGS="-I$(CACHE_DIR)"
 
 GO="go"
