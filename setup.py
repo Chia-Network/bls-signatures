@@ -59,7 +59,7 @@ class CMakeBuild(build_ext):
             build_args += ["--", "-j", "6"]
 
         env = os.environ.copy()
-        env["CXXFLAGS"] = '{} -DVERSION_INFO=\\\'{}\\\''.format(
+        env["CXXFLAGS"] = '{} -DVERSION_INFO=\\"{}\\"'.format(
             env.get("CXXFLAGS", ""), self.distribution.get_version()
         )
         if not os.path.exists(self.build_temp):
@@ -176,7 +176,7 @@ class BuildExt(build_ext):
                 opts.append("-fvisibility=hidden")
         elif ct == "msvc":
             if sys.version_info < (3, 9):
-                ver_flag = '/DVERSION_INFO=\\"%s\\"'
+                ver_flag = '/DVERSION_INFO=\"%s\"'
             else:
                 ver_flag = '-DVERSION_INFO="%s"'
             opts.append(ver_flag % self.distribution.get_version())
