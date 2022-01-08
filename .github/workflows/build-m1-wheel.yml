@@ -40,13 +40,13 @@ jobs:
       run: |
         rm -rf venv
         arch -arm64 /opt/homebrew/opt/python@3.9/libexec/bin/python -m venv venv
-        arch -arm64 source venv/bin/activate
+        . venv/bin/activate
         arch -arm64 /opt/homebrew/opt/python@3.9/libexec/bin/pip wheel -w dist --no-deps .
         arch -arm64 delocate-wheel -v dist/*cp39*.whl
         deactivate
         rm -rf venv
         arch -arm64 /opt/homebrew/opt/python@3.10/libexec/bin/python -m venv venv
-        arch -arm64 source venv/bin/activate
+        . venv/bin/activate
         arch -arm64 /opt/homebrew/opt/python@3.10/libexec/bin/pip wheel -w dist --no-deps .
         arch -arm64 delocate-wheel -v dist/*cp310*.whl
         deactivate
@@ -56,14 +56,14 @@ jobs:
       run: |
         rm -rf venv
         arch -arm64 /opt/homebrew/opt/python@3.9/libexec/bin/python -m venv venv
-        arch -arm64 source venv/bin/activate
+        . venv/bin/activate
         arch -arm64 pip install ./dist/*cp-39*.whl
         arch -arm64 pip install pytest
         arch -arm64 ./venv/bin/pytest -v ./python-bindings/test.py
         deactivate
         rm -rf venv
         arch -arm64 /opt/homebrew/opt/python@3.10/libexec/bin/python -m venv venv
-        arch -arm64 source venv/bin/activate
+        . venv/bin/activate
         arch -arm64 pip install ./dist/*cp-310*.whl
         arch -arm64 pip install pytest
         arch -arm64 ./venv/bin/pytest -v ./python-bindings/test.py
