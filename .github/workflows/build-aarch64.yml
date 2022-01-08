@@ -38,7 +38,7 @@ jobs:
         python3 -m venv venv
         source venv/bin/activate
         python -m pip install --upgrade pip
-        python -m pip install cibuildwheel==2.2.2
+        python -m pip install cibuildwheel==2.3.1
 
     - name: Lint source with flake8
       run: |
