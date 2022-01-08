@@ -33,6 +33,8 @@ jobs:
       run: |
         arch -arm64 brew upgrade python@3.9
         arch -arm64 brew upgrade python@3.10
+        arch -arm64 brew info python@3.9
+        arch -arm64 brew info python@3.10
 
     - name: Build m1 wheels for 3.9 and 3.10
       run: |
