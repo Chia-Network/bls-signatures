@@ -18,12 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest]
-        python: ['3.7', '3.8', '3.9']
+        python: ['3.7', '3.8', '3.9', '3.10']
 
     steps:
     - name: Cancel previous runs on the same branch
       if: ${{ github.ref != 'refs/heads/main' }}
-      uses: styfle/cancel-workflow-action@0.7.0
+      uses: styfle/cancel-workflow-action@0.9.1
       with:
         access_token: ${{ github.token }}
 
@@ -69,10 +69,10 @@ jobs:
     - name: Test pure python implementation
       run: |
         python python-impl/impl-test.py
-        
+
     - name: Install emsdk
       uses: mymindstorm/setup-emsdk@v9
-      
+
     - name: Test javascript bindings
       run: |
         emcc -v
