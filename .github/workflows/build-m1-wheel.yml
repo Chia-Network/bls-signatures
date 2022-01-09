@@ -29,29 +29,46 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Lint source with flake8
+    - name: Brew update Python
       run: |
-        arch -arm64 python -m pip install --upgrade pip
-        arch -arm64 pip install flake8
-        arch -arm64 flake8 src setup.py python-bindings python-impl
+        arch -arm64 brew install python@3.9
+        arch -arm64 brew install python@3.10
 
-    - name: Lint source with mypy
+    - name: Build m1 wheels for 3.9 and 3.10
       run: |
-        arch -arm64 pip install mypy
-        arch -arm64 mypy --config-file mypi.ini python-bindings python-impl
-
-    - name: Build m1 wheels
-      run: |
+        rm -rf venv
+        arch -arm64 $(brew --prefix python@3.9)/libexec/bin/python -m venv venv
+        . venv/bin/activate
         arch -arm64 pip wheel -w dist --no-deps .
-        arch -arm64 delocate-wheel -v dist/*.whl
+        arch -arm64 pip install delocate
+        arch -arm64 delocate-wheel -v dist/*cp39*.whl
+        deactivate
+        rm -rf venv
+        arch -arm64 $(brew --prefix python@3.10)/libexec/bin/python -m venv venv
+        . venv/bin/activate
+        arch -arm64 pip wheel -w dist --no-deps .
+        arch -arm64 pip install delocate
+        arch -arm64 delocate-wheel -v dist/*cp310*.whl
+        deactivate
+        rm -rf venv
 
     - name: Test wheel
       run: |
-        arch -arm64 python3 -m venv venv
-        . ./venv/bin/activate
-        arch -arm64 pip install ./dist/*.whl
+        rm -rf venv
+        arch -arm64 $(brew --prefix python@3.9)/libexec/bin/python -m venv venv
+        . venv/bin/activate
+        arch -arm64 pip install ./dist/*cp39*.whl
         arch -arm64 pip install pytest
         arch -arm64 ./venv/bin/pytest -v ./python-bindings/test.py
+        deactivate
+        rm -rf venv
+        arch -arm64 $(brew --prefix python@3.10)/libexec/bin/python -m venv venv
+        . venv/bin/activate
+        arch -arm64 pip install ./dist/*cp310*.whl
+        arch -arm64 pip install pytest
+        arch -arm64 ./venv/bin/pytest -v ./python-bindings/test.py
+        deactivate
+        rm -rf venv
 
     - name: Create sha256 hash
       run: |
