@@ -27,16 +27,6 @@ using namespace bls;
 using std::vector;
 
 
-/* This class releases the Python GIL until the end of the scope.
-   This is different from gil_scoped_release in that it can't  be reacquired early. */
-// class PythonGIL {
-// public:
-//     PythonGIL() { _save = PyEval_SaveThread(); }
-//     ~PythonGIL() { PyEval_RestoreThread(_save); }
-// private:
-//     PyThreadState *_save;
-// };
-
 PYBIND11_MODULE(blspy, m)
 {
     py::class_<PrivateKey>(m, "PrivateKey")
@@ -55,17 +45,19 @@ PYBIND11_MODULE(blspy, m)
                     throw std::invalid_argument(
                         "Length of bytes object not equal to PrivateKey::SIZE");
                 }
+                py::gil_scoped_release release;
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                // PythonGIL release_lock;
                 return PrivateKey::FromBytes(Bytes(data_ptr, PrivateKey::PRIVATE_KEY_SIZE));
             })
         .def(
             "__bytes__",
             [](const PrivateKey &k) {
-                // PythonGIL release_lock;
                 uint8_t *output =
                     Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
-                k.Serialize(output);
+                {
+                    py::gil_scoped_release release;
+                    k.Serialize(output);
+                }
                 py::bytes ret = py::bytes(
                     reinterpret_cast<char *>(output),
                     PrivateKey::PRIVATE_KEY_SIZE);
@@ -78,15 +70,15 @@ PYBIND11_MODULE(blspy, m)
                 return PrivateKey(k);
             })
         .def("get_g1", [](const PrivateKey &k) {
-                // PythonGIL release_lock; 
+                py::gil_scoped_release release;
                 return k.GetG1Element();
             })
-        .def("aggregate", &PrivateKey::Aggregate)
+        .def("aggregate", &PrivateKey::Aggregate, py::call_guard<py::gil_scoped_release>())
         .def(py::self == py::self)
         .def(py::self != py::self)
         .def("__repr__", [](const PrivateKey &k) {
-            uint8_t *output =
-                Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
+            py::gil_scoped_release release;
+            uint8_t *output = Util::SecAlloc<uint8_t>(PrivateKey::PRIVATE_KEY_SIZE);
             k.Serialize(output);
             std::string ret =
                 "<PrivateKey " +
@@ -99,38 +91,48 @@ PYBIND11_MODULE(blspy, m)
         std::string str(message);
         const uint8_t *input = reinterpret_cast<const uint8_t *>(str.data());
         uint8_t output[BLS::MESSAGE_HASH_LEN];
-        Util::Hash256(output, (const uint8_t *)str.data(), str.size());
+        {
+            py::gil_scoped_release release;
+            Util::Hash256(output, (const uint8_t *)str.data(), str.size());
+        }
         return py::bytes(
             reinterpret_cast<char *>(output), BLS::MESSAGE_HASH_LEN);
     });
 
     py::class_<BasicSchemeMPL>(m, "BasicSchemeMPL")
-        .def("sk_to_g1", [](const PrivateKey &seckey){ return BasicSchemeMPL().SkToG1(seckey); })
+        .def("sk_to_g1", [](const PrivateKey &seckey){
+            py::gil_scoped_release release;
+            return BasicSchemeMPL().SkToG1(seckey);
+        })
         .def(
             "key_gen",
             [](const py::bytes &b) {
                 std::string str(b);
-                const uint8_t *input =
-                    reinterpret_cast<const uint8_t *>(str.data());
-                const vector<uint8_t> inputVec(input, input + len(b));
+                py::gil_scoped_release release;
+                const vector<uint8_t> inputVec(str.begin(), str.end());
                 return BasicSchemeMPL().KeyGen(inputVec);
             })
         .def("derive_child_sk", [](const PrivateKey& sk, uint32_t index){
+            py::gil_scoped_release release;
             return BasicSchemeMPL().DeriveChildSk(sk, index);
         })
         .def("derive_child_sk_unhardened", [](const PrivateKey& sk, uint32_t index){
+            py::gil_scoped_release release;
             return BasicSchemeMPL().DeriveChildSkUnhardened(sk, index);
         })
         .def("derive_child_pk_unhardened", [](const G1Element& pk, uint32_t index){
+            py::gil_scoped_release release;
             return BasicSchemeMPL().DeriveChildPkUnhardened(pk, index);
         })
         .def("aggregate", [](const vector<G2Element> &signatures) {
+            py::gil_scoped_release release;
             return BasicSchemeMPL().Aggregate(signatures);
         })
         .def(
             "sign",
             [](const PrivateKey &pk, const py::bytes &msg) {
                 std::string s(msg);
+                py::gil_scoped_release release;
                 vector<uint8_t> v(s.begin(), s.end());
                 return BasicSchemeMPL().Sign(pk, v);
             })
@@ -140,7 +142,7 @@ PYBIND11_MODULE(blspy, m)
                const py::bytes &msg,
                const G2Element &sig) {
                 std::string s(msg);
-                // PythonGIL release_lock;
+                py::gil_scoped_release release;
                 vector<uint8_t> v(s.begin(), s.end());
                 return BasicSchemeMPL().Verify(pk, v, sig);
             })
@@ -154,13 +156,14 @@ PYBIND11_MODULE(blspy, m)
                     std::string s(msgs[i]);
                     vecs[i] = vector<uint8_t>(s.begin(), s.end());
                 }
-                // PythonGIL release_lock;
+                py::gil_scoped_release release;
                 return BasicSchemeMPL().AggregateVerify(pks, vecs, sig);
             })
         .def(
             "g2_from_message",
             [](const py::bytes &msg) {
                 const auto msg_str = std::string(msg);
+                py::gil_scoped_release release;
                 const auto msg_bytes = Bytes((const uint8_t *)msg_str.c_str(), msg_str.size());
                 return G2Element::FromMessage(
                     msg_bytes,
@@ -170,33 +173,39 @@ PYBIND11_MODULE(blspy, m)
             });
 
     py::class_<AugSchemeMPL>(m, "AugSchemeMPL")
-        .def("sk_to_g1", [](const PrivateKey &seckey){ return AugSchemeMPL().SkToG1(seckey); })
+        .def("sk_to_g1", [](const PrivateKey &seckey){
+            py::gil_scoped_release release;
+            return AugSchemeMPL().SkToG1(seckey);
+        })
         .def(
             "key_gen",
             [](const py::bytes &b) {
                 std::string str(b);
-                const uint8_t *input =
-                    reinterpret_cast<const uint8_t *>(str.data());
-                const vector<uint8_t> inputVec(input, input + len(b));
+                py::gil_scoped_release release;
+                const vector<uint8_t> inputVec(str.begin(), str.end());
                 return AugSchemeMPL().KeyGen(inputVec);
             })
         .def("derive_child_sk", [](const PrivateKey& sk, uint32_t index){
-            // PythonGIL release_lock;
+            py::gil_scoped_release release;
             return AugSchemeMPL().DeriveChildSk(sk, index);
         })
         .def("derive_child_sk_unhardened", [](const PrivateKey& sk, uint32_t index){
+            py::gil_scoped_release release;
             return AugSchemeMPL().DeriveChildSkUnhardened(sk, index);
         })
         .def("derive_child_pk_unhardened", [](const G1Element& pk, uint32_t index){
+            py::gil_scoped_release release;
             return AugSchemeMPL().DeriveChildPkUnhardened(pk, index);
         })
         .def("aggregate", [](const vector<G2Element>& signatures) {
+            py::gil_scoped_release release;
             return AugSchemeMPL().Aggregate(signatures);
         })
         .def(
             "sign",
             [](const PrivateKey &pk, const py::bytes &msg) {
                 std::string s(msg);
+                py::gil_scoped_release release;
                 vector<uint8_t> v(s.begin(), s.end());
                 return AugSchemeMPL().Sign(pk, v);
             })
@@ -206,6 +215,7 @@ PYBIND11_MODULE(blspy, m)
                const py::bytes &msg,
                const G1Element &prepend_pk) {
                 std::string s(msg);
+                py::gil_scoped_release release;
                 vector<uint8_t> v(s.begin(), s.end());
                 return AugSchemeMPL().Sign(pk, v, prepend_pk);
             })
@@ -215,7 +225,7 @@ PYBIND11_MODULE(blspy, m)
                const py::bytes &msg,
                const G2Element &sig) {
                 std::string s(msg);
-                // PythonGIL release_lock;
+                py::gil_scoped_release release;
                 vector<uint8_t> v(s.begin(), s.end());
                 return AugSchemeMPL().Verify(pk, v, sig);
             })
@@ -229,13 +239,14 @@ PYBIND11_MODULE(blspy, m)
                     std::string s(msgs[i]);
                     vecs[i] = vector<uint8_t>(s.begin(), s.end());
                 }
-                // PythonGIL release_lock;
+                py::gil_scoped_release release;
                 return AugSchemeMPL().AggregateVerify(pks, vecs, sig);
             })
         .def(
             "g2_from_message",
             [](const py::bytes &msg) {
                 const auto msg_str = std::string(msg);
+                py::gil_scoped_release release;
                 const auto msg_bytes = Bytes((const uint8_t *)msg_str.c_str(), msg_str.size());
                 return G2Element::FromMessage(
                     msg_bytes,
@@ -245,32 +256,39 @@ PYBIND11_MODULE(blspy, m)
             });
 
     py::class_<PopSchemeMPL>(m, "PopSchemeMPL")
-        .def("sk_to_g1", [](const PrivateKey &seckey){ return PopSchemeMPL().SkToG1(seckey); })
+        .def("sk_to_g1", [](const PrivateKey &seckey){
+            py::gil_scoped_release release;
+            return PopSchemeMPL().SkToG1(seckey);
+        })
         .def(
             "key_gen",
             [](const py::bytes &b) {
                 std::string str(b);
-                const uint8_t *input =
-                    reinterpret_cast<const uint8_t *>(str.data());
-                const vector<uint8_t> inputVec(input, input + len(b));
+                py::gil_scoped_release release;
+                const vector<uint8_t> inputVec(str.begin(), str.end());
                 return PopSchemeMPL().KeyGen(inputVec);
             })
         .def("derive_child_sk", [](const PrivateKey& sk, uint32_t index){
+            py::gil_scoped_release release;
             return PopSchemeMPL().DeriveChildSk(sk, index);
         })
         .def("derive_child_sk_unhardened", [](const PrivateKey& sk, uint32_t index){
+            py::gil_scoped_release release;
             return PopSchemeMPL().DeriveChildSkUnhardened(sk, index);
         })
         .def("derive_child_pk_unhardened", [](const G1Element& pk, uint32_t index){
+            py::gil_scoped_release release;
             return PopSchemeMPL().DeriveChildPkUnhardened(pk, index);
         })
         .def("aggregate", [](const vector<G2Element>& signatures) {
+            py::gil_scoped_release release;
             return PopSchemeMPL().Aggregate(signatures);
         })
         .def(
             "sign",
             [](const PrivateKey &pk, const py::bytes &msg) {
                 std::string s(msg);
+                py::gil_scoped_release release;
                 vector<uint8_t> v(s.begin(), s.end());
                 return PopSchemeMPL().Sign(pk, v);
             })
@@ -280,7 +298,7 @@ PYBIND11_MODULE(blspy, m)
                const py::bytes &msg,
                const G2Element &sig) {
                 std::string s(msg);
-                // PythonGIL release_lock;
+                py::gil_scoped_release release;
                 vector<uint8_t> v(s.begin(), s.end());
                 return PopSchemeMPL().Verify(pk, v, sig);
             })
@@ -294,13 +312,14 @@ PYBIND11_MODULE(blspy, m)
                     std::string s(msgs[i]);
                     vecs[i] = vector<uint8_t>(s.begin(), s.end());
                 }
-                // PythonGIL release_lock;
+                py::gil_scoped_release release;
                 return PopSchemeMPL().AggregateVerify(pks, vecs, sig);
             })
         .def(
             "g2_from_message",
             [](const py::bytes &msg) {
                 const auto msg_str = std::string(msg);
+                py::gil_scoped_release release;
                 const auto msg_bytes = Bytes((const uint8_t *)msg_str.c_str(), msg_str.size());
                 return G2Element::FromMessage(
                     msg_bytes,
@@ -309,10 +328,11 @@ PYBIND11_MODULE(blspy, m)
                 );
             })
         .def("pop_prove", [](const PrivateKey& privateKey){
+            py::gil_scoped_release release;
             return PopSchemeMPL().PopProve(privateKey);
         })
         .def("pop_verify", [](const G1Element& pubkey, const G2Element& signature){
-            // PythonGIL release_lock;
+            py::gil_scoped_release release;
             return PopSchemeMPL().PopVerify(pubkey, signature);
         })
         .def(
@@ -321,7 +341,7 @@ PYBIND11_MODULE(blspy, m)
                const py::bytes &msg,
                const G2Element &sig) {
                 std::string s(msg);
-                // PythonGIL release_lock;
+                py::gil_scoped_release release;
                 vector<uint8_t> v(s.begin(), s.end());
                 return PopSchemeMPL().FastAggregateVerify(pks, v, sig);
             });
@@ -329,8 +349,11 @@ PYBIND11_MODULE(blspy, m)
     py::class_<G1Element>(m, "G1Element")
         .def_property_readonly_static(
             "SIZE", [](py::object self) { return G1Element::SIZE; })
-        .def(py::init([](){ return G1Element();}))
-        .def(py::init(&G1Element::FromByteVector))
+        .def(py::init([](){
+            py::gil_scoped_release release;
+            return G1Element();
+        }))
+        .def(py::init(&G1Element::FromByteVector), py::call_guard<py::gil_scoped_release>())
         .def(py::init([](py::int_ pyint) {
             std::vector<uint8_t> buffer(G1Element::SIZE, 0);
             if (_PyLong_AsByteArray(
@@ -341,6 +364,7 @@ PYBIND11_MODULE(blspy, m)
                     0) < 0) {
                 throw std::invalid_argument("Failed to cast int to G1Element");
             }
+            py::gil_scoped_release release;
             return G1Element::FromByteVector(buffer);
         }))
         .def(py::init([](py::buffer const b) {
@@ -353,6 +377,7 @@ PYBIND11_MODULE(blspy, m)
                 throw std::invalid_argument(
                     "Length of bytes object not equal to G1Element::SIZE");
             }
+            py::gil_scoped_release release;
             auto data_ptr = static_cast<uint8_t *>(info.ptr);
             std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
             return G1Element::FromByteVector(data);
@@ -369,15 +394,15 @@ PYBIND11_MODULE(blspy, m)
                     throw std::invalid_argument(
                         "Length of bytes object not equal to G1Element::SIZE");
                 }
+                py::gil_scoped_release release;
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                // PythonGIL release_lock;
                 return G1Element::FromBytes(Bytes(data_ptr, G1Element::SIZE));
             })
         .def("generator", &G1Element::Generator)
-        .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G1Element::FromMessage))
-        .def("pair", &G1Element::Pair)
-        .def("negate", &G1Element::Negate)
-        .def("get_fingerprint", &G1Element::GetFingerprint)
+        .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G1Element::FromMessage), py::call_guard<py::gil_scoped_release>())
+        .def("pair", &G1Element::Pair, py::call_guard<py::gil_scoped_release>())
+        .def("negate", &G1Element::Negate, py::call_guard<py::gil_scoped_release>())
+        .def("get_fingerprint", &G1Element::GetFingerprint, py::call_guard<py::gil_scoped_release>())
 
         .def(py::self == py::self)
         .def(py::self != py::self)
@@ -389,29 +414,35 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__add__",
             [](G1Element &self, G1Element &other) {
-                // PythonGIL release_lock;
+                py::gil_scoped_release release;
                 return self + other;
             },
             py::is_operator())
         .def(
             "__mul__",
             [](G1Element &self, bn_t other) {
+                py::gil_scoped_release release;
                 return self * (*(bn_t *)&other);
             },
             py::is_operator())
         .def(
             "__rmul__",
             [](G1Element &self, bn_t other) {
+                py::gil_scoped_release release;
                 return self * (*(bn_t *)&other);
             },
             py::is_operator())
         .def(
             "__and__",
-            [](G1Element &self, G2Element &other) { return self & other; },
+            [](G1Element &self, G2Element &other) {
+                py::gil_scoped_release release;
+                return self & other;
+            },
             py::is_operator())
         .def(
             "__repr__",
             [](const G1Element &ele) {
+                py::gil_scoped_release release;
                 std::stringstream s;
                 s << ele;
                 return "<G1Element " + s.str() + ">";
@@ -419,6 +450,7 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__str__",
             [](const G1Element &ele) {
+                py::gil_scoped_release release;
                 std::stringstream s;
                 s << ele;
                 return s.str();
@@ -427,9 +459,10 @@ PYBIND11_MODULE(blspy, m)
             "__bytes__",
             [](const G1Element &ele) {
                 vector<uint8_t> out;
-                // Py_BEGIN_ALLOW_THREADS
-                out = ele.Serialize();
-                // Py_END_ALLOW_THREADS
+                {
+                    py::gil_scoped_release release;
+                    out = ele.Serialize();
+                }
                 py::bytes ans = py::bytes(
                     reinterpret_cast<const char *>(out.data()), G1Element::SIZE);
                 return ans;
@@ -441,8 +474,10 @@ PYBIND11_MODULE(blspy, m)
     py::class_<G2Element>(m, "G2Element")
         .def_property_readonly_static(
             "SIZE", [](py::object self) { return G2Element::SIZE; })
-        .def(py::init([](){ return G2Element();}))
-        .def(py::init(&G2Element::FromByteVector))
+        .def(py::init([](){
+            return G2Element();
+        }))
+        .def(py::init(&G2Element::FromByteVector), py::call_guard<py::gil_scoped_release>())
         .def(py::init([](py::buffer const b) {
             py::buffer_info info = b.request();
             if (info.format != py::format_descriptor<uint8_t>::format() ||
@@ -453,6 +488,7 @@ PYBIND11_MODULE(blspy, m)
                 throw std::invalid_argument(
                     "Length of bytes object not equal to G2Element::SIZE");
             }
+            py::gil_scoped_release release;
             auto data_ptr = static_cast<uint8_t *>(info.ptr);
             std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
             return G2Element::FromByteVector(data);
@@ -467,6 +503,7 @@ PYBIND11_MODULE(blspy, m)
                     0) < 0) {
                 throw std::invalid_argument("Failed to cast int to G2Element");
             }
+            py::gil_scoped_release release;
             return G2Element::FromByteVector(buffer);
         }))
         .def(
@@ -481,13 +518,14 @@ PYBIND11_MODULE(blspy, m)
                     throw std::invalid_argument(
                         "Length of bytes object not equal to G2Element::SIZE");
                 }
+                py::gil_scoped_release release;
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
                 return G2Element::FromBytes(Bytes(data_ptr, G2Element::SIZE));
             })
         .def("generator", &G2Element::Generator)
-        .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G2Element::FromMessage))
-        .def("pair", &G2Element::Pair)
-        .def("negate", &G2Element::Negate)
+        .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G2Element::FromMessage), py::call_guard<py::gil_scoped_release>())
+        .def("pair", &G2Element::Pair, py::call_guard<py::gil_scoped_release>())
+        .def("negate", &G2Element::Negate, py::call_guard<py::gil_scoped_release>())
         .def(
             "__deepcopy__",
             [](const G2Element &g2, const py::object &memo) {
@@ -498,17 +536,22 @@ PYBIND11_MODULE(blspy, m)
 
         .def(
             "__add__",
-            [](G2Element &self, G2Element &other) { return self + other; },
+            [](G2Element &self, G2Element &other) {
+                py::gil_scoped_release release;
+                return self + other;
+            },
             py::is_operator())
         .def(
             "__mul__",
             [](G2Element &self, bn_t other) {
+                py::gil_scoped_release release;
                 return self * (*(bn_t *)&other);
             },
             py::is_operator())
         .def(
             "__rmul__",
             [](G2Element &self, bn_t other) {
+                py::gil_scoped_release release;
                 return self * (*(bn_t *)&other);
             },
             py::is_operator())
@@ -516,6 +559,7 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__repr__",
             [](const G2Element &ele) {
+                py::gil_scoped_release release;
                 std::stringstream s;
                 s << ele;
                 return "<G2Element " + s.str() + ">";
@@ -523,6 +567,7 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__str__",
             [](const G2Element &ele) {
+                py::gil_scoped_release release;
                 std::stringstream s;
                 s << ele;
                 return s.str();
@@ -530,7 +575,11 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__bytes__",
             [](const G2Element &ele) {
-                vector<uint8_t> out = ele.Serialize();
+                vector<uint8_t> out;
+                {
+                    py::gil_scoped_release release;
+                    out = ele.Serialize();
+                }
                 py::bytes ans = py::bytes(
                     reinterpret_cast<const char *>(out.data()), G2Element::SIZE);
                 return ans;
@@ -542,7 +591,7 @@ PYBIND11_MODULE(blspy, m)
     py::class_<GTElement>(m, "GTElement")
         .def_property_readonly_static(
             "SIZE", [](py::object self) { return GTElement::SIZE; })
-        .def(py::init(&GTElement::FromByteVector))
+        .def(py::init(&GTElement::FromByteVector), py::call_guard<py::gil_scoped_release>())
         .def(py::init([](py::buffer const b) {
             py::buffer_info info = b.request();
             if (info.format != py::format_descriptor<uint8_t>::format() ||
@@ -553,6 +602,7 @@ PYBIND11_MODULE(blspy, m)
                 throw std::invalid_argument(
                     "Length of bytes object not equal to G2Element::SIZE");
             }
+            py::gil_scoped_release release;
             auto data_ptr = static_cast<uint8_t *>(info.ptr);
             std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
             return GTElement::FromByteVector(data);
@@ -567,6 +617,7 @@ PYBIND11_MODULE(blspy, m)
                     0) < 0) {
                 throw std::invalid_argument("Failed to cast int to GTElement");
             }
+            py::gil_scoped_release release;
             return GTElement::FromByteVector(buffer);
         }))
         .def(
@@ -581,6 +632,7 @@ PYBIND11_MODULE(blspy, m)
                     throw std::invalid_argument(
                         "Length of bytes object not equal to GTElement::SIZE");
                 }
+                py::gil_scoped_release release;
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
                 return GTElement::FromBytes(Bytes(data_ptr, GTElement::SIZE));
             })
@@ -595,6 +647,7 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__repr__",
             [](const GTElement &ele) {
+                py::gil_scoped_release release;
                 std::stringstream s;
                 s << ele;
                 return "<GTElement " + s.str() + ">";
@@ -602,6 +655,7 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__str__",
             [](const GTElement &ele) {
+                py::gil_scoped_release release;
                 std::stringstream s;
                 s << ele;
                 return s.str();
@@ -610,7 +664,10 @@ PYBIND11_MODULE(blspy, m)
             "__bytes__",
             [](const GTElement &ele) {
                 uint8_t *out = new uint8_t[GTElement::SIZE];
-                ele.Serialize(out);
+                {
+                    py::gil_scoped_release release;
+                    ele.Serialize(out);
+                }
                 py::bytes ans =
                     py::bytes(reinterpret_cast<char *>(out), GTElement::SIZE);
                 delete[] out;
@@ -619,6 +676,7 @@ PYBIND11_MODULE(blspy, m)
         .def(
             "__mul__",
             [](GTElement &self, GTElement &other) {
+                py::gil_scoped_release release;
                 return self * other;
             },
             py::is_operator())
