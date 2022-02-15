@@ -14,10 +14,11 @@
 // limitations under the License.
 
 #define CATCH_CONFIG_RUNNER
+#include <catch2/catch.hpp>
+
 #include <thread>
 
 #include "bls.hpp"
-#include "catch.hpp"
 extern "C" {
 #include "relic.h"
 }

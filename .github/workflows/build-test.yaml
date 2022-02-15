@@ -1,6 +1,14 @@
 name:  Build and Test C++, Javascript, and Python
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   build_wheels:
@@ -10,12 +18,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-latest, ubuntu-latest]
-        python: ['3.7', '3.8', '3.9']
+        python: ['3.7', '3.8', '3.9', '3.10']
 
     steps:
     - name: Cancel previous runs on the same branch
       if: ${{ github.ref != 'refs/heads/main' }}
-      uses: styfle/cancel-workflow-action@0.7.0
+      uses: styfle/cancel-workflow-action@0.9.1
       with:
         access_token: ${{ github.token }}
 

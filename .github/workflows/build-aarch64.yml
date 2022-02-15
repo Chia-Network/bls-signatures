@@ -1,6 +1,14 @@
 name: Build ARM64 wheel
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '**'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   build_wheels:
@@ -14,7 +22,7 @@ jobs:
     steps:
     - name: Cancel previous runs on the same branch
       if: ${{ github.ref != 'refs/heads/main' }}
-      uses: styfle/cancel-workflow-action@0.7.0
+      uses: styfle/cancel-workflow-action@0.9.1
       with:
         access_token: ${{ github.token }}
 
@@ -30,7 +38,7 @@ jobs:
         python3 -m venv venv
         source venv/bin/activate
         python -m pip install --upgrade pip
-        python -m pip install cibuildwheel==1.10.0
+        python -m pip install cibuildwheel==2.3.1
 
     - name: Lint source with flake8
       run: |
@@ -49,8 +57,8 @@ jobs:
         source venv/bin/activate
         python -m cibuildwheel --output-dir dist
       env:
-        # build python 3.7 and 3.8
-        CIBW_BUILD: cp37-* cp38-* cp39-*
+        CIBW_BUILD: cp37-* cp38-* cp39-* cp310-*
+        CIBW_SKIP: '*-musllinux_*'
         CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
         CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_BEFORE_BUILD_LINUX: >
