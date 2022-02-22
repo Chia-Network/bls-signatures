@@ -371,6 +371,47 @@ def test_chia_vectors_1():
     )
 
 
+def test_chia_vectors_2():
+    msg1 = bytes([1, 2, 3, 40])
+    msg2 = bytes([5, 6, 70, 201])
+    msg3 = bytes([9, 10, 11, 12, 13])
+    msg4 = bytes([15, 63, 244, 92, 0, 1])
+
+    seed1 = bytes([0x02] * 32)
+    seed2 = bytes([0x03] * 32)
+
+    sk1 = AugSchemeMPL.key_gen(seed1)
+    sk2 = AugSchemeMPL.key_gen(seed2)
+
+    pk1 = sk1.get_g1()
+    pk2 = sk2.get_g1()
+
+    sig1 = AugSchemeMPL.sign(sk1, msg1)
+    sig2 = AugSchemeMPL.sign(sk2, msg2)
+    sig3 = AugSchemeMPL.sign(sk2, msg1)
+    sig4 = AugSchemeMPL.sign(sk1, msg3)
+    sig5 = AugSchemeMPL.sign(sk1, msg1)
+    sig6 = AugSchemeMPL.sign(sk1, msg4)
+
+    agg_sig_l = AugSchemeMPL.aggregate([sig1, sig2])
+    agg_sig_r = AugSchemeMPL.aggregate([sig3, sig4, sig5])
+    agg_sig = AugSchemeMPL.aggregate([agg_sig_l, agg_sig_r, sig6])
+
+    assert (
+        AugSchemeMPL.aggregate_verify(
+            [pk1, pk2, pk2, pk1, pk1, pk1], [msg1, msg2, msg1, msg3, msg1, msg4], agg_sig
+        )
+        == True
+    )
+
+    assert (
+        bytes(agg_sig).hex()
+        == "a1d5360dcb418d33b29b90b912b4accde535cf0e52caf467a005dc632d9f7af44b6c4e9acd4"
+        "6eac218b28cdb07a3e3bc087df1cd1e3213aa4e11322a3ff3847bbba0b2fd19ddc25ca964871"
+        "997b9bceeab37a4c2565876da19382ea32a962200"
+    )
+
+
 def test_chia_vectors_3():
     seed1: bytes = bytes([0x04] * 32)
     sk1 = PopSchemeMPL.key_gen(seed1)
@@ -619,6 +660,7 @@ test_swu()
 test_edge_case_sign_Fq2()
 test_elements()
 test_chia_vectors_1()
+test_chia_vectors_2()
 test_chia_vectors_3()
 test_pyecc_vectors()
 test_vectors_invalid()
