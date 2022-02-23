@@ -397,16 +397,12 @@ def test_chia_vectors_2():
     agg_sig_r = AugSchemeMPL.aggregate([sig3, sig4, sig5])
     agg_sig = AugSchemeMPL.aggregate([agg_sig_l, agg_sig_r, sig6])
 
-    assert (
-        AugSchemeMPL.aggregate_verify(
-            [pk1, pk2, pk2, pk1, pk1, pk1], [msg1, msg2, msg1, msg3, msg1, msg4], agg_sig
-        )
-        == True
+    assert AugSchemeMPL.aggregate_verify(
+        [pk1, pk2, pk2, pk1, pk1, pk1], [msg1, msg2, msg1, msg3, msg1, msg4], agg_sig
     )
 
-    assert (
-        bytes(agg_sig).hex()
-        == "a1d5360dcb418d33b29b90b912b4accde535cf0e52caf467a005dc632d9f7af44b6c4e9acd4"
+    assert bytes(agg_sig).hex() == (
+        "a1d5360dcb418d33b29b90b912b4accde535cf0e52caf467a005dc632d9f7af44b6c4e9acd4"
         "6eac218b28cdb07a3e3bc087df1cd1e3213aa4e11322a3ff3847bbba0b2fd19ddc25ca964871"
         "997b9bceeab37a4c2565876da19382ea32a962200"
     )
