@@ -58,7 +58,8 @@ FetchContent_Declare(
 
 # Relic related options
 
-set(STBIN TRUE)
+set(STBIN "off" CACHE STRING "Relic - Build static binaries")
+
 find_package(gmp)
 if (GMP_FOUND)
   message(STATUS "Found libgmp")
@@ -105,8 +106,6 @@ else()
   set(SEED "UDEV" CACHE STRING "")
   set(FP_QNRES "on" CACHE STRING "")
 endif()
-
-set(STBIN "OFF" CACHE STRING "")
 
 set(FP_METHD "INTEG;INTEG;INTEG;MONTY;LOWER;SLIDE" CACHE STRING "")
 
