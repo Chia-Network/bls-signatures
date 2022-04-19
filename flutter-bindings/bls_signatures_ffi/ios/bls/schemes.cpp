@@ -14,7 +14,7 @@
 
 #include <vector>
 
-#include "../../../src/bls.hpp"
+#include "../../../../src/bls.hpp"
 #include "blschia.h"
 #include "elements.h"
 #include "error.h"
