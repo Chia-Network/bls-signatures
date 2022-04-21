@@ -13,19 +13,24 @@
 #pragma once
 
 #include <vector>
-#include "../../../../src/bls.hpp"
-#include "privatekey.h"
+
+#include "chiabls/bls.hpp"
 #include "elements.h"
+#include "privatekey.h"
 
 // helper functions
 template <class T>
-std::vector<T> toBLSVector(void** elems, const size_t len) {
+std::vector<T> toBLSVector(void** elems, const size_t len)
+{
     std::vector<T> vec;
-    for (int i = 0 ; i < len; ++i) {
+    for (int i = 0; i < len; ++i) {
         const T* el = (T*)elems[i];
         vec.push_back(*el);
     }
     return vec;
 }
 
-std::vector<bls::Bytes> toVectorBytes(void** elems, const size_t len, const std::vector<size_t> vecElemsLens);
+std::vector<bls::Bytes> toVectorBytes(
+    void** elems,
+    const size_t len,
+    const std::vector<size_t> vecElemsLens);

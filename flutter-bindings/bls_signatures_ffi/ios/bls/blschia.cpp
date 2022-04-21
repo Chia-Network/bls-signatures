@@ -16,7 +16,7 @@
 
 #include <string>
 
-#include "../../../../src/bls.hpp"
+#include "chiabls/bls.hpp"
 #include "error.h"
 
 std::string fErrMsg;

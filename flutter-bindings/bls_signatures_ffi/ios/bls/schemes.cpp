@@ -14,8 +14,8 @@
 
 #include <vector>
 
-#include "../../../../src/bls.hpp"
 #include "blschia.h"
+#include "chiabls/bls.hpp"
 #include "elements.h"
 #include "error.h"
 #include "privatekey.h"
