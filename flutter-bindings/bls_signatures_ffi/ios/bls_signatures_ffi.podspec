@@ -27,7 +27,7 @@ A new flutter plugin project.
     'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386 arm64',
     'EXCLUDED_ARCHS[sdk=iphoneos*]' => 'armv7',
     'LIBRARY_SEARCH_PATH' => '$(inherited)',
-    'HEADER_SEARCH_PATHS' => '$(SRCROOT)/bls/install/include',
+    'HEADER_SEARCH_PATHS' => '$(SRCROOT)/bls/install/include/chiabls',
     'OTHER_LDFLAGS' => '-L$(SRCROOT)/bls/install/lib -lbls -lrelic_s -lsodium'
   }
   s.swift_version = '5.0'
@@ -47,7 +47,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(bls)
 install(FILES $<TARGET_FILE:sodium> DESTINATION lib)
 EOF
-      cmake -G Xcode -B build -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_Swift_COMPILER_FORCED=true -DCMAKE_OSX_DEPLOYMENT_TARGET=10.0 -DCMAKE_INSTALL_PREFIX=`pwd`/install -DBUILD_BLS_FLUTTER_BINDINGS=1
+      cmake -G Xcode -B build -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_Swift_COMPILER_FORCED=true -DCMAKE_OSX_DEPLOYMENT_TARGET=10.0 -DCMAKE_INSTALL_PREFIX=`pwd`/install -DBUILD_BLS_FLUTTER_BINDINGS=1 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0
       cmake --build build --config Release --target install
     ', 
     :execution_position => :before_compile

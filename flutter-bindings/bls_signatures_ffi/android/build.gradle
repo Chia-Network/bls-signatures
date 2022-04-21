@@ -44,7 +44,7 @@ android {
         minSdkVersion 16
         externalNativeBuild {
             cmake {
-                arguments "-DBUILD_BLS_FLUTTER_BINDINGS=1"
+                arguments "-DBUILD_BLS_FLUTTER_BINDINGS=1 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0"
             }
         }
     }
