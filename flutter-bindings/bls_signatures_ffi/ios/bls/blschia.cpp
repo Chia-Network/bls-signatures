@@ -16,7 +16,7 @@
 
 #include <string>
 
-#include "chiabls/bls.hpp"
+#include "bls.hpp"
 #include "error.h"
 
 std::string fErrMsg;

@@ -14,8 +14,8 @@
 
 #include <vector>
 
+#include "bls.hpp"
 #include "blschia.h"
-#include "chiabls/bls.hpp"
 #include "error.h"
 #include "utils.hpp"
 

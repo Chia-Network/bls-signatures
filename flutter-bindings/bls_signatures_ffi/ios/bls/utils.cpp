@@ -12,7 +12,7 @@
 
 #include <vector>
 
-#include "chiabls/bls.hpp"
+#include "bls.hpp"
 #include "elements.h"
 #include "privatekey.h"
 
