@@ -83,7 +83,7 @@ endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(TIMER "ANSI" CACHE STRING "")
-  set(MULTI "" CACHE STRING "")
+  set(MULTI "OPENMP" CACHE STRING "")
 else()
   set(TIMER "CYCLE" CACHE STRING "")
   set(MULTI "PTHREAD" CACHE STRING "")
