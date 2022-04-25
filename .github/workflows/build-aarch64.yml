@@ -17,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ARM64]
+        os: [[ARM64, Linux]]
 
     steps:
     - name: Cancel previous runs on the same branch
