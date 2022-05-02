@@ -58,9 +58,7 @@ jobs:
       with:
         output-dir: dist
       env:
-        CIBW_BUILD_VERBOSITY_MACOS: 0
-        CIBW_BUILD_VERBOSITY_LINUX: 0
-        CIBW_BUILD_VERBOSITY_WINDOWS: 0
+        CIBW_BUILD_VERBOSITY: 1
         CIBW_BUILD: cp37-* cp38-* cp39-* cp310-*
         CIBW_SKIP: '*-manylinux_i686 *-win32 *-musllinux_*'
         CIBW_TEST_REQUIRES: pytest
