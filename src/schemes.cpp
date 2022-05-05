@@ -461,6 +461,8 @@ bool PopSchemeMPL::PopVerify(const G1Element &pubkey, const G2Element &signature
     g1_t g1s[2];
     g2_t g2s[2];
 
+    pubkey.CheckValid();
+    signature_proof.CheckValid();
     G1Element::Generator().Negate().ToNative(g1s[0]);
     pubkey.ToNative(g1s[1]);
     signature_proof.ToNative(g2s[0]);
