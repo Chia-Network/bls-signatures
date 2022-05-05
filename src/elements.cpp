@@ -20,7 +20,13 @@ namespace bls {
 
 const size_t G1Element::SIZE;
 
-G1Element G1Element::FromBytes(const Bytes& bytes)
+G1Element G1Element::FromBytes(const Bytes& bytes) {
+    G1Element ele = G1Element::FromBytesUnchecked(bytes);
+    ele.CheckValid();
+    return ele;
+}
+
+G1Element G1Element::FromBytesUnchecked(const Bytes& bytes)
 {
     if (bytes.size() != SIZE) {
         throw std::invalid_argument("G1Element::FromBytes: Invalid size");
@@ -59,7 +65,6 @@ G1Element G1Element::FromBytes(const Bytes& bytes)
     }
     g1_read_bin(ele.p, buffer, G1Element::SIZE + 1);
     BLS::CheckRelicErrors();
-    ele.CheckValid();
     return ele;
 }
 
@@ -68,11 +73,15 @@ G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
     return G1Element::FromBytes(Bytes(bytevec));
 }
 
+G1Element G1Element::FromByteVectorUnchecked(const std::vector<uint8_t>& bytevec)
+{
+    return G1Element::FromBytesUnchecked(Bytes(bytevec));
+}
+
 G1Element G1Element::FromNative(const g1_t element)
 {
     G1Element ele;
     g1_copy(ele.p, element);
-    ele.CheckValid();
     return ele;
 }
 
@@ -203,7 +212,13 @@ G1Element operator*(const bn_t& k, const G1Element& a) { return a * k; }
 
 const size_t G2Element::SIZE;
 
-G2Element G2Element::FromBytes(const Bytes& bytes)
+G2Element G2Element::FromBytes(const Bytes& bytes) {
+    G2Element ele = G2Element::FromBytesUnchecked(bytes);
+    ele.CheckValid();
+    return ele;
+}
+
+G2Element G2Element::FromBytesUnchecked(const Bytes& bytes)
 {
     if (bytes.size() != SIZE) {
         throw std::invalid_argument("G2Element::FromBytes: Invalid size");
@@ -247,7 +262,6 @@ G2Element G2Element::FromBytes(const Bytes& bytes)
 
     g2_read_bin(ele.q, buffer, G2Element::SIZE + 1);
     BLS::CheckRelicErrors();
-    ele.CheckValid();
     return ele;
 }
 
@@ -256,11 +270,16 @@ G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
     return G2Element::FromBytes(Bytes(bytevec));
 }
 
+G2Element G2Element::FromByteVectorUnchecked(const std::vector<uint8_t>& bytevec)
+{
+    return G2Element::FromBytesUnchecked(Bytes(bytevec));
+}
+
+
 G2Element G2Element::FromNative(const g2_t element)
 {
     G2Element ele;
     g2_copy(ele.q, (g2_st*)element);
-    ele.CheckValid();
     return ele;
 }
 
