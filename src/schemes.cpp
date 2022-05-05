@@ -107,6 +107,8 @@ bool CoreMPL::Verify(const G1Element& pubkey, const Bytes& message, const G2Elem
     std::vector<g2_st> vecG2(2);
 
     G1Element::Generator().Negate().ToNative(&vecG1[0]);
+    pubkey.CheckValid();
+    signature.CheckValid();
     pubkey.ToNative(&vecG1[1]);
     signature.ToNative(&vecG2[0]);
     hashedPoint.ToNative(&vecG2[1]);
@@ -197,9 +199,11 @@ bool CoreMPL::AggregateVerify(const vector<G1Element>& pubkeys,
     std::vector<g1_st> vecG1(nPubKeys + 1);
     std::vector<g2_st> vecG2(nPubKeys + 1);
     G1Element::Generator().Negate().ToNative(&vecG1[0]);
+    signature.CheckValid();
     signature.ToNative(&vecG2[0]);
 
     for (size_t i = 0; i < nPubKeys; ++i) {
+        pubkeys[i].CheckValid();
         pubkeys[i].ToNative(&vecG1[i + 1]);
         G2Element::FromMessage(messages[i], (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length()).ToNative(&vecG2[i + 1]);
     }

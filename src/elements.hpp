@@ -41,7 +41,9 @@ public:
     }
 
     static G1Element FromBytes(const Bytes& bytes);
+    static G1Element FromBytesUnchecked(const Bytes& bytes);
     static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
+    static G1Element FromByteVectorUnchecked(const std::vector<uint8_t> &bytevec);
     static G1Element FromNative(const g1_t element);
     static G1Element FromMessage(const std::vector<uint8_t> &message,
                                  const uint8_t *dst,
@@ -81,7 +83,9 @@ public:
     }
 
     static G2Element FromBytes(const Bytes& bytes);
+    static G2Element FromBytesUnchecked(const Bytes& bytes);
     static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
+    static G2Element FromByteVectorUnchecked(const std::vector<uint8_t> &bytevec);
     static G2Element FromNative(const g2_t element);
     static G2Element FromMessage(const std::vector<uint8_t>& message,
                                  const uint8_t* dst,
