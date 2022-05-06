@@ -355,6 +355,7 @@ PYBIND11_MODULE(blspy, m)
             return G1Element();
         }))
         .def(py::init(&G1Element::FromByteVector), py::call_guard<py::gil_scoped_release>())
+        .def(py::init(&G1Element::FromByteVectorUnchecked), py::call_guard<py::gil_scoped_release>())
         .def(py::init([](py::int_ pyint) {
             std::vector<uint8_t> buffer(G1Element::SIZE, 0);
             if (_PyLong_AsByteArray(
@@ -399,6 +400,23 @@ PYBIND11_MODULE(blspy, m)
                 std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
                 py::gil_scoped_release release;
                 return G1Element::FromByteVector(data);
+            })
+        .def(
+            "from_bytes_unchecked",
+            [](py::buffer const b) {
+              py::buffer_info info = b.request();
+              if (info.format != py::format_descriptor<uint8_t>::format() ||
+                  info.ndim != 1)
+                  throw std::runtime_error("Incompatible buffer format!");
+
+              if ((int)info.size != G1Element::SIZE) {
+                  throw std::invalid_argument(
+                      "Length of bytes object not equal to G1Element::SIZE");
+              }
+              auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
+              std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+              py::gil_scoped_release release;
+              return G1Element::FromByteVectorUnchecked(data);
             })
         .def("generator", &G1Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G1Element::FromMessage), py::call_guard<py::gil_scoped_release>())
@@ -480,6 +498,7 @@ PYBIND11_MODULE(blspy, m)
             return G2Element();
         }))
         .def(py::init(&G2Element::FromByteVector), py::call_guard<py::gil_scoped_release>())
+        .def(py::init(&G2Element::FromByteVectorUnchecked), py::call_guard<py::gil_scoped_release>())
         .def(py::init([](py::buffer const b) {
             py::buffer_info info = b.request();
             if (info.format != py::format_descriptor<uint8_t>::format() ||
@@ -524,6 +543,23 @@ PYBIND11_MODULE(blspy, m)
                 std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
                 py::gil_scoped_release release;
                 return G2Element::FromByteVector(data);
+            })
+        .def(
+            "from_bytes_unchecked",
+            [](py::buffer const b) {
+              py::buffer_info info = b.request();
+              if (info.format != py::format_descriptor<uint8_t>::format() ||
+                  info.ndim != 1)
+                  throw std::runtime_error("Incompatible buffer format!");
+
+              if ((int)info.size != G2Element::SIZE) {
+                  throw std::invalid_argument(
+                      "Length of bytes object not equal to G2Element::SIZE");
+              }
+              auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
+              std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+              py::gil_scoped_release release;
+              return G2Element::FromByteVector(data);
             })
         .def("generator", &G2Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G2Element::FromMessage), py::call_guard<py::gil_scoped_release>())
