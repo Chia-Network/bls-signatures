@@ -20,6 +20,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <array>
 
 namespace bls {
 
@@ -30,12 +31,17 @@ class Bytes {
     const size_t nSize;
 
 public:
-    explicit Bytes(const uint8_t* pDataIn, const size_t nSizeIn)
+    Bytes(const uint8_t* pDataIn, const size_t nSizeIn)
         : pData(pDataIn), nSize(nSizeIn)
     {
     }
-    explicit Bytes(const std::vector<uint8_t>& vecBytes)
+    Bytes(const std::vector<uint8_t>& vecBytes)
         : pData(vecBytes.data()), nSize(vecBytes.size())
+    {
+    }
+    template <size_t N>
+    Bytes(const std::array<uint8_t, N>& a)
+        : pData(a.data()), nSize(N)
     {
     }
 
