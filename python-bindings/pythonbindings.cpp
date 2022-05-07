@@ -24,7 +24,6 @@
 
 namespace py = pybind11;
 using namespace bls;
-using std::vector;
 
 
 PYBIND11_MODULE(blspy, m)
@@ -46,9 +45,10 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to PrivateKey::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+                std::array<uint8_t, PrivateKey::PRIVATE_KEY_SIZE> data;
+                std::copy(data_ptr, data_ptr + PrivateKey::PRIVATE_KEY_SIZE, data.data());
                 py::gil_scoped_release release;
-                return PrivateKey::FromByteVector(data);
+                return PrivateKey::FromBytes(data);
             })
         .def(
             "__bytes__",
@@ -355,9 +355,8 @@ PYBIND11_MODULE(blspy, m)
             return G1Element();
         }))
         .def(py::init(&G1Element::FromByteVector), py::call_guard<py::gil_scoped_release>())
-        .def(py::init(&G1Element::FromByteVectorUnchecked), py::call_guard<py::gil_scoped_release>())
         .def(py::init([](py::int_ pyint) {
-            std::vector<uint8_t> buffer(G1Element::SIZE, 0);
+            std::array<uint8_t, G1Element::SIZE> buffer{};
             if (_PyLong_AsByteArray(
                     (PyLongObject *)pyint.ptr(),
                     buffer.data(),
@@ -367,7 +366,7 @@ PYBIND11_MODULE(blspy, m)
                 throw std::invalid_argument("Failed to cast int to G1Element");
             }
             py::gil_scoped_release release;
-            return G1Element::FromByteVector(buffer);
+            return G1Element::FromBytes(buffer);
         }))
         .def(py::init([](py::buffer const b) {
             py::buffer_info info = b.request();
@@ -380,9 +379,10 @@ PYBIND11_MODULE(blspy, m)
                     "Length of bytes object not equal to G1Element::SIZE");
             }
             auto data_ptr = static_cast<uint8_t *>(info.ptr);
-            std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+            std::array<uint8_t, G1Element::SIZE> data;
+            std::copy(data_ptr, data_ptr + G1Element::SIZE, data.data());
             py::gil_scoped_release release;
-            return G1Element::FromByteVector(data);
+            return G1Element::FromBytes(data);
         }))
         .def(
             "from_bytes",
@@ -397,9 +397,10 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to G1Element::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+                std::array<uint8_t, G1Element::SIZE> data;
+                std::copy(data_ptr, data_ptr + G1Element::SIZE, data.data());
                 py::gil_scoped_release release;
-                return G1Element::FromByteVector(data);
+                return G1Element::FromBytes(data);
             })
         .def(
             "from_bytes_unchecked",
@@ -414,9 +415,7 @@ PYBIND11_MODULE(blspy, m)
                       "Length of bytes object not equal to G1Element::SIZE");
               }
               auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-              std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
-              py::gil_scoped_release release;
-              return G1Element::FromByteVectorUnchecked(data);
+              return G1Element::FromBytesUnchecked({data_ptr, G1Element::SIZE});
             })
         .def("generator", &G1Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G1Element::FromMessage), py::call_guard<py::gil_scoped_release>())
@@ -498,7 +497,6 @@ PYBIND11_MODULE(blspy, m)
             return G2Element();
         }))
         .def(py::init(&G2Element::FromByteVector), py::call_guard<py::gil_scoped_release>())
-        .def(py::init(&G2Element::FromByteVectorUnchecked), py::call_guard<py::gil_scoped_release>())
         .def(py::init([](py::buffer const b) {
             py::buffer_info info = b.request();
             if (info.format != py::format_descriptor<uint8_t>::format() ||
@@ -510,12 +508,13 @@ PYBIND11_MODULE(blspy, m)
                     "Length of bytes object not equal to G2Element::SIZE");
             }
             auto data_ptr = static_cast<uint8_t *>(info.ptr);
-            std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+            std::array<uint8_t, G2Element::SIZE> data;
+            std::copy(data_ptr, data_ptr + G2Element::SIZE, data.data());
             py::gil_scoped_release release;
-            return G2Element::FromByteVector(data);
+            return G2Element::FromBytes(data);
         }))
         .def(py::init([](py::int_ pyint) {
-            std::vector<uint8_t> buffer(G2Element::SIZE, 0);
+            std::array<uint8_t, G2Element::SIZE> buffer{};
             if (_PyLong_AsByteArray(
                     (PyLongObject *)pyint.ptr(),
                     buffer.data(),
@@ -525,7 +524,7 @@ PYBIND11_MODULE(blspy, m)
                 throw std::invalid_argument("Failed to cast int to G2Element");
             }
             py::gil_scoped_release release;
-            return G2Element::FromByteVector(buffer);
+            return G2Element::FromBytes(buffer);
         }))
         .def(
             "from_bytes",
@@ -540,9 +539,10 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to G2Element::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+                std::array<uint8_t, G2Element::SIZE> data;
+                std::copy(data_ptr, data_ptr + G2Element::SIZE, data.data());
                 py::gil_scoped_release release;
-                return G2Element::FromByteVector(data);
+                return G2Element::FromBytes(data);
             })
         .def(
             "from_bytes_unchecked",
@@ -557,9 +557,7 @@ PYBIND11_MODULE(blspy, m)
                       "Length of bytes object not equal to G2Element::SIZE");
               }
               auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-              std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
-              py::gil_scoped_release release;
-              return G2Element::FromByteVector(data);
+              return G2Element::FromBytesUnchecked({data_ptr, G2Element::SIZE});
             })
         .def("generator", &G2Element::Generator)
         .def("from_message", py::overload_cast<const std::vector<uint8_t>&, const uint8_t*, int>(&G2Element::FromMessage), py::call_guard<py::gil_scoped_release>())
@@ -642,12 +640,13 @@ PYBIND11_MODULE(blspy, m)
                     "Length of bytes object not equal to G2Element::SIZE");
             }
             auto data_ptr = static_cast<uint8_t *>(info.ptr);
-            std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+            std::array<uint8_t, GTElement::SIZE> data;
+            std::copy(data_ptr, data_ptr + GTElement::SIZE, data.data());
             py::gil_scoped_release release;
-            return GTElement::FromByteVector(data);
+            return GTElement::FromBytes(data);
         }))
         .def(py::init([](py::int_ pyint) {
-            std::vector<uint8_t> buffer(GTElement::SIZE, 0);
+            std::array<uint8_t, G1Element::SIZE> buffer{};
             if (_PyLong_AsByteArray(
                     (PyLongObject *)pyint.ptr(),
                     buffer.data(),
@@ -657,7 +656,7 @@ PYBIND11_MODULE(blspy, m)
                 throw std::invalid_argument("Failed to cast int to GTElement");
             }
             py::gil_scoped_release release;
-            return GTElement::FromByteVector(buffer);
+            return GTElement::FromBytes(buffer);
         }))
         .def(
             "from_bytes",
@@ -672,9 +671,10 @@ PYBIND11_MODULE(blspy, m)
                         "Length of bytes object not equal to GTElement::SIZE");
                 }
                 auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
-                std::vector<uint8_t> data(data_ptr, data_ptr + info.size);
+                std::array<uint8_t, GTElement::SIZE> data;
+                std::copy(data_ptr, data_ptr + GTElement::SIZE, data.data());
                 py::gil_scoped_release release;
-                return GTElement::FromByteVector(data);
+                return GTElement::FromBytes(data);
             })
         .def("unity", &GTElement::Unity)
         .def(py::self == py::self)
