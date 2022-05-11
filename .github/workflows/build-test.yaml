@@ -33,7 +33,7 @@ jobs:
     - uses: actions/setup-python@v2
       name: Install Python
       with:
-        python-version: ${{ matrix.python }}
+        python-version: ${{ format('{0}.0-alpha - {0}.X', matrix.python) }}
 
     - name: Ubuntu build C++ and test with valgrind
       if: startsWith(matrix.os, 'ubuntu')
