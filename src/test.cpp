@@ -13,8 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#define CATCH_CONFIG_RUNNER
-#include <catch2/catch.hpp>
+#include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_session.hpp>
 
 #include <thread>
 
@@ -1180,6 +1180,61 @@ TEST_CASE("Schemes") {
             PopSchemeMPL().FastAggregateVerify({pk1, pk2}, msg1, aggsig_same));
         REQUIRE(PopSchemeMPL().FastAggregateVerify(
             {pk1v, pk2v}, msg1, aggsigv_same));
+    }
+}
+
+TEST_CASE("CheckValid")
+{
+    SECTION("Valid points should succeed") {
+        vector<uint8_t> seed(32, 0x05);
+        vector<uint8_t> msg1 = {10, 11, 12};
+
+        PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
+        G1Element pk1 = BasicSchemeMPL().SkToG1(sk1);
+        pk1.CheckValid();
+
+        G2Element sig1 = AugSchemeMPL().Sign(sk1, msg1);
+        sig1.CheckValid();
+    }
+
+    SECTION("Invalid G1 points should not succeed")
+    {
+        string badPointHex =
+            "8d5d0fb73b9c92df4eab4216e48c3e358578b4cc30f82c268bd6fef3bd34b558628daf1afef798d4c3b0fcd8b28c8973";
+
+        // FromBytes throws
+        REQUIRE_THROWS(
+            G1Element::FromBytes(Bytes(Util::HexToBytes(badPointHex))));
+
+        // FromBytesUnchecked does not throw
+        G1Element pk =
+            G1Element::FromBytesUnchecked(Bytes(Util::HexToBytes(badPointHex)));
+        REQUIRE(pk.IsValid() == false);
+        REQUIRE_THROWS(pk.CheckValid());
+
+        vector<uint8_t> seed(32, 0x05);
+        vector<uint8_t> msg1 = {10, 11, 12};
+        PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
+        G1Element pk1 = BasicSchemeMPL().SkToG1(sk1);
+        G2Element sig1 = AugSchemeMPL().Sign(sk1, msg1);
+        REQUIRE(AugSchemeMPL().Verify(pk, msg1, sig1) == false);
+    }
+
+    SECTION("Invalid G2 points should not succeed") {
+        g2_t point_native;
+        g2_set_infty(point_native);
+        fp2_rand(point_native->x);
+        fp2_rand(point_native->y);
+        fp2_rand(point_native->z);
+
+        G2Element point = G2Element::FromNative(point_native);
+        REQUIRE(point.IsValid() == false);
+        REQUIRE_THROWS(point.CheckValid());
+
+        auto badSer = point.Serialize();
+        std::cout <<Util::HexStr(badSer) << std::endl;
+
+        REQUIRE_THROWS(G2Element::FromByteVector(badSer));
     }
 }
 

@@ -1,5 +1,6 @@
 # flake8: noqa: E501
 import binascii
+import time
 from copy import deepcopy
 
 from blspy import (
@@ -335,11 +336,46 @@ def test_aggregate_verify_zero_items():
     assert AugSchemeMPL.aggregate_verify([], [], G2Element())
 
 
+def test_invalid_points():
+    sk1 = BasicSchemeMPL.key_gen(b"1" *32)
+    good_point = sk1.get_g1()
+    good_point_bytes = bytes(good_point)
+    start = time.time()
+    for i in range(2000):
+        gp1 = G1Element.from_bytes(good_point_bytes)
+    print(f"from_bytes avg: {(time.time() - start) }")
+
+    start = time.time()
+    for i in range(2000):
+        gp2 = G1Element.from_bytes_unchecked(good_point_bytes)
+    print(f"from_bytes_unchecked avg: {(time.time() - start) }")
+    assert gp1 == gp2
+
+    bad_point_hex: str = "8d5d0fb73b9c92df4eab4216e48c3e358578b4cc30f82c268bd6fef3bd34b558628daf1afef798d4c3b0fcd8b28c8973";
+    try:
+        G1Element.from_bytes(bytes.fromhex(bad_point_hex))
+        assert False
+    except ValueError:
+        pass
+
+    p: G1Element = G1Element.from_bytes_unchecked(bytes.fromhex(bad_point_hex))
+
+    bad_g2_point_hex = "8f2886c94eaeac335c8414cbf14c16681b225380cfee3293becc4531d5b415984b4ea4050d9ecda11fbc21c60627e9d212dfcb17d2b5ae399aa3fbcb099e05baa496b852ad976fb633cc6766b02fca4da549dc063908463b2906ad64e8b310ad"
+
+    try:
+        G2Element.from_bytes(bytes.fromhex(bad_g2_point_hex))
+        assert False
+    except ValueError:
+        pass
+
+
+
 test_schemes()
 test_vectors_invalid()
 test_vectors_valid()
 test_readme()
 test_aggregate_verify_zero_items()
+test_invalid_points()
 
 print("\nAll tests passed.")
 
