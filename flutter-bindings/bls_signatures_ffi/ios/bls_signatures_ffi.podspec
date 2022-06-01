@@ -19,13 +19,13 @@ A new flutter plugin project.
     'bls/**/*.{cpp,hpp,c,h}',
   ]
   s.dependency 'Flutter'
-  s.platform = :ios, '10.0'
+  s.platform = :ios, '11.0'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 
-    'DEFINES_MODULE' => 'YES', 
-    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386 arm64',
-    'EXCLUDED_ARCHS[sdk=iphoneos*]' => 'armv7',
+    'DEFINES_MODULE' => 'YES',
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386',
+    'EXCLUDED_ARCHS[sdk=iphoneos*]' => 'armv7 i386',
     'LIBRARY_SEARCH_PATH' => '$(inherited)',
     'HEADER_SEARCH_PATHS' => '$(SRCROOT)/bls/install/include/chiabls',
     'OTHER_LDFLAGS' => '-L$(SRCROOT)/bls/install/lib -lbls -lrelic_s -lsodium'
@@ -34,6 +34,7 @@ A new flutter plugin project.
   s.script_phase = { 
     :name => 'Run cmake', 
     :script => '
+      git clone https://github.com/leetal/ios-cmake.git
       mkdir bls
       cd bls
       cat << EOF > CMakeLists.txt
@@ -47,8 +48,16 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(bls)
 install(FILES $<TARGET_FILE:sodium> DESTINATION lib)
 EOF
-      cmake -G Xcode -B build -DCMAKE_SYSTEM_NAME=iOS -DCMAKE_Swift_COMPILER_FORCED=true -DCMAKE_OSX_DEPLOYMENT_TARGET=10.0 -DCMAKE_INSTALL_PREFIX=`pwd`/install -DBUILD_BLS_FLUTTER_BINDINGS=1 -DBUILD_BLS_TESTS=0 -DBUILD_BLS_BENCHMARKS=0
-      cmake --build build --config Release --target install
+      cmake -G Xcode -B build \
+        -DCMAKE_TOOLCHAIN_FILE=../ios-cmake/ios.toolchain.cmake \
+        -DPLATFORM=OS64COMBINED \
+        -DCMAKE_INSTALL_PREFIX=`pwd`/install \
+        -DENABLE_BITCODE=True \
+        -DBUILD_BLS_FLUTTER_BINDINGS=1 \
+        -DBUILD_BLS_TESTS=0 \
+        -DBUILD_BLS_BENCHMARKS=0
+      cmake --build build --config Release
+      cmake --install build --config Release
     ', 
     :execution_position => :before_compile
   }
