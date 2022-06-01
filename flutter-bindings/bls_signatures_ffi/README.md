@@ -14,7 +14,8 @@ Building `bls-signatures` require cmake version `3.14.0+`, but most recent Andro
 
 ### iOS
 
-iOS build C/C++ code with XCode instead of cmake. But you still need to download cmake nonetheless, to build `bls-signatures`. Make sure it's version is above `3.14.0`.
+iOS build C/C++ code with XCode instead of cmake. But you still need to download cmake nonetheless, to build `bls-signatures`. Make sure it's version is above `3.14.0`. 
+Also, your iOS deployment must be above `11.0`.
 
 ## Creating keys and signature
 
