@@ -36,7 +36,7 @@ jobs:
 
       - name: Update version in package.json
         if: startsWith(github.ref, 'refs/tags/')
-        working-directory: ${{ github.workspace }}/js_build/js-bindings
+        working-directory: ${{ github.workspace }}/js-bindings
         env:
           SOURCE_TAG: ${{ steps.version_info.outputs.SOURCE_TAG }}
         run: |
