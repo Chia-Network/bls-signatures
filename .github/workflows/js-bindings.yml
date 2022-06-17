@@ -54,4 +54,6 @@ jobs:
       - name: Publish
         if: startsWith(github.ref, 'refs/tags/')
         working-directory: ${{ github.workspace }}/js_build/js-bindings
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish
