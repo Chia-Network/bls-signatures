@@ -57,4 +57,4 @@ jobs:
       - name: Cleanup
         if: always()
         run:
-          rm .npmrc || true
+          rm ${{ github.workspace }}/js_build/js-bindings/.npmrc || true
