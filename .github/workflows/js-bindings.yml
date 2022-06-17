@@ -27,6 +27,9 @@ jobs:
         with:
           node-version: 16
 
+      - name: Install emsdk
+        uses: mymindstorm/setup-emsdk@v11
+
       - name: Get the version
         id: version_info
         run: echo ::set-output name=SOURCE_TAG::${GITHUB_REF#refs/tags/}
