@@ -5,6 +5,11 @@ on:
     - cron: "0 11 * * *"
   workflow_dispatch:
 
+concurrency:
+  # SHA is added to the end if on `main` to let all main workflows run
+  group: ${{ github.ref }}-${{ github.workflow }}-${{ github.event_name }}-${{ (github.ref == 'refs/heads/main') && github.sha || '' }}
+  cancel-in-progress: true
+
 jobs:
   build_wheels:
     name: Build and Test with Relic Nightly
@@ -15,14 +20,8 @@ jobs:
         os: [macos-latest, ubuntu-latest]
 
     steps:
-    - name: Cancel previous runs on the same branch
-      if: ${{ github.ref != 'refs/heads/main' }}
-      uses: styfle/cancel-workflow-action@0.9.1
-      with:
-        access_token: ${{ github.token }}
-
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Ubuntu build C++ and test Relic at origin/main
       if: startsWith(matrix.os, 'ubuntu')
@@ -69,7 +68,7 @@ jobs:
         python python-impl/impl-test.py
 
     - name: Install emsdk
-      uses: mymindstorm/setup-emsdk@v9
+      uses: mymindstorm/setup-emsdk@v11
 
     - name: Test javascript bindings
       run: |
