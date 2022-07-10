@@ -139,7 +139,6 @@ jobs:
           && curl -L https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz | tar x --lzip
           && cp contrib/gmp-patch-6.2.1/longlong.h gmp-6.2.1/
           && cp contrib/gmp-patch-6.2.1/compat.c gmp-6.2.1/
-          && cp contrib/gmp-patch-6.2.1/mpz/inp_raw.c gmp-6.2.1/mpz
           && cd gmp-6.2.1 && ./configure --enable-fat
           && make && make install && cd .. && rm -rf gmp-6.2.1
           && cmake --version
