@@ -162,7 +162,7 @@ jobs:
           && ls -l relic_ietf_64
           && git clone https://github.com/Chia-Network/mpir_gc_x64.git
           && ls -l mpir_gc_x64
-        CIBW_ENVIRONMENT_WINDOWS: "SETUPTOOLS_USE_DISTUTILS=stdlib"
+#        CIBW_ENVIRONMENT_WINDOWS: "SETUPTOOLS_USE_DISTUTILS=stdlib"
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
           ls -l mpir_gc_x64 && pip uninstall -y delocate
           && pip install git+https://github.com/Chia-Network/delocate.git
