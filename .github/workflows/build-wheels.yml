@@ -128,7 +128,6 @@ jobs:
         CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
         CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
         CIBW_BEFORE_ALL_LINUX: >
-          set -vx &&
           yum -y install epel-release
           && echo "epel-release installed"
           && yum -y install lzip
