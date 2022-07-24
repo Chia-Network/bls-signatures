@@ -60,7 +60,7 @@ vector<uint8_t> message = {1, 2, 3, 4, 5};  // Message is passed in as a byte ve
 G2Element signature = AugSchemeMPL().Sign(sk, message);
 
 // Verify the signature
-bool ok = AugSchemeMPL().Verify(pk, message, signature));
+bool ok = AugSchemeMPL().Verify(pk, message, signature);
 ```
 
 ## Serializing keys and signatures to bytes
