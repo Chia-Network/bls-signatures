@@ -398,13 +398,19 @@ const size_t GTElement::SIZE;
 
 GTElement GTElement::FromBytes(Bytes const bytes)
 {
+    GTElement ele = GTElement::FromBytesUnchecked(bytes);
+    if (gt_is_valid(*(gt_t*)&ele) == 0)
+        throw std::invalid_argument("GTElement is invalid");
+    return ele;
+}
+
+GTElement GTElement::FromBytesUnchecked(Bytes const bytes)
+{
     if (bytes.size() != SIZE) {
         throw std::invalid_argument("GTElement::FromBytes: Invalid size");
     }
     GTElement ele = GTElement();
     gt_read_bin(ele.r, bytes.begin(), GTElement::SIZE);
-    if (gt_is_valid(*(gt_t*)&ele) == 0)
-        throw std::invalid_argument("GTElement is invalid");
     BLS::CheckRelicErrors();
     return ele;
 }
