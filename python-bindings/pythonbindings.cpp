@@ -676,6 +676,24 @@ PYBIND11_MODULE(blspy, m)
                 py::gil_scoped_release release;
                 return GTElement::FromBytes(data);
             })
+        .def(
+            "from_bytes_unchecked",
+            [](py::buffer const b) {
+                py::buffer_info info = b.request();
+                if (info.format != py::format_descriptor<uint8_t>::format() ||
+                    info.ndim != 1)
+                    throw std::runtime_error("Incompatible buffer format!");
+
+                if ((int)info.size != GTElement::SIZE) {
+                    throw std::invalid_argument(
+                        "Length of bytes object not equal to GTElement::SIZE");
+                }
+                auto data_ptr = reinterpret_cast<const uint8_t *>(info.ptr);
+                std::array<uint8_t, GTElement::SIZE> data;
+                std::copy(data_ptr, data_ptr + GTElement::SIZE, data.data());
+                py::gil_scoped_release release;
+                return GTElement::FromBytesUnchecked(data);
+            })
         .def("unity", &GTElement::Unity)
         .def(py::self == py::self)
         .def(py::self != py::self)
