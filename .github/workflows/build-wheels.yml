@@ -118,7 +118,7 @@ jobs:
       run: |
         pip install pipx
     - name: Build and test
-      uses: pypa/cibuildwheel@v2.7.0
+      uses: pypa/cibuildwheel@v2.8.1
       with:
         output-dir: dist
       env:
