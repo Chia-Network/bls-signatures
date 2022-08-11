@@ -29,7 +29,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - uses: actions/setup-python@v2
+    - uses: chia-network/actions/setup-python@main
       name: Install Python
       with:
         python-version: ${{ format('{0}.0-alpha - {0}.X', matrix.python) }}
