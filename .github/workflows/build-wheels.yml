@@ -53,6 +53,9 @@ jobs:
           - major-dot-minor: '3.10'
             cibw-build: 'cp310-*'
             matrix: '3.10'
+          - major-dot-minor: '3.11'
+            cibw-build: 'cp311-*'
+            matrix: '3.11'
         arch:
           - name: ARM
             matrix: arm
