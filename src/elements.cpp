@@ -87,7 +87,7 @@ G1Element G1Element::FromMessage(const std::vector<uint8_t>& message,
     return FromMessage(Bytes(message), dst, dst_len);
 }
 
-G1Element G1Element::FromMessage(const Bytes& message,
+G1Element G1Element::FromMessage(Bytes const message,
                                  const uint8_t* dst,
                                  int dst_len)
 {
@@ -279,7 +279,7 @@ G2Element G2Element::FromMessage(const std::vector<uint8_t>& message,
     return FromMessage(Bytes(message), dst, dst_len);
 }
 
-G2Element G2Element::FromMessage(const Bytes& message,
+G2Element G2Element::FromMessage(Bytes const message,
                                  const uint8_t* dst,
                                  int dst_len)
 {
@@ -396,15 +396,21 @@ G2Element operator*(const bn_t& k, const G2Element& a) { return a * k; }
 
 const size_t GTElement::SIZE;
 
-GTElement GTElement::FromBytes(const Bytes& bytes)
+GTElement GTElement::FromBytes(Bytes const bytes)
+{
+    GTElement ele = GTElement::FromBytesUnchecked(bytes);
+    if (gt_is_valid(*(gt_t*)&ele) == 0)
+        throw std::invalid_argument("GTElement is invalid");
+    return ele;
+}
+
+GTElement GTElement::FromBytesUnchecked(Bytes const bytes)
 {
     if (bytes.size() != SIZE) {
         throw std::invalid_argument("GTElement::FromBytes: Invalid size");
     }
     GTElement ele = GTElement();
     gt_read_bin(ele.r, bytes.begin(), GTElement::SIZE);
-    if (gt_is_valid(*(gt_t*)&ele) == 0)
-        throw std::invalid_argument("GTElement is invalid");
     BLS::CheckRelicErrors();
     return ele;
 }

@@ -238,6 +238,7 @@ def sign_Fq2(element, ec=default_ec_twist) -> bool:
 
 
 def point_to_bytes(point_j: JacobianPoint, ec, FE) -> bytes:
+    # Zcash serialization described in https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/
     point = point_j.to_affine()
     output = bytearray(bytes(point.x))
 
@@ -259,7 +260,7 @@ def point_to_bytes(point_j: JacobianPoint, ec, FE) -> bytes:
 
 
 def bytes_to_point(buffer: bytes, ec, FE) -> JacobianPoint:
-    # Zcash serialization described in https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/
+    # Zcash deserialization described in https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/
 
     if FE == Fq:
         if len(buffer) != 48:
@@ -275,9 +276,9 @@ def bytes_to_point(buffer: bytes, ec, FE) -> JacobianPoint:
     if m_byte in [0x20, 0x60, 0xE0]:
         raise ValueError("Invalid first three bits")
 
-    C_bit = m_byte & 0x80  # First bit
-    I_bit = m_byte & 0x40  # Second bit
-    S_bit = m_byte & 0x20  # Third bit
+    C_bit = (m_byte & 0x80) >> 7  # First bit
+    I_bit = (m_byte & 0x40) >> 6  # Second bit
+    S_bit = (m_byte & 0x20) >> 5  # Third bit
 
     if C_bit == 0:
         raise ValueError("First bit must be 1 (only compressed points)")
