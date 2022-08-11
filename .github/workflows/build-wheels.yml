@@ -122,6 +122,7 @@ jobs:
       with:
         output-dir: dist
       env:
+        CIBW_PRERELEASE_PYTHONS: True
         CIBW_BUILD_VERBOSITY_MACOS: 0
         CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_BUILD_VERBOSITY_WINDOWS: 0
