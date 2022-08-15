@@ -30,9 +30,8 @@ jobs:
       uses: actions/checkout@v3
 
     - uses: chia-network/actions/setup-python@main
-      name: Install Python
       with:
-        python-version: ${{ format('{0}.0-alpha - {0}.X', matrix.python) }}
+        python-version: ${{ matrix.python.major-dot-minor }}
 
     - name: Ubuntu build C++ and test with valgrind
       if: startsWith(matrix.os, 'ubuntu')
