@@ -31,7 +31,7 @@ jobs:
 
     - uses: chia-network/actions/setup-python@main
       with:
-        python-version: ${{ matrix.python.major-dot-minor }}
+        python-version: ${{ matrix.python }}
 
     - name: Ubuntu build C++ and test with valgrind
       if: startsWith(matrix.os, 'ubuntu')
