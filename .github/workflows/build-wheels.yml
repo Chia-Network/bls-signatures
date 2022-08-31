@@ -43,16 +43,34 @@ jobs:
         python:
           - major-dot-minor: '3.7'
             cibw-build: 'cp37-*'
+            manylinux:
+              arch: manylinux2014
+              intel: manylinux2010
             matrix: '3.7'
           - major-dot-minor: '3.8'
             cibw-build: 'cp38-*'
+            manylinux:
+              arch: manylinux2014
+              intel: manylinux2010
             matrix: '3.8'
           - major-dot-minor: '3.9'
             cibw-build: 'cp39-*'
+            manylinux:
+              arch: manylinux2014
+              intel: manylinux2010
             matrix: '3.9'
           - major-dot-minor: '3.10'
             cibw-build: 'cp310-*'
+            manylinux:
+              arch: manylinux2014
+              intel: manylinux2010
             matrix: '3.10'
+          - major-dot-minor: '3.11'
+            cibw-build: 'cp311-*'
+            manylinux:
+              arch: manylinux2014
+              intel: manylinux2014
+            matrix: '3.11'
         arch:
           - name: ARM
             matrix: arm
@@ -114,18 +132,17 @@ jobs:
     - name: Install pipx
       run: |
         pip install pipx
+
     - name: Build and test
-      uses: pypa/cibuildwheel@v2.7.0
-      with:
-        output-dir: dist
       env:
+        CIBW_PRERELEASE_PYTHONS: True
         CIBW_BUILD_VERBOSITY_MACOS: 0
         CIBW_BUILD_VERBOSITY_LINUX: 0
         CIBW_BUILD_VERBOSITY_WINDOWS: 0
         CIBW_BUILD: ${{ matrix.python.cibw-build }}
         CIBW_SKIP: '*-manylinux_i686 *-win32 *-musllinux_*'
-        CIBW_MANYLINUX_AARCH64_IMAGE: manylinux2014
-        CIBW_MANYLINUX_X86_64_IMAGE: manylinux2010
+        CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.python.manylinux['arm'] }}
+        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.python.manylinux['intel'] }}
         CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
         CIBW_BEFORE_ALL_LINUX: >
           yum -y install epel-release
@@ -176,6 +193,8 @@ jobs:
           && cp {wheel} {dest_dir}
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: py.test -v {project}/python-bindings/test.py
+      run:
+        pipx run --spec='cibuildwheel==2.9.0' cibuildwheel --output-dir dist 2>&1
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
