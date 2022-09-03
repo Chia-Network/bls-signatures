@@ -1,0 +1,93 @@
+{
+  "nodes": {
+    "flake-utils": {
+      "locked": {
+        "lastModified": 1659877975,
+        "narHash": "sha256-zllb8aq3YO3h8B/U0/J1WBgAL8EX5yWf5pMj3G0NAmc=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "c0e246b9b83f637f4681389ecabcb2681b4f3af0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_2": {
+      "locked": {
+        "lastModified": 1659877975,
+        "narHash": "sha256-zllb8aq3YO3h8B/U0/J1WBgAL8EX5yWf5pMj3G0NAmc=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "c0e246b9b83f637f4681389ecabcb2681b4f3af0",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "nixpkgs": {
+      "locked": {
+        "lastModified": 1662223482,
+        "narHash": "sha256-/7sK/FqFj8T4TnnQE3ezAVc1LGXzvjhDx//X5x8k6Ww=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "73ff5d3db37262657d568cd714bdd442074e0108",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_2": {
+      "locked": {
+        "lastModified": 1662158175,
+        "narHash": "sha256-tFdRHPacHDEuiAFusNe/ZSkPvtSiPouDu6PYQpizIJc=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "96ff5b58ec922f626d039406914ae4b5caef530f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "relic": {
+      "inputs": {
+        "flake-utils": "flake-utils_2",
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1662173326,
+        "narHash": "sha256-MDL9JO/VDy4ipHXqSmhk+NHgm6N5bq+CqM+Ox8Nwph8=",
+        "owner": "abueide",
+        "repo": "relic",
+        "rev": "01bf966b3115e3a90d30669230af8908414f3d97",
+        "type": "github"
+      },
+      "original": {
+        "owner": "abueide",
+        "ref": "flake2",
+        "repo": "relic",
+        "type": "github"
+      }
+    },
+    "root": {
+      "inputs": {
+        "flake-utils": "flake-utils",
+        "nixpkgs": "nixpkgs",
+        "relic": "relic"
+      }
+    }
+  },
+  "root": "root",
+  "version": 7
+}
