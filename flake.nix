@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
-    relic.url = "github:Chia-Network/relic";
+    relic.url = "github:abueide/relic/flake";
   };
 
   outputs = { self, nixpkgs, flake-utils, relic }:
