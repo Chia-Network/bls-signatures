@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
-    relic.url = "github:abueide/relic/flake2";
+    relic.url = "github:Chia-Network/relic";
   };
 
   outputs = { self, nixpkgs, flake-utils, relic }:
@@ -16,19 +16,21 @@
             devShells.default = pkgs.mkShell {
                 packages = deps;
             };
-              defaultPackage = with pkgs; stdenv.mkDerivation {
-                                 pname = "bls-signatures";
-                                 version = "1.0.14";
+            defaultPackage = with pkgs; stdenv.mkDerivation {
+              pname = "bls-signatures";
+              version = "1.0.14";
+              src = self;
 
-                                 src = self;
+              buildInputs = deps;
 
-                                   enableParallelBuilding = true;
-                                   cmakeFlags = [
-                                     "-DBUILD_BLS_TESTS=false"
-                                     "-DBUILD_BLS_BENCHMARKS=false"
-                                     "-DBUILD_BLS_PYTHON_BINDINGS=false"
-                                   ];
-                                 };
+              enableParallelBuilding = true;
+                cmakeFlags = [
+                  "-DBUILD_BLS_TESTS=false"
+                  "-DBUILD_BLS_BENCHMARKS=false"
+                  "-DBUILD_BLS_PYTHON_BINDINGS=false"
+                  "-DBUILD_LOCAL=true"
+               ];
+            };
             }
           );
 }

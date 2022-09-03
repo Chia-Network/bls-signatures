@@ -71,4 +71,5 @@ find_library(RELIC_LIBRARIES
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(relic DEFAULT_MSG
                                   RELIC_INCLUDES RELIC_LIBRARIES RELIC_VERSION_OK)
-mark_as_advanced(RELIC_INCLUDES RELIC_LIBRARIES)
+get_filename_component(RELIC_LIB ${RELIC_LIBRARIES} DIRECTORY)
+mark_as_advanced(RELIC_LIB RELIC_INCLUDES RELIC_LIBRARIES)
