@@ -72,4 +72,5 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(relic DEFAULT_MSG
                                   RELIC_INCLUDES RELIC_LIBRARIES RELIC_VERSION_OK)
 get_filename_component(RELIC_LIB ${RELIC_LIBRARIES} DIRECTORY)
+cmake_path(GET RELIC_LIBRARIES PARENT_PATH RELIC_LIB)
 mark_as_advanced(RELIC_LIB RELIC_INCLUDES RELIC_LIBRARIES)
