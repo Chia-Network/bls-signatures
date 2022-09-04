@@ -64,4 +64,3 @@ out/
 
 cmake-build-debug/
 result
-flake.lock
