@@ -84,6 +84,9 @@ class AffinePoint:
             + ")\n"
         )
 
+    def __bytes__(self) -> bytes:
+        return point_to_bytes(self, self.ec, self.FE)
+
     def __eq__(self, other) -> bool:
         if not isinstance(other, AffinePoint):
             return False
@@ -237,9 +240,12 @@ def sign_Fq2(element, ec=default_ec_twist) -> bool:
     return element[1] > Fq(ec.q, ((ec.q - 1) // 2))
 
 
-def point_to_bytes(point_j: JacobianPoint, ec, FE) -> bytes:
+def point_to_bytes(point, ec, FE) -> bytes:
     # Zcash serialization described in https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/
-    point = point_j.to_affine()
+    if isinstance(point, JacobianPoint):
+        point = point.to_affine()
+    if not isinstance(point, AffinePoint):
+        raise Exception("point should either be JacobianPoint or AffinePoint")
     output = bytearray(bytes(point.x))
 
     # If the y coordinate is the bigger one of the two, set the first
