@@ -41,8 +41,14 @@ if(BUILD_BLS_TESTS)
     GIT_TAG        v3.0.0-preview5
   )
   FetchContent_MakeAvailable(Catch2)
+  find_package(Threads REQUIRED)
   add_executable(runtest test.cpp)
-  target_link_libraries(runtest PRIVATE bls Catch2::Catch2)
+  target_link_libraries(runtest
+    PRIVATE
+      bls
+      Catch2::Catch2
+      Threads::Threads
+  )
 endif()
 
 if(BUILD_BLS_BENCHMARKS)
