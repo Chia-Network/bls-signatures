@@ -56,7 +56,6 @@ void TestHKDF(string ikm_hex, string salt_hex, string info_hex, string prk_expec
 
 TEST_CASE("class PrivateKey") {
     uint8_t buffer[PrivateKey::PRIVATE_KEY_SIZE];
-    memcmp(buffer, getRandomSeed().data(), PrivateKey::PRIVATE_KEY_SIZE);
     SECTION("Copy {constructor|assignment operator}") {
         PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
         PrivateKey pk2 = PrivateKey::FromByteVector(getRandomSeed(), true);
