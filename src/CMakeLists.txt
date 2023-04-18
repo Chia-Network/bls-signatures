@@ -43,6 +43,9 @@ if(BUILD_BLS_TESTS)
   FetchContent_MakeAvailable(Catch2)
   find_package(Threads REQUIRED)
   add_executable(runtest test.cpp)
+  if(EMSCRIPTEN)
+    target_link_options(runtest PRIVATE "-sEXPORTED_FUNCTIONS=_malloc")
+  endif()
   target_link_libraries(runtest
     PRIVATE
       bls
