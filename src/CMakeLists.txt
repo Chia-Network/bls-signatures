@@ -29,6 +29,11 @@ target_link_libraries(bls
     sodium
 )
 
+if(WITH_COVERAGE)
+  target_compile_options(bls PRIVATE --coverage)
+  target_link_options(bls PRIVATE --coverage)
+endif()
+
 install(DIRECTORY ${relic_SOURCE_DIR}/include/ DESTINATION include/chiabls)
 install(DIRECTORY ${relic_BINARY_DIR}/include/ DESTINATION include/chiabls)
 install(FILES ${HEADERS} DESTINATION include/chiabls)
@@ -52,6 +57,10 @@ if(BUILD_BLS_TESTS)
       Catch2::Catch2
       Threads::Threads
   )
+  if(WITH_COVERAGE)
+    target_compile_options(runtest PRIVATE --coverage)
+    target_link_options(runtest PRIVATE --coverage)
+  endif()
 endif()
 
 if(BUILD_BLS_BENCHMARKS)
