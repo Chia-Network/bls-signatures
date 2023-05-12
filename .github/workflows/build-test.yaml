@@ -16,6 +16,31 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Collect coverage data
+        run: |
+          sudo apt-get update
+          sudo apt-get install lcov -y
+          sudo apt-get install snap -y
+          sudo snap install cmake --classic
+          hash -r
+          cmake -B ../build -DCMAKE_BUILD_TYPE=Debug -DWITH_COVERAGE=1 -DBUILD_BLS_PYTHON_BINDINGS=0 -DBUILD_BLS_BENCHMARKS=0
+          cmake --build ../build -- -j 6
+          ../build/src/runtest
+          lcov --directory ../build --capture --output-file lcov.info
+          lcov --remove lcov.info '*_deps/*' '/usr/*' --output-file lcov.info
+      - name: Upload to Coveralls
+        uses: coverallsapp/github-action@v2
+        if: always()
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        with:
+          path-to-lcov: './lcov.info'
+
   build_wheels:
     name: Build and Test on ${{ matrix.os }} CPython ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
