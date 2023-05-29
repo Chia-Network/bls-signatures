@@ -23,8 +23,7 @@ extern "C" {
 #include "relic.h"
 }
 #include "test-utils.hpp"
-using std::cout;
-using std::endl;
+
 using std::string;
 using std::vector;
 
@@ -875,9 +874,9 @@ TEST_CASE("Advanced") {
         vector<uint8_t> pkBytes = pk.Serialize();
         vector<uint8_t> signatureBytes = signature.Serialize();
 
-        cout << Util::HexStr(skBytes) << endl;    // 32 bytes
-        cout << Util::HexStr(pkBytes) << endl;    // 48 bytes
-        cout << Util::HexStr(signatureBytes) << endl;  // 96 bytes
+        std::cout << Util::HexStr(skBytes) << std::endl          // 32 bytes
+                  << Util::HexStr(pkBytes) << std::endl          // 48 bytes
+                  << Util::HexStr(signatureBytes) << std::endl;  // 96 bytes
 
         // Takes array of 32 bytes
         PrivateKey skc = PrivateKey::FromByteVector(skBytes);
@@ -1239,7 +1238,7 @@ TEST_CASE("CheckValid")
         REQUIRE_THROWS(point.CheckValid());
 
         auto badSer = point.Serialize();
-        std::cout <<Util::HexStr(badSer) << std::endl;
+        std::cout << Util::HexStr(badSer) << std::endl;
 
         REQUIRE_THROWS(G2Element::FromByteVector(badSer));
     }
