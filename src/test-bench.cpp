@@ -21,15 +21,16 @@ extern "C" {
 }
 
 using std::string;
-using std::vector;
 
 using namespace bls;
+
+typedef std::vector<uint8_t> bytevec_t;
 
 void benchSigs() {
     string testName = "Signing";
     const int numIters = 5000;
     PrivateKey sk = AugSchemeMPL().KeyGen(getRandomSeed());
-    vector<uint8_t> message1 = sk.GetG1Element().Serialize();
+    bytevec_t message1 = sk.GetG1Element().Serialize();
 
     auto start = startStopwatch();
 
@@ -50,7 +51,7 @@ void benchVerification() {
     for (int i = 0; i < numIters; i++) {
         uint8_t message[4];
         Util::IntToFourBytes(message, i);
-        vector<uint8_t> messageBytes(message, message + 4);
+        bytevec_t messageBytes(message, message + 4);
         sigs.push_back(AugSchemeMPL().Sign(sk, messageBytes));
     }
 
@@ -58,7 +59,7 @@ void benchVerification() {
     for (int i = 0; i < numIters; i++) {
         uint8_t message[4];
         Util::IntToFourBytes(message, i);
-        vector<uint8_t> messageBytes(message, message + 4);
+        bytevec_t messageBytes(message, message + 4);
         bool ok = AugSchemeMPL().Verify(pk, messageBytes, sigs[i]);
         ASSERT(ok);
     }
@@ -68,14 +69,14 @@ void benchVerification() {
 void benchBatchVerification() {
     const int numIters = 100000;
 
-    vector<vector<uint8_t>> sig_bytes;
-    vector<vector<uint8_t>> pk_bytes;
-    vector<vector<uint8_t>> ms;
+    std::vector<bytevec_t> sig_bytes;
+    std::vector<bytevec_t> pk_bytes;
+    std::vector<bytevec_t> ms;
 
     for (int i = 0; i < numIters; i++) {
         uint8_t message[4];
         Util::IntToFourBytes(message, i);
-        vector<uint8_t> messageBytes(message, message + 4);
+        bytevec_t messageBytes(message, message + 4);
         PrivateKey sk = AugSchemeMPL().KeyGen(getRandomSeed());
         G1Element pk = sk.GetG1Element();
         sig_bytes.push_back(AugSchemeMPL().Sign(sk, messageBytes).Serialize());
@@ -83,7 +84,7 @@ void benchBatchVerification() {
         ms.push_back(messageBytes);
     }
 
-    vector<G1Element> pks;
+    std::vector<G1Element> pks;
     pks.reserve(numIters);
 
     auto start = startStopwatch();
@@ -92,7 +93,7 @@ void benchBatchVerification() {
     }
     endStopwatch("Public key validation", start, numIters);
 
-    vector<G2Element> sigs;
+    std::vector<G2Element> sigs;
     sigs.reserve(numIters);
 
     start = startStopwatch();
@@ -114,10 +115,10 @@ void benchBatchVerification() {
 void benchFastAggregateVerification() {
     const int numIters = 5000;
 
-    vector<G2Element> sigs;
-    vector<G1Element> pks;
-    vector<uint8_t> message{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
-    vector<G2Element> pops;
+    std::vector<G2Element> sigs;
+    std::vector<G1Element> pks;
+    bytevec_t message{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
+    std::vector<G2Element> pops;
 
     for (int i = 0; i < numIters; i++) {
         PrivateKey sk = PopSchemeMPL().KeyGen(getRandomSeed());
