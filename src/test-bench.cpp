@@ -119,7 +119,7 @@ void benchFastAggregateVerification() {
 
     vector<G2Element> sigs;
     vector<G1Element> pks;
-    vector<uint8_t> message = {1, 2, 3, 4, 5, 6, 7, 8};
+    vector<uint8_t> message{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08};
     vector<G2Element> pops;
 
     for (int i = 0; i < numIters; i++) {

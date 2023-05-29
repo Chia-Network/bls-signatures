@@ -270,8 +270,11 @@ TEST_CASE("EIP-2333 hardened HD keys") {
 
 TEST_CASE("Unhardened HD keys") {
     SECTION("Should match derivation through private and public keys"){
-        const vector<uint8_t> seed = {1, 50, 6, 244, 24, 199, 1, 25, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-                                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
+        const vector<uint8_t> seed{0x01, 0x32, 0x06, 0xf4, 0x18, 0xc7, 0x01, 0x19,
+                                   0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                                   0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
+                                   0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+                                   0x19, 0x1a, 0x1b, 0x1c, 0x1d};
 
         PrivateKey sk = BasicSchemeMPL().KeyGen(seed);
         G1Element pk = sk.GetG1Element();
@@ -288,8 +291,11 @@ TEST_CASE("Unhardened HD keys") {
     }
 
     SECTION("Should derive public child from parent") {
-        const vector<uint8_t> seed = {2, 50, 6, 244, 24, 199, 1, 25, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-                                            16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29};
+        const vector<uint8_t> seed{0x02, 0x32, 0x06, 0xf4, 0x18, 0xc7, 0x01, 0x19,
+                                   0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                                   0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
+                                   0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+                                   0x19, 0x1a, 0x1b, 0x1c, 0x1d};
 
         PrivateKey sk = BasicSchemeMPL().KeyGen(seed);
         G1Element pk = sk.GetG1Element();
@@ -308,7 +314,7 @@ TEST_CASE("IETF test vectors") {
     SECTION ("Pyecc vector") {
         string sig1BasicHex = "96ba34fac33c7f129d602a0bc8a3d43f9abc014eceaab7359146b4b150e57b808645738f35671e9e10e0d862a30cab70074eb5831d13e6a5b162d01eebe687d0164adbd0a864370a7c222a2768d7704da254f1bf1823665bc2361f9dd8c00e99";
         string sk = "0x0101010101010101010101010101010101010101010101010101010101010101";
-        vector<uint8_t> msg = {3, 1, 4, 1, 5, 9};
+        vector<uint8_t> msg{0x03, 0x01, 0x04, 0x01, 0x05, 0x09};
         auto skobj = PrivateKey::FromBytes(Bytes(Util::HexToBytes(sk)));
         G2Element sig = BasicSchemeMPL().Sign(skobj, msg);
         vector<uint8_t> sig1;
@@ -324,8 +330,8 @@ TEST_CASE("Chia test vectors") {
     SECTION("Chia test vectors 1 (Basic)") {
         vector<uint8_t> seed1(32, 0x00);  // All 0s
         vector<uint8_t> seed2(32, 0x01);  // All 1s
-        vector<uint8_t> message1 = {7, 8, 9};
-        vector<uint8_t> message2 = {10, 11, 12};
+        vector<uint8_t> message1{0x07, 0x08, 0x09};
+        vector<uint8_t> message2{0x0a, 0x0b, 0x0c};
 
         PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed1);
         G1Element pk1 = sk1.GetG1Element();
@@ -371,9 +377,9 @@ TEST_CASE("Chia test vectors") {
         REQUIRE(!BasicSchemeMPL().Verify(pk1, message1, sig2));
         REQUIRE(!BasicSchemeMPL().Verify(pk1, message2, sig1));
 
-        vector<uint8_t> message3 = {1, 2, 3};
-        vector<uint8_t> message4 = {1, 2, 3, 4};
-        vector<uint8_t> message5 = {1, 2};
+        vector<uint8_t> message3{0x01, 0x02, 0x03};
+        vector<uint8_t> message4{0x01, 0x02, 0x03, 0x04};
+        vector<uint8_t> message5{0x01, 0x02};
 
         G2Element sig3 = BasicSchemeMPL().Sign(sk1, message3);
         G2Element sig4 = BasicSchemeMPL().Sign(sk1, message4);
@@ -390,10 +396,10 @@ TEST_CASE("Chia test vectors") {
     }
 
     SECTION("Chia test vector 2 (Augmented, aggregate of aggregates)") {
-        vector<uint8_t> message1 = {1, 2, 3, 40};
-        vector<uint8_t> message2 = {5, 6, 70, 201};
-        vector<uint8_t> message3 = {9, 10, 11, 12, 13};
-        vector<uint8_t> message4 = {15, 63, 244, 92, 0, 1};
+        vector<uint8_t> message1{0x01, 0x02, 0x03, 0x28};
+        vector<uint8_t> message2{0x05, 0x06, 0x46, 0xc9};
+        vector<uint8_t> message3{0x09, 0x0a, 0x0b, 0x0c, 0x0d};
+        vector<uint8_t> message4{0x0f, 0x3f, 0xf4, 0x5c, 0x00, 0x01};
 
         vector<uint8_t> seed1(32, 0x02);  // All 2s
         vector<uint8_t> seed2(32, 0x03);  // All 3s
@@ -425,7 +431,7 @@ TEST_CASE("Chia test vectors") {
             "997b9bceeab37a4c2565876da19382ea32a962200");
     }
     SECTION("Chia test vector 3 (PoP)") {
-        vector<uint8_t> message1 = {1, 2, 3, 40, 50};
+        vector<uint8_t> message1{0x01, 0x02, 0x03, 0x28, 0x32};
 
         vector<uint8_t> seed1(32, 0x04);  // All 4s
 
@@ -551,7 +557,7 @@ TEST_CASE("Signature tests")
 {
     SECTION("Should use copy constructor")
     {
-        vector<uint8_t> message1 = {1, 65, 254, 88, 90, 45, 22};
+        vector<uint8_t> message1{0x01, 0x41, 0xfe, 0x58, 0x5a, 0x2d, 0x16};
 
         vector<uint8_t> seed(32, 0x30);
         PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
@@ -570,7 +576,7 @@ TEST_CASE("Signature tests")
     }
 
     SECTION("Should sign with the zero key") {
-        vector<uint8_t> sk0(32, 0);
+        vector<uint8_t> sk0(32, 0x00);
         PrivateKey sk = PrivateKey::FromByteVector(sk0);
         REQUIRE(sk.GetG1Element() == G1Element());  // Infinity
         REQUIRE(sk.GetG2Element() == G2Element());  // Infinity
@@ -581,7 +587,8 @@ TEST_CASE("Signature tests")
 
     SECTION("Should use equality operators")
     {
-        vector<uint8_t> message1 = {1, 65, 254, 88, 90, 45, 22};
+        vector<uint8_t> message1{0x01, 0x41, 0xfe, 0x58, 0x5a, 0x2d, 0x16};
+
         vector<uint8_t> seed(32, 0x40);
         vector<uint8_t> seed3(32, 0x50);
 
@@ -612,8 +619,7 @@ TEST_CASE("Signature tests")
 
     SECTION("Should serialize and deserialize")
     {
-        vector<uint8_t> message1 = {1, 65, 254, 88, 90, 45, 22};
-
+        vector<uint8_t> message1{0x01, 0x41, 0xfe, 0x58, 0x5a, 0x2d, 0x16};
         vector<uint8_t> seed(32, 0x40);
         PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
         G1Element pk1 = sk1.GetG1Element();
@@ -641,7 +647,7 @@ TEST_CASE("Signature tests")
 
     SECTION("Should not verify aggregate with same message under BasicScheme")
     {
-        vector<uint8_t> message = {100, 2, 254, 88, 90, 45, 23};
+        vector<uint8_t> message{0x64, 0x02, 0xfe, 0x58, 0x5a, 0x2d, 0x17};
         uint8_t hash[BLS::MESSAGE_HASH_LEN];
 
         vector<uint8_t> seed(32, 0x50);
@@ -662,7 +668,7 @@ TEST_CASE("Signature tests")
 
     SECTION("Should verify aggregate with same message under AugScheme/PopScheme")
     {
-        vector<uint8_t> message = {100, 2, 254, 88, 90, 45, 23};
+        vector<uint8_t> message{0x64, 0x02, 0xfe, 0x58, 0x5a, 0x2d, 0x17};
         uint8_t hash[BLS::MESSAGE_HASH_LEN];
 
         vector<uint8_t> seed(32, 0x50);
@@ -692,7 +698,7 @@ TEST_CASE("Signature tests")
         vector<vector<uint8_t> > ms;
 
         for (uint8_t i = 0; i < 80; i++) {
-            vector<uint8_t> message = {0, 100, 2, 45, 64, 12, 12, 63, i};
+            vector<uint8_t> message{0x00, 0x64, 0x02, 0x2d, 0x40, 0x0c, 0x0c, 0x3f, i};
             PrivateKey sk = BasicSchemeMPL().KeyGen(getRandomSeed());
             pks.push_back(sk.GetG1Element());
             auto sig = AugSchemeMPL().Sign(sk, message);
@@ -737,7 +743,7 @@ TEST_CASE("Signature tests")
 TEST_CASE("Agg sks") {
     SECTION("Should create aggregates with agg sk (basic scheme)")
     {
-        const vector<uint8_t> message = {100, 2, 254, 88, 90, 45, 23};
+        const vector<uint8_t> message{0x64, 0x02, 0xfe, 0x58, 0x5a, 0x2d, 0x17};
         const vector<uint8_t> seed(32, 0x07);
         const vector<uint8_t> seed2(32, 0x08);
 
@@ -772,7 +778,7 @@ TEST_CASE("Agg sks") {
         REQUIRE(BasicSchemeMPL().AggregateVerify({pk1, pk2}, vector<vector<uint8_t>>{message, message}, aggSig2) == false);
 
         // Try the same with distinct message, and same sk
-        vector<uint8_t> message2 = {200, 29, 54, 8, 9, 29, 155, 55};
+        vector<uint8_t> message2{0xc8, 0x1d, 0x36, 0x08, 0x09, 0x1d, 0x9b, 0x37};
         G2Element sig3 = BasicSchemeMPL().Sign(sk2, message2);
         G2Element aggSigFinal = BasicSchemeMPL().Aggregate({aggSig, sig3});
         G2Element aggSigAlt = BasicSchemeMPL().Aggregate({sig1, sig2, sig3});
@@ -797,7 +803,7 @@ TEST_CASE("Agg sks") {
 
 TEST_CASE("Advanced") {
     SECTION("Should aggregate with multiple levels, degenerate") {
-        vector<uint8_t> message1 = {100, 2, 254, 88, 90, 45, 23};
+        vector<uint8_t> message1{0x64, 0x02, 0xfe, 0x58, 0x5a, 0x2d, 0x17};
         PrivateKey sk1 = AugSchemeMPL().KeyGen(getRandomSeed());
         G1Element pk1 = sk1.GetG1Element();
         G2Element aggSig = AugSchemeMPL().Sign(sk1, message1);
@@ -816,10 +822,10 @@ TEST_CASE("Advanced") {
     }
 
     SECTION("Should aggregate with multiple levels, different messages") {
-        vector<uint8_t> message1 = {100, 2, 254, 88, 90, 45, 23};
-        vector<uint8_t> message2 = {192, 29, 2, 0, 0, 45, 23};
-        vector<uint8_t> message3 = {52, 29, 2, 0, 0, 45, 102};
-        vector<uint8_t> message4 = {99, 29, 2, 0, 0, 45, 222};
+        vector<uint8_t> message1{0x64, 0x02, 0xfe, 0x58, 0x5a, 0x2d, 0x17};
+        vector<uint8_t> message2{0xc0, 0x1d, 0x02, 0x00, 0x00, 0x2d, 0x17};
+        vector<uint8_t> message3{0x34, 0x1d, 0x02, 0x00, 0x00, 0x2d, 0x66};
+        vector<uint8_t> message4{0x63, 0x1d, 0x02, 0x00, 0x00, 0x2d, 0xde};
 
         PrivateKey sk1 = AugSchemeMPL().KeyGen(getRandomSeed());
         PrivateKey sk2 = AugSchemeMPL().KeyGen(getRandomSeed());
@@ -854,14 +860,15 @@ TEST_CASE("Advanced") {
     {
         // Example seed, used to generate private key. Always use
         // a secure RNG with sufficient entropy to generate a seed (at least 32 bytes).
-        vector<uint8_t> seed = {0,  50, 6,  244, 24,  199, 1,  25,  52,  88,  192,
-                                19, 18, 12, 89,  6,   220, 18, 102, 58,  209, 82,
-                                12, 62, 89, 110, 182, 9,   44, 20,  254, 22};
+        vector<uint8_t> seed{0x00, 0x32, 0x06, 0xf4, 0x18, 0xc7, 0x01, 0x19,
+                             0x34, 0x58, 0xc0, 0x13, 0x12, 0x0c, 0x59, 0x06,
+                             0xdc, 0x12, 0x66, 0x3a, 0xd1, 0x52, 0x0c, 0x3e,
+                             0x59, 0x6e, 0xb6, 0x09, 0x2c, 0x14, 0xfe, 0x16};
 
         PrivateKey sk = AugSchemeMPL().KeyGen(seed);
         G1Element pk = sk.GetG1Element();
 
-        vector<uint8_t> message = {1, 2, 3, 4, 5};  // Message is passed in as a byte vector
+        vector<uint8_t> message{0x01, 0x02, 0x03, 0x04, 0x05};  // Message is passed in as a byte vector
         G2Element signature = AugSchemeMPL().Sign(sk, message);
 
         vector<uint8_t> skBytes = sk.Serialize();
@@ -888,7 +895,7 @@ TEST_CASE("Advanced") {
         PrivateKey sk1 = AugSchemeMPL().KeyGen(seed);
         seed[0] = 2;
         PrivateKey sk2 = AugSchemeMPL().KeyGen(seed);
-        vector<uint8_t> message2 = {1, 2, 3, 4, 5, 6, 7};
+        vector<uint8_t> message2{0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
 
         // Generate first sig
         G1Element pk1 = sk1.GetG1Element();
@@ -906,7 +913,7 @@ TEST_CASE("Advanced") {
         seed[0] = 3;
         PrivateKey sk3 = AugSchemeMPL().KeyGen(seed);
         G1Element pk3 = sk3.GetG1Element();
-        vector<uint8_t> message3 = {100, 2, 254, 88, 90, 45, 23};
+        vector<uint8_t> message3{0x64, 0x02, 0xfe, 0x58, 0x5a, 0x2d, 0x17};
         G2Element sig3 = AugSchemeMPL().Sign(sk3, message3);
 
 
@@ -1051,8 +1058,8 @@ TEST_CASE("Schemes") {
     SECTION("Basic Scheme") {
         vector<uint8_t> seed1(32, 0x04);
         vector<uint8_t> seed2(32, 0x05);
-        vector<uint8_t> msg1 = {7, 8, 9};
-        vector<uint8_t> msg2 = {10, 11, 12};
+        vector<uint8_t> msg1{0x07, 0x08, 0x09};
+        vector<uint8_t> msg2{0x0a, 0x0b, 0x0c};
         vector<vector<uint8_t>> msgs = {msg1, msg2};
 
         PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed1);
@@ -1090,8 +1097,8 @@ TEST_CASE("Schemes") {
     {
         vector<uint8_t> seed1(32, 0x04);
         vector<uint8_t> seed2(32, 0x05);
-        vector<uint8_t> msg1 = {7, 8, 9};
-        vector<uint8_t> msg2 = {10, 11, 12};
+        vector<uint8_t> msg1{0x07, 0x08, 0x09};
+        vector<uint8_t> msg2{0x0a, 0x0b, 0x0c};
         vector<vector<uint8_t>> msgs = {msg1, msg2};
 
         PrivateKey sk1 = AugSchemeMPL().KeyGen(seed1);
@@ -1129,8 +1136,8 @@ TEST_CASE("Schemes") {
     {
         vector<uint8_t> seed1(32, 0x06);
         vector<uint8_t> seed2(32, 0x07);
-        vector<uint8_t> msg1 = {7, 8, 9};
-        vector<uint8_t> msg2 = {10, 11, 12};
+        vector<uint8_t> msg1{0x07, 0x08, 0x09};
+        vector<uint8_t> msg2{0x0a, 0x0b, 0x0c};
         vector<vector<uint8_t>> msgs = {msg1, msg2};
 
         PrivateKey sk1 = PopSchemeMPL().KeyGen(seed1);
@@ -1187,7 +1194,7 @@ TEST_CASE("CheckValid")
 {
     SECTION("Valid points should succeed") {
         vector<uint8_t> seed(32, 0x05);
-        vector<uint8_t> msg1 = {10, 11, 12};
+        vector<uint8_t> msg1{0x0a, 0x0b, 0x0c};
 
         PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
         G1Element pk1 = BasicSchemeMPL().SkToG1(sk1);
@@ -1213,7 +1220,7 @@ TEST_CASE("CheckValid")
         REQUIRE_THROWS(pk.CheckValid());
 
         vector<uint8_t> seed(32, 0x05);
-        vector<uint8_t> msg1 = {10, 11, 12};
+        vector<uint8_t> msg1{0x0a, 0x0b, 0x0c};
         PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
         G1Element pk1 = BasicSchemeMPL().SkToG1(sk1);
         G2Element sig1 = AugSchemeMPL().Sign(sk1, msg1);
