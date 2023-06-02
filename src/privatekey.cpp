@@ -27,8 +27,8 @@ PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
 
     PrivateKey k;
     bn_read_bin(k.keydata, bytes.begin(), PrivateKey::PRIVATE_KEY_SIZE);
-    bn_t ord;
-    bn_new(ord);
+    blst_scalar ord;
+    memset(&ord,0x00,sizeof(blst_scalar));
     g1_get_ord(ord);
     if (modOrder) {
         bn_mod_basic(k.keydata, k.keydata, ord);
@@ -174,8 +174,8 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
         throw std::length_error("Number of private keys must be at least 1");
     }
 
-    bn_t order;
-    bn_new(order);
+    blst_scalar order;
+    memset(&order,0x00,sizeof(blst_scalar));
     g1_get_ord(order);
 
     PrivateKey ret;
@@ -238,9 +238,9 @@ G2Element PrivateKey::SignG2(
 void PrivateKey::AllocateKeyData()
 {
     assert(!keydata);
-    keydata = Util::SecAlloc<bn_st>(1);
-    keydata->alloc = RLC_BN_SIZE;
-    bn_zero(keydata);
+    keydata = Util::SecAlloc<blst_scalar>(1);
+    keydata->alloc = sizeof(blst_scalar);
+    memset(keydata,0x00,sizeof(blst_scalar));
 }
 
 void PrivateKey::CheckKeyData() const

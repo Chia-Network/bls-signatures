@@ -47,8 +47,8 @@ void endStopwatch(string testName,
 
 std::vector<uint8_t> getRandomSeed() {
     uint8_t buf[32];
-    bn_t r;
-    bn_new(r);
+    blst_scalar r;
+    memset(&r,0x00,sizeof(blst_scalar));
     bn_rand(r, RLC_POS, 256);
     bn_write_bin(buf, 32, r);
     std::vector<uint8_t> ret(buf, buf + 32);

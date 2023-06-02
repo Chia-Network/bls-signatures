@@ -85,13 +85,13 @@ class HDKeys {
             keyInfoHkdf,
             infoLen + 2);
 
-        bn_t order;
-        bn_new(order);
+        blst_scalar order;
+        memset(&order,0x00,sizeof(blst_scalar));
         g1_get_ord(order);
 
         // Make sure private key is less than the curve order
-        bn_t *skBn = Util::SecAlloc<bn_t>(1);
-        bn_new(*skBn);
+        blst_scalar *skBn = Util::SecAlloc<blst_scalar>(1);
+        memset(skBn,0x00,sizeof(blst_scalar));
         bn_read_bin(*skBn, okmHkdf, L);
         bn_mod_basic(*skBn, *skBn, order);
 
@@ -181,11 +181,10 @@ class HDKeys {
         Util::IntToFourBytes(buf + G1Element::SIZE, index);
         Util::Hash256(digest, buf, G1Element::SIZE + 4);
 
-        bn_t nonce, ord;
-        bn_new(nonce);
-        bn_zero(nonce);
+        blst_scalar nonce, ord;
+        memset(&nonce,0x00,sizeof(blst_scalar));
         bn_read_bin(nonce, digest, HASH_LEN);
-        bn_new(ord);
+        memset(&ord,0x00,sizeof(blst_scalar));
         g1_get_ord(ord);
         bn_mod_basic(nonce, nonce, ord);
 
@@ -203,11 +202,10 @@ class HDKeys {
         Util::IntToFourBytes(buf + G2Element::SIZE, index);
         Util::Hash256(digest, buf, G2Element::SIZE + 4);
 
-        bn_t nonce, ord;
-        bn_new(nonce);
-        bn_zero(nonce);
+        blst_scalar nonce, ord;
+        memset(&nonce,0x00,sizeof(blst_scalar));
         bn_read_bin(nonce, digest, HASH_LEN);
-        bn_new(ord);
+        memset(&ord,0x00,sizeof(blst_scalar));
         g1_get_ord(ord);
         bn_mod_basic(nonce, nonce, ord);
 

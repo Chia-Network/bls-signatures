@@ -111,8 +111,8 @@ TEST_CASE("class PrivateKey") {
         REQUIRE_THROWS(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE - 1), true));
         REQUIRE_THROWS(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE + 1), true));
         REQUIRE_NOTHROW(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE), true));
-        bn_t order;
-        bn_new(order);
+        blst_scalar order;
+        memset(&order,0x00,sizeof(blst_scalar));
         g1_get_ord(order);
         bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, order);
         REQUIRE_NOTHROW(PrivateKey::FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE), false));
