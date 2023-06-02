@@ -73,7 +73,7 @@ G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
     return G1Element::FromBytes(Bytes(bytevec));
 }
 
-G1Element G1Element::FromNative(const g1_t element)
+G1Element G1Element::FromNative(const blst_p1 element)
 {
     G1Element ele;
     g1_copy(ele.p, element);
@@ -109,10 +109,10 @@ G1Element G1Element::Generator()
 bool G1Element::IsValid() const {
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (g1_is_infty((g1_st*)p) == 1)
+    if (blst_p1_is_inf(p) == 1)
         return true;
 
-    return g1_is_valid((g1_st*)p);
+    return g1_is_valid((blst_p1*)p);
 }
 
 void G1Element::CheckValid() const {
@@ -121,7 +121,7 @@ void G1Element::CheckValid() const {
     BLS::CheckRelicErrors();
 }
 
-void G1Element::ToNative(g1_t output) const {
+void G1Element::ToNative(blst_p1 output) const {
     g1_copy(output, p);
 }
 
@@ -189,15 +189,15 @@ G1Element operator+(const G1Element& a, const G1Element& b)
     return ans;
 }
 
-G1Element operator*(const G1Element& a, const bn_t& k)
+G1Element operator*(const G1Element& a, const blst_scalar& k)
 {
     G1Element ans;
-    g1_mul(ans.p, (g1_st*)a.p, (bn_st*)k);
+    g1_mul(ans.p, (blst_p1*)a.p, (blst_scalar*)k);
     BLS::CheckRelicErrors();
     return ans;
 }
 
-G1Element operator*(const bn_t& k, const G1Element& a) { return a * k; }
+G1Element operator*(const blst_scalar& k, const G1Element& a) { return a * k; }
 
 
 
@@ -265,10 +265,10 @@ G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
     return G2Element::FromBytes(Bytes(bytevec));
 }
 
-G2Element G2Element::FromNative(const g2_t element)
+G2Element G2Element::FromNative(const blst_p2 element)
 {
     G2Element ele;
-    g2_copy(ele.q, (g2_st*)element);
+    g2_copy(ele.q, (blst_p2*)element);
     return ele;
 }
 
@@ -301,10 +301,10 @@ G2Element G2Element::Generator()
 bool G2Element::IsValid() const {
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (g2_is_infty((g2_st*)q) == 1)
+    if (blst_p2_is_inf(q) == 1)
         return true;
 
-    return g2_is_valid((g2_st*)q);
+    return g2_is_valid((blst_p2*)q);
 }
 
 void G2Element::CheckValid() const {
@@ -313,14 +313,14 @@ void G2Element::CheckValid() const {
     BLS::CheckRelicErrors();
 }
 
-void G2Element::ToNative(g2_t output) const {
-    g2_copy(output, (g2_st*)q);
+void G2Element::ToNative(blst_p2 output) const {
+    g2_copy(output, (blst_p2*)q);
 }
 
 G2Element G2Element::Negate() const
 {
     G2Element ans;
-    g2_neg(ans.q, (g2_st*)q);
+    g2_neg(ans.q, (blst_p2*)q);
     BLS::CheckRelicErrors();
     return ans;
 }
@@ -329,7 +329,7 @@ GTElement G2Element::Pair(const G1Element& a) const { return a & (*this); }
 
 std::vector<uint8_t> G2Element::Serialize() const {
     uint8_t buffer[G2Element::SIZE + 1];
-    g2_write_bin(buffer, G2Element::SIZE + 1, (g2_st*)q, 1);
+    g2_write_bin(buffer, G2Element::SIZE + 1, (blst_p2*)q, 1);
 
     if (buffer[0] == 0x00) {  // infinity
         std::vector<uint8_t> result(G2Element::SIZE, 0);
@@ -355,7 +355,7 @@ std::vector<uint8_t> G2Element::Serialize() const {
 
 bool operator==(G2Element const& a, G2Element const& b)
 {
-    return g2_cmp((g2_st*)a.q, (g2_st*)b.q) == RLC_EQ;
+    return g2_cmp((blst_p2*)a.q, (blst_p2*)b.q) == RLC_EQ;
 }
 
 bool operator!=(G2Element const& a, G2Element const& b) { return !(a == b); }
@@ -367,7 +367,7 @@ std::ostream& operator<<(std::ostream& os, const G2Element & s)
 
 G2Element& operator+=(G2Element& a, const G2Element& b)
 {
-    g2_add(a.q, a.q, (g2_st*)b.q);
+    g2_add(a.q, a.q, (blst_p2*)b.q);
     BLS::CheckRelicErrors();
     return a;
 }
@@ -375,20 +375,20 @@ G2Element& operator+=(G2Element& a, const G2Element& b)
 G2Element operator+(const G2Element& a, const G2Element& b)
 {
     G2Element ans;
-    g2_add(ans.q, (g2_st*)a.q, (g2_st*)b.q);
+    g2_add(ans.q, (blst_p2*)a.q, (blst_p2*)b.q);
     BLS::CheckRelicErrors();
     return ans;
 }
 
-G2Element operator*(const G2Element& a, const bn_t& k)
+G2Element operator*(const G2Element& a, const blst_scalar& k)
 {
     G2Element ans;
-    g2_mul(ans.q, (g2_st*)a.q, (bn_st*)k);
+    g2_mul(ans.q, (blst_p2*)a.q, (blst_scalar*)k);
     BLS::CheckRelicErrors();
     return ans;
 }
 
-G2Element operator*(const bn_t& k, const G2Element& a) { return a * k; }
+G2Element operator*(const blst_scalar& k, const G2Element& a) { return a * k; }
 
 
 
@@ -451,7 +451,7 @@ GTElement operator&(const G1Element& a, const G2Element& b)
     G1Element nonConstA(a);
     gt_t ans;
     gt_new(ans);
-    g2_t tmp;
+    blst_p2 tmp;
     g2_null(tmp);
     g2_new(tmp);
     b.ToNative(tmp);

@@ -94,7 +94,7 @@ public:
 
 protected:
     const std::string& strCiphersuiteId;
-    bool NativeVerify(g1_t *pubKeys, g2_t *mappedHashes, size_t length);
+    bool NativeVerify(blst_p1 *pubKeys, blst_p2 *mappedHashes, size_t length);
 };
 
 class BasicSchemeMPL final : public CoreMPL {
