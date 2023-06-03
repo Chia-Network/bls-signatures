@@ -76,7 +76,7 @@ G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
 G1Element G1Element::FromNative(const blst_p1 element)
 {
     G1Element ele;
-    g1_copy(ele.p, element);
+    memcpy(&(ele.p), &element, sizeof(blst_p1));
     return ele;
 }
 
@@ -269,7 +269,7 @@ G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
 G2Element G2Element::FromNative(const blst_p2 element)
 {
     G2Element ele;
-    g2_copy(ele.q, (blst_p2*)element);
+    memcpy(&(ele.q), &element, sizeof(blst_p2));
     return ele;
 }
 
