@@ -241,7 +241,6 @@ bool CoreMPL::NativeVerify(blst_p1 *pubkeys, blst_p2 *mappedHashes, size_t lengt
         core_get()->code = RLC_OK;
         return false;
     }
-    BLS::CheckRelicErrors();
     return true;
 }
 

@@ -34,10 +34,6 @@ class BLS {
 
     // Initializes the BLS library (called automatically)
     static bool Init();
-
-    static void SetSecureAllocator(Util::SecureAllocCallback allocCb, Util::SecureFreeCallback freeCb);
-
-    static void CheckRelicErrors();
 };
 } // end namespace bls
 
