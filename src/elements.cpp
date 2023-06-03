@@ -64,7 +64,7 @@ G1Element G1Element::FromBytesUnchecked(Bytes const bytes)
         }
     }
     g1_read_bin(ele.p, buffer, G1Element::SIZE + 1);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return ele;
 }
 
@@ -93,7 +93,7 @@ G1Element G1Element::FromMessage(Bytes const message,
 {
     G1Element ans;
     ep_map_dst(ans.p, message.begin(), (int)message.size(), dst, dst_len);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     assert(ans.IsValid());
     return ans;
 }
@@ -113,24 +113,24 @@ bool G1Element::IsValid() const {
     if (blst_p1_is_inf(&p) == 1)
         return true;
 
-    return g1_is_valid((blst_p1*)p);
+    return blst_p1_on_curve((blst_p1*)&p);
 }
 
 void G1Element::CheckValid() const {
     if (!IsValid())
         throw std::invalid_argument("G1 element is invalid");
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
 }
 
-void G1Element::ToNative(blst_p1 output) const {
-    g1_copy(output, p);
+void G1Element::ToNative(blst_p1 *output) const {
+    memcpy(output, &p, sizeof(blst_p1));
 }
 
 G1Element G1Element::Negate() const
 {
     G1Element ans;
     g1_neg(ans.p, p);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -178,7 +178,7 @@ std::ostream& operator<<(std::ostream& os, const G1Element &ele)
 G1Element& operator+=(G1Element& a, const G1Element& b)
 {
     g1_add(a.p, a.p, b.p);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return a;
 }
 
@@ -186,7 +186,7 @@ G1Element operator+(const G1Element& a, const G1Element& b)
 {
     G1Element ans;
     g1_add(ans.p, a.p, b.p);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -194,7 +194,7 @@ G1Element operator*(const G1Element& a, const blst_scalar& k)
 {
     G1Element ans;
     g1_mul(ans.p, (blst_p1*)a.p, (blst_scalar*)k);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -257,7 +257,7 @@ G2Element G2Element::FromBytesUnchecked(Bytes const bytes)
     }
 
     g2_read_bin(ele.q, buffer, G2Element::SIZE + 1);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return ele;
 }
 
@@ -286,7 +286,7 @@ G2Element G2Element::FromMessage(Bytes const message,
 {
     G2Element ans;
     ep2_map_dst(ans.q, message.begin(), (int)message.size(), dst, dst_len);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     assert(ans.IsValid());
     return ans;
 }
@@ -305,24 +305,24 @@ bool G2Element::IsValid() const {
     if (blst_p2_is_inf(&q) == 1)
         return true;
 
-    return g2_is_valid((blst_p2*)q);
+    return blst_p2_on_curve((blst_p2*)&q);
 }
 
 void G2Element::CheckValid() const {
     if (!IsValid())
         throw std::invalid_argument("G2 element is invalid");
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
 }
 
-void G2Element::ToNative(blst_p2 output) const {
-    g2_copy(output, (blst_p2*)q);
+void G2Element::ToNative(blst_p2 *output) const {
+    memcpy(output, (blst_p2*)&q, sizeof(blst_p2));
 }
 
 G2Element G2Element::Negate() const
 {
     G2Element ans;
     g2_neg(ans.q, (blst_p2*)q);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -369,7 +369,7 @@ std::ostream& operator<<(std::ostream& os, const G2Element & s)
 G2Element& operator+=(G2Element& a, const G2Element& b)
 {
     g2_add(a.q, a.q, (blst_p2*)b.q);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return a;
 }
 
@@ -377,7 +377,7 @@ G2Element operator+(const G2Element& a, const G2Element& b)
 {
     G2Element ans;
     g2_add(ans.q, (blst_p2*)a.q, (blst_p2*)b.q);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return ans;
 }
 
@@ -412,7 +412,7 @@ GTElement GTElement::FromBytesUnchecked(Bytes const bytes)
     }
     GTElement ele = GTElement();
     gt_read_bin(ele.r, bytes.begin(), GTElement::SIZE);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return ele;
 }
 
@@ -467,7 +467,7 @@ GTElement operator*(GTElement& a, GTElement& b)
 {
     GTElement ans;
     fp12_mul(ans.r, a.r, b.r);
-    BLS::CheckRelicErrors();
+    // BLS::CheckRelicErrors();
     return ans;
 }
 

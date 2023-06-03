@@ -54,7 +54,7 @@ public:
 
     bool IsValid() const;
     void CheckValid() const;
-    void ToNative(blst_p1 output) const;
+    void ToNative(blst_p1 *output) const;
     G1Element Negate() const;
     GTElement Pair(const G2Element &b) const;
     uint32_t GetFingerprint() const;
@@ -95,7 +95,7 @@ public:
 
     bool IsValid() const;
     void CheckValid() const;
-    void ToNative(blst_p2 output) const;
+    void ToNative(blst_p2 *output) const;
     G2Element Negate() const;
     GTElement Pair(const G1Element &a) const;
     std::vector<uint8_t> Serialize() const;

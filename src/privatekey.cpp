@@ -175,16 +175,11 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
         throw std::length_error("Number of private keys must be at least 1");
     }
 
-    blst_scalar order;
-    memset(&order,0x00,sizeof(blst_scalar));
-    g1_get_ord(order);
-
     PrivateKey ret;
     assert(ret.IsZero());
     for (size_t i = 0; i < privateKeys.size(); i++) {
         privateKeys[i].CheckKeyData();
-        bn_add(ret.keydata, ret.keydata, privateKeys[i].keydata);
-        bn_mod_basic(ret.keydata, ret.keydata, order);
+        blst_sk_add_n_check(ret.keydata, ret.keydata, privateKeys[i].keydata);
     }
     return ret;
 }
