@@ -25,19 +25,20 @@ PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
         throw std::invalid_argument("PrivateKey::FromBytes: Invalid size");
     }
 
-    PrivateKey k;
-    bn_read_bin(k.keydata, bytes.begin(), PrivateKey::PRIVATE_KEY_SIZE);
-    blst_scalar ord;
-    memset(&ord,0x00,sizeof(blst_scalar));
-    g1_get_ord(ord);
-    if (modOrder) {
-        bn_mod_basic(k.keydata, k.keydata, ord);
-    } else {
-        if (bn_cmp(k.keydata, ord) > 0) {
-            throw std::invalid_argument(
-                "PrivateKey byte data must be less than the group order");
-        }
-    }
+    // Make sure private key is less than the curve order
+    blst_scalar zro;
+    memset(&zro,0x00,sizeof(blst_scalar));
+    blst_scalar *skBn = Util::SecAlloc<blst_scalar>(1);
+    blst_scalar_from_lendian(skBn, bytes.begin());
+    bool bOK = blst_sk_add_n_check(skBn, skBn, &zro);
+    if (!modOrder && !bOK)
+        throw std::invalid_argument(
+            "PrivateKey byte data must be less than the group order");
+
+    uint8_t *skBytes = Util::SecAlloc<uint8_t>(32);
+    blst_lendian_from_scalar(skBytes, skBn);
+    PrivateKey k = PrivateKey::FromBytes(Bytes(skBytes, 32));
+
     return k;
 }
 
@@ -56,7 +57,7 @@ PrivateKey::PrivateKey(const PrivateKey &privateKey)
 {
     privateKey.CheckKeyData();
     AllocateKeyData();
-    bn_copy(keydata, privateKey.keydata);
+    memcpy(keydata, privateKey.keydata, 32);
 }
 
 PrivateKey::PrivateKey(PrivateKey &&k)
@@ -90,7 +91,7 @@ PrivateKey& PrivateKey::operator=(const PrivateKey& other)
     CheckKeyData();
     other.CheckKeyData();
     InvalidateCaches();
-    bn_copy(keydata, other.keydata);
+    memcpy(keydata, other.keydata, 32);
     return *this;
 }
 

@@ -92,7 +92,7 @@ class PrivateKey {
     void InvalidateCaches();
 
     // The actual byte data
-    bn_st* keydata{nullptr};
+    blst_scalar* keydata{nullptr};
 
     mutable bool fG1CacheValid{false};
     mutable G1Element g1Cache;

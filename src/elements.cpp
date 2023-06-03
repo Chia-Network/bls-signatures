@@ -100,16 +100,17 @@ G1Element G1Element::FromMessage(Bytes const message,
 
 G1Element G1Element::Generator()
 {
+
     G1Element ele;
-    g1_get_gen(ele.p);
-    BLS::CheckRelicErrors();
+    const blst_p1 *gen1 = blst_p1_generator();
+    ele.FromNative(*gen1);
     return ele;
 }
 
 bool G1Element::IsValid() const {
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (blst_p1_is_inf(p) == 1)
+    if (blst_p1_is_inf(&p) == 1)
         return true;
 
     return g1_is_valid((blst_p1*)p);
@@ -293,15 +294,15 @@ G2Element G2Element::FromMessage(Bytes const message,
 G2Element G2Element::Generator()
 {
     G2Element ele;
-    g2_get_gen(ele.q);
-    BLS::CheckRelicErrors();
+    const blst_p2 *gen2 = blst_p2_generator();
+    ele.FromNative(*gen2);
     return ele;
 }
 
 bool G2Element::IsValid() const {
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (blst_p2_is_inf(q) == 1)
+    if (blst_p2_is_inf(&q) == 1)
         return true;
 
     return g2_is_valid((blst_p2*)q);

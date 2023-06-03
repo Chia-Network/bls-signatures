@@ -85,18 +85,14 @@ class HDKeys {
             keyInfoHkdf,
             infoLen + 2);
 
-        blst_scalar order;
-        memset(&order,0x00,sizeof(blst_scalar));
-        g1_get_ord(order);
-
         // Make sure private key is less than the curve order
+        blst_scalar zro;
+        memset(&zro,0x00,sizeof(blst_scalar));
         blst_scalar *skBn = Util::SecAlloc<blst_scalar>(1);
-        memset(skBn,0x00,sizeof(blst_scalar));
-        bn_read_bin(*skBn, okmHkdf, L);
-        bn_mod_basic(*skBn, *skBn, order);
-
+        blst_scalar_from_lendian(skBn, okmHkdf);
+        blst_sk_add_n_check(skBn, skBn, &zro);
         uint8_t *skBytes = Util::SecAlloc<uint8_t>(32);
-        bn_write_bin(skBytes, 32, *skBn);
+        blst_lendian_from_scalar(skBytes, skBn);
         PrivateKey k = PrivateKey::FromBytes(Bytes(skBytes, 32));
 
         Util::SecFree(prk);
@@ -181,12 +177,10 @@ class HDKeys {
         Util::IntToFourBytes(buf + G1Element::SIZE, index);
         Util::Hash256(digest, buf, G1Element::SIZE + 4);
 
-        blst_scalar nonce, ord;
-        memset(&nonce,0x00,sizeof(blst_scalar));
-        bn_read_bin(nonce, digest, HASH_LEN);
-        memset(&ord,0x00,sizeof(blst_scalar));
-        g1_get_ord(ord);
-        bn_mod_basic(nonce, nonce, ord);
+        blst_scalar nonce, zro;
+        blst_scalar_from_lendian(&nonce, digest);
+        memset(&zro,0x00,sizeof(blst_scalar));
+        blst_sk_add_n_check(&nonce, &nonce, &zro);
 
         Util::SecFree(buf);
         Util::SecFree(digest);
@@ -202,12 +196,10 @@ class HDKeys {
         Util::IntToFourBytes(buf + G2Element::SIZE, index);
         Util::Hash256(digest, buf, G2Element::SIZE + 4);
 
-        blst_scalar nonce, ord;
-        memset(&nonce,0x00,sizeof(blst_scalar));
-        bn_read_bin(nonce, digest, HASH_LEN);
-        memset(&ord,0x00,sizeof(blst_scalar));
-        g1_get_ord(ord);
-        bn_mod_basic(nonce, nonce, ord);
+        blst_scalar nonce, zro;
+        blst_scalar_from_lendian(&nonce, digest);
+        memset(&zro,0x00,sizeof(blst_scalar));
+        blst_sk_add_n_check(&nonce, &nonce, &zro);
 
         Util::SecFree(buf);
         Util::SecFree(digest);
