@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <cstring>
+#include <string.h>
 
 #include "bls.hpp"
 
@@ -165,7 +166,7 @@ std::vector<uint8_t> G1Element::Serialize() const {
 
 bool operator==(const G1Element & a, const G1Element &b)
 {
-    return g1_cmp(a.p, b.p) == RLC_EQ;
+    return memcmp(&(a.p), &(b.p), sizeof(blst_p1)) == 0;
 }
 
 bool operator!=(const G1Element & a, const G1Element & b) { return !(a == b); }
@@ -356,7 +357,7 @@ std::vector<uint8_t> G2Element::Serialize() const {
 
 bool operator==(G2Element const& a, G2Element const& b)
 {
-    return g2_cmp((blst_p2*)a.q, (blst_p2*)b.q) == RLC_EQ;
+    return memcpy((blst_p2*)&(a.q), (blst_p2*)&(b.q), sizeof(blst_p2)) == 0;
 }
 
 bool operator!=(G2Element const& a, G2Element const& b) { return !(a == b); }

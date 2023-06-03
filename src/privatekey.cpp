@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include "bls.hpp"
+#include <string.h>
 
 namespace bls {
 
@@ -107,10 +108,10 @@ const G1Element& PrivateKey::GetG1Element() const
 {
     if (!fG1CacheValid) {
         CheckKeyData();
-        g1_st *p = Util::SecAlloc<g1_st>(1);
+        blst_p1 *p = Util::SecAlloc<blst_p1>(1);
         g1_mul_gen(p, keydata);
 
-        g1Cache = G1Element::FromNative(p);
+        g1Cache = G1Element::FromNative(*p);
         Util::SecFree(p);
         fG1CacheValid = true;
     }
@@ -121,10 +122,10 @@ const G2Element& PrivateKey::GetG2Element() const
 {
     if (!fG2CacheValid) {
         CheckKeyData();
-        g2_st *q = Util::SecAlloc<g2_st>(1);
+        blst_p2 *q = Util::SecAlloc<blst_p2>(1);
         g2_mul_gen(q, keydata);
 
-        g2Cache = G2Element::FromNative(q);
+        g2Cache = G2Element::FromNative(*q);
         Util::SecFree(q);
         fG2CacheValid = true;
     }
@@ -134,10 +135,10 @@ const G2Element& PrivateKey::GetG2Element() const
 G1Element operator*(const G1Element &a, const PrivateKey &k)
 {
     k.CheckKeyData();
-    g1_st* ans = Util::SecAlloc<g1_st>(1);
+    blst_p1 *ans = Util::SecAlloc<blst_p1>(1);
     a.ToNative(ans);
     g1_mul(ans, ans, k.keydata);
-    G1Element ret = G1Element::FromNative(ans);
+    G1Element ret = G1Element::FromNative(*ans);
     Util::SecFree(ans);
     return ret;
 }
@@ -147,10 +148,10 @@ G1Element operator*(const PrivateKey &k, const G1Element &a) { return a * k; }
 G2Element operator*(const G2Element &a, const PrivateKey &k)
 {
     k.CheckKeyData();
-    g2_st* ans = Util::SecAlloc<g2_st>(1);
+    blst_p2 *ans = Util::SecAlloc<blst_p2>(1);
     a.ToNative(ans);
     g2_mul(ans, ans, k.keydata);
-    G2Element ret = G2Element::FromNative(ans);
+    G2Element ret = G2Element::FromNative(*ans);
     Util::SecFree(ans);
     return ret;
 }
@@ -160,11 +161,11 @@ G2Element operator*(const PrivateKey &k, const G2Element &a) { return a * k; }
 G2Element PrivateKey::GetG2Power(const G2Element& element) const
 {
     CheckKeyData();
-    g2_st* q = Util::SecAlloc<g2_st>(1);
+    blst_p2 *q = Util::SecAlloc<blst_p2>(1);
     element.ToNative(q);
     g2_mul(q, q, keydata);
 
-    const G2Element ret = G2Element::FromNative(q);
+    const G2Element ret = G2Element::FromNative(*q);
     Util::SecFree(q);
     return ret;
 }
@@ -186,14 +187,17 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
 
 bool PrivateKey::IsZero() const {
     CheckKeyData();
-    return bn_is_zero(keydata);
+    blst_scalar zro;
+    memset(&zro,0x00,sizeof(blst_scalar));
+
+    return memcmp(keydata,&zro,32)==0;
 }
 
 bool operator==(const PrivateKey &a, const PrivateKey &b)
 {
     a.CheckKeyData();
     b.CheckKeyData();
-    return bn_cmp(a.keydata, b.keydata) == RLC_EQ;
+    return memcmp(a.keydata, b.keydata, sizeof(blst_scalar)) == 0;
 }
 
 bool operator!=(const PrivateKey &a, const PrivateKey &b) { return !(a == b); }
@@ -222,11 +226,11 @@ G2Element PrivateKey::SignG2(
 {
     CheckKeyData();
 
-    g2_st* pt = Util::SecAlloc<g2_st>(1);
+    blst_p2 *pt = Util::SecAlloc<blst_p2>(1);
 
     ep2_map_dst(pt, msg, len, dst, dst_len);
     g2_mul(pt, pt, keydata);
-    G2Element ret = G2Element::FromNative(pt);
+    G2Element ret = G2Element::FromNative(*pt);
     Util::SecFree(pt);
     return ret;
 }
