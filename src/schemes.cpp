@@ -103,8 +103,8 @@ bool CoreMPL::Verify(const G1Element& pubkey, const Bytes& message, const G2Elem
 {
     const G2Element hashedPoint = G2Element::FromMessage(message, (const uint8_t*)strCiphersuiteId.c_str(), strCiphersuiteId.length());
 
-    std::vector<g1_st> vecG1(2);
-    std::vector<g2_st> vecG2(2);
+    std::vector<blst_p1> vecG1(2);
+    std::vector<blst_p2> vecG2(2);
 
     G1Element::Generator().Negate().ToNative(&vecG1[0]);
     if (!pubkey.IsValid()) {
@@ -200,8 +200,8 @@ bool CoreMPL::AggregateVerify(const vector<G1Element>& pubkeys,
         return arg_check;
     }
 
-    std::vector<g1_st> vecG1(nPubKeys + 1);
-    std::vector<g2_st> vecG2(nPubKeys + 1);
+    std::vector<blst_p1> vecG1(nPubKeys + 1);
+    std::vector<blst_p2> vecG2(nPubKeys + 1);
     G1Element::Generator().Negate().ToNative(&vecG1[0]);
     if (!signature.IsValid()) {
         return false;
@@ -475,10 +475,10 @@ bool PopSchemeMPL::PopVerify(const G1Element &pubkey, const G2Element &signature
     if (!signature_proof.IsValid()) {
         return false;
     }
-    G1Element::Generator().Negate().ToNative(g1s[0]);
-    pubkey.ToNative(g1s[1]);
-    signature_proof.ToNative(g2s[0]);
-    hashedPoint.ToNative(g2s[1]);
+    G1Element::Generator().Negate().ToNative(&(g1s[0]));
+    pubkey.ToNative(&(g1s[1]));
+    signature_proof.ToNative(&(g2s[0]));
+    hashedPoint.ToNative(&(g2s[1]));
 
     return CoreMPL::NativeVerify(g1s, g2s, 2);
 }
@@ -495,10 +495,10 @@ bool PopSchemeMPL::PopVerify(const Bytes& pubkey, const Bytes& proof)
     blst_p1 g1s[2];
     blst_p2 g2s[2];
 
-    G1Element::Generator().Negate().ToNative(g1s[0]);
-    G1Element::FromBytes(pubkey).ToNative(g1s[1]);
-    G2Element::FromBytes(proof).ToNative(g2s[0]);
-    hashedPoint.ToNative(g2s[1]);
+    G1Element::Generator().Negate().ToNative(&(g1s[0]));
+    G1Element::FromBytes(pubkey).ToNative(&(g1s[1]));
+    G2Element::FromBytes(proof).ToNative(&(g2s[0]));
+    hashedPoint.ToNative(&(g2s[1]));
 
     return CoreMPL::NativeVerify(g1s, g2s, 2);
 }

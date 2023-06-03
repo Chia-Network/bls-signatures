@@ -130,7 +130,8 @@ void G1Element::ToNative(blst_p1 *output) const {
 G1Element G1Element::Negate() const
 {
     G1Element ans;
-    g1_neg(ans.p, p);
+    ans.FromNative(p);
+    blst_p1_cneg(&(ans.p), true);
     // BLS::CheckRelicErrors();
     return ans;
 }
@@ -322,7 +323,8 @@ void G2Element::ToNative(blst_p2 *output) const {
 G2Element G2Element::Negate() const
 {
     G2Element ans;
-    g2_neg(ans.q, (blst_p2*)q);
+    ans.FromNative(q);
+    blst_p2_cneg(&(ans.q), true);
     // BLS::CheckRelicErrors();
     return ans;
 }
@@ -401,7 +403,7 @@ const size_t GTElement::SIZE;
 GTElement GTElement::FromBytes(Bytes const bytes)
 {
     GTElement ele = GTElement::FromBytesUnchecked(bytes);
-    if (gt_is_valid(*(gt_t*)&ele) == 0)
+    if (!blst_fp12_in_group(&(ele.r)))
         throw std::invalid_argument("GTElement is invalid");
     return ele;
 }
@@ -422,10 +424,10 @@ GTElement GTElement::FromByteVector(const std::vector<uint8_t>& bytevec)
     return GTElement::FromBytes(Bytes(bytevec));
 }
 
-GTElement GTElement::FromNative(const gt_t* element)
+GTElement GTElement::FromNative(const blst_fp12 *element)
 {
     GTElement ele = GTElement();
-    gt_copy(ele.r, *(gt_t*)element);
+    memcpy(&(ele.r), element, sizeof(blst_fp12));
     return ele;
 }
 
@@ -438,7 +440,7 @@ GTElement GTElement::Unity() {
 
 bool operator==(GTElement const& a, GTElement const& b)
 {
-    return gt_cmp(*(gt_t*)(a.r), *(gt_t*)(b.r)) == RLC_EQ;
+    return memcmp(&(a.r), &(b.r), sizeof(blst_fp12)) == 0;
 }
 
 bool operator!=(GTElement const& a, GTElement const& b) { return !(a == b); }
@@ -451,12 +453,12 @@ std::ostream& operator<<(std::ostream& os, GTElement const& ele)
 GTElement operator&(const G1Element& a, const G2Element& b)
 {
     G1Element nonConstA(a);
-    gt_t ans;
+    blst_fp12 ans;
     gt_new(ans);
     blst_p2 tmp;
     g2_null(tmp);
     g2_new(tmp);
-    b.ToNative(tmp);
+    b.ToNative(&tmp);
     pp_map_oatep_k12(ans, nonConstA.p, tmp);
     GTElement ret = GTElement::FromNative(&ans);
     gt_free(ans);
@@ -474,7 +476,7 @@ GTElement operator*(GTElement& a, GTElement& b)
 
 void GTElement::Serialize(uint8_t* buffer) const
 {
-    gt_write_bin(buffer, GTElement::SIZE, *(gt_t*)&r, 1);
+    gt_write_bin(buffer, GTElement::SIZE, *(blst_fp12 *)&r, 1);
 }
 
 std::vector<uint8_t> GTElement::Serialize() const
