@@ -37,7 +37,7 @@ public:
     static const size_t SIZE = 48;
 
     G1Element() {
-        /*g1_set_infty(p);*/
+        memset(&p,0x00,sizeof(blst_p1));
     }
 
     static G1Element FromBytes(Bytes bytes);
@@ -78,7 +78,7 @@ public:
     static const size_t SIZE = 96;
 
     G2Element() {
-        /*g2_set_infty(q);*/
+        memset(&q,0x00,sizeof(blst_p2));
     }
 
     static G2Element FromBytes(Bytes bytes);
