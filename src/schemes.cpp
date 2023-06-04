@@ -238,8 +238,7 @@ bool CoreMPL::NativeVerify(blst_p1 *pubkeys, blst_p2 *mappedHashes, size_t lengt
     }
 
     // 1 =? prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
-    if (memcmp(target, candidate, sizeof(blst_fp12)) != 0) {
-        core_get()->code = RLC_OK;
+    if (memcmp(&target, &candidate, sizeof(blst_fp12)) != 0) {
         return false;
     }
     return true;
