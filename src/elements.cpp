@@ -35,36 +35,14 @@ G1Element G1Element::FromBytesUnchecked(Bytes const bytes)
 
     G1Element ele;
 
-    // convert bytes to relic form
-    uint8_t buffer[G1Element::SIZE + 1];
-    std::memcpy(buffer + 1, bytes.begin(), G1Element::SIZE);
-    buffer[0] = 0x00;
-    buffer[1] &= 0x1f;  // erase 3 msbs from given input
+    blst_p1 point;
+    blst_p1_affine a;
+    BLST_ERROR err = blst_p1_deserialize(&a, bytes.begin());
+    if (err != BLST_SUCCESS)
+        throw err;
+    blst_p1_from_affine(&point, &a);
+    ele.FromNative(point);
 
-    bool fZerosOnly = Util::HasOnlyZeros(Bytes(buffer, G1Element::SIZE + 1));
-    if ((bytes[0] & 0xc0) == 0xc0) {  // representing infinity
-        // enforce that infinity must be 0xc0000..00
-        if (bytes[0] != 0xc0 || !fZerosOnly) {
-            throw std::invalid_argument("Given G1 infinity element must be canonical");
-        }
-        return ele;
-    } else {
-        if ((bytes[0] & 0xc0) != 0x80) {
-            throw std::invalid_argument(
-                "Given G1 non-infinity element must start with 0b10");
-        }
-
-        if (fZerosOnly) {
-            throw std::invalid_argument("G1 non-infinity element can't have only zeros");
-        }
-
-        if (bytes[0] & 0x20) {  // sign bit
-            buffer[0] = 0x03;
-        } else {
-            buffer[0] = 0x02;
-        }
-    }
-    g1_read_bin(ele.p, buffer, G1Element::SIZE + 1);
     return ele;
 }
 
@@ -220,42 +198,15 @@ G2Element G2Element::FromBytesUnchecked(Bytes const bytes)
     }
 
     G2Element ele;
-    uint8_t buffer[G2Element::SIZE + 1];
-    std::memcpy(buffer + 1, bytes.begin() + G2Element::SIZE / 2, G2Element::SIZE / 2);
-    std::memcpy(buffer + 1 + G2Element::SIZE / 2, bytes.begin(), G2Element::SIZE / 2);
-    buffer[0] = 0x00;
-    buffer[49] &= 0x1f;  // erase 3 msbs from input
 
-    if ((bytes[48] & 0xe0) != 0x00) {
-        throw std::invalid_argument(
-            "Given G2 element must always have 48th byte start with 0b000");
-    }
-    bool fZerosOnly = Util::HasOnlyZeros(Bytes(buffer, G2Element::SIZE + 1));
-    if (((bytes[0] & 0xc0) == 0xc0)) {  // infinity
-        // enforce that infinity must be 0xc0000..00
-        if (bytes[0] != 0xc0 || !fZerosOnly) {
-            throw std::invalid_argument(
-                "Given G2 infinity element must be canonical");
-        }
-        return ele;
-    } else {
-        if (((bytes[0] & 0xc0) != 0x80)) {
-            throw std::invalid_argument(
-                "G2 non-inf element must have 0th byte start with 0b10");
-        }
+    blst_p2 point;
+    blst_p2_affine a;
+    BLST_ERROR err = blst_p2_deserialize(&a, bytes.begin());
+    if (err != BLST_SUCCESS)
+        throw err;
+    blst_p2_from_affine(&point, &a);
+    ele.FromNative(point);
 
-        if (fZerosOnly) {
-            throw std::invalid_argument("G2 non-infinity element can't have only zeros");
-        }
-
-        if (bytes[0] & 0x20) {
-            buffer[0] = 0x03;
-        } else {
-            buffer[0] = 0x02;
-        }
-    }
-
-    g2_read_bin(ele.q, buffer, G2Element::SIZE + 1);
     return ele;
 }
 
