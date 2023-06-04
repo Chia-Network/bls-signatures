@@ -447,15 +447,10 @@ GTElement operator&(const G1Element& a, const G2Element& b)
 {
     G1Element nonConstA(a);
     blst_fp12 ans;
-    gt_new(ans);
     blst_p2 tmp;
-    g2_null(tmp);
-    g2_new(tmp);
     b.ToNative(&tmp);
     pp_map_oatep_k12(ans, nonConstA.p, tmp);
     GTElement ret = GTElement::FromNative(&ans);
-    gt_free(ans);
-    g2_free(tmp);
     return ret;
 }
 
