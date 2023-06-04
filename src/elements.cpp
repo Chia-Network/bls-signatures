@@ -175,22 +175,29 @@ std::ostream& operator<<(std::ostream& os, const G1Element &ele)
 
 G1Element& operator+=(G1Element& a, const G1Element& b)
 {
-    g1_add(a.p, a.p, b.p);
+    blst_p1_add(&(a.p), &(a.p), &(b.p));
     return a;
 }
 
 G1Element operator+(const G1Element& a, const G1Element& b)
 {
     G1Element ans;
-    g1_add(ans.p, a.p, b.p);
+    blst_p1_add(&(ans.p), &(a.p), &(b.p));
     return ans;
 }
 
 G1Element operator*(const G1Element& a, const blst_scalar& k)
 {
-    G1Element ans;
-    g1_mul(ans.p, (blst_p1*)a.p, (blst_scalar*)k);
-    return ans;
+    blst_p1 *ans = Util::SecAlloc<blst_p1>(1);
+    a.ToNative(ans);
+    byte *bte = Util::SecAlloc<byte>(32);
+    blst_lendian_from_scalar(bte, &k);
+    blst_p1_mult(ans, ans, bte, 256);
+    G1Element ret = G1Element::FromNative(*ans);
+    Util::SecFree(ans);
+    Util::SecFree(bte);
+
+    return ret;
 }
 
 G1Element operator*(const blst_scalar& k, const G1Element& a) { return a * k; }
@@ -360,22 +367,29 @@ std::ostream& operator<<(std::ostream& os, const G2Element & s)
 
 G2Element& operator+=(G2Element& a, const G2Element& b)
 {
-    g2_add(a.q, a.q, (blst_p2*)b.q);
+    blst_p2_add(&(a.q), &(a.q), &(b.q));
     return a;
 }
 
 G2Element operator+(const G2Element& a, const G2Element& b)
 {
     G2Element ans;
-    g2_add(ans.q, (blst_p2*)a.q, (blst_p2*)b.q);
+    blst_p2_add(&(ans.q), &(a.q), &(b.q));
     return ans;
 }
 
 G2Element operator*(const G2Element& a, const blst_scalar& k)
 {
-    G2Element ans;
-    g2_mul(ans.q, (blst_p2*)a.q, (blst_scalar*)k);
-    return ans;
+    blst_p2 *ans = Util::SecAlloc<blst_p2>(1);
+    a.ToNative(ans);
+    byte *bte = Util::SecAlloc<byte>(32);
+    blst_lendian_from_scalar(bte, &k);
+    blst_p2_mult(ans, ans, bte, 256);
+    G2Element ret = G2Element::FromNative(*ans);
+    Util::SecFree(ans);
+    Util::SecFree(bte);
+     
+    return ret;
 }
 
 G2Element operator*(const blst_scalar& k, const G2Element& a) { return a * k; }

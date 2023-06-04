@@ -135,11 +135,15 @@ const G2Element& PrivateKey::GetG2Element() const
 G1Element operator*(const G1Element &a, const PrivateKey &k)
 {
     k.CheckKeyData();
+
     blst_p1 *ans = Util::SecAlloc<blst_p1>(1);
     a.ToNative(ans);
-    g1_mul(ans, ans, k.keydata);
+    byte *bte = Util::SecAlloc<byte>(32);
+    blst_lendian_from_scalar(bte, k.keydata);
+    blst_p1_mult(ans, ans, bte, 256);
     G1Element ret = G1Element::FromNative(*ans);
     Util::SecFree(ans);
+    Util::SecFree(bte);
     return ret;
 }
 
@@ -150,9 +154,12 @@ G2Element operator*(const G2Element &a, const PrivateKey &k)
     k.CheckKeyData();
     blst_p2 *ans = Util::SecAlloc<blst_p2>(1);
     a.ToNative(ans);
-    g2_mul(ans, ans, k.keydata);
+    byte *bte = Util::SecAlloc<byte>(32);
+    blst_lendian_from_scalar(bte, k.keydata);
+    blst_p2_mult(ans, ans, bte, 256);
     G2Element ret = G2Element::FromNative(*ans);
     Util::SecFree(ans);
+    Util::SecFree(bte);
     return ret;
 }
 
@@ -163,10 +170,12 @@ G2Element PrivateKey::GetG2Power(const G2Element& element) const
     CheckKeyData();
     blst_p2 *q = Util::SecAlloc<blst_p2>(1);
     element.ToNative(q);
-    g2_mul(q, q, keydata);
-
+    byte *bte = Util::SecAlloc<byte>(32);
+    blst_lendian_from_scalar(bte, keydata);
+    blst_p2_mult(q, q, bte, 256);
     const G2Element ret = G2Element::FromNative(*q);
     Util::SecFree(q);
+    Util::SecFree(bte);
     return ret;
 }
 
@@ -239,7 +248,6 @@ void PrivateKey::AllocateKeyData()
 {
     assert(!keydata);
     keydata = Util::SecAlloc<blst_scalar>(1);
-    keydata->alloc = sizeof(blst_scalar);
     memset(keydata,0x00,sizeof(blst_scalar));
 }
 

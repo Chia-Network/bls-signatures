@@ -14,6 +14,7 @@
 
 #include <algorithm>
 #include <set>
+#include <string.h>
 
 #include "bls.hpp"
 #include "elements.hpp"
@@ -221,10 +222,10 @@ bool CoreMPL::AggregateVerify(const vector<G1Element>& pubkeys,
 
 bool CoreMPL::NativeVerify(blst_p1 *pubkeys, blst_p2 *mappedHashes, size_t length)
 {
-    gt_t target, candidate, tmpPairing;
-    fp12_zero(target);
+    blst_fp12 target, candidate, tmpPairing;
+    memset(&target, 0x00, sizeof(blst_fp12));
     fp_set_dig(target[0][0][0], 1);
-    fp12_zero(candidate);
+    memset(&candidate, 0x00, sizeof(blst_fp12));
     fp_set_dig(candidate[0][0][0], 1);
 
     // prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
@@ -237,7 +238,7 @@ bool CoreMPL::NativeVerify(blst_p1 *pubkeys, blst_p2 *mappedHashes, size_t lengt
     }
 
     // 1 =? prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
-    if (gt_cmp(target, candidate) != RLC_EQ || core_get()->code != RLC_OK) {
+    if (memcmp(target, candidate, sizeof(blst_fp12)) != 0) {
         core_get()->code = RLC_OK;
         return false;
     }
