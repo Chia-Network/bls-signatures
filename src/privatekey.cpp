@@ -217,7 +217,7 @@ void PrivateKey::Serialize(uint8_t *buffer) const
         throw std::runtime_error("PrivateKey::Serialize buffer invalid");
     }
     CheckKeyData();
-    bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, keydata);
+    blst_lendian_from_scalar(buffer, keydata);
 }
 
 std::vector<uint8_t> PrivateKey::Serialize() const

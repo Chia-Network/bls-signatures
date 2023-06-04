@@ -223,10 +223,8 @@ bool CoreMPL::AggregateVerify(const vector<G1Element>& pubkeys,
 bool CoreMPL::NativeVerify(blst_p1 *pubkeys, blst_p2 *mappedHashes, size_t length)
 {
     blst_fp12 target, candidate, tmpPairing;
-    memset(&target, 0x00, sizeof(blst_fp12));
-    fp_set_dig(target[0][0][0], 1);
-    memset(&candidate, 0x00, sizeof(blst_fp12));
-    fp_set_dig(candidate[0][0][0], 1);
+    memcpy(&target, blst_fp12_one(), sizeof(blst_fp12));
+    memcpy(&candidate, blst_fp12_one(), sizeof(blst_fp12));
 
     // prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
     // Performs pubKeys.size() pairings, 250 at a time
