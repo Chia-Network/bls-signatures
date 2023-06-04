@@ -457,7 +457,7 @@ GTElement operator&(const G1Element& a, const G2Element& b)
 GTElement operator*(GTElement& a, GTElement& b)
 {
     GTElement ans;
-    fp12_mul(ans.r, a.r, b.r);
+    blst_fp12_mul(&(ans.r), &(a.r), &(b.r));
     return ans;
 }
 
