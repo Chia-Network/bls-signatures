@@ -26,19 +26,16 @@ PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
         throw std::invalid_argument("PrivateKey::FromBytes: Invalid size");
     }
 
+    PrivateKey k;
+
     // Make sure private key is less than the curve order
     blst_scalar zro;
     memset(&zro,0x00,sizeof(blst_scalar));
-    blst_scalar *skBn = Util::SecAlloc<blst_scalar>(1);
-    blst_scalar_from_lendian(skBn, bytes.begin());
-    bool bOK = blst_sk_add_n_check(skBn, skBn, &zro);
+    blst_scalar_from_lendian(k.keydata, bytes.begin());
+    bool bOK = blst_sk_add_n_check(k.keydata, k.keydata, &zro);
     if (!modOrder && !bOK)
         throw std::invalid_argument(
             "PrivateKey byte data must be less than the group order");
-
-    uint8_t *skBytes = Util::SecAlloc<uint8_t>(32);
-    blst_lendian_from_scalar(skBytes, skBn);
-    PrivateKey k = PrivateKey::FromBytes(Bytes(skBytes, 32));
 
     return k;
 }
