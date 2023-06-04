@@ -122,21 +122,9 @@ uint32_t G1Element::GetFingerprint() const
 }
 
 std::vector<uint8_t> G1Element::Serialize() const {
-    uint8_t buffer[G1Element::SIZE + 1];
-    g1_write_bin(buffer, G1Element::SIZE + 1, p, 1);
-
-    if (buffer[0] == 0x00) {  // infinity
-        std::vector<uint8_t> result(G1Element::SIZE, 0);
-        result[0] = 0xc0;
-        return result;
-    }
-
-    if (buffer[0] == 0x03) {  // sign bit set
-        buffer[1] |= 0x20;
-    }
-
-    buffer[1] |= 0x80;  // indicate compression
-    return std::vector<uint8_t>(buffer + 1, buffer + 1 + G1Element::SIZE);
+    uint8_t buffer[G1Element::SIZE];
+    blst_p1_compress(buffer, &p);
+    return std::vector<uint8_t>(buffer, buffer + G1Element::SIZE);
 }
 
 bool operator==(const G1Element & a, const G1Element &b)
@@ -276,29 +264,9 @@ G2Element G2Element::Negate() const
 GTElement G2Element::Pair(const G1Element& a) const { return a & (*this); }
 
 std::vector<uint8_t> G2Element::Serialize() const {
-    uint8_t buffer[G2Element::SIZE + 1];
-    g2_write_bin(buffer, G2Element::SIZE + 1, (blst_p2*)q, 1);
-
-    if (buffer[0] == 0x00) {  // infinity
-        std::vector<uint8_t> result(G2Element::SIZE, 0);
-        result[0] = 0xc0;
-        return result;
-    }
-
-    // remove leading 3 bits
-    buffer[1] &= 0x1f;
-    buffer[49] &= 0x1f;
-    if (buffer[0] == 0x03) {
-        buffer[49] |= 0xa0;  // swapped later to 0
-    } else {
-        buffer[49] |= 0x80;
-    }
-
-    // Swap buffer, relic uses the opposite ordering for Fq2 elements
-    std::vector<uint8_t> result(G2Element::SIZE, 0);
-    std::memcpy(result.data(), buffer + 1 + G2Element::SIZE / 2, G2Element::SIZE / 2);
-    std::memcpy(result.data() + G2Element::SIZE / 2, buffer + 1, G2Element::SIZE / 2);
-    return result;
+    uint8_t buffer[G2Element::SIZE];
+    blst_p2_compress(buffer, &q);
+    return std::vector<uint8_t>(buffer, buffer + G2Element::SIZE);
 }
 
 bool operator==(G2Element const& a, G2Element const& b)
