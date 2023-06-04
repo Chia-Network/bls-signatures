@@ -188,16 +188,13 @@ G1Element operator+(const G1Element& a, const G1Element& b)
 
 G1Element operator*(const G1Element& a, const blst_scalar& k)
 {
-    blst_p1 *ans = Util::SecAlloc<blst_p1>(1);
-    a.ToNative(ans);
+    G1Element ans;
     byte *bte = Util::SecAlloc<byte>(32);
     blst_lendian_from_scalar(bte, &k);
-    blst_p1_mult(ans, ans, bte, 256);
-    G1Element ret = G1Element::FromNative(*ans);
-    Util::SecFree(ans);
+    blst_p1_mult(&(ans.p), &(a.p), bte, 256);
     Util::SecFree(bte);
 
-    return ret;
+    return ans;
 }
 
 G1Element operator*(const blst_scalar& k, const G1Element& a) { return a * k; }
@@ -380,16 +377,13 @@ G2Element operator+(const G2Element& a, const G2Element& b)
 
 G2Element operator*(const G2Element& a, const blst_scalar& k)
 {
-    blst_p2 *ans = Util::SecAlloc<blst_p2>(1);
-    a.ToNative(ans);
+    G2Element ans;
     byte *bte = Util::SecAlloc<byte>(32);
     blst_lendian_from_scalar(bte, &k);
-    blst_p2_mult(ans, ans, bte, 256);
-    G2Element ret = G2Element::FromNative(*ans);
-    Util::SecFree(ans);
+    blst_p2_mult(&(ans.q), &(a.q), bte, 256);
     Util::SecFree(bte);
      
-    return ret;
+    return ans;
 }
 
 G2Element operator*(const blst_scalar& k, const G2Element& a) { return a * k; }
