@@ -426,7 +426,7 @@ GTElement GTElement::FromNative(const blst_fp12 *element)
 
 GTElement GTElement::Unity() {
     GTElement ele = GTElement();
-    gt_set_unity(ele.r);
+    ele.FromNative(blst_fp12_one());
     return ele;
 }
 
