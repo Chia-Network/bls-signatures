@@ -47,10 +47,10 @@ void endStopwatch(string testName,
 
 std::vector<uint8_t> getRandomSeed() {
     uint8_t buf[32];
-    blst_scalar r;
-    memset(&r,0x00,sizeof(blst_scalar));
-    bn_rand(r, RLC_POS, 256);
-    bn_write_bin(buf, 32, r);
+
+    for (int i = 0; i < 32; i++)
+        buf[i] = rand ();
+
     std::vector<uint8_t> ret(buf, buf + 32);
     return ret;
 }
