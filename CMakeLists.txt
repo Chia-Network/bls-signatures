@@ -13,6 +13,8 @@ if(NOT CMAKE_BUILD_TYPE)
   )
 endif()
 
+link_directories("../blst")
+
 project(BLS)
 
 set(BUILD_BLS_PYTHON_BINDINGS "1" CACHE STRING "")

@@ -25,7 +25,7 @@ target_compile_definitions(bls
 
 target_link_libraries(bls
   PUBLIC
-    relic_s
+    blst
     sodium
 )
 
