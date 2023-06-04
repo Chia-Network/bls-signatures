@@ -70,7 +70,12 @@ G1Element G1Element::FromMessage(Bytes const message,
                                  int dst_len)
 {
     G1Element ans;
-    ep_map_dst(ans.p, message.begin(), (int)message.size(), dst, dst_len);
+    const byte* aug = nullptr;
+    size_t aug_len = 0;
+
+    blst_encode_to_g1(&(ans.p), message.begin(), (int)message.size(), dst, dst_len,
+        aug, aug_len);
+
     assert(ans.IsValid());
     return ans;
 }
@@ -222,7 +227,12 @@ G2Element G2Element::FromMessage(Bytes const message,
                                  int dst_len)
 {
     G2Element ans;
-    ep2_map_dst(ans.q, message.begin(), (int)message.size(), dst, dst_len);
+    const byte* aug = nullptr;
+    size_t aug_len = 0;
+
+    blst_encode_to_g2(&(ans.q), message.begin(), (int)message.size(), dst, dst_len,
+        aug, aug_len);
+
     assert(ans.IsValid());
     return ans;
 }

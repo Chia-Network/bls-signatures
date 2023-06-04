@@ -109,7 +109,7 @@ const G1Element& PrivateKey::GetG1Element() const
     if (!fG1CacheValid) {
         CheckKeyData();
         blst_p1 *p = Util::SecAlloc<blst_p1>(1);
-        g1_mul_gen(p, keydata);
+        blst_sk_to_pk_in_g1(p, keydata);
 
         g1Cache = G1Element::FromNative(*p);
         Util::SecFree(p);
@@ -123,7 +123,7 @@ const G2Element& PrivateKey::GetG2Element() const
     if (!fG2CacheValid) {
         CheckKeyData();
         blst_p2 *q = Util::SecAlloc<blst_p2>(1);
-        g2_mul_gen(q, keydata);
+        blst_sk_to_pk_in_g2(q, keydata);
 
         g2Cache = G2Element::FromNative(*q);
         Util::SecFree(q);
@@ -237,7 +237,12 @@ G2Element PrivateKey::SignG2(
 
     blst_p2 *pt = Util::SecAlloc<blst_p2>(1);
 
-    ep2_map_dst(pt, msg, len, dst, dst_len);
+    const byte* aug = nullptr;
+    size_t aug_len = 0;
+
+    blst_encode_to_g2(pt, msg, len, dst, dst_len,
+        aug, aug_len);
+    
     byte *bte = Util::SecAlloc<byte>(32);
     blst_lendian_from_scalar(bte, keydata);
     blst_p2_mult(pt, pt, bte, 256);
