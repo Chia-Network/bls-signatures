@@ -231,7 +231,7 @@ bool CoreMPL::NativeVerify(blst_p1 *pubkeys, blst_p2 *mappedHashes, size_t lengt
 
     for (size_t i = 0; i < length; i += 250) {
         size_t numPairings = std::min((length - i), (size_t)250);
-        pc_map_sim(tmpPairing, pubkeys + i, mappedHashes + i, numPairings);
+        // wjb pc_map_sim(tmpPairing, pubkeys + i, mappedHashes + i, numPairings);
         blst_fp12_mul(&candidate, &candidate, &tmpPairing);
     }
 

@@ -337,7 +337,7 @@ GTElement GTElement::FromBytesUnchecked(Bytes const bytes)
         throw std::invalid_argument("GTElement::FromBytes: Invalid size");
     }
     GTElement ele = GTElement();
-    gt_read_bin(ele.r, bytes.begin(), GTElement::SIZE);
+    // wjb gt_read_bin(ele.r, bytes.begin(), GTElement::SIZE);
     return ele;
 }
 
@@ -374,11 +374,19 @@ std::ostream& operator<<(std::ostream& os, GTElement const& ele)
 
 GTElement operator&(const G1Element& a, const G2Element& b)
 {
-    G1Element nonConstA(a);
     blst_fp12 ans;
-    blst_p2 tmp;
-    b.ToNative(&tmp);
-    pp_map_oatep_k12(ans, nonConstA.p, tmp);
+
+    blst_p1 p1;
+    blst_p2 p2;
+    a.ToNative(&p1);
+    b.ToNative(&p2);
+
+    blst_p1_affine aff1;
+    blst_p1_to_affine(&aff1, &p1);
+    blst_p2_affine aff2;
+    blst_p2_to_affine(&aff2, &p2);
+    blst_miller_loop(&ans, &aff2, &aff1);
+
     GTElement ret = GTElement::FromNative(&ans);
     return ret;
 }
@@ -392,7 +400,7 @@ GTElement operator*(GTElement& a, GTElement& b)
 
 void GTElement::Serialize(uint8_t* buffer) const
 {
-    gt_write_bin(buffer, GTElement::SIZE, *(blst_fp12 *)&r, 1);
+    // wjb gt_write_bin(buffer, GTElement::SIZE, *(blst_fp12 *)&r, 1);
 }
 
 std::vector<uint8_t> GTElement::Serialize() const
