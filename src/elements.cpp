@@ -110,7 +110,7 @@ bool G1Element::IsValid() const
     // return blst_p1_on_curve((blst_p1*)&p);
 
     if (blst_p1_is_inf(&p))
-        return false;
+        return true;
 
     return blst_p1_in_g1(&p);
 }
@@ -159,7 +159,7 @@ std::vector<uint8_t> G1Element::Serialize() const
 
 bool operator==(const G1Element& a, const G1Element& b)
 {
-    return memcmp(&(a.p), &(b.p), sizeof(blst_p1)) == 0;
+    return blst_p1_is_equal(&(a.p), &(b.p));
 }
 
 bool operator!=(const G1Element& a, const G1Element& b) { return !(a == b); }
@@ -327,7 +327,7 @@ std::vector<uint8_t> G2Element::Serialize() const
 
 bool operator==(G2Element const& a, G2Element const& b)
 {
-    return memcpy((blst_p2*)&(a.q), (blst_p2*)&(b.q), sizeof(blst_p2)) == 0;
+    return blst_p2_is_equal(&(a.q), &(b.q));
 }
 
 bool operator!=(G2Element const& a, G2Element const& b) { return !(a == b); }
@@ -406,7 +406,7 @@ GTElement GTElement::Unity()
 
 bool operator==(GTElement const& a, GTElement const& b)
 {
-    return memcmp(&(a.r), &(b.r), sizeof(blst_fp12)) == 0;
+    return blst_fp12_is_equal(&(a.r), &(b.r));
 }
 
 bool operator!=(GTElement const& a, GTElement const& b) { return !(a == b); }

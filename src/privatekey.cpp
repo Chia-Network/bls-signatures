@@ -38,6 +38,10 @@ PrivateKey PrivateKey::FromBytes(const Bytes &bytes, bool modOrder)
         throw std::invalid_argument(
             "PrivateKey byte data must be less than the group order");
 
+    if (!blst_sk_check(k.keydata))
+        throw std::invalid_argument(
+            "PrivateKey byte data must be less than the group order");
+
     return k;
 }
 

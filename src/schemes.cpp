@@ -604,8 +604,8 @@ bool PopSchemeMPL::PopVerify(
 
 bool PopSchemeMPL::PopVerify(const Bytes& pubkey, const Bytes& proof)
 {
-    return CoreMPL::Verify(
-        G1Element::FromBytes(pubkey), pubkey, G2Element::FromBytes(proof));
+    return PopSchemeMPL::PopVerify(
+        G1Element::FromBytes(pubkey), G2Element::FromBytes(proof));
 
     // const G2Element hashedPoint = G2Element::FromMessage(
     //     pubkey,
