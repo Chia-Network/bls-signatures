@@ -234,18 +234,11 @@ G2Element PrivateKey::SignG2(
 
     blst_p2 *pt = Util::SecAlloc<blst_p2>(1);
 
-    const byte* aug = nullptr;
-    size_t aug_len = 0;
+    blst_hash_to_g2(pt, msg, len, dst, dst_len, nullptr, 0);
+    blst_sign_pk_in_g1(pt, pt, keydata);
 
-    blst_encode_to_g2(pt, msg, len, dst, dst_len,
-        aug, aug_len);
-    
-    byte *bte = Util::SecAlloc<byte>(32);
-    blst_lendian_from_scalar(bte, keydata);
-    blst_p2_mult(pt, pt, bte, 256);
     G2Element ret = G2Element::FromNative(*pt);
     Util::SecFree(pt);
-    Util::SecFree(bte);
     return ret;
 }
 

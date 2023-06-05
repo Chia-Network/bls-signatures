@@ -229,12 +229,18 @@ bool CoreMPL::NativeVerify(blst_p1 *pubkeys, blst_p2 *mappedHashes, size_t lengt
     // prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
     // Performs pubKeys.size() pairings, 250 at a time
 
+    blst_p1_affine Ps[length];
+    blst_p2_affine Qs[length];
+
+    blst_p1s_to_affine(Ps, &pubkeys, length);
+    blst_p2s_to_affine(Qs, &mappedHashes, length);
     for (size_t i = 0; i < length; i += 250) {
         size_t numPairings = std::min((length - i), (size_t)250);
-        // wjb pc_map_sim(tmpPairing, pubkeys + i, mappedHashes + i, numPairings);
+        const blst_p1_affine * const pP = &(Ps[i]);
+        const blst_p2_affine * const pQ = &(Qs[i]);
+        blst_miller_loop_n(&tmpPairing, &pQ, &pP, numPairings);
         blst_fp12_mul(&candidate, &candidate, &tmpPairing);
     }
-
     // 1 =? prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
     if (memcmp(&target, &candidate, sizeof(blst_fp12)) != 0) {
         return false;
