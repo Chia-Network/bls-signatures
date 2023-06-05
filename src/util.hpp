@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <array>
 
