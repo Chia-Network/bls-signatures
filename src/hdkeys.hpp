@@ -60,7 +60,6 @@ class HDKeys {
         const uint8_t saltHkdf[20] = {66, 76, 83, 45, 83, 73, 71, 45, 75, 69,
                                     89, 71, 69, 78, 45, 83, 65, 76, 84, 45};
 
-        uint8_t *prk = Util::SecAlloc<uint8_t>(32);
         uint8_t *ikmHkdf = Util::SecAlloc<uint8_t>(seed.size() + 1);
         memcpy(ikmHkdf, seed.begin(), seed.size());
         ikmHkdf[seed.size()] = 0;
@@ -75,30 +74,20 @@ class HDKeys {
         keyInfoHkdf[infoLen] = 0;  // Two bytes for L, 0 and 48
         keyInfoHkdf[infoLen + 1] = L;
 
-        HKDF256::ExtractExpand(
-            okmHkdf,
-            L,
-            ikmHkdf,
-            seed.size() + 1,
-            saltHkdf,
-            20,
-            keyInfoHkdf,
-            infoLen + 2);
+        std::cout << "seed: "<< Util::HexStr(seed.begin(),seed.size()) << std::endl;
+        std::cout << "keyInfoHkdf: "<< Util::HexStr(keyInfoHkdf,infoLen + 2) << std::endl;
 
-        // Make sure private key is less than the curve order
-        blst_scalar zro;
-        memset(&zro,0x00,sizeof(blst_scalar));
         blst_scalar *skBn = Util::SecAlloc<blst_scalar>(1);
-        blst_scalar_from_lendian(skBn, okmHkdf);
-        blst_sk_add_n_check(skBn, skBn, &zro);
+        blst_keygen_v3(skBn, seed.begin(), seed.size(), keyInfoHkdf, infoLen + 2);
         uint8_t *skBytes = Util::SecAlloc<uint8_t>(32);
         blst_lendian_from_scalar(skBytes, skBn);
+
+        std::cout << "skBytes: "<< Util::HexStr(skBytes,32) << std::endl;
+
         PrivateKey k = PrivateKey::FromBytes(Bytes(skBytes, 32));
 
-        Util::SecFree(prk);
         Util::SecFree(ikmHkdf);
         Util::SecFree(skBn);
-        Util::SecFree(okmHkdf);
         Util::SecFree(skBytes);
 
         return k;
