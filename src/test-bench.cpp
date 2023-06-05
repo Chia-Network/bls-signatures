@@ -27,6 +27,15 @@ using std::endl;
 
 using namespace bls;
 
+std::vector<uint8_t> wjbgetRandomSeed() {
+    uint8_t buf[32];
+
+    for (int i = 0; i < 32; i++)
+        buf[i] = rand ();
+
+    std::vector<uint8_t> ret(buf, buf + 32);
+    return ret;
+}
 
 void benchSigs() {
     string testName = "Signing";
@@ -45,18 +54,26 @@ void benchSigs() {
 void benchVerification() {
     string testName = "Verification";
     const int numIters = 10000;
-    PrivateKey sk = AugSchemeMPL().KeyGen(getRandomSeed());
+    srand(0);
+    vector<uint8_t> seed=wjbgetRandomSeed();
+    std::cout << "seed: " << Util::HexStr(seed) << std::endl;
+    PrivateKey sk = AugSchemeMPL().KeyGen(seed);
+    vector<uint8_t> skBytes = sk.Serialize();
+    std::cout << "SK: " << Util::HexStr(skBytes) << std::endl;
     G1Element pk = sk.GetG1Element();
-
     std::vector<G2Element> sigs;
 
+    vector<uint8_t> pkBytes = pk.Serialize();
+    std::cout << "PK: "<< Util::HexStr(pkBytes)<< std::endl;
     for (int i = 0; i < numIters; i++) {
         uint8_t message[4];
         Util::IntToFourBytes(message, i);
         vector<uint8_t> messageBytes(message, message + 4);
-        sigs.push_back(AugSchemeMPL().Sign(sk, messageBytes));
+        G2Element sig=AugSchemeMPL().Sign(sk, messageBytes);
+        vector<uint8_t> sigBytes = sig.Serialize();
+        std::cout << i << ": "<< Util::HexStr(sigBytes) << std::endl;
+        sigs.push_back(sig);
     }
-
     auto start = startStopwatch();
     for (int i = 0; i < numIters; i++) {
         uint8_t message[4];
@@ -149,8 +166,12 @@ void benchFastAggregateVerification() {
 }
 
 int main(int argc, char* argv[]) {
+    std::cout << "benchSigs" << std::endl;
     benchSigs();
+    std::cout << "benchVerification" << std::endl;
     benchVerification();
+    std::cout << "benchBatchVerification" << std::endl;
     benchBatchVerification();
+    std::cout << "benchBatchVerification" << std::endl;
     benchFastAggregateVerification();
 }
