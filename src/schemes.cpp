@@ -563,12 +563,13 @@ bool AugSchemeMPL::AggregateVerify(
 
 G2Element PopSchemeMPL::PopProve(const PrivateKey& seckey)
 {
-    const G1Element& pk = seckey.GetG1Element();
-    const G2Element hashedKey = G2Element::FromMessage(
-        pk.Serialize(),
+    std::vector<uint8_t> pubkey_bytes = seckey.GetG1Element().Serialize();
+
+    return seckey.SignG2(
+        pubkey_bytes.data(),
+        pubkey_bytes.size(),
         (const uint8_t*)POP_CIPHERSUITE_ID.c_str(),
         POP_CIPHERSUITE_ID.length());
-    return seckey.GetG2Power(hashedKey);
 }
 
 bool PopSchemeMPL::PopVerify(
@@ -580,52 +581,18 @@ bool PopSchemeMPL::PopVerify(
 
     pubkey.ToAffine(&pubkeyAffine);
     signature_proof.ToAffine(&sigAffine);
-    std::vector<uint8_t> message = pubkey.Serialize();
-
-    // *blst::blst_p2_affine sig_affine;
-    // *blst::BLST_ERROR err = blst_p2_deserialize(&sig_affine, sigs[i]);
-    // *ASSERT(err == blst::BLST_SUCCESS);
-    // *blst::blst_pairing* ctx =
-    //     (blst::blst_pairing*)malloc(blst::blst_pairing_sizeof());
-    // *blst_pairing_init(ctx, 1, 0, 0);
-    // *blst_pairing_aggregate_pk_in_g1(
-    //     ctx, &my_c_pk_affine, &sig_affine, message, 4, 0, 0);
-    // *blst_pairing_commit(ctx);
-    // *bool res = blst_pairing_finalverify(ctx, NULL);
+    std::vector<uint8_t> pubkey_bytes = pubkey.Serialize();
 
     auto err = blst_core_verify_pk_in_g1(
         &pubkeyAffine,
         &sigAffine,
         true, /*hash*/
-        message.data(),
-        message.size(),
+        pubkey_bytes.data(),
+        pubkey_bytes.size(),
         (const uint8_t*)POP_CIPHERSUITE_ID.c_str(),
         POP_CIPHERSUITE_ID.length());
 
     return err == BLST_SUCCESS;
-
-    // return CoreMPL::Verify(pubkey, pubkey.Serialize(), signature_proof);
-
-    // const G2Element hashedPoint = G2Element::FromMessage(
-    //     pubkey.Serialize(),
-    //     (const uint8_t*)POP_CIPHERSUITE_ID.c_str(),
-    //     POP_CIPHERSUITE_ID.length());
-
-    // blst_p1 g1s[2];
-    // blst_p2 g2s[2];
-
-    // if (!pubkey.IsValid()) {
-    //     return false;
-    // }
-    // if (!signature_proof.IsValid()) {
-    //     return false;
-    // }
-    // G1Element::Generator().Negate().ToNative(&(g1s[0]));
-    // pubkey.ToNative(&(g1s[1]));
-    // signature_proof.ToNative(&(g2s[0]));
-    // hashedPoint.ToNative(&(g2s[1]));
-
-    // return CoreMPL::NativeVerify(g1s, g2s, 2);
 }
 
 bool PopSchemeMPL::PopVerify(
