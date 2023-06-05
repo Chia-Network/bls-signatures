@@ -36,25 +36,27 @@ class G1Element {
 public:
     static const size_t SIZE = 48;
 
-    G1Element() {
-        memset(&p,0x00,sizeof(blst_p1));
-    }
+    G1Element() { memset(&p, 0x00, sizeof(blst_p1)); }
 
     static G1Element FromBytes(Bytes bytes);
     static G1Element FromBytesUnchecked(Bytes bytes);
     static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G1Element FromNative(const blst_p1 element);
-    static G1Element FromMessage(const std::vector<uint8_t> &message,
-                                 const uint8_t *dst,
-                                 int dst_len);
-    static G1Element FromMessage(Bytes message,
-                                 const uint8_t* dst,
-                                 int dst_len);
+    static G1Element FromAffine(const blst_p1_affine element);
+    static G1Element FromMessage(
+        const std::vector<uint8_t> &message,
+        const uint8_t *dst,
+        int dst_len);
+    static G1Element FromMessage(
+        Bytes message,
+        const uint8_t *dst,
+        int dst_len);
     static G1Element Generator();
 
     bool IsValid() const;
     void CheckValid() const;
     void ToNative(blst_p1 *output) const;
+    void ToAffine(blst_p1_affine *output) const;
     G1Element Negate() const;
     GTElement Pair(const G2Element &b) const;
     uint32_t GetFingerprint() const;
@@ -63,7 +65,7 @@ public:
     friend bool operator==(const G1Element &a, const G1Element &b);
     friend bool operator!=(const G1Element &a, const G1Element &b);
     friend std::ostream &operator<<(std::ostream &os, const G1Element &s);
-    friend G1Element& operator+=(G1Element& a, const G1Element& b);
+    friend G1Element &operator+=(G1Element &a, const G1Element &b);
     friend G1Element operator+(const G1Element &a, const G1Element &b);
     friend G1Element operator*(const G1Element &a, const blst_scalar &k);
     friend G1Element operator*(const blst_scalar &k, const G1Element &a);
@@ -77,25 +79,27 @@ class G2Element {
 public:
     static const size_t SIZE = 96;
 
-    G2Element() {
-        memset(&q,0x00,sizeof(blst_p2));
-    }
+    G2Element() { memset(&q, 0x00, sizeof(blst_p2)); }
 
     static G2Element FromBytes(Bytes bytes);
     static G2Element FromBytesUnchecked(Bytes bytes);
     static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
     static G2Element FromNative(const blst_p2 element);
-    static G2Element FromMessage(const std::vector<uint8_t>& message,
-                                 const uint8_t* dst,
-                                 int dst_len);
-    static G2Element FromMessage(Bytes message,
-                                 const uint8_t* dst,
-                                 int dst_len);
+    static G2Element FromAffine(const blst_p2_affine element);
+    static G2Element FromMessage(
+        const std::vector<uint8_t> &message,
+        const uint8_t *dst,
+        int dst_len);
+    static G2Element FromMessage(
+        Bytes message,
+        const uint8_t *dst,
+        int dst_len);
     static G2Element Generator();
 
     bool IsValid() const;
     void CheckValid() const;
     void ToNative(blst_p2 *output) const;
+    void ToAffine(blst_p2_affine *output) const;
     G2Element Negate() const;
     GTElement Pair(const G1Element &a) const;
     std::vector<uint8_t> Serialize() const;
@@ -103,7 +107,7 @@ public:
     friend bool operator==(G2Element const &a, G2Element const &b);
     friend bool operator!=(G2Element const &a, G2Element const &b);
     friend std::ostream &operator<<(std::ostream &os, const G2Element &s);
-    friend G2Element& operator+=(G2Element& a, const G2Element& b);
+    friend G2Element &operator+=(G2Element &a, const G2Element &b);
     friend G2Element operator+(const G2Element &a, const G2Element &b);
     friend G2Element operator*(const G2Element &a, const blst_scalar &k);
     friend G2Element operator*(const blst_scalar &k, const G2Element &a);

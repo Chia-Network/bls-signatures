@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <cstring>
 #include <string.h>
+
+#include <cstring>
 
 #include "bls.hpp"
 
@@ -21,7 +22,8 @@ namespace bls {
 
 const size_t G1Element::SIZE;
 
-G1Element G1Element::FromBytes(Bytes const bytes) {
+G1Element G1Element::FromBytes(Bytes const bytes)
+{
     G1Element ele = G1Element::FromBytesUnchecked(bytes);
     ele.CheckValid();
     return ele;
@@ -33,17 +35,12 @@ G1Element G1Element::FromBytesUnchecked(Bytes const bytes)
         throw std::invalid_argument("G1Element::FromBytes: Invalid size");
     }
 
-    G1Element ele;
-
-    blst_p1 point;
     blst_p1_affine a;
-    BLST_ERROR err = blst_p1_deserialize(&a, bytes.begin());
+    BLST_ERROR err = blst_p1_uncompress(&a, bytes.begin());
     if (err != BLST_SUCCESS)
-        throw err;
-    blst_p1_from_affine(&point, &a);
-    ele.FromNative(point);
+        throw std::invalid_argument("G1Element::FromBytes: Invalid bytes");
 
-    return ele;
+    return G1Element::FromAffine(a);
 }
 
 G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
@@ -58,23 +55,38 @@ G1Element G1Element::FromNative(const blst_p1 element)
     return ele;
 }
 
-G1Element G1Element::FromMessage(const std::vector<uint8_t>& message,
-                                 const uint8_t* dst,
-                                 int dst_len)
+G1Element G1Element::FromAffine(const blst_p1_affine element)
+{
+    G1Element ele;
+    blst_p1_from_affine(&(ele.p), &element);
+    return ele;
+}
+
+G1Element G1Element::FromMessage(
+    const std::vector<uint8_t>& message,
+    const uint8_t* dst,
+    int dst_len)
 {
     return FromMessage(Bytes(message), dst, dst_len);
 }
 
-G1Element G1Element::FromMessage(Bytes const message,
-                                 const uint8_t* dst,
-                                 int dst_len)
+G1Element G1Element::FromMessage(
+    Bytes const message,
+    const uint8_t* dst,
+    int dst_len)
 {
     G1Element ans;
     const byte* aug = nullptr;
     size_t aug_len = 0;
 
-    blst_encode_to_g1(&(ans.p), message.begin(), (int)message.size(), dst, dst_len,
-        aug, aug_len);
+    blst_encode_to_g1(
+        &(ans.p),
+        message.begin(),
+        (int)message.size(),
+        dst,
+        dst_len,
+        aug,
+        aug_len);
 
     assert(ans.IsValid());
     return ans;
@@ -82,29 +94,41 @@ G1Element G1Element::FromMessage(Bytes const message,
 
 G1Element G1Element::Generator()
 {
-
     G1Element ele;
-    const blst_p1 *gen1 = blst_p1_generator();
+    const blst_p1* gen1 = blst_p1_generator();
     ele.FromNative(*gen1);
     return ele;
 }
 
-bool G1Element::IsValid() const {
+bool G1Element::IsValid() const
+{
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (blst_p1_is_inf(&p) == 1)
-        return true;
+    // if (blst_p1_is_inf(&p) == 1)
+    //     return true;
 
-    return blst_p1_on_curve((blst_p1*)&p);
+    // return blst_p1_on_curve((blst_p1*)&p);
+
+    if (blst_p1_is_inf(&p))
+        return false;
+
+    return blst_p1_in_g1(&p);
 }
 
-void G1Element::CheckValid() const {
+void G1Element::CheckValid() const
+{
     if (!IsValid())
         throw std::invalid_argument("G1 element is invalid");
 }
 
-void G1Element::ToNative(blst_p1 *output) const {
+void G1Element::ToNative(blst_p1* output) const
+{
     memcpy(output, &p, sizeof(blst_p1));
+}
+
+void G1Element::ToAffine(blst_p1_affine* output) const
+{
+    blst_p1_to_affine(output, &p);
 }
 
 G1Element G1Element::Negate() const
@@ -126,20 +150,21 @@ uint32_t G1Element::GetFingerprint() const
     return Util::FourBytesToInt(hash);
 }
 
-std::vector<uint8_t> G1Element::Serialize() const {
+std::vector<uint8_t> G1Element::Serialize() const
+{
     uint8_t buffer[G1Element::SIZE];
     blst_p1_compress(buffer, &p);
     return std::vector<uint8_t>(buffer, buffer + G1Element::SIZE);
 }
 
-bool operator==(const G1Element & a, const G1Element &b)
+bool operator==(const G1Element& a, const G1Element& b)
 {
     return memcmp(&(a.p), &(b.p), sizeof(blst_p1)) == 0;
 }
 
-bool operator!=(const G1Element & a, const G1Element & b) { return !(a == b); }
+bool operator!=(const G1Element& a, const G1Element& b) { return !(a == b); }
 
-std::ostream& operator<<(std::ostream& os, const G1Element &ele)
+std::ostream& operator<<(std::ostream& os, const G1Element& ele)
 {
     return os << Util::HexStr(ele.Serialize());
 }
@@ -160,7 +185,7 @@ G1Element operator+(const G1Element& a, const G1Element& b)
 G1Element operator*(const G1Element& a, const blst_scalar& k)
 {
     G1Element ans;
-    byte *bte = Util::SecAlloc<byte>(32);
+    byte* bte = Util::SecAlloc<byte>(32);
     blst_lendian_from_scalar(bte, &k);
     blst_p1_mult(&(ans.p), &(a.p), bte, 256);
     Util::SecFree(bte);
@@ -170,15 +195,12 @@ G1Element operator*(const G1Element& a, const blst_scalar& k)
 
 G1Element operator*(const blst_scalar& k, const G1Element& a) { return a * k; }
 
-
-
 // G2Element definitions below
-
-
 
 const size_t G2Element::SIZE;
 
-G2Element G2Element::FromBytes(Bytes const bytes) {
+G2Element G2Element::FromBytes(Bytes const bytes)
+{
     G2Element ele = G2Element::FromBytesUnchecked(bytes);
     ele.CheckValid();
     return ele;
@@ -190,17 +212,12 @@ G2Element G2Element::FromBytesUnchecked(Bytes const bytes)
         throw std::invalid_argument("G2Element::FromBytes: Invalid size");
     }
 
-    G2Element ele;
-
-    blst_p2 point;
     blst_p2_affine a;
-    BLST_ERROR err = blst_p2_deserialize(&a, bytes.begin());
+    BLST_ERROR err = blst_p2_uncompress(&a, bytes.begin());
     if (err != BLST_SUCCESS)
-        throw err;
-    blst_p2_from_affine(&point, &a);
-    ele.FromNative(point);
+        throw std::invalid_argument("G2Element::FromBytes: Invalid bytes");
 
-    return ele;
+    return G2Element::FromAffine(a);
 }
 
 G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
@@ -215,23 +232,41 @@ G2Element G2Element::FromNative(const blst_p2 element)
     return ele;
 }
 
-G2Element G2Element::FromMessage(const std::vector<uint8_t>& message,
-                                 const uint8_t* dst,
-                                 int dst_len)
+G2Element G2Element::FromAffine(const blst_p2_affine element)
+{
+    G2Element ele;
+
+    blst_p2_affine a;
+    blst_p2_from_affine(&ele.q, &a);
+
+    return ele;
+}
+
+G2Element G2Element::FromMessage(
+    const std::vector<uint8_t>& message,
+    const uint8_t* dst,
+    int dst_len)
 {
     return FromMessage(Bytes(message), dst, dst_len);
 }
 
-G2Element G2Element::FromMessage(Bytes const message,
-                                 const uint8_t* dst,
-                                 int dst_len)
+G2Element G2Element::FromMessage(
+    Bytes const message,
+    const uint8_t* dst,
+    int dst_len)
 {
     G2Element ans;
     const byte* aug = nullptr;
     size_t aug_len = 0;
 
-    blst_encode_to_g2(&(ans.q), message.begin(), (int)message.size(), dst, dst_len,
-        aug, aug_len);
+    blst_encode_to_g2(
+        &(ans.q),
+        message.begin(),
+        (int)message.size(),
+        dst,
+        dst_len,
+        aug,
+        aug_len);
 
     assert(ans.IsValid());
     return ans;
@@ -240,27 +275,40 @@ G2Element G2Element::FromMessage(Bytes const message,
 G2Element G2Element::Generator()
 {
     G2Element ele;
-    const blst_p2 *gen2 = blst_p2_generator();
+    const blst_p2* gen2 = blst_p2_generator();
     ele.FromNative(*gen2);
     return ele;
 }
 
-bool G2Element::IsValid() const {
+bool G2Element::IsValid() const
+{
     // Infinity no longer valid in Relic
     // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    if (blst_p2_is_inf(&q) == 1)
-        return true;
+    // if (blst_p2_is_inf(&q) == 1)
+    //     return true;
 
-    return blst_p2_on_curve((blst_p2*)&q);
+    // return blst_p2_on_curve((blst_p2*)&q);
+
+    if (blst_p2_is_inf(&q))
+        return false;
+
+    return blst_p2_in_g2(&q);
 }
 
-void G2Element::CheckValid() const {
+void G2Element::CheckValid() const
+{
     if (!IsValid())
         throw std::invalid_argument("G2 element is invalid");
 }
 
-void G2Element::ToNative(blst_p2 *output) const {
+void G2Element::ToNative(blst_p2* output) const
+{
     memcpy(output, (blst_p2*)&q, sizeof(blst_p2));
+}
+
+void G2Element::ToAffine(blst_p2_affine* output) const
+{
+    blst_p2_to_affine(output, &q);
 }
 
 G2Element G2Element::Negate() const
@@ -273,7 +321,8 @@ G2Element G2Element::Negate() const
 
 GTElement G2Element::Pair(const G1Element& a) const { return a & (*this); }
 
-std::vector<uint8_t> G2Element::Serialize() const {
+std::vector<uint8_t> G2Element::Serialize() const
+{
     uint8_t buffer[G2Element::SIZE];
     blst_p2_compress(buffer, &q);
     return std::vector<uint8_t>(buffer, buffer + G2Element::SIZE);
@@ -286,7 +335,7 @@ bool operator==(G2Element const& a, G2Element const& b)
 
 bool operator!=(G2Element const& a, G2Element const& b) { return !(a == b); }
 
-std::ostream& operator<<(std::ostream& os, const G2Element & s)
+std::ostream& operator<<(std::ostream& os, const G2Element& s)
 {
     return os << Util::HexStr(s.Serialize());
 }
@@ -307,17 +356,15 @@ G2Element operator+(const G2Element& a, const G2Element& b)
 G2Element operator*(const G2Element& a, const blst_scalar& k)
 {
     G2Element ans;
-    byte *bte = Util::SecAlloc<byte>(32);
+    byte* bte = Util::SecAlloc<byte>(32);
     blst_lendian_from_scalar(bte, &k);
     blst_p2_mult(&(ans.q), &(a.q), bte, 256);
     Util::SecFree(bte);
-     
+
     return ans;
 }
 
 G2Element operator*(const blst_scalar& k, const G2Element& a) { return a * k; }
-
-
 
 // GTElement
 
@@ -346,19 +393,19 @@ GTElement GTElement::FromByteVector(const std::vector<uint8_t>& bytevec)
     return GTElement::FromBytes(Bytes(bytevec));
 }
 
-GTElement GTElement::FromNative(const blst_fp12 *element)
+GTElement GTElement::FromNative(const blst_fp12* element)
 {
     GTElement ele = GTElement();
     memcpy(&(ele.r), element, sizeof(blst_fp12));
     return ele;
 }
 
-GTElement GTElement::Unity() {
+GTElement GTElement::Unity()
+{
     GTElement ele = GTElement();
     ele.FromNative(blst_fp12_one());
     return ele;
 }
-
 
 bool operator==(GTElement const& a, GTElement const& b)
 {

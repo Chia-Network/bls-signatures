@@ -13,6 +13,7 @@
 // limitations under the License.
 
 #include <chrono>
+
 #include "bls.hpp"
 #include "test-utils.hpp"
 
@@ -20,24 +21,25 @@ extern "C" {
 #include "relic.h"
 }
 
-using std::string;
-using std::vector;
 using std::cout;
 using std::endl;
+using std::string;
+using std::vector;
 
 using namespace bls;
 
-std::vector<uint8_t> wjbgetRandomSeed() {
+std::vector<uint8_t> wjbgetRandomSeed()
+{
     uint8_t buf[32];
 
-    for (int i = 0; i < 32; i++)
-        buf[i] = rand ();
+    for (int i = 0; i < 32; i++) buf[i] = rand();
 
     std::vector<uint8_t> ret(buf, buf + 32);
     return ret;
 }
 
-void benchSigs() {
+void benchSigs()
+{
     string testName = "Signing";
     const int numIters = 5000;
     PrivateKey sk = AugSchemeMPL().KeyGen(getRandomSeed());
@@ -51,11 +53,12 @@ void benchSigs() {
     endStopwatch(testName, start, numIters);
 }
 
-void benchVerification() {
+void benchVerification()
+{
     string testName = "Verification";
     const int numIters = 10000;
     srand(0);
-    vector<uint8_t> seed=wjbgetRandomSeed();
+    vector<uint8_t> seed = wjbgetRandomSeed();
     std::cout << "seed: " << Util::HexStr(seed) << std::endl;
     PrivateKey sk = AugSchemeMPL().KeyGen(seed);
     vector<uint8_t> skBytes = sk.Serialize();
@@ -64,14 +67,14 @@ void benchVerification() {
     std::vector<G2Element> sigs;
 
     vector<uint8_t> pkBytes = pk.Serialize();
-    std::cout << "PK: "<< Util::HexStr(pkBytes)<< std::endl;
+    std::cout << "PK: " << Util::HexStr(pkBytes) << std::endl;
     for (int i = 0; i < numIters; i++) {
         uint8_t message[4];
         Util::IntToFourBytes(message, i);
         vector<uint8_t> messageBytes(message, message + 4);
-        G2Element sig=AugSchemeMPL().Sign(sk, messageBytes);
+        G2Element sig = AugSchemeMPL().Sign(sk, messageBytes);
         vector<uint8_t> sigBytes = sig.Serialize();
-        std::cout << i << ": "<< Util::HexStr(sigBytes) << std::endl;
+        std::cout << i << ": " << Util::HexStr(sigBytes) << std::endl;
         sigs.push_back(sig);
     }
     auto start = startStopwatch();
@@ -85,8 +88,9 @@ void benchVerification() {
     endStopwatch(testName, start, numIters);
 }
 
-void benchBatchVerification() {
-    const int numIters = 100000;
+void benchBatchVerification()
+{
+    const int numIters = 10000;
 
     vector<vector<uint8_t>> sig_bytes;
     vector<vector<uint8_t>> pk_bytes;
@@ -131,8 +135,9 @@ void benchBatchVerification() {
     endStopwatch("Batch verification", start, numIters);
 }
 
-void benchFastAggregateVerification() {
-    const int numIters = 5000;
+void benchFastAggregateVerification()
+{
+    const int numIters = 10000;
 
     vector<G2Element> sigs;
     vector<G1Element> pks;
@@ -151,7 +156,6 @@ void benchFastAggregateVerification() {
     G2Element aggSig = PopSchemeMPL().Aggregate(sigs);
     endStopwatch("PopScheme Aggregation", start, numIters);
 
-
     start = startStopwatch();
     for (int i = 0; i < numIters; i++) {
         bool ok = PopSchemeMPL().PopVerify(pks[i], pops[i]);
@@ -165,7 +169,8 @@ void benchFastAggregateVerification() {
     endStopwatch("PopScheme verification", start, numIters);
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
     std::cout << "benchSigs" << std::endl;
     benchSigs();
     std::cout << "benchVerification" << std::endl;
