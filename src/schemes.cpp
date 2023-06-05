@@ -231,9 +231,11 @@ bool CoreMPL::NativeVerify(blst_p1 *pubkeys, blst_p2 *mappedHashes, size_t lengt
 
     blst_p1_affine Ps[length];
     blst_p2_affine Qs[length];
+    const blst_p1 *ppoints[2] = { pubkeys, NULL };
+    const blst_p2 *pqoints[2] = { mappedHashes, NULL };
 
-    blst_p1s_to_affine(Ps, &pubkeys, length);
-    blst_p2s_to_affine(Qs, &mappedHashes, length);
+    blst_p1s_to_affine(Ps, ppoints, length);
+    blst_p2s_to_affine(Qs, pqoints, length);
     for (size_t i = 0; i < length; i += 250) {
         size_t numPairings = std::min((length - i), (size_t)250);
         const blst_p1_affine * const pP = &(Ps[i]);
