@@ -48,14 +48,14 @@ G1Element G1Element::FromByteVector(const std::vector<uint8_t>& bytevec)
     return G1Element::FromBytes(Bytes(bytevec));
 }
 
-G1Element G1Element::FromNative(const blst_p1 element)
+G1Element G1Element::FromNative(const blst_p1& element)
 {
     G1Element ele;
     memcpy(&(ele.p), &element, sizeof(blst_p1));
     return ele;
 }
 
-G1Element G1Element::FromAffine(const blst_p1_affine element)
+G1Element G1Element::FromAffine(const blst_p1_affine& element)
 {
     G1Element ele;
     blst_p1_from_affine(&(ele.p), &element);
@@ -225,20 +225,17 @@ G2Element G2Element::FromByteVector(const std::vector<uint8_t>& bytevec)
     return G2Element::FromBytes(Bytes(bytevec));
 }
 
-G2Element G2Element::FromNative(const blst_p2 element)
+G2Element G2Element::FromNative(const blst_p2& element)
 {
     G2Element ele;
     memcpy(&(ele.q), &element, sizeof(blst_p2));
     return ele;
 }
 
-G2Element G2Element::FromAffine(const blst_p2_affine element)
+G2Element G2Element::FromAffine(const blst_p2_affine& element)
 {
     G2Element ele;
-
-    blst_p2_affine a;
-    blst_p2_from_affine(&ele.q, &a);
-
+    blst_p2_from_affine(&(ele.q), &element);
     return ele;
 }
 

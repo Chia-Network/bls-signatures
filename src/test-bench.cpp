@@ -41,7 +41,7 @@ std::vector<uint8_t> wjbgetRandomSeed()
 void benchSigs()
 {
     string testName = "Signing";
-    const int numIters = 5000;
+    const int numIters = 10;
     PrivateKey sk = AugSchemeMPL().KeyGen(getRandomSeed());
     vector<uint8_t> message1 = sk.GetG1Element().Serialize();
 
@@ -56,7 +56,7 @@ void benchSigs()
 void benchVerification()
 {
     string testName = "Verification";
-    const int numIters = 10000;
+    const int numIters = 10;
     srand(0);
     vector<uint8_t> seed = wjbgetRandomSeed();
     std::cout << "seed: " << Util::HexStr(seed) << std::endl;
@@ -90,7 +90,7 @@ void benchVerification()
 
 void benchBatchVerification()
 {
-    const int numIters = 10000;
+    const int numIters = 10;
 
     vector<vector<uint8_t>> sig_bytes;
     vector<vector<uint8_t>> pk_bytes;
@@ -137,7 +137,7 @@ void benchBatchVerification()
 
 void benchFastAggregateVerification()
 {
-    const int numIters = 10000;
+    const int numIters = 10;
 
     vector<G2Element> sigs;
     vector<G1Element> pks;
@@ -173,10 +173,10 @@ int main(int argc, char* argv[])
 {
     std::cout << "benchSigs" << std::endl;
     benchSigs();
-    std::cout << "benchVerification" << std::endl;
+    std::cout << std::endl << "benchVerification" << std::endl;
     benchVerification();
-    std::cout << "benchBatchVerification" << std::endl;
+    std::cout << std::endl << "benchBatchVerification" << std::endl;
     benchBatchVerification();
-    std::cout << "benchBatchVerification" << std::endl;
+    std::cout << std::endl << "benchBatchVerification" << std::endl;
     benchFastAggregateVerification();
 }

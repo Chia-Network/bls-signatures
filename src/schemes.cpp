@@ -240,26 +240,23 @@ bool CoreMPL::AggregateVerify(
 
     blst_p1_affine pk_affine;
     blst_p2_affine sig_affine;
+    blst_fp12 gtsig;
 
     pubkeys[0].ToAffine(&pk_affine);
     signature.ToAffine(&sig_affine);
 
-    auto err = blst_pairing_aggregate_pk_in_g1(
-        ctx, &pk_affine, &sig_affine, messages[0].begin(), messages[0].size());
+    blst_aggregated_in_g2(&gtsig, &sig_affine);
 
-    fprintf(stderr, "err: %d\n", err);
-    for (size_t i = 1; i < nPubKeys; i++) {
+    for (size_t i = 0; i < nPubKeys; i++) {
         pubkeys[i].ToAffine(&pk_affine);
 
-        err = blst_pairing_aggregate_pk_in_g1(
+        auto err = blst_pairing_aggregate_pk_in_g1(
             ctx, &pk_affine, nullptr, messages[i].begin(), messages[i].size());
-        fprintf(stderr, "err: %d\n", err);
     }
 
     blst_pairing_commit(ctx);
 
-    auto ret = blst_pairing_finalverify(ctx);
-    fprintf(stderr, "ret: %d\n", ret);
+    auto ret = blst_pairing_finalverify(ctx, &gtsig);
 
     free(ctx);
 
@@ -289,38 +286,38 @@ bool CoreMPL::AggregateVerify(
     //     (blst_p1*)vecG1.data(), (blst_p2*)vecG2.data(), nPubKeys + 1);
 }
 
-bool CoreMPL::NativeVerify(
-    blst_p1* pubkeys,
-    blst_p2* mappedHashes,
-    size_t length)
-{
-    blst_fp12 target, candidate, tmpPairing;
-    memcpy(&target, blst_fp12_one(), sizeof(blst_fp12));
-    memcpy(&candidate, blst_fp12_one(), sizeof(blst_fp12));
+// bool CoreMPL::NativeVerify(
+//     blst_p1* pubkeys,
+//     blst_p2* mappedHashes,
+//     size_t length)
+// {
+//     blst_fp12 target, candidate, tmpPairing;
+//     memcpy(&target, blst_fp12_one(), sizeof(blst_fp12));
+//     memcpy(&candidate, blst_fp12_one(), sizeof(blst_fp12));
 
-    // prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
-    // Performs pubKeys.size() pairings, 250 at a time
+//     // prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
+//     // Performs pubKeys.size() pairings, 250 at a time
 
-    blst_p1_affine Ps[length];
-    blst_p2_affine Qs[length];
-    const blst_p1* ppoints[2] = {pubkeys, NULL};
-    const blst_p2* pqoints[2] = {mappedHashes, NULL};
+//     blst_p1_affine Ps[length];
+//     blst_p2_affine Qs[length];
+//     const blst_p1* ppoints[2] = {pubkeys, NULL};
+//     const blst_p2* pqoints[2] = {mappedHashes, NULL};
 
-    blst_p1s_to_affine(Ps, ppoints, length);
-    blst_p2s_to_affine(Qs, pqoints, length);
-    for (size_t i = 0; i < length; i += 250) {
-        size_t numPairings = std::min((length - i), (size_t)250);
-        const blst_p1_affine* const pP = &(Ps[i]);
-        const blst_p2_affine* const pQ = &(Qs[i]);
-        blst_miller_loop_n(&tmpPairing, &pQ, &pP, numPairings);
-        blst_fp12_mul(&candidate, &candidate, &tmpPairing);
-    }
-    // 1 =? prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
-    if (memcmp(&target, &candidate, sizeof(blst_fp12)) != 0) {
-        return false;
-    }
-    return true;
-}
+//     blst_p1s_to_affine(Ps, ppoints, length);
+//     blst_p2s_to_affine(Qs, pqoints, length);
+//     for (size_t i = 0; i < length; i += 250) {
+//         size_t numPairings = std::min((length - i), (size_t)250);
+//         const blst_p1_affine* const pP = &(Ps[i]);
+//         const blst_p2_affine* const pQ = &(Qs[i]);
+//         blst_miller_loop_n(&tmpPairing, &pQ, &pP, numPairings);
+//         blst_fp12_mul(&candidate, &candidate, &tmpPairing);
+//     }
+//     // 1 =? prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
+//     if (memcmp(&target, &candidate, sizeof(blst_fp12)) != 0) {
+//         return false;
+//     }
+//     return true;
+// }
 
 PrivateKey CoreMPL::DeriveChildSk(const PrivateKey& sk, uint32_t index)
 {
@@ -578,26 +575,57 @@ bool PopSchemeMPL::PopVerify(
     const G1Element& pubkey,
     const G2Element& signature_proof)
 {
-    const G2Element hashedPoint = G2Element::FromMessage(
-        pubkey.Serialize(),
+    blst_p1_affine pubkeyAffine;
+    blst_p2_affine sigAffine;
+
+    pubkey.ToAffine(&pubkeyAffine);
+    signature_proof.ToAffine(&sigAffine);
+    std::vector<uint8_t> message = pubkey.Serialize();
+
+    // *blst::blst_p2_affine sig_affine;
+    // *blst::BLST_ERROR err = blst_p2_deserialize(&sig_affine, sigs[i]);
+    // *ASSERT(err == blst::BLST_SUCCESS);
+    // *blst::blst_pairing* ctx =
+    //     (blst::blst_pairing*)malloc(blst::blst_pairing_sizeof());
+    // *blst_pairing_init(ctx, 1, 0, 0);
+    // *blst_pairing_aggregate_pk_in_g1(
+    //     ctx, &my_c_pk_affine, &sig_affine, message, 4, 0, 0);
+    // *blst_pairing_commit(ctx);
+    // *bool res = blst_pairing_finalverify(ctx, NULL);
+
+    auto err = blst_core_verify_pk_in_g1(
+        &pubkeyAffine,
+        &sigAffine,
+        true, /*hash*/
+        message.data(),
+        message.size(),
         (const uint8_t*)POP_CIPHERSUITE_ID.c_str(),
         POP_CIPHERSUITE_ID.length());
 
-    blst_p1 g1s[2];
-    blst_p2 g2s[2];
+    return err == BLST_SUCCESS;
 
-    if (!pubkey.IsValid()) {
-        return false;
-    }
-    if (!signature_proof.IsValid()) {
-        return false;
-    }
-    G1Element::Generator().Negate().ToNative(&(g1s[0]));
-    pubkey.ToNative(&(g1s[1]));
-    signature_proof.ToNative(&(g2s[0]));
-    hashedPoint.ToNative(&(g2s[1]));
+    // return CoreMPL::Verify(pubkey, pubkey.Serialize(), signature_proof);
 
-    return CoreMPL::NativeVerify(g1s, g2s, 2);
+    // const G2Element hashedPoint = G2Element::FromMessage(
+    //     pubkey.Serialize(),
+    //     (const uint8_t*)POP_CIPHERSUITE_ID.c_str(),
+    //     POP_CIPHERSUITE_ID.length());
+
+    // blst_p1 g1s[2];
+    // blst_p2 g2s[2];
+
+    // if (!pubkey.IsValid()) {
+    //     return false;
+    // }
+    // if (!signature_proof.IsValid()) {
+    //     return false;
+    // }
+    // G1Element::Generator().Negate().ToNative(&(g1s[0]));
+    // pubkey.ToNative(&(g1s[1]));
+    // signature_proof.ToNative(&(g2s[0]));
+    // hashedPoint.ToNative(&(g2s[1]));
+
+    // return CoreMPL::NativeVerify(g1s, g2s, 2);
 }
 
 bool PopSchemeMPL::PopVerify(
@@ -609,20 +637,23 @@ bool PopSchemeMPL::PopVerify(
 
 bool PopSchemeMPL::PopVerify(const Bytes& pubkey, const Bytes& proof)
 {
-    const G2Element hashedPoint = G2Element::FromMessage(
-        pubkey,
-        (const uint8_t*)POP_CIPHERSUITE_ID.c_str(),
-        POP_CIPHERSUITE_ID.length());
+    return CoreMPL::Verify(
+        G1Element::FromBytes(pubkey), pubkey, G2Element::FromBytes(proof));
 
-    blst_p1 g1s[2];
-    blst_p2 g2s[2];
+    // const G2Element hashedPoint = G2Element::FromMessage(
+    //     pubkey,
+    //     (const uint8_t*)POP_CIPHERSUITE_ID.c_str(),
+    //     POP_CIPHERSUITE_ID.length());
 
-    G1Element::Generator().Negate().ToNative(&(g1s[0]));
-    G1Element::FromBytes(pubkey).ToNative(&(g1s[1]));
-    G2Element::FromBytes(proof).ToNative(&(g2s[0]));
-    hashedPoint.ToNative(&(g2s[1]));
+    // blst_p1 g1s[2];
+    // blst_p2 g2s[2];
 
-    return CoreMPL::NativeVerify(g1s, g2s, 2);
+    // G1Element::Generator().Negate().ToNative(&(g1s[0]));
+    // G1Element::FromBytes(pubkey).ToNative(&(g1s[1]));
+    // G2Element::FromBytes(proof).ToNative(&(g2s[0]));
+    // hashedPoint.ToNative(&(g2s[1]));
+
+    // return CoreMPL::NativeVerify(g1s, g2s, 2);
 }
 
 bool PopSchemeMPL::FastAggregateVerify(

@@ -41,8 +41,8 @@ public:
     static G1Element FromBytes(Bytes bytes);
     static G1Element FromBytesUnchecked(Bytes bytes);
     static G1Element FromByteVector(const std::vector<uint8_t> &bytevec);
-    static G1Element FromNative(const blst_p1 element);
-    static G1Element FromAffine(const blst_p1_affine element);
+    static G1Element FromNative(const blst_p1 &element);
+    static G1Element FromAffine(const blst_p1_affine &element);
     static G1Element FromMessage(
         const std::vector<uint8_t> &message,
         const uint8_t *dst,
@@ -84,8 +84,8 @@ public:
     static G2Element FromBytes(Bytes bytes);
     static G2Element FromBytesUnchecked(Bytes bytes);
     static G2Element FromByteVector(const std::vector<uint8_t> &bytevec);
-    static G2Element FromNative(const blst_p2 element);
-    static G2Element FromAffine(const blst_p2_affine element);
+    static G2Element FromNative(const blst_p2 &element);
+    static G2Element FromAffine(const blst_p2_affine &element);
     static G2Element FromMessage(
         const std::vector<uint8_t> &message,
         const uint8_t *dst,

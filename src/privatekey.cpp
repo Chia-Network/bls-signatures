@@ -12,15 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "bls.hpp"
 #include <string.h>
+
+#include "bls.hpp"
 
 namespace bls {
 
 const size_t PrivateKey::PRIVATE_KEY_SIZE;
 
 // Construct a private key from a bytearray.
-PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
+PrivateKey PrivateKey::FromBytes(const Bytes &bytes, bool modOrder)
 {
     if (bytes.size() != PRIVATE_KEY_SIZE) {
         throw std::invalid_argument("PrivateKey::FromBytes: Invalid size");
@@ -30,7 +31,7 @@ PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
 
     // Make sure private key is less than the curve order
     blst_scalar zro;
-    memset(&zro,0x00,sizeof(blst_scalar));
+    memset(&zro, 0x00, sizeof(blst_scalar));
     blst_scalar_from_lendian(k.keydata, bytes.begin());
     bool bOK = blst_sk_add_n_check(k.keydata, k.keydata, &zro);
     if (!modOrder && !bOK)
@@ -41,14 +42,14 @@ PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
 }
 
 // Construct a private key from a bytearray.
-PrivateKey PrivateKey::FromByteVector(const std::vector<uint8_t> bytes, bool modOrder)
+PrivateKey PrivateKey::FromByteVector(
+    const std::vector<uint8_t> bytes,
+    bool modOrder)
 {
     return PrivateKey::FromBytes(Bytes(bytes), modOrder);
 }
 
-PrivateKey::PrivateKey() {
-    AllocateKeyData();
-};
+PrivateKey::PrivateKey() { AllocateKeyData(); };
 
 // Construct a private key from another private key.
 PrivateKey::PrivateKey(const PrivateKey &privateKey)
@@ -64,14 +65,11 @@ PrivateKey::PrivateKey(PrivateKey &&k)
     k.InvalidateCaches();
 }
 
-PrivateKey::~PrivateKey()
-{
-    DeallocateKeyData();
-}
+PrivateKey::~PrivateKey() { DeallocateKeyData(); }
 
 void PrivateKey::DeallocateKeyData()
 {
-    if(keydata != nullptr) {
+    if (keydata != nullptr) {
         Util::SecFree(keydata);
         keydata = nullptr;
     }
@@ -84,7 +82,7 @@ void PrivateKey::InvalidateCaches()
     fG2CacheValid = false;
 }
 
-PrivateKey& PrivateKey::operator=(const PrivateKey& other)
+PrivateKey &PrivateKey::operator=(const PrivateKey &other)
 {
     CheckKeyData();
     other.CheckKeyData();
@@ -93,7 +91,7 @@ PrivateKey& PrivateKey::operator=(const PrivateKey& other)
     return *this;
 }
 
-PrivateKey& PrivateKey::operator=(PrivateKey&& other)
+PrivateKey &PrivateKey::operator=(PrivateKey &&other)
 {
     DeallocateKeyData();
     keydata = std::exchange(other.keydata, nullptr);
@@ -101,7 +99,7 @@ PrivateKey& PrivateKey::operator=(PrivateKey&& other)
     return *this;
 }
 
-const G1Element& PrivateKey::GetG1Element() const
+const G1Element &PrivateKey::GetG1Element() const
 {
     if (!fG1CacheValid) {
         CheckKeyData();
@@ -115,7 +113,7 @@ const G1Element& PrivateKey::GetG1Element() const
     return g1Cache;
 }
 
-const G2Element& PrivateKey::GetG2Element() const
+const G2Element &PrivateKey::GetG2Element() const
 {
     if (!fG2CacheValid) {
         CheckKeyData();
@@ -162,14 +160,14 @@ G2Element operator*(const G2Element &a, const PrivateKey &k)
 
 G2Element operator*(const PrivateKey &k, const G2Element &a) { return a * k; }
 
-G2Element PrivateKey::GetG2Power(const G2Element& element) const
+G2Element PrivateKey::GetG2Power(const G2Element &element) const
 {
     CheckKeyData();
     blst_p2 *q = Util::SecAlloc<blst_p2>(1);
     element.ToNative(q);
     byte *bte = Util::SecAlloc<byte>(32);
     blst_lendian_from_scalar(bte, keydata);
-    blst_p2_mult(q, q, bte, 256);
+    blst_p2_mult(q, q, bte, 255);
     const G2Element ret = G2Element::FromNative(*q);
     Util::SecFree(q);
     Util::SecFree(bte);
@@ -191,12 +189,13 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
     return ret;
 }
 
-bool PrivateKey::IsZero() const {
+bool PrivateKey::IsZero() const
+{
     CheckKeyData();
     blst_scalar zro;
-    memset(&zro,0x00,sizeof(blst_scalar));
+    memset(&zro, 0x00, sizeof(blst_scalar));
 
-    return memcmp(keydata,&zro,32)==0;
+    return memcmp(keydata, &zro, 32) == 0;
 }
 
 bool operator==(const PrivateKey &a, const PrivateKey &b)
@@ -246,13 +245,14 @@ void PrivateKey::AllocateKeyData()
 {
     assert(!keydata);
     keydata = Util::SecAlloc<blst_scalar>(1);
-    memset(keydata,0x00,sizeof(blst_scalar));
+    memset(keydata, 0x00, sizeof(blst_scalar));
 }
 
 void PrivateKey::CheckKeyData() const
 {
     if (keydata == nullptr) {
-        throw std::runtime_error("PrivateKey::CheckKeyData keydata not initialized");
+        throw std::runtime_error(
+            "PrivateKey::CheckKeyData keydata not initialized");
     }
 }
 
