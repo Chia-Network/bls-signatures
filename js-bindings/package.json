@@ -54,7 +54,7 @@
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0",
     "typescript": "^3.6.5",
-    "webpack": "^5.39.0"
+    "webpack": "^5.82.1"
   },
   "dependencies": {
     "binascii": "0.0.2"
