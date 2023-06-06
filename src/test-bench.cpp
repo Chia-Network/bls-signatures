@@ -37,7 +37,7 @@ std::vector<uint8_t> wjbgetRandomSeed()
 void benchSigs()
 {
     string testName = "Signing";
-    const int numIters = 10;
+    const int numIters = 5000;
     PrivateKey sk = AugSchemeMPL().KeyGen(getRandomSeed());
     vector<uint8_t> message1 = sk.GetG1Element().Serialize();
 
@@ -52,25 +52,17 @@ void benchSigs()
 void benchVerification()
 {
     string testName = "Verification";
-    const int numIters = 10;
-    srand(0);
-    vector<uint8_t> seed = wjbgetRandomSeed();
-    std::cout << "seed: " << Util::HexStr(seed) << std::endl;
-    PrivateKey sk = AugSchemeMPL().KeyGen(seed);
-    vector<uint8_t> skBytes = sk.Serialize();
-    std::cout << "SK: " << Util::HexStr(skBytes) << std::endl;
+    const int numIters = 10000;
+    PrivateKey sk = AugSchemeMPL().KeyGen(getRandomSeed());
     G1Element pk = sk.GetG1Element();
     std::vector<G2Element> sigs;
 
     vector<uint8_t> pkBytes = pk.Serialize();
-    std::cout << "PK: " << Util::HexStr(pkBytes) << std::endl;
     for (int i = 0; i < numIters; i++) {
         uint8_t message[4];
         Util::IntToFourBytes(message, i);
         vector<uint8_t> messageBytes(message, message + 4);
         G2Element sig = AugSchemeMPL().Sign(sk, messageBytes);
-        vector<uint8_t> sigBytes = sig.Serialize();
-        std::cout << i << ": " << Util::HexStr(sigBytes) << std::endl;
         sigs.push_back(sig);
     }
     auto start = startStopwatch();
@@ -86,7 +78,7 @@ void benchVerification()
 
 void benchBatchVerification()
 {
-    const int numIters = 10;
+    const int numIters = 100000;
 
     vector<vector<uint8_t>> sig_bytes;
     vector<vector<uint8_t>> pk_bytes;
@@ -133,7 +125,7 @@ void benchBatchVerification()
 
 void benchFastAggregateVerification()
 {
-    const int numIters = 10;
+    const int numIters = 5000;
 
     vector<G2Element> sigs;
     vector<G1Element> pks;
@@ -167,12 +159,8 @@ void benchFastAggregateVerification()
 
 int main(int argc, char* argv[])
 {
-    std::cout << "benchSigs" << std::endl;
     benchSigs();
-    std::cout << std::endl << "benchVerification" << std::endl;
     benchVerification();
-    std::cout << std::endl << "benchBatchVerification" << std::endl;
     benchBatchVerification();
-    std::cout << std::endl << "benchBatchVerification" << std::endl;
     benchFastAggregateVerification();
 }
