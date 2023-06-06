@@ -13,9 +13,7 @@ if(NOT CMAKE_BUILD_TYPE)
   )
 endif()
 
-link_directories("../blst")
-
-project(BLS)
+project(BLS C CXX ASM)
 
 set(BUILD_BLS_PYTHON_BINDINGS "1" CACHE STRING "")
 set(BUILD_BLS_TESTS "1" CACHE STRING "")

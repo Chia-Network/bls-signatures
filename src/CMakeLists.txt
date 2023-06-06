@@ -1,6 +1,12 @@
-
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 source_group("SrcHeaders" FILES ${HEADERS})
+
+add_compile_options(-fno-builtin)
+add_compile_options(-fPIC)
+add_compile_options(-Wall)
+add_compile_options(-Wextra)
+add_compile_options(-mno-avx)
+add_compile_options(-D__BLST_PORTABLE__)
 
 add_library(bls
   ${HEADERS}
@@ -8,16 +14,13 @@ add_library(bls
   ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
+  ${blst_SOURCE_DIR}/src/server.c
+  ${blst_SOURCE_DIR}/build/assembly.S
 )
 
 target_include_directories(bls
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${blst_SOURCE_DIR}
-)
-
-target_link_directories(bls
-  PUBLIC
     ${blst_SOURCE_DIR}
 )
 
@@ -28,7 +31,6 @@ target_compile_definitions(bls
 
 target_link_libraries(bls
   PUBLIC
-    blst
     sodium
 )
 
