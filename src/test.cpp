@@ -412,7 +412,7 @@ TEST_CASE("Chia test vectors")
             "1e565f299cd53a285de729937f70dc176a1f01432129bb2b94d3d5031f8065a1");
         REQUIRE(
             Util::HexStr(sk1.Serialize()) ==
-            "045690f6a8fb6fac9ce7c1171740e4e2e1f572036240e6a7a091c0dae33b354a" /*4a353be3dac091a0a7e640620372f5e1e2e4401717c1e79cac6ffba8f6905604*/);
+            "4a353be3dac091a0a7e640620372f5e1e2e4401717c1e79cac6ffba8f6905604");
         REQUIRE(
             Util::HexStr(pk1.Serialize()) ==
             "85695fcbc06cc4c4c9451f4dce21cbf8de3e5a13bf48f44cdbb18e2038ba7b8bb1"

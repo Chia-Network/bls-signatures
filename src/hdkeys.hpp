@@ -16,6 +16,7 @@
 #define SRC_BLSHDKEYS_HPP_
 
 #include <math.h>
+
 #include "hkdf.hpp"
 #include "privatekey.hpp"
 #include "util.hpp"
@@ -56,7 +57,7 @@ public:
         blst_scalar* skBn = Util::SecAlloc<blst_scalar>(1);
         blst_keygen_v3(skBn, seed.begin(), seed.size(), info, infoLen);
         uint8_t* skBytes = Util::SecAlloc<uint8_t>(32);
-        blst_lendian_from_scalar(skBytes, skBn);
+        blst_bendian_from_scalar(skBytes, skBn);
 
         // std::cout << "skBytes: "<< Util::HexStr(skBytes,32) << std::endl;
 
@@ -173,7 +174,7 @@ public:
         Util::Hash256(digest, buf, G1Element::SIZE + 4);
 
         blst_scalar nonce, zro;
-        blst_scalar_from_lendian(&nonce, digest);
+        blst_scalar_from_bendian(&nonce, digest);
         memset(&zro, 0x00, sizeof(blst_scalar));
         blst_sk_add_n_check(&nonce, &nonce, &zro);
 
@@ -195,7 +196,7 @@ public:
         Util::Hash256(digest, buf, G2Element::SIZE + 4);
 
         blst_scalar nonce, zro;
-        blst_scalar_from_lendian(&nonce, digest);
+        blst_scalar_from_bendian(&nonce, digest);
         memset(&zro, 0x00, sizeof(blst_scalar));
         blst_sk_add_n_check(&nonce, &nonce, &zro);
 

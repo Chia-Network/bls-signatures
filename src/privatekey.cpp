@@ -32,15 +32,15 @@ PrivateKey PrivateKey::FromBytes(const Bytes &bytes, bool modOrder)
     // Make sure private key is less than the curve order
     blst_scalar zro;
     memset(&zro, 0x00, sizeof(blst_scalar));
-    blst_scalar_from_lendian(k.keydata, bytes.begin());
+    blst_scalar_from_bendian(k.keydata, bytes.begin());
     bool bOK = blst_sk_add_n_check(k.keydata, k.keydata, &zro);
     if (!modOrder && !bOK)
         throw std::invalid_argument(
             "PrivateKey byte data must be less than the group order");
 
-    if (!blst_sk_check(k.keydata))
-        throw std::invalid_argument(
-            "PrivateKey byte data must be less than the group order");
+    //    if (!blst_sk_check(k.keydata))
+    //        throw std::invalid_argument(
+    //            "PrivateKey byte data must be less than the group order");
 
     return k;
 }
@@ -138,7 +138,7 @@ G1Element operator*(const G1Element &a, const PrivateKey &k)
     blst_p1 *ans = Util::SecAlloc<blst_p1>(1);
     a.ToNative(ans);
     byte *bte = Util::SecAlloc<byte>(32);
-    blst_lendian_from_scalar(bte, k.keydata);
+    blst_bendian_from_scalar(bte, k.keydata);
     blst_p1_mult(ans, ans, bte, 256);
     G1Element ret = G1Element::FromNative(*ans);
     Util::SecFree(ans);
@@ -154,7 +154,7 @@ G2Element operator*(const G2Element &a, const PrivateKey &k)
     blst_p2 *ans = Util::SecAlloc<blst_p2>(1);
     a.ToNative(ans);
     byte *bte = Util::SecAlloc<byte>(32);
-    blst_lendian_from_scalar(bte, k.keydata);
+    blst_bendian_from_scalar(bte, k.keydata);
     blst_p2_mult(ans, ans, bte, 256);
     G2Element ret = G2Element::FromNative(*ans);
     Util::SecFree(ans);
@@ -170,7 +170,7 @@ G2Element PrivateKey::GetG2Power(const G2Element &element) const
     blst_p2 *q = Util::SecAlloc<blst_p2>(1);
     element.ToNative(q);
     byte *bte = Util::SecAlloc<byte>(32);
-    blst_lendian_from_scalar(bte, keydata);
+    blst_bendian_from_scalar(bte, keydata);
     blst_p2_mult(q, q, bte, 255);
     const G2Element ret = G2Element::FromNative(*q);
     Util::SecFree(q);
@@ -217,7 +217,7 @@ void PrivateKey::Serialize(uint8_t *buffer) const
         throw std::runtime_error("PrivateKey::Serialize buffer invalid");
     }
     CheckKeyData();
-    blst_lendian_from_scalar(buffer, keydata);
+    blst_bendian_from_scalar(buffer, keydata);
 }
 
 std::vector<uint8_t> PrivateKey::Serialize() const
