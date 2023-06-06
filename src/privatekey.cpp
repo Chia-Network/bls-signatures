@@ -28,23 +28,20 @@ PrivateKey PrivateKey::FromBytes(const Bytes &bytes, bool modOrder)
     }
 
     PrivateKey k;
-    blst_scalar_from_bendian(k.keydata, bytes.begin());
+    if (modOrder)
+        // this allows any bytes to be input and does proper mod order
+        blst_scalar_from_be_bytes(k.keydata, bytes.begin(), bytes.size());
+    else
+        // this should only be the output of deserialization
+        blst_scalar_from_bendian(k.keydata, bytes.begin());
 
     if (Util::HasOnlyZeros(bytes)) {
         return k;  // don't check anything else, we allow zero private key
     }
 
-    // Make sure private key is less than the curve order
-    blst_scalar zro;
-    memset(&zro, 0x00, sizeof(blst_scalar));
-    bool bOK = blst_sk_add_n_check(k.keydata, k.keydata, &zro);
-    if (!modOrder && !bOK)
+    if (!blst_sk_check(k.keydata))
         throw std::invalid_argument(
             "PrivateKey byte data must be less than the group order");
-
-    //    if (!blst_sk_check(k.keydata))
-    //        throw std::invalid_argument(
-    //            "PrivateKey byte data must be less than the group order");
 
     return k;
 }

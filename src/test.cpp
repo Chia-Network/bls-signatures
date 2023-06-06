@@ -545,18 +545,17 @@ TEST_CASE("Key generation")
 
 TEST_CASE("Error handling")
 {
-    // SECTION("Should throw on a bad private key")
-    //{
-    //    vector<uint8_t> seed(32, 0x10);
-    //    PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
-    //    uint8_t* skData = Util::SecAlloc<uint8_t>(G2Element::SIZE);
-    //    sk1.Serialize(skData);
-    //    skData[4] = 255;
-    //    REQUIRE_THROWS(
-    //        PrivateKey::FromBytes(Bytes(skData,
-    //        PrivateKey::PRIVATE_KEY_SIZE)));
-    //    Util::SecFree(skData);
-    // }
+    SECTION("Should throw on a bad private key")
+    {
+        vector<uint8_t> seed(32, 0x10);
+        PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
+        uint8_t* skData = Util::SecAlloc<uint8_t>(G2Element::SIZE);
+        sk1.Serialize(skData);
+        skData[0] = 255;
+        REQUIRE_THROWS(
+            PrivateKey::FromBytes(Bytes(skData, PrivateKey::PRIVATE_KEY_SIZE)));
+        Util::SecFree(skData);
+    }
 
     SECTION("Should throw on a bad public key")
     {
