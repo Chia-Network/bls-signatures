@@ -17,10 +17,6 @@
 #include "bls.hpp"
 #include "test-utils.hpp"
 
-extern "C" {
-#include "relic.h"
-}
-
 using std::cout;
 using std::endl;
 using std::string;

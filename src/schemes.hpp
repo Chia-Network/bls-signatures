@@ -18,12 +18,6 @@
 #include <iostream>
 #include <vector>
 
-#include "relic_conf.h"
-
-#if defined GMP && ARITH == GMP
-#include <gmp.h>
-#endif
-
 #include "elements.hpp"
 #include "privatekey.hpp"
 

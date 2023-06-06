@@ -16,9 +16,8 @@
 #define SRC_BLSELEMENTS_HPP_
 
 extern "C" {
-#include "../../blst/bindings/blst.h"
+#include "bindings/blst.h"
 }
-#include "relic_conf.h"
 #include "util.hpp"
 
 #if defined GMP && ARITH == GMP

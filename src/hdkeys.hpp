@@ -16,13 +16,6 @@
 #define SRC_BLSHDKEYS_HPP_
 
 #include <math.h>
-
-#include "relic_conf.h"
-
-#if defined GMP && ARITH == GMP
-#include <gmp.h>
-#endif
-
 #include "hkdf.hpp"
 #include "privatekey.hpp"
 #include "util.hpp"

@@ -44,104 +44,18 @@ set(SODIUM_DISABLE_TESTS "on" CACHE STRING "")
 set(SODIUM_CHIA_MINIMAL "on" CACHE STRING "")
 FetchContent_MakeAvailable(Sodium)
 
-if(DEFINED ENV{RELIC_MAIN})
-  set(RELIC_GIT_TAG "origin/main")
-  set(RELIC_REPOSITORY "https://github.com/relic-toolkit/relic.git")
-else()
-  # This is currently anchored to upstream aecdcae7956f542fbee2392c1f0feb0a8ac41dc5
-  set(RELIC_GIT_TAG "215c69966cb78b255995f0ee9c86bbbb41c3c42b")
-  set(RELIC_REPOSITORY "https://github.com/Chia-Network/relic.git")
-endif()
+set(BLST_GIT_TAG "origin/master")
+set(BLST_REPOSITORY "https://github.com/supranational/blst")
 
-message(STATUS "Relic will be built from: ${RELIC_GIT_TAG} and repository ${RELIC_REPOSITORY}")
+message(STATUS "blst will be built from: ${BLST_GIT_TAG} and repository ${BLST_REPOSITORY}")
 
 FetchContent_Declare(
-  relic
-  GIT_REPOSITORY ${RELIC_REPOSITORY}
-  GIT_TAG ${RELIC_GIT_TAG}
+  blst
+  GIT_REPOSITORY ${BLST_REPOSITORY}
+  GIT_TAG ${BLST_GIT_TAG}
 )
 
-# Relic related options
-
-set(STBIN "off" CACHE STRING "Relic - Build static binaries")
-
-find_package(gmp)
-if (GMP_FOUND)
-  message(STATUS "Found libgmp")
-  set(ARITH "gmp" CACHE STRING "")
-else()
-  set(ARITH "easy" CACHE STRING "")
-endif()
-
-if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-  set(WSIZE "32" CACHE STRING "Relic - Processor word size")
-else()
-  set(WSIZE "64" CACHE STRING "Relic - Processor word size")
-endif()
-
-if(EMSCRIPTEN)
-  # emscripten needs arch set to be none since it can't compile assembly
-  set(ARCH "" CACHE STRING "")
-  # emscripten is a 32 bit compiler
-  set(WSIZE "32" CACHE STRING "Relic - Processor word size")
-endif()
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  set(TIMER "ANSI" CACHE STRING "")
-  set(MULTI "OPENMP" CACHE STRING "")
-else()
-  set(TIMER "CYCLE" CACHE STRING "")
-  set(MULTI "PTHREAD" CACHE STRING "")
-endif()
-
-set(CHECK "off" CACHE STRING "")
-set(VERBS "off" CACHE STRING "")
-set(ALLOC "AUTO" CACHE STRING "")
-set(SHLIB "off" CACHE STRING "")
-set(DOCUM "off" CACHE STRING "")
-set(FP_PRIME "381" CACHE STRING "Relic - Prime modulus size")
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-  set(SEED "UDEV" CACHE STRING "")
-  set(FP_QNRES "off" CACHE STRING "")
-elseif(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  set(SEED "WCGR" CACHE STRING "")
-  set(FP_QNRES "on" CACHE STRING "")
-else()
-  set(SEED "UDEV" CACHE STRING "")
-  set(FP_QNRES "on" CACHE STRING "")
-endif()
-
-if(DEFINED ENV{RELIC_MAIN})
-  set(FP_METHD "INTEG;INTEG;INTEG;MONTY;LOWER;JMPDS;SLIDE" CACHE STRING "")
-  if(MSVC)
-    set(CFLAGS "" CACHE STRING "")
-  else()
-    set(CFLAGS "-O3 -funroll-loops -fomit-frame-pointer" CACHE STRING "")
-  endif()
-else()
-  set(FP_METHD "INTEG;INTEG;INTEG;MONTY;LOWER;SLIDE" CACHE STRING "")
-  if(MSVC)
-    set(COMP_FLAGS "" CACHE STRING "")
-  else()
-    set(COMP_FLAGS "-O3 -funroll-loops -fomit-frame-pointer" CACHE STRING "")
-  endif()
-endif()
-
-set(FP_PMERS "off" CACHE STRING "")
-set(FPX_METHD "INTEG;INTEG;LAZYR" CACHE STRING "")
-set(EP_PLAIN "off" CACHE STRING "")
-set(EP_SUPER "off" CACHE STRING "")
-# Disable relic tests and benchmarks
-set(TESTS "0" CACHE STRING "Relic - Number of times each test is ran")
-set(BENCH "0" CACHE STRING "Relic - Number of times each benchmark is ran")
-
-set(QUIET "on" CACHE STRING "Relic - Build with printing disabled")
-
-set(PP_EXT "LAZYR" CACHE STRING "")
-set(PP_METHD "LAZYR;OATEP" CACHE STRING "")
-
-FetchContent_MakeAvailable(relic)
+FetchContent_MakeAvailable(blst)
 
 add_subdirectory(src)
 

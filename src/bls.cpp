@@ -29,9 +29,6 @@ Util::SecureFreeCallback Util::secureFreeCallback;
 
 bool BLS::Init()
 {
-    if (ALLOC != AUTO) {
-        throw std::runtime_error("Must have ALLOC == AUTO");
-    }
 #if BLSALLOC_SODIUM
     if (sodium_init() < 0) {
         throw std::runtime_error("libsodium init failed");

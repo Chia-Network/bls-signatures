@@ -13,9 +13,12 @@ add_library(bls
 target_include_directories(bls
   PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
-    $<$<BOOL:${GMP_FOUND}>:${GMP_INCLUDES}>
-    ${relic_SOURCE_DIR}/include
-    ${relic_BINARY_DIR}/include
+    ${blst_SOURCE_DIR}
+)
+
+target_link_directories(bls
+  PUBLIC
+    ${blst_SOURCE_DIR}
 )
 
 target_compile_definitions(bls
@@ -34,8 +37,8 @@ if(WITH_COVERAGE)
   target_link_options(bls PRIVATE --coverage)
 endif()
 
-install(DIRECTORY ${relic_SOURCE_DIR}/include/ DESTINATION include/chiabls)
-install(DIRECTORY ${relic_BINARY_DIR}/include/ DESTINATION include/chiabls)
+install(DIRECTORY ${blst_SOURCE_DIR}/include/ DESTINATION include/chiabls)
+install(DIRECTORY ${blst_BINARY_DIR}/include/ DESTINATION include/chiabls)
 install(FILES ${HEADERS} DESTINATION include/chiabls)
 install(FILES $<TARGET_FILE:bls> DESTINATION lib)
 
