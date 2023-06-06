@@ -173,16 +173,15 @@ public:
         Util::IntToFourBytes(buf + G1Element::SIZE, index);
         Util::Hash256(digest, buf, G1Element::SIZE + 4);
 
-        blst_scalar nonce, zro;
-        blst_scalar_from_bendian(&nonce, digest);
-        memset(&zro, 0x00, sizeof(blst_scalar));
-        blst_sk_add_n_check(&nonce, &nonce, &zro);
+        blst_scalar nonce;
+        blst_scalar_from_lendian(&nonce, digest);
 
         Util::SecFree(buf);
         Util::SecFree(digest);
 
         G1Element gen = G1Element::Generator();
-        return pk + gen * nonce;
+
+        return pk + (gen * nonce);
     }
 
     static G2Element DeriveChildG2Unhardened(
@@ -195,10 +194,8 @@ public:
         Util::IntToFourBytes(buf + G2Element::SIZE, index);
         Util::Hash256(digest, buf, G2Element::SIZE + 4);
 
-        blst_scalar nonce, zro;
-        blst_scalar_from_bendian(&nonce, digest);
-        memset(&zro, 0x00, sizeof(blst_scalar));
-        blst_sk_add_n_check(&nonce, &nonce, &zro);
+        blst_scalar nonce;
+        blst_scalar_from_lendian(&nonce, digest);
 
         Util::SecFree(buf);
         Util::SecFree(digest);

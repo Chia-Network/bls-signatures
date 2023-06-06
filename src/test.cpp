@@ -48,12 +48,12 @@ void TestHKDF(
     HKDF256::Expand(okm, L, prk, info.data(), info.size());
 
     REQUIRE(32 == prk_expected.size());
-    REQUIRE(L == okm_expected.size());
+    REQUIRE(L == (int)okm_expected.size());
 
     for (size_t i = 0; i < 32; i++) {
         REQUIRE(prk[i] == prk_expected[i]);
     }
-    for (size_t i = 0; i < L; i++) {
+    for (int i = 0; i < L; i++) {
         REQUIRE(okm[i] == okm_expected[i]);
     }
 
@@ -337,10 +337,10 @@ TEST_CASE("Unhardened HD keys")
 
         PrivateKey grandchildSk =
             BasicSchemeMPL().DeriveChildSkUnhardened(childSk, 12142);
-        G1Element grandcihldPk =
+        G1Element grandchildPk =
             BasicSchemeMPL().DeriveChildPkUnhardened(childPk, 12142);
 
-        REQUIRE(grandchildSk.GetG1Element() == grandcihldPk);
+        REQUIRE(grandchildSk.GetG1Element() == grandchildPk);
     }
 
     SECTION("Should derive public child from parent")
@@ -706,7 +706,6 @@ TEST_CASE("Signature tests")
     SECTION("Should not verify aggregate with same message under BasicScheme")
     {
         vector<uint8_t> message = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t hash[BLS::MESSAGE_HASH_LEN];
 
         vector<uint8_t> seed(32, 0x50);
         vector<uint8_t> seed2(32, 0x70);
@@ -732,7 +731,6 @@ TEST_CASE("Signature tests")
         "Should verify aggregate with same message under AugScheme/PopScheme")
     {
         vector<uint8_t> message = {100, 2, 254, 88, 90, 45, 23};
-        uint8_t hash[BLS::MESSAGE_HASH_LEN];
 
         vector<uint8_t> seed(32, 0x50);
         vector<uint8_t> seed2(32, 0x70);
@@ -960,10 +958,6 @@ TEST_CASE("Advanced")
         vector<uint8_t> skBytes = sk.Serialize();
         vector<uint8_t> pkBytes = pk.Serialize();
         vector<uint8_t> signatureBytes = signature.Serialize();
-
-        cout << Util::HexStr(skBytes) << endl;         // 32 bytes
-        cout << Util::HexStr(pkBytes) << endl;         // 48 bytes
-        cout << Util::HexStr(signatureBytes) << endl;  // 96 bytes
 
         // Takes array of 32 bytes
         PrivateKey skc = PrivateKey::FromByteVector(skBytes);
@@ -1341,17 +1335,19 @@ TEST_CASE("CheckValid")
             G1Element::FromBytes(Bytes(Util::HexToBytes(badPointHex))));
 
         // FromBytesUnchecked does not throw
-        G1Element pk =
+        G1Element bad_pk =
             G1Element::FromBytesUnchecked(Bytes(Util::HexToBytes(badPointHex)));
-        REQUIRE(pk.IsValid() == false);
-        REQUIRE_THROWS(pk.CheckValid());
+        REQUIRE(bad_pk.IsValid() == false);
+        REQUIRE_THROWS(bad_pk.CheckValid());
 
         vector<uint8_t> seed(32, 0x05);
         vector<uint8_t> msg1 = {10, 11, 12};
         PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
-        G1Element pk1 = BasicSchemeMPL().SkToG1(sk1);
+        G1Element good_pk = BasicSchemeMPL().SkToG1(sk1);
+        REQUIRE(good_pk.IsValid() == true);
         G2Element sig1 = AugSchemeMPL().Sign(sk1, msg1);
-        REQUIRE(AugSchemeMPL().Verify(pk, msg1, sig1) == false);
+        REQUIRE(AugSchemeMPL().Verify(bad_pk, msg1, sig1) == false);
+        REQUIRE(AugSchemeMPL().Verify(good_pk, msg1, sig1) == true);
     }
 
     SECTION("Invalid G2 points should not succeed")
@@ -1369,7 +1365,6 @@ TEST_CASE("CheckValid")
         REQUIRE_THROWS(point.CheckValid());
 
         auto badSer = point.Serialize();
-        std::cout << Util::HexStr(badSer) << std::endl;
 
         REQUIRE_THROWS(G2Element::FromByteVector(badSer));
     }

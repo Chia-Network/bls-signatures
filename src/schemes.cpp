@@ -242,7 +242,6 @@ bool CoreMPL::AggregateVerify(
     blst_p2_affine sig_affine;
     blst_fp12 gtsig;
 
-    pubkeys[0].ToAffine(&pk_affine);
     signature.ToAffine(&sig_affine);
 
     blst_aggregated_in_g2(&gtsig, &sig_affine);
@@ -252,38 +251,17 @@ bool CoreMPL::AggregateVerify(
 
         auto err = blst_pairing_aggregate_pk_in_g1(
             ctx, &pk_affine, nullptr, messages[i].begin(), messages[i].size());
+
+        if (err != BLST_SUCCESS) {
+            free(ctx);
+            return false;
+        }
     }
 
     blst_pairing_commit(ctx);
-
     auto ret = blst_pairing_finalverify(ctx, &gtsig);
-
     free(ctx);
-
     return ret;
-
-    // std::vector<blst_p1> vecG1(nPubKeys + 1);
-    // std::vector<blst_p2> vecG2(nPubKeys + 1);
-    // G1Element::Generator().Negate().ToNative(&vecG1[0]);
-    // if (!signature.IsValid()) {
-    //     return false;
-    // }
-    // signature.ToNative(&vecG2[0]);
-
-    // for (size_t i = 0; i < nPubKeys; ++i) {
-    //     if (!pubkeys[i].IsValid()) {
-    //         return false;
-    //     }
-    //     pubkeys[i].ToNative(&vecG1[i + 1]);
-    //     G2Element::FromMessage(
-    //         messages[i],
-    //         (const uint8_t*)strCiphersuiteId.c_str(),
-    //         strCiphersuiteId.length())
-    //         .ToNative(&vecG2[i + 1]);
-    // }
-
-    // return CoreMPL::NativeVerify(
-    //     (blst_p1*)vecG1.data(), (blst_p2*)vecG2.data(), nPubKeys + 1);
 }
 
 // bool CoreMPL::NativeVerify(
@@ -550,7 +528,7 @@ bool AugSchemeMPL::AggregateVerify(
     }
 
     vector<vector<uint8_t>> augMessages(nPubKeys);
-    for (int i = 0; i < nPubKeys; ++i) {
+    for (size_t i = 0; i < nPubKeys; ++i) {
         vector<uint8_t>& aug = augMessages[i];
         vector<uint8_t>&& pubkey = pubkeys[i].Serialize();
         aug.reserve(pubkey.size() + messages[i].size());

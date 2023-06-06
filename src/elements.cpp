@@ -118,8 +118,7 @@ G1Element G1Element::FromMessage(
 G1Element G1Element::Generator()
 {
     G1Element ele;
-    const blst_p1* gen1 = blst_p1_generator();
-    ele.FromNative(*gen1);
+    ele.p = *(blst_p1_generator());
     return ele;
 }
 
@@ -295,8 +294,7 @@ G2Element G2Element::FromMessage(
 G2Element G2Element::Generator()
 {
     G2Element ele;
-    const blst_p2* gen2 = blst_p2_generator();
-    ele.FromNative(*gen2);
+    ele.q = (*blst_p2_generator());
     return ele;
 }
 
