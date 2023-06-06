@@ -35,6 +35,29 @@ G1Element G1Element::FromBytesUnchecked(Bytes const bytes)
         throw std::invalid_argument("G1Element::FromBytes: Invalid size");
     }
 
+    // check if the element is canonical
+    const uint8_t* raw_bytes = bytes.begin();
+    bool fZerosOnly =
+        Util::HasOnlyZeros(Bytes(raw_bytes + 1, bytes.size() - 1));
+    if ((bytes[0] & 0xc0) == 0xc0) {  // representing infinity
+        // enforce that infinity must be 0xc0000..00
+        if (bytes[0] != 0xc0 || !fZerosOnly) {
+            throw std::invalid_argument(
+                "Given G1 infinity element must be canonical");
+        }
+        return G1Element();  // return infinity element (point all zero)
+    } else {
+        if ((bytes[0] & 0xc0) != 0x80) {
+            throw std::invalid_argument(
+                "Given G1 non-infinity element must start with 0b10");
+        }
+
+        if (fZerosOnly) {
+            throw std::invalid_argument(
+                "G1 non-infinity element can't have only zeros");
+        }
+    }
+
     blst_p1_affine a;
     BLST_ERROR err = blst_p1_uncompress(&a, bytes.begin());
     if (err != BLST_SUCCESS)
@@ -287,7 +310,7 @@ bool G2Element::IsValid() const
     // return blst_p2_on_curve((blst_p2*)&q);
 
     if (blst_p2_is_inf(&q))
-        return false;
+        return true;
 
     return blst_p2_in_g2(&q);
 }
