@@ -18,9 +18,6 @@
 #include <algorithm>
 #include <vector>
 #include "emscripten/val.h"
-extern "C" {
-#include "relic.h"
-}
 #include "../src/bls.hpp"
 
 using namespace emscripten;
