@@ -122,7 +122,7 @@ ext_modules = [
             "blst/build/ctq_inverse_mod_384-x86_64.o",
             "blst/build/ctx_inverse_mod_384-x86_64.o",
             "blst/build/div3w-x86_64.o",
-            "blst/build/mulq_mont_256-x86_64.obj",
+            "blst/build/mulq_mont_256-x86_64.o",
             "blst/build/mulq_mont_384-x86_64.o",
             "blst/build/mulx_mont_256-x86_64.o",
             "blst/build/mulx_mont_384-x86_64.o",
