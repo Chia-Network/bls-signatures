@@ -91,7 +91,7 @@ class get_pybind_include(object):
 ext_modules = [
     Extension(
         "blspy",
-        sources=[
+        [
             "src/elements.cpp",
             "src/schemes.cpp",
             "src/privatekey.cpp",
@@ -108,9 +108,9 @@ ext_modules = [
         ],
         library_dirs=[
             "libsodium/x64/Release/v142/static",
-            "src/blstasm",
+            "src",
         ],
-        libraries=["Advapi32", "libsodium"],
+        libraries=["Advapi32", "libsodium", "blstasm"],
         language="c++",
     ),
 ]
