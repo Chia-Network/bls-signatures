@@ -88,20 +88,6 @@ class get_pybind_include(object):
         return pybind11.get_include(self.user)
 
 
-os.system('ml64 /c /Fo blst/build/add_mod_256-x86_64.o blst/build/add_mod_256-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/add_mod_384-x86_64.o blst/build/add_mod_384-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/add_mod_384x384-x86_64.o blst/build/add_mod_384x384-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/ct_inverse_mod_256-x86_64.o blst/build/ct_inverse_mod_256-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/ct_is_square_mod_384-x86_64.o blst/build/ct_is_square_mod_384-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/ctq_inverse_mod_384-x86_64.o blst/build/ctq_inverse_mod_384-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/ctx_inverse_mod_384-x86_64.o blst/build/ctx_inverse_mod_384-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/div3w-x86_64.o blst/build/div3w-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/mulq_mont_256-x86_64.o blst/build/mulq_mont_256-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/mulq_mont_384-x86_64.o blst/build/mulq_mont_384-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/mulx_mont_256-x86_64.o blst/build/mulx_mont_256-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/mulx_mont_384-x86_64.o blst/build/mulx_mont_384-x86_64.asm')
-os.system('ml64 /c /Fo blst/build/sha256-x86_64.o blst/build/sha256-x86_64.asm')
-
 ext_modules = [
     Extension(
         "blspy",
@@ -113,21 +99,6 @@ ext_modules = [
             "python-bindings/pythonbindings.cpp",
             "blst/src/server.c",
         ],
-        extra_objects=[
-            "blst/build/add_mod_256-x86_64.o",
-            "blst/build/add_mod_384-x86_64.o",
-            "blst/build/add_mod_384x384-x86_64.o",
-            "blst/build/ct_inverse_mod_256-x86_64.o",
-            "blst/build/ct_is_square_mod_384-x86_64.o",
-            "blst/build/ctq_inverse_mod_384-x86_64.o",
-            "blst/build/ctx_inverse_mod_384-x86_64.o",
-            "blst/build/div3w-x86_64.o",
-            "blst/build/mulq_mont_256-x86_64.o",
-            "blst/build/mulq_mont_384-x86_64.o",
-            "blst/build/mulx_mont_256-x86_64.o",
-            "blst/build/mulx_mont_384-x86_64.o",
-            "blst/build/sha256-x86_64.o",
-        ],
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
@@ -137,6 +108,7 @@ ext_modules = [
         ],
         library_dirs=[
             "libsodium/x64/Release/v142/static",
+            "src/blstasm",
         ],
         libraries=["Advapi32", "libsodium"],
         language="c++",
