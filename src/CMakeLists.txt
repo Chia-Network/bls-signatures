@@ -5,7 +5,9 @@ add_compile_options(-fno-builtin)
 add_compile_options(-fPIC)
 add_compile_options(-Wall)
 add_compile_options(-Wextra)
-add_compile_options(-mno-avx)
+if (CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
+    add_compile_options(-mno-avx)
+endif ()
 add_compile_options(-D__BLST_PORTABLE__)
 
 add_library(bls

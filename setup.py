@@ -97,21 +97,21 @@ ext_modules = [
             "src/privatekey.cpp",
             "src/bls.cpp",
             "python-bindings/pythonbindings.cpp",
+            "blst/src/server.c",
+            "blst/build/assembly.S",
+
         ],
         include_dirs=[
             # Path to pybind11 headers
             get_pybind_include(),
             get_pybind_include(user=True),
-            "relic_ietf_64/include",
-            "mpir_gc_x64",
+            "blst",
             "libsodium/include",
         ],
         library_dirs=[
-            "relic_ietf_64",
-            "mpir_gc_x64",
             "libsodium/x64/Release/v142/static",
         ],
-        libraries=["relic_s", "Advapi32", "mpir", "libsodium"],
+        libraries=["Advapi32", "libsodium"],
         language="c++",
     ),
 ]
@@ -153,7 +153,7 @@ class BuildExt(build_ext):
 
     c_opts = {
         "msvc": ["/EHsc", "/std:c++17", "/DBLSALLOC_SODIUM=1", "/DSODIUM_STATIC"],
-        "unix": [],
+        "unix": ["-fno-builtin","-fPIC","-Wall","-Wextra","-mno-avx","-D__BLST_PORTABLE__"],
     }
     l_opts = {
         "msvc": [],
