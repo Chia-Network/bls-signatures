@@ -152,8 +152,8 @@ class BuildExt(build_ext):
     """A custom build extension for adding compiler-specific options."""
 
     c_opts = {
-        "msvc": ["/EHsc", "/std:c++17", "/DBLSALLOC_SODIUM=1", "/DSODIUM_STATIC", "/D__BLST_PORTABLE__"],
-        "unix": ["-fno-builtin","-fPIC","-Wall","-Wextra","-mno-avx","-D__BLST_PORTABLE__"],
+        "msvc": ["/EHsc", "/std:c++17", "/DBLSALLOC_SODIUM=1", "/DSODIUM_STATIC", "/D__BLST_PORTABLE__", "/Tcassembly.S"],
+        "unix": [],
     }
     l_opts = {
         "msvc": [],
