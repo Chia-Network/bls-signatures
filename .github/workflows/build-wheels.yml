@@ -159,20 +159,8 @@ jobs:
           && 7z x libsodium-1.0.18-stable-msvc.zip
           && git clone https://github.com/supranational/blst.git
           && ls -l blst
-          && ls "C:/Program Files (x86)/Microsoft Visual Studio/2022/Enterprise"
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
-          ls -l mpir_gc_x64 && pip uninstall -y delocate
-          && pip install git+https://github.com/Chia-Network/delocate.git
-          && delocate-wheel -v -i mpir_gc_x64/mpir.dll {wheel}
-          && delocate-wheel -v -i mpir_gc_x64/mpir_gc.dll {wheel}
-          && delocate-wheel -v -i mpir_gc_x64/mpir_broadwell.dll {wheel}
-          && delocate-wheel -v -i mpir_gc_x64/mpir_broadwell_avx.dll {wheel}
-          && delocate-wheel -v -i mpir_gc_x64/mpir_bulldozer.dll {wheel}
-          && delocate-wheel -v -i mpir_gc_x64/mpir_haswell.dll {wheel}
-          && delocate-wheel -v -i mpir_gc_x64/mpir_piledriver.dll {wheel}
-          && delocate-wheel -v -i mpir_gc_x64/mpir_sandybridge.dll {wheel}
-          && delocate-wheel -v -i mpir_gc_x64/mpir_skylake_avx.dll {wheel}
-          && cp {wheel} {dest_dir}
+          cp {wheel} {dest_dir}
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: py.test -v {project}/python-bindings/test.py
       run:
