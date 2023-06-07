@@ -159,7 +159,7 @@ jobs:
           && 7z x libsodium-1.0.18-stable-msvc.zip
           && git clone https://github.com/supranational/blst.git
           && ls -l blst
-          && ls "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build"
+          && ls "C:/Program Files (x86)/Microsoft Visual Studio/2022/Enterprise/VC/Auxiliary/Build"
         CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
           ls -l mpir_gc_x64 && pip uninstall -y delocate
           && pip install git+https://github.com/Chia-Network/delocate.git
