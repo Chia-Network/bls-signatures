@@ -98,8 +98,19 @@ ext_modules = [
             "src/bls.cpp",
             "python-bindings/pythonbindings.cpp",
             "blst/src/server.c",
-            "blst/build/assembly.S",
-
+            "blst/build/add_mod_256-x86_64.asm",
+            "blst/build/add_mod_384-x86_64.asm",
+            "blst/build/add_mod_384x384-x86_64.asm",
+            "blst/build/ct_inverse_mod_256-x86_64.asm",
+            "blst/build/ct_is_square_mod_384-x86_64.asm",
+            "blst/build/ctq_inverse_mod_384-x86_64.asm",
+            "blst/build/ctx_inverse_mod_384-x86_64.asm",
+            "blst/build/div3w-x86_64.asm",
+            "blst/build/mulq_mont_256-x86_64.asm",
+            "blst/build/mulq_mont_384-x86_64.asm",
+            "blst/build/mulx_mont_256-x86_64.asm",
+            "blst/build/mulx_mont_384-x86_64.asm",
+            "blst/build/sha256-x86_64.asm",
         ],
         include_dirs=[
             # Path to pybind11 headers
