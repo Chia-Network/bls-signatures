@@ -101,11 +101,6 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("mul_g2", &PrivateKeyWrapper::MulG2)
         .function("equal_to", &PrivateKeyWrapper::EqualTo);
 
-    class_<BignumWrapper>("Bignum")
-        .class_function("fromString", &BignumWrapper::FromString) // Not removing this for compatibility
-        .class_function("from_string", &BignumWrapper::FromString)
-        .function("toString", &BignumWrapper::ToString);
-
     class_<UtilWrapper>("Util")
         .class_function("hash256", &UtilWrapper::Hash256)
         .class_function("hex_str", &UtilWrapper::HexStr);

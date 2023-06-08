@@ -22,7 +22,6 @@ blsjs().then((blsjs) => {
     const modules = [
         'AugSchemeMPL',
         'BasicSchemeMPL',
-        "Bignum",
         'G1Element',
         'G2Element',
         'PopSchemeMPL',
@@ -42,7 +41,6 @@ blsjs().then((blsjs) => {
     const {
         AugSchemeMPL,
         BasicSchemeMPL,
-        Bignum,
         G1Element,
         G2Element,
         PopSchemeMPL,
@@ -380,17 +378,11 @@ blsjs().then((blsjs) => {
         assert(AugSchemeMPL.aggregate_verify([], [], new G2Element()));
     }
 
-    function test_bignum() {
-        const mersenne = Bignum.fromString('162259276829213363391578010288127', 10);
-        assert(mersenne.toString(16).toLowerCase() == '7ffffffffffffffffffffffffff');
-    }
-
     test_schemes();
     test_vectors_invalid();
     test_vectors_valid();
     test_readme();
     test_aggregate_verify_zero_items();
-    test_bignum();
 }).then(function() {
     console.log("\nAll tests passed.");
 });
