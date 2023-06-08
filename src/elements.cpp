@@ -102,7 +102,7 @@ G1Element G1Element::FromMessage(
     const byte* aug = nullptr;
     size_t aug_len = 0;
 
-    blst_encode_to_g1(
+    blst_hash_to_g1(
         &(ans.p),
         message.begin(),
         (int)message.size(),
@@ -278,7 +278,7 @@ G2Element G2Element::FromMessage(
     const byte* aug = nullptr;
     size_t aug_len = 0;
 
-    blst_encode_to_g2(
+    blst_hash_to_g2(
         &(ans.q),
         message.begin(),
         (int)message.size(),
