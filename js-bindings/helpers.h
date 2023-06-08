@@ -28,13 +28,9 @@ namespace helpers {
 
     val toUint8Array(std::vector<uint8_t> vec);
 
-    val toUint8Array(bn_t bn);
-
     std::vector<uint8_t> toVector(uint8_t *pointer, size_t data_size);
 
     std::vector<uint8_t> toVector(val jsBuffer);
-
-    std::vector<uint8_t> toVector(bn_t bn);
 
     template<typename T>
     inline std::vector<T> toVectorFromJSArray(val jsArray) {
@@ -58,8 +54,6 @@ namespace helpers {
     }
 
     std::vector<std::vector<uint8_t>> jsBuffersArrayToVector(val buffersArray);
-
-    std::vector<bn_t *> jsBuffersArrayToBnVector(val buffersArray);
 
     val byteArraysVectorToJsBuffersArray(std::vector<uint8_t *> arraysVector, size_t element_size);
 }  // namespace helpers
