@@ -290,4 +290,4 @@ the following copyright notice.
 ## BLST license
 
 BLST is used with the
-[Apache 2.0 license]([https://github.com/supranational/blst/blob/master/LICENSE])
+[Apache 2.0 license](https://github.com/supranational/blst/blob/master/LICENSE)
