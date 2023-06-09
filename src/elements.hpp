@@ -117,11 +117,14 @@ private:
 
 class GTElement {
 public:
-    static const size_t SIZE = 384;
+    static const size_t SIZE = 576;
+
     static GTElement FromBytes(Bytes bytes);
     static GTElement FromBytesUnchecked(Bytes bytes);
     static GTElement FromByteVector(const std::vector<uint8_t> &bytevec);
     static GTElement FromNative(const blst_fp12 *element);
+    static GTElement FromAffine(const blst_p1_affine &element);
+    static GTElement FromAffine(const blst_p2_affine &element);
     static GTElement Unity();  // unity
 
     void Serialize(uint8_t *buffer) const;
@@ -131,7 +134,6 @@ public:
     friend bool operator!=(GTElement const &a, GTElement const &b);
     friend std::ostream &operator<<(std::ostream &os, const GTElement &s);
     friend GTElement operator*(GTElement &a, GTElement &b);
-    GTElement &operator=(const GTElement &rhs);
 
 private:
     blst_fp12 r;

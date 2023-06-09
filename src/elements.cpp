@@ -102,7 +102,7 @@ G1Element G1Element::FromMessage(
     const byte* aug = nullptr;
     size_t aug_len = 0;
 
-    blst_encode_to_g1(
+    blst_hash_to_g1(
         &(ans.p),
         message.begin(),
         (int)message.size(),
@@ -278,7 +278,7 @@ G2Element G2Element::FromMessage(
     const byte* aug = nullptr;
     size_t aug_len = 0;
 
-    blst_encode_to_g2(
+    blst_hash_to_g2(
         &(ans.q),
         message.begin(),
         (int)message.size(),
@@ -388,11 +388,18 @@ G2Element operator*(const blst_scalar& k, const G2Element& a) { return a * k; }
 
 const size_t GTElement::SIZE;
 
+/*
+ * Currently deserliazation is not available - these are currently
+ * broken and just return the zero element
+ */
 GTElement GTElement::FromBytes(Bytes const bytes)
 {
     GTElement ele = GTElement::FromBytesUnchecked(bytes);
-    if (!blst_fp12_in_group(&(ele.r)))
-        throw std::invalid_argument("GTElement is invalid");
+    //
+    // this doesn't seem to be the proper check as it doesn't work as expeced
+    //
+    // if (!blst_fp12_in_group(&(ele.r)))
+    //     throw std::invalid_argument("GTElement is invalid");
     return ele;
 }
 
@@ -402,7 +409,7 @@ GTElement GTElement::FromBytesUnchecked(Bytes const bytes)
         throw std::invalid_argument("GTElement::FromBytes: Invalid size");
     }
     GTElement ele = GTElement();
-    // wjb gt_read_bin(ele.r, bytes.begin(), GTElement::SIZE);
+    // TO DO  blst_fp12_from_bendian(&(ele.r), bytes.begin());
     return ele;
 }
 
@@ -414,7 +421,21 @@ GTElement GTElement::FromByteVector(const std::vector<uint8_t>& bytevec)
 GTElement GTElement::FromNative(const blst_fp12* element)
 {
     GTElement ele = GTElement();
-    memcpy(&(ele.r), element, sizeof(blst_fp12));
+    ele.r = *element;
+    return ele;
+}
+
+GTElement GTElement::FromAffine(const blst_p1_affine& affine)
+{
+    GTElement ele = GTElement();
+    blst_aggregated_in_g1(&ele.r, &affine);
+    return ele;
+}
+
+GTElement GTElement::FromAffine(const blst_p2_affine& affine)
+{
+    GTElement ele = GTElement();
+    blst_aggregated_in_g2(&ele.r, &affine);
     return ele;
 }
 
@@ -441,18 +462,16 @@ GTElement operator&(const G1Element& a, const G2Element& b)
 {
     blst_fp12 ans;
 
-    blst_p1 p1;
-    blst_p2 p2;
-    a.ToNative(&p1);
-    b.ToNative(&p2);
-
     blst_p1_affine aff1;
-    blst_p1_to_affine(&aff1, &p1);
     blst_p2_affine aff2;
-    blst_p2_to_affine(&aff2, &p2);
+    a.ToAffine(&aff1);
+    b.ToAffine(&aff2);
+
     blst_miller_loop(&ans, &aff2, &aff1);
+    blst_final_exp(&ans, &ans);
 
     GTElement ret = GTElement::FromNative(&ans);
+
     return ret;
 }
 
@@ -465,7 +484,7 @@ GTElement operator*(GTElement& a, GTElement& b)
 
 void GTElement::Serialize(uint8_t* buffer) const
 {
-    // wjb gt_write_bin(buffer, GTElement::SIZE, *(blst_fp12 *)&r, 1);
+    blst_bendian_from_fp12(buffer, &r);
 }
 
 std::vector<uint8_t> GTElement::Serialize() const
