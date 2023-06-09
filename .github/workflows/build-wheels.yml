@@ -139,18 +139,13 @@ jobs:
           && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
           && yes | sh cmake.sh | cat
           && rm -f /usr/bin/cmake
-          && curl -L https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz | tar x --lzip
-          && cp contrib/gmp-patch-6.2.1/longlong.h gmp-6.2.1/
-          && cp contrib/gmp-patch-6.2.1/compat.c gmp-6.2.1/
-          && cd gmp-6.2.1 && ./configure --enable-fat
-          && make && make install && cd .. && rm -rf gmp-6.2.1
           && cmake --version
           && uname -a
         CIBW_BEFORE_BUILD_LINUX: >
           python -m pip install --upgrade pip
         CIBW_ARCHS_MACOS: ${{ matrix.os.cibw-archs-macos[matrix.arch.matrix] }}
         CIBW_BEFORE_ALL_MACOS: >
-          brew install gmp boost cmake
+          brew install boost cmake
         CIBW_BEFORE_BUILD_MACOS: >
           python -m pip install --upgrade pip
         CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.14"
