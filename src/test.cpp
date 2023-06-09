@@ -18,9 +18,6 @@
 #include <thread>
 
 #include "bls.hpp"
-extern "C" {
-// #include "relic.h"
-}
 #include "test-utils.hpp"
 using std::cout;
 using std::endl;
