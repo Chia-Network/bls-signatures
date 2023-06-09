@@ -18,13 +18,9 @@
 extern "C" {
 #include "bindings/blst.h"
 }
-#include "util.hpp"
-
-#if defined GMP && ARITH == GMP
-#include <gmp.h>
-#endif
-
 #include <utility>
+
+#include "util.hpp"
 
 namespace bls {
 class G1Element;
