@@ -14,7 +14,7 @@ NOTE: THIS LIBRARY IS NOT YET FORMALLY REVIEWED FOR SECURITY
 
 NOTE: THIS LIBRARY WAS SHIFTED TO THE IETF BLS SPECIFICATION ON 7/16/20
 
-Implements BLS signatures with aggregation using [blst library]([https://github.com/supranational/blst.git]))
+Implements BLS signatures with aggregation using [blst library](https://github.com/supranational/blst.git)
 for cryptographic primitives (pairings, EC, hashing) according to the
 [IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/)
 with [these curve parameters](https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/)
