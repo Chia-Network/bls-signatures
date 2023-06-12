@@ -1366,6 +1366,62 @@ TEST_CASE("CheckValid")
     }
 }
 
+TEST_CASE("GTElement")
+{
+    SECTION("GTElement serialization")
+    {
+        vector<uint8_t> seed(32, 0x05);
+        blst_p1_affine p1_affine;
+
+        PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
+        G1Element pk1 = BasicSchemeMPL().SkToG1(sk1);
+        pk1.CheckValid();
+        pk1.ToAffine(&p1_affine);
+        GTElement gt1 = GTElement::FromAffine(p1_affine);
+
+        auto outbuf = gt1.Serialize();
+
+        auto gt2 = GTElement::FromBytesUnchecked(outbuf);
+
+        REQUIRE(gt1 == gt2);
+    }
+
+    SECTION("GTElement pairing")
+    {
+        vector<uint8_t> seed(32, 0x05), seed2(32, 0x06);
+        vector<uint8_t> msg1 = {7, 8, 9};
+        vector<uint8_t> msg2 = {10, 11, 12};
+
+        auto sk1 = BasicSchemeMPL().KeyGen(seed);
+        auto sk2 = BasicSchemeMPL().KeyGen(seed2);
+
+        auto pk1 = sk1.GetG1Element();
+        auto pk2 = sk2.GetG1Element();
+
+        auto sig1 = BasicSchemeMPL().Sign(sk1, msg1);
+        auto sig2 = BasicSchemeMPL().Sign(sk2, msg2);
+
+        auto aggsig = BasicSchemeMPL().Aggregate({sig1, sig2});
+
+        REQUIRE(BasicSchemeMPL().AggregateVerify(
+            {pk1, pk2}, vector<vector<uint8_t>>{msg1, msg2}, aggsig));
+
+        auto pair1 = pk1.Pair(G2Element::FromMessage(
+            msg1,
+            (const uint8_t*)BasicSchemeMPL::CIPHERSUITE_ID.c_str(),
+            BasicSchemeMPL::CIPHERSUITE_ID.length()));
+        auto pair2 = pk2.Pair(G2Element::FromMessage(
+            msg2,
+            (const uint8_t*)BasicSchemeMPL::CIPHERSUITE_ID.c_str(),
+            BasicSchemeMPL::CIPHERSUITE_ID.length()));
+        auto pair = pair1 * pair2;
+
+        auto agg_sig_pair = G1Element::Generator().Pair(aggsig);
+
+        REQUIRE(pair == agg_sig_pair);
+    }
+}
+
 int main(int argc, char* argv[])
 {
     int result = Catch::Session().run(argc, argv);
