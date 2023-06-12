@@ -409,7 +409,7 @@ GTElement GTElement::FromBytesUnchecked(Bytes const bytes)
         throw std::invalid_argument("GTElement::FromBytes: Invalid size");
     }
     GTElement ele = GTElement();
-    // TO DO  blst_fp12_from_bendian(&(ele.r), bytes.begin());
+    memcpy(&(ele.r), bytes.begin(), SIZE);
     return ele;
 }
 
@@ -484,7 +484,7 @@ GTElement operator*(GTElement& a, GTElement& b)
 
 void GTElement::Serialize(uint8_t* buffer) const
 {
-    blst_bendian_from_fp12(buffer, &r);
+    memcpy(buffer, &r, GTElement::SIZE);
 }
 
 std::vector<uint8_t> GTElement::Serialize() const
