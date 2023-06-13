@@ -42,7 +42,7 @@ set(SODIUM_DISABLE_TESTS "on" CACHE STRING "")
 set(SODIUM_CHIA_MINIMAL "on" CACHE STRING "")
 FetchContent_MakeAvailable(Sodium)
 
-set(BLST_GIT_TAG "origin/master")
+set(BLST_GIT_TAG "a8cd361c9f671577aeab3f074098443af92a53fc")
 set(BLST_REPOSITORY "https://github.com/supranational/blst")
 
 message(STATUS "blst will be built from: ${BLST_GIT_TAG} and repository ${BLST_REPOSITORY}")
