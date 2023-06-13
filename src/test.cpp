@@ -104,6 +104,7 @@ TEST_CASE("class PrivateKey") {
     }
     SECTION("(De)Serialization") {
         PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        REQUIRE_THROWS_AS(pk1.Serialize(nullptr), std::runtime_error);
         pk1.Serialize(buffer);
         REQUIRE(memcmp(buffer, pk1.Serialize().data(), PrivateKey::PRIVATE_KEY_SIZE) == 0);
         PrivateKey pk2 = PrivateKey:: FromBytes(Bytes(buffer, PrivateKey::PRIVATE_KEY_SIZE), true);
