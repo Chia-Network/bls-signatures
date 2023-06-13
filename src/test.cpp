@@ -1211,7 +1211,7 @@ TEST_CASE("CheckValid")
             "8da82c268bd6fef3bd34b558628daf1afef798d4c3b0fcd8b28c8973dfdfdffd2";
 
         REQUIRE_THROWS(
-            G1Element::FromBytes(Bytes(Util::HexToBytes(toLongHex))));
+            G1Element::FromBytesUnchecked(Bytes(Util::HexToBytes(toLongHex))));
         // FromBytes throws
         REQUIRE_THROWS(
             G1Element::FromBytes(Bytes(Util::HexToBytes(badPointHex))));
@@ -1251,7 +1251,7 @@ TEST_CASE("CheckValid")
             "8da82c268bd6fef3bd34b558628daf1afef798d4c3b0fcd8b28c8973dfdfdffd2";
 
         REQUIRE_THROWS(
-            G2Element::FromBytes(Bytes(Util::HexToBytes(toLongHex))));
+            G2Element::FromBytesUnchecked(Bytes(Util::HexToBytes(toLongHex))));
     }
 }
 
