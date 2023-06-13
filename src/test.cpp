@@ -802,6 +802,21 @@ TEST_CASE("Signature tests")
             PopSchemeMPL().FastAggregateVerify(
                 pks_as_bytes, msg, aggSig.Serialize()) == false);
     }
+    SECTION("Aggregate same sig element")
+    {
+        vector<uint8_t> message = {100, 2, 254, 88, 90, 45, 23};
+
+        vector<uint8_t> seed(32, 0x50);
+
+        PrivateKey sk1 = BasicSchemeMPL().KeyGen(seed);
+
+        G1Element pk1 = sk1.GetG1Element();
+
+        G2Element sig1Aug = AugSchemeMPL().Sign(sk1, message);
+        G2Element aggSigAug = AugSchemeMPL().Aggregate({sig1Aug, sig1Aug});
+        REQUIRE(AugSchemeMPL().AggregateVerify(
+            {pk1, pk1}, vector<vector<uint8_t>>{message, message}, aggSigAug));
+    }
 }
 
 TEST_CASE("Agg sks")

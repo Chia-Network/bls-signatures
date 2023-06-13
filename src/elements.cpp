@@ -193,14 +193,14 @@ std::ostream& operator<<(std::ostream& os, const G1Element& ele)
 
 G1Element& operator+=(G1Element& a, const G1Element& b)
 {
-    blst_p1_add(&(a.p), &(a.p), &(b.p));
+    blst_p1_add_or_double(&(a.p), &(a.p), &(b.p));
     return a;
 }
 
 G1Element operator+(const G1Element& a, const G1Element& b)
 {
     G1Element ans;
-    blst_p1_add(&(ans.p), &(a.p), &(b.p));
+    blst_p1_add_or_double(&(ans.p), &(a.p), &(b.p));
     return ans;
 }
 
@@ -360,14 +360,14 @@ std::ostream& operator<<(std::ostream& os, const G2Element& s)
 
 G2Element& operator+=(G2Element& a, const G2Element& b)
 {
-    blst_p2_add(&(a.q), &(a.q), &(b.q));
+    blst_p2_add_or_double(&(a.q), &(a.q), &(b.q));
     return a;
 }
 
 G2Element operator+(const G2Element& a, const G2Element& b)
 {
     G2Element ans;
-    blst_p2_add(&(ans.q), &(a.q), &(b.q));
+    blst_p2_add_or_double(&(ans.q), &(a.q), &(b.q));
     return ans;
 }
 
