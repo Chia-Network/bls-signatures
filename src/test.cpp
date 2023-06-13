@@ -1205,13 +1205,12 @@ TEST_CASE("CheckValid")
     SECTION("Invalid G1 points should not succeed")
     {
         string badPointHex =
-            "8d5d0fb73b9c92df4eab4216e48c3e358578b4cc30f82c268bd6fef3bd34b558628daf1afef798d4c3b0fcd8b28c8973";
-        string toLongHex =
             "8d5d0fb73b9c92df4eab4216e48c3e358578b4cc30f82c268bd6fef3bd34b55862"
-            "8da82c268bd6fef3bd34b558628daf1afef798d4c3b0fcd8b28c8973dfdfdffd2";
+            "8daf1afef798d4c3b0fcd8b28c8973";
 
-        REQUIRE_THROWS(
-            G1Element::FromBytesUnchecked(Bytes(Util::HexToBytes(toLongHex))));
+        REQUIRE_THROWS_AS(
+            G1Element::FromBytesUnchecked(vector<uint8_t>(100, 0x05)),
+            std::invalid_argument);
         // FromBytes throws
         REQUIRE_THROWS(
             G1Element::FromBytes(Bytes(Util::HexToBytes(badPointHex))));
@@ -1246,12 +1245,9 @@ TEST_CASE("CheckValid")
 
         REQUIRE_THROWS(G2Element::FromByteVector(badSer));
 
-        string toLongHex =
-            "8d5d0fb73b9c92df4eab4216e48c3e358578b4cc30f82c268bd6fef3bd34b55862"
-            "8da82c268bd6fef3bd34b558628daf1afef798d4c3b0fcd8b28c8973dfdfdffd2";
-
-        REQUIRE_THROWS(
-            G2Element::FromBytesUnchecked(Bytes(Util::HexToBytes(toLongHex))));
+        REQUIRE_THROWS_AS(
+            G2Element::FromBytesUnchecked(vector<uint8_t>(100, 0x04)),
+            std::invalid_argument);
     }
 }
 
