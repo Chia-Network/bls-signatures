@@ -113,7 +113,7 @@ private:
 
 class GTElement {
 public:
-    static const size_t SIZE = 576;
+    static const size_t SIZE = sizeof(blst_fp12);
 
     static GTElement FromBytes(Bytes bytes);
     static GTElement FromBytesUnchecked(Bytes bytes);
