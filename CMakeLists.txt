@@ -47,7 +47,7 @@ if(DEFINED ENV{RELIC_MAIN})
   set(RELIC_REPOSITORY "https://github.com/relic-toolkit/relic.git")
 else()
   # This is currently anchored to upstream aecdcae7956f542fbee2392c1f0feb0a8ac41dc5
-  set(RELIC_GIT_TAG "215c69966cb78b255995f0ee9c86bbbb41c3c42b")
+  set(RELIC_GIT_TAG "2a4ed8ded3a9a5ac5e39f3877f357264b2e16f11")
   set(RELIC_REPOSITORY "https://github.com/Chia-Network/relic.git")
 endif()
 
@@ -63,12 +63,25 @@ FetchContent_Declare(
 
 set(STBIN "off" CACHE STRING "Relic - Build static binaries")
 
-find_package(gmp)
-if (GMP_FOUND)
-  message(STATUS "Found libgmp")
+if(MSVC)
   set(ARITH "gmp" CACHE STRING "")
+  # We'll be using our custom MPIR build instead of GMP for MSVC builds
+  FetchContent_Declare(
+    chia_mpir
+    GIT_REPOSITORY https://github.com/Chia-Network/mpir_gc_x64.git
+    GIT_SHALLOW true
+  )
+  FetchContent_MakeAvailable(chia_mpir)
+  set(MPIR_INCLUDE_DIR ${chia_mpir_SOURCE_DIR} CACHE STRING "")
+  set(MPIR_IMPLIB "${chia_mpir_SOURCE_DIR}/mpir.lib" CACHE STRING "")
 else()
-  set(ARITH "easy" CACHE STRING "")
+  find_package(gmp)
+  if(GMP_FOUND)
+    message(STATUS "Found libgmp")
+    set(ARITH "gmp" CACHE STRING "")
+  else()
+    set(ARITH "easy" CACHE STRING "")
+  endif()
 endif()
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 4)
@@ -140,6 +153,17 @@ set(PP_EXT "LAZYR" CACHE STRING "")
 set(PP_METHD "LAZYR;OATEP" CACHE STRING "")
 
 FetchContent_MakeAvailable(relic)
+
+function(handle_mpir_dlls _target)
+  file(GLOB chia_mpir_dlls ${chia_mpir_SOURCE_DIR}/*.dll)
+  foreach(mpir_dll IN LISTS chia_mpir_dlls)
+    add_custom_command(
+      TARGET ${_target}
+      POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${mpir_dll} $<TARGET_FILE_DIR:${_target}>
+    )
+  endforeach()
+endfunction()
 
 add_subdirectory(src)
 

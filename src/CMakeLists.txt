@@ -39,6 +39,10 @@ install(DIRECTORY ${relic_BINARY_DIR}/include/ DESTINATION include/chiabls)
 install(FILES ${HEADERS} DESTINATION include/chiabls)
 install(FILES $<TARGET_FILE:bls> DESTINATION lib)
 
+if(MSVC AND (BUILD_BLS_TESTS OR BUILD_BLS_BENCHMARKS))
+  handle_mpir_dlls(bls)
+endif()
+
 if(BUILD_BLS_TESTS)
   FetchContent_Declare(
     Catch2
