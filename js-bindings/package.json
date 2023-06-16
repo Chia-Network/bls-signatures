@@ -37,7 +37,7 @@
     "cryptography"
   ],
   "devDependencies": {
-    "@types/mocha": "^5.2.7",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^20.1.5",
     "assert": "^2.0.0",
     "babel-polyfill": "^6.26.0",
