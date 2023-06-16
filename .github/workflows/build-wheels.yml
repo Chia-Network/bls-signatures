@@ -3,12 +3,12 @@ name: build - check - upload
 on:
   push:
     branches:
-    - main
+      - main
   release:
     types: [published]
   pull_request:
     branches:
-    - '**'
+      - "**"
 
 concurrency:
   # SHA is added to the end if on `main` to let all main workflows run
@@ -41,36 +41,36 @@ jobs:
             runs-on:
               intel: [windows-latest]
         python:
-          - major-dot-minor: '3.7'
-            cibw-build: 'cp37-*'
+          - major-dot-minor: "3.7"
+            cibw-build: "cp37-*"
             manylinux:
-              arch: manylinux2014
-              intel: manylinux2014
-            matrix: '3.7'
-          - major-dot-minor: '3.8'
-            cibw-build: 'cp38-*'
+              arm: manylinux2014
+              intel: manylinux2010
+            matrix: "3.7"
+          - major-dot-minor: "3.8"
+            cibw-build: "cp38-*"
             manylinux:
-              arch: manylinux2014
-              intel: manylinux2014
-            matrix: '3.8'
-          - major-dot-minor: '3.9'
-            cibw-build: 'cp39-*'
+              arm: manylinux2014
+              intel: manylinux2010
+            matrix: "3.8"
+          - major-dot-minor: "3.9"
+            cibw-build: "cp39-*"
             manylinux:
-              arch: manylinux2014
-              intel: manylinux2014
-            matrix: '3.9'
-          - major-dot-minor: '3.10'
-            cibw-build: 'cp310-*'
+              arm: manylinux2014
+              intel: manylinux2010
+            matrix: "3.9"
+          - major-dot-minor: "3.10"
+            cibw-build: "cp310-*"
             manylinux:
-              arch: manylinux2014
-              intel: manylinux2014
-            matrix: '3.10'
-          - major-dot-minor: '3.11'
-            cibw-build: 'cp311-*'
+              arm: manylinux2014
+              intel: manylinux2010
+            matrix: "3.10"
+          - major-dot-minor: "3.11"
+            cibw-build: "cp311-*"
             manylinux:
-              arch: manylinux2014
+              arm: manylinux2014
               intel: manylinux2014
-            matrix: '3.11'
+            matrix: "3.11"
         arch:
           - name: ARM
             matrix: arm
@@ -96,82 +96,74 @@ jobs:
                 arm: [macOS, ARM64]
                 intel: [macos-latest]
             python:
-              major-dot-minor: '3.7'
-              cibw-build: 'cp37-*'
-              matrix: '3.7'
+              major-dot-minor: "3.7"
+              cibw-build: "cp37-*"
+              matrix: "3.7"
             arch:
               name: ARM
               matrix: arm
 
     steps:
-    - name: Clean workspace
-      uses: Chia-Network/actions/clean-workspace@main
+      - name: Clean workspace
+        uses: Chia-Network/actions/clean-workspace@main
 
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Set Env
-      if: env.RUNNER_ARCH != 'ARM64'
-      uses: Chia-Network/actions/setjobenv@main
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set Env
+        if: env.RUNNER_ARCH != 'ARM64'
+        uses: Chia-Network/actions/setjobenv@main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - uses: chia-network/actions/setup-python@main
-      with:
-        python-version: ${{ matrix.python.major-dot-minor }}
+      - uses: chia-network/actions/setup-python@main
+        with:
+          python-version: ${{ matrix.python.major-dot-minor }}
 
-    - name: Install pipx
-      run: |
-        pip install pipx
+      - name: Install pipx
+        run: |
+          pip install pipx
 
-    - name: Build and test
-      env:
-        CIBW_PRERELEASE_PYTHONS: True
-        CIBW_BUILD_VERBOSITY_MACOS: 0
-        CIBW_BUILD_VERBOSITY_LINUX: 0
-        CIBW_BUILD_VERBOSITY_WINDOWS: 0
-        CIBW_BUILD: ${{ matrix.python.cibw-build }}
-        CIBW_SKIP: '*-manylinux_i686 *-win32 *-musllinux_*'
-        CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.python.manylinux['arm'] }}
-        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.python.manylinux['intel'] }}
-        CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
-        CIBW_BEFORE_ALL_LINUX: >
-          yum -y install epel-release
-          && echo "epel-release installed"
-          && yum -y install lzip
-          && echo "lzip installed"
-          && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
-          && yes | sh cmake.sh | cat
-          && rm -f /usr/bin/cmake
-          && cmake --version
-          && uname -a
-        CIBW_BEFORE_BUILD_LINUX: >
-          python -m pip install --upgrade pip
-        CIBW_ARCHS_MACOS: ${{ matrix.os.cibw-archs-macos[matrix.arch.matrix] }}
-        CIBW_BEFORE_ALL_MACOS: >
-          brew install boost cmake
-        CIBW_BEFORE_BUILD_MACOS: >
-          python -m pip install --upgrade pip
-        CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.14"
-        CIBW_BEFORE_ALL_WINDOWS: >
-          curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-msvc.zip > libsodium-1.0.18-stable-msvc.zip
-          && 7z x libsodium-1.0.18-stable-msvc.zip
-          && git clone https://github.com/supranational/blst.git
-          && ls -l blst
-        CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
-          cp {wheel} {dest_dir}
-        CIBW_TEST_REQUIRES: pytest
-        CIBW_TEST_COMMAND: py.test -v {project}/python-bindings/test.py
-      run:
-        pipx run --spec='cibuildwheel==2.9.0' cibuildwheel --output-dir dist 2>&1
+      - name: Build and test
+        env:
+          CIBW_PRERELEASE_PYTHONS: True
+          CIBW_BUILD_VERBOSITY_MACOS: 0
+          CIBW_BUILD_VERBOSITY_LINUX: 0
+          CIBW_BUILD_VERBOSITY_WINDOWS: 0
+          CIBW_BUILD: ${{ matrix.python.cibw-build }}
+          CIBW_SKIP: "*-manylinux_i686 *-win32 *-musllinux_*"
+          CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.python.manylinux['arm'] }}
+          CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.python.manylinux['intel'] }}
+          CIBW_ENVIRONMENT_LINUX: "PATH=/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"
+          CIBW_BEFORE_ALL_LINUX: >
+            yum -y install epel-release
+            && echo "epel-release installed"
+            && yum -y install lzip
+            && echo "lzip installed"
+            && curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh
+            && yes | sh cmake.sh | cat
+            && rm -f /usr/bin/cmake
+            && cmake --version
+            && uname -a
+          CIBW_BEFORE_BUILD_LINUX: >
+            python -m pip install --upgrade pip
+          CIBW_ARCHS_MACOS: ${{ matrix.os.cibw-archs-macos[matrix.arch.matrix] }}
+          CIBW_BEFORE_ALL_MACOS: >
+            brew install boost cmake
+          CIBW_BEFORE_BUILD_MACOS: >
+            python -m pip install --upgrade pip
+          CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.14"
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: py.test -v {project}/python-bindings/test.py
+        run: pipx run --spec='cibuildwheel==2.9.0' cibuildwheel --output-dir dist 2>&1
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: packages
-        path: ./dist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: ./dist
 
   build-sdist:
     name: sdist - ${{ matrix.os.name }} ${{ matrix.python.major-dot-minor }} ${{ matrix.arch.name }}
@@ -186,34 +178,34 @@ jobs:
               arm: [Linux, ARM64]
               intel: [ubuntu-latest]
         python:
-          - major-dot-minor: '3.9'
-            matrix: '3.9'
+          - major-dot-minor: "3.9"
+            matrix: "3.9"
         arch:
           - name: Intel
             matrix: intel
 
     steps:
-    - name: Clean workspace
-      uses: Chia-Network/actions/clean-workspace@main
+      - name: Clean workspace
+        uses: Chia-Network/actions/clean-workspace@main
 
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - uses: Chia-Network/actions/setup-python@main
-      with:
-        python-version: ${{ matrix.python.major-dot-minor }}
+      - uses: Chia-Network/actions/setup-python@main
+        with:
+          python-version: ${{ matrix.python.major-dot-minor }}
 
-    - name: Build source distribution
-      run: |
-        pip install build
-        python -m build --sdist --outdir dist .
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: packages
-        path: ./dist
+      - name: Build source distribution
+        run: |
+          pip install build
+          python -m build --sdist --outdir dist .
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: ./dist
 
   check:
     name: Check - ${{ matrix.os.name }} ${{ matrix.python.major-dot-minor }} ${{ matrix.arch.name }}
@@ -228,33 +220,33 @@ jobs:
               arm: [Linux, ARM64]
               intel: [ubuntu-latest]
         python:
-          - major-dot-minor: '3.9'
-            matrix: '3.9'
+          - major-dot-minor: "3.9"
+            matrix: "3.9"
         arch:
           - name: Intel
             matrix: intel
 
     steps:
-    - name: Clean workspace
-      uses: Chia-Network/actions/clean-workspace@main
+      - name: Clean workspace
+        uses: Chia-Network/actions/clean-workspace@main
 
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - uses: Chia-Network/actions/setup-python@main
-      with:
-        python-version: ${{ matrix.python.major-dot-minor }}
+      - uses: Chia-Network/actions/setup-python@main
+        with:
+          python-version: ${{ matrix.python.major-dot-minor }}
 
-    - name: flake8
-      run: |
-        pip install flake8
-        flake8 src setup.py python-bindings python-impl
-    - name: mypy
-      run: |
-        pip install mypy
-        mypy --config-file mypi.ini python-bindings python-impl
+      - name: flake8
+        run: |
+          pip install flake8
+          flake8 src setup.py python-bindings python-impl
+      - name: mypy
+        run: |
+          pip install mypy
+          mypy --config-file mypi.ini python-bindings python-impl
   upload:
     name: Upload to PyPI - ${{ matrix.os.name }} ${{ matrix.python.major-dot-minor }} ${{ matrix.arch.name }}
     runs-on: ${{ matrix.os.runs-on[matrix.arch.matrix] }}
@@ -272,62 +264,62 @@ jobs:
               arm: [Linux, ARM64]
               intel: [ubuntu-latest]
         python:
-          - major-dot-minor: '3.9'
-            matrix: '3.9'
+          - major-dot-minor: "3.9"
+            matrix: "3.9"
         arch:
           - name: Intel
             matrix: intel
 
     steps:
-    - name: Clean workspace
-      uses: Chia-Network/actions/clean-workspace@main
+      - name: Clean workspace
+        uses: Chia-Network/actions/clean-workspace@main
 
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Set Env
-      uses: Chia-Network/actions/setjobenv@main
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set Env
+        uses: Chia-Network/actions/setjobenv@main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - uses: Chia-Network/actions/setup-python@main
-      with:
-        python-version: ${{ matrix.python.major-dot-minor }}
+      - uses: Chia-Network/actions/setup-python@main
+        with:
+          python-version: ${{ matrix.python.major-dot-minor }}
 
-    - name: Download artifacts
-      uses: actions/download-artifact@v3
-      with:
-        name: packages
-        path: ./dist
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: packages
+          path: ./dist
 
-    - name: Test for secrets access
-      id: check_secrets
-      shell: bash
-      run: |
-        unset HAS_SECRET
-        if [ -n "$SECRET" ]; then HAS_SECRET='true' ; fi
-        echo "HAS_SECRET=${HAS_SECRET}" >>$GITHUB_OUTPUT
-      env:
-        SECRET: "${{ secrets.test_pypi_password }}"
+      - name: Test for secrets access
+        id: check_secrets
+        shell: bash
+        run: |
+          unset HAS_SECRET
+          if [ -n "$SECRET" ]; then HAS_SECRET='true' ; fi
+          echo "HAS_SECRET=${HAS_SECRET}" >>$GITHUB_OUTPUT
+        env:
+          SECRET: "${{ secrets.test_pypi_password }}"
 
-    - name: Install twine
-      run: pip install twine
+      - name: Install twine
+        run: pip install twine
 
-    - name: Publish distribution to PyPI
-      if: env.RELEASE == 'true' && steps.check_secrets.outputs.HAS_SECRET
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_NON_INTERACTIVE: 1
-        TWINE_PASSWORD: ${{ secrets.pypi_password }}
-      run: twine upload --non-interactive --skip-existing --verbose 'dist/*'
+      - name: Publish distribution to PyPI
+        if: env.RELEASE == 'true' && steps.check_secrets.outputs.HAS_SECRET
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_NON_INTERACTIVE: 1
+          TWINE_PASSWORD: ${{ secrets.pypi_password }}
+        run: twine upload --non-interactive --skip-existing --verbose 'dist/*'
 
-    - name: Publish distribution to Test PyPI
-      if: env.PRE_RELEASE == 'true' && steps.check_secrets.outputs.HAS_SECRET
-      env:
-        TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
-        TWINE_USERNAME: __token__
-        TWINE_NON_INTERACTIVE: 1
-        TWINE_PASSWORD: ${{ secrets.test_pypi_password }}
-      run: twine upload --non-interactive --skip-existing --verbose 'dist/*'
+      - name: Publish distribution to Test PyPI
+        if: env.PRE_RELEASE == 'true' && steps.check_secrets.outputs.HAS_SECRET
+        env:
+          TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
+          TWINE_USERNAME: __token__
+          TWINE_NON_INTERACTIVE: 1
+          TWINE_PASSWORD: ${{ secrets.test_pypi_password }}
+        run: twine upload --non-interactive --skip-existing --verbose 'dist/*'
