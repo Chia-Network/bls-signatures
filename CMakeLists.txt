@@ -102,7 +102,12 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
   set(MULTI "OPENMP" CACHE STRING "")
 else()
   set(TIMER "CYCLE" CACHE STRING "")
-  set(MULTI "PTHREAD" CACHE STRING "")
+  if(BUILD_BLS_FLUTTER_BINDINGS)
+    # Android doesn't need pthread
+    set(MULTI "" CACHE STRING "")
+  else()
+    set(MULTI "PTHREAD" CACHE STRING "")
+  endif()
 endif()
 
 set(CHECK "off" CACHE STRING "")
@@ -167,12 +172,15 @@ endfunction()
 
 add_subdirectory(src)
 
-if(EMSCRIPTEN)
-  add_subdirectory(js-bindings)
-else()
-  # emscripten can't build python bindings, it produces only javascript
-  # add_subdirectory(contrib/pybind11)
-  if(BUILD_BLS_PYTHON_BINDINGS)
-    add_subdirectory(python-bindings)
+if (NOT BUILD_BLS_FLUTTER_BINDINGS)
+  # flutter bindings don't need to include subdirectory
+  if(EMSCRIPTEN)
+    add_subdirectory(js-bindings)
+  else()
+    # emscripten can't build python bindings, it produces only javascript
+    # add_subdirectory(contrib/pybind11)
+    if(BUILD_BLS_PYTHON_BINDINGS)
+      add_subdirectory(python-bindings)
+    endif()
   endif()
 endif()
