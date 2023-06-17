@@ -12,36 +12,17 @@ endif()
 
 add_compile_options(-D__BLST_PORTABLE__)
 
-IF (WIN32)
-  add_library(bls
-    ${HEADERS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
-    ${blst_SOURCE_DIR}/src/server.c
-    ${blst_SOURCE_DIR}/build/win64/add_mod_256-x86_64.asm
-    ${blst_SOURCE_DIR}/build/win64/add_mod_384-x86_64.asm
-    ${blst_SOURCE_DIR}/build/win64/add_mod_384x384-x86_64.asm
-    ${blst_SOURCE_DIR}/build/win64/ct_inverse_mod_256-x86_64.asm
-    ${blst_SOURCE_DIR}/build/win64/ct_is_square_mod_384-x86_64.asm
-    ${blst_SOURCE_DIR}/build/win64/ctq_inverse_mod_384-x86_64.asm
-    ${blst_SOURCE_DIR}/build/win64/div3w-x86_64.asm
-    ${blst_SOURCE_DIR}/build/win64/mulq_mont_256-x86_64.asm
-    ${blst_SOURCE_DIR}/build/win64/mulq_mont_384-x86_64.asm
-    ${blst_SOURCE_DIR}/build/win64/sha256-x86_64.asm
-  )
-ELSE()
-  add_library(bls
-    ${HEADERS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
-    ${blst_SOURCE_DIR}/src/server.c
-    ${blst_SOURCE_DIR}/build/assembly.S
-  )
+add_library(bls
+  ${HEADERS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
+  ${blst_SOURCE_DIR}/src/server.c
+IF (NOT WIN32)
+  ${blst_SOURCE_DIR}/build/assembly.S
 ENDIF()
+)
 
 target_include_directories(bls
   PUBLIC
@@ -57,6 +38,9 @@ target_compile_definitions(bls
 target_link_libraries(bls
   PUBLIC
   sodium
+IF (WIN32)
+  ${CMAKE_CURRENT_SOURCE_DIR}/blstasm
+ENDIF()
 )
 
 if(WITH_COVERAGE)
