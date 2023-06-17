@@ -1,6 +1,7 @@
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 source_group("SrcHeaders" FILES ${HEADERS})
 
+IF(NOT WIN32)
 add_compile_options(-fno-builtin)
 add_compile_options(-fPIC)
 add_compile_options(-Wall)
@@ -9,6 +10,7 @@ add_compile_options(-Wextra)
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
   add_compile_options(-mno-avx)
 endif()
+ENDIF()
 
 add_compile_options(-D__BLST_PORTABLE__)
 
