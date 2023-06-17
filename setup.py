@@ -3,8 +3,7 @@ import os
 import platform
 import subprocess
 import sys
-from setuptools import Extension, setup, setuptools
-from setuptools.command.build_ext import build_ext
+import setuptools
 
 
 class CMakeExtension(Extension):
