@@ -50,7 +50,7 @@ IF (WIN32)
 target_link_libraries(bls
   PUBLIC
   sodium
-  ${CMAKE_CURRENT_SOURCE_DIR}/blstasm
+  ${CMAKE_CURRENT_SOURCE_DIR}/blstasm.lib
 )
 ELSE()
 target_link_libraries(bls
