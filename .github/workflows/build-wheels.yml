@@ -159,6 +159,9 @@ jobs:
            curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-msvc.zip > libsodium-1.0.18-stable-msvc.zip
            && 7z x libsodium-1.0.18-stable-msvc.zip
            && git clone https://github.com/supranational/blst.git
+           && cd blst
+           && git checkout a8cd361
+           && cd ..
            && ls -l blst
           CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
            cp {wheel} {dest_dir}
