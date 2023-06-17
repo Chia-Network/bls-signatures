@@ -155,6 +155,13 @@ jobs:
           CIBW_BEFORE_BUILD_MACOS: >
             python -m pip install --upgrade pip
           CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.14"
+          CIBW_BEFORE_ALL_WINDOWS: >
+           curl -L https://download.libsodium.org/libsodium/releases/libsodium-1.0.18-stable-msvc.zip > libsodium-1.0.18-stable-msvc.zip
+           && 7z x libsodium-1.0.18-stable-msvc.zip
+           && git clone https://github.com/supranational/blst.git
+           && ls -l blst
+          CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: >
+           cp {wheel} {dest_dir}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: py.test -v {project}/python-bindings/test.py
         run: pipx run --spec='cibuildwheel==2.9.0' cibuildwheel --output-dir dist 2>&1
