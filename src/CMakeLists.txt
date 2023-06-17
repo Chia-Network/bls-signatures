@@ -1,6 +1,7 @@
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 source_group("SrcHeaders" FILES ${HEADERS})
 
+IF(NOT WIN32)
 add_compile_options(-fno-builtin)
 add_compile_options(-fPIC)
 add_compile_options(-Wall)
@@ -9,9 +10,20 @@ add_compile_options(-Wextra)
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
   add_compile_options(-mno-avx)
 endif()
+ENDIF()
 
 add_compile_options(-D__BLST_PORTABLE__)
 
+IF (WIN32)
+add_library(bls
+  ${HEADERS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
+  ${blst_SOURCE_DIR}/src/server.c
+)
+ELSE()
 add_library(bls
   ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
@@ -21,6 +33,7 @@ add_library(bls
   ${blst_SOURCE_DIR}/src/server.c
   ${blst_SOURCE_DIR}/build/assembly.S
 )
+ENDIF()
 
 target_include_directories(bls
   PUBLIC
@@ -33,10 +46,18 @@ target_compile_definitions(bls
   BLSALLOC_SODIUM=1
 )
 
+IF (WIN32)
+target_link_libraries(bls
+  PUBLIC
+  sodium
+  ${CMAKE_CURRENT_SOURCE_DIR}/blstasm.lib
+)
+ELSE()
 target_link_libraries(bls
   PUBLIC
   sodium
 )
+ENDIF()
 
 if(WITH_COVERAGE)
   target_compile_options(bls PRIVATE --coverage)
