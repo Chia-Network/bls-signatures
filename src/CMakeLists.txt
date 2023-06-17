@@ -12,6 +12,7 @@ endif()
 
 add_compile_options(-D__BLST_PORTABLE__)
 
+IF (WIN32)
 add_library(bls
   ${HEADERS}
   ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
@@ -19,10 +20,18 @@ add_library(bls
   ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
   ${blst_SOURCE_DIR}/src/server.c
-IF (NOT WIN32)
-  ${blst_SOURCE_DIR}/build/assembly.S
-ENDIF()
 )
+ELSE()
+add_library(bls
+  ${HEADERS}
+  ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
+  ${blst_SOURCE_DIR}/src/server.c
+  ${blst_SOURCE_DIR}/build/assembly.S
+)
+ENDIF()
 
 target_include_directories(bls
   PUBLIC
@@ -35,13 +44,18 @@ target_compile_definitions(bls
   BLSALLOC_SODIUM=1
 )
 
+IF (WIN32)
 target_link_libraries(bls
   PUBLIC
   sodium
-IF (WIN32)
   ${CMAKE_CURRENT_SOURCE_DIR}/blstasm
-ENDIF()
 )
+ELSE()
+target_link_libraries(bls
+  PUBLIC
+  sodium
+)
+ENDIF()
 
 if(WITH_COVERAGE)
   target_compile_options(bls PRIVATE --coverage)
