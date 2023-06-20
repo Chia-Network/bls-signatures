@@ -15,12 +15,6 @@
 #ifndef SRC_BLSPRIVATEKEY_HPP_
 #define SRC_BLSPRIVATEKEY_HPP_
 
-#include "relic_conf.h"
-
-#if defined GMP && ARITH == GMP
-#include <gmp.h>
-#endif
-
 #include "elements.hpp"
 
 namespace bls {
@@ -92,7 +86,7 @@ class PrivateKey {
     void InvalidateCaches();
 
     // The actual byte data
-    bn_st* keydata{nullptr};
+    blst_scalar* keydata{nullptr};
 
     mutable bool fG1CacheValid{false};
     mutable G1Element g1Cache;

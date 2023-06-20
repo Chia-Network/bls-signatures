@@ -70,7 +70,6 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("deepcopy", &G1ElementWrapper::Deepcopy)
         .function("get_fingerprint", &G1ElementWrapper::GetFingerprint)
         .function("add", &G1ElementWrapper::Add)
-        .function("mul", &G1ElementWrapper::Mul)
         .function("equal_to", &G1ElementWrapper::EqualTo);
 
     class_<G2ElementWrapper>("G2Element")
@@ -85,7 +84,6 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("negate", &G2ElementWrapper::Negate)
         .function("deepcopy", &G2ElementWrapper::Deepcopy)
         .function("add", &G2ElementWrapper::Add)
-        .function("mul", &G2ElementWrapper::Mul)
         .function("equal_to", &G2ElementWrapper::EqualTo);
 
     class_<PrivateKeyWrapper>("PrivateKey")
@@ -100,11 +98,6 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .function("mul_g1", &PrivateKeyWrapper::MulG1)
         .function("mul_g2", &PrivateKeyWrapper::MulG2)
         .function("equal_to", &PrivateKeyWrapper::EqualTo);
-
-    class_<BignumWrapper>("Bignum")
-        .class_function("fromString", &BignumWrapper::FromString) // Not removing this for compatibility
-        .class_function("from_string", &BignumWrapper::FromString)
-        .function("toString", &BignumWrapper::ToString);
 
     class_<UtilWrapper>("Util")
         .class_function("hash256", &UtilWrapper::Hash256)
