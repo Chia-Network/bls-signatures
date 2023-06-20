@@ -51,15 +51,10 @@ public:
             throw std::invalid_argument("Seed size must be at least 32 bytes");
         }
 
-        // std::cout << "seed: "<< Util::HexStr(seed.begin(),seed.size()) <<
-        // std::endl;
-
         blst_scalar* skBn = Util::SecAlloc<blst_scalar>(1);
         blst_keygen_v3(skBn, seed.begin(), seed.size(), info, infoLen);
         uint8_t* skBytes = Util::SecAlloc<uint8_t>(32);
         blst_bendian_from_scalar(skBytes, skBn);
-
-        // std::cout << "skBytes: "<< Util::HexStr(skBytes,32) << std::endl;
 
         PrivateKey k = PrivateKey::FromBytes(Bytes(skBytes, 32));
 
