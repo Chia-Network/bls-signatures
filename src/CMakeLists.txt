@@ -1,63 +1,45 @@
 file(GLOB HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/*.hpp)
 source_group("SrcHeaders" FILES ${HEADERS})
 
-IF(NOT WIN32)
-add_compile_options(-fno-builtin)
-add_compile_options(-fPIC)
-add_compile_options(-Wall)
-add_compile_options(-Wextra)
+list(APPEND bls_sources
+  ${HEADERS}
+  privatekey.cpp
+  bls.cpp
+  elements.cpp
+  schemes.cpp
+  ${blst_SOURCE_DIR}/src/server.c
+)
 
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
-  add_compile_options(-mno-avx)
+if(MSVC)
+  list(APPEND bls_sources
+    ${blst_SOURCE_DIR}/build/win64/add_mod_256-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/add_mod_384-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/add_mod_384x384-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/ct_inverse_mod_256-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/ct_is_square_mod_384-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/ctq_inverse_mod_384-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/div3w-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/mulq_mont_256-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/mulq_mont_384-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/sha256-x86_64.asm
+  )
+else()
+  list(APPEND bls_sources
+    ${blst_SOURCE_DIR}/build/assembly.S
+  )
+  add_compile_options(-fno-builtin)
+  add_compile_options(-fPIC)
+  add_compile_options(-Wall)
+  add_compile_options(-Wextra)
+  if(CMAKE_SYSTEM_PROCESSOR MATCHES "(x86)|(X86)|(amd64)|(AMD64)")
+    add_compile_options(-mno-avx)
+  endif()
 endif()
-ENDIF()
 
-add_compile_options(-D__BLST_PORTABLE__)
-
-IF (WIN32)
-add_library(bls
-  ${HEADERS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
-  ${blst_SOURCE_DIR}/src/server.c
-)
-ELSE()
-add_library(bls
-  ${HEADERS}
-  ${CMAKE_CURRENT_SOURCE_DIR}/privatekey.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/bls.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/elements.cpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/schemes.cpp
-  ${blst_SOURCE_DIR}/src/server.c
-  ${blst_SOURCE_DIR}/build/assembly.S
-)
-ENDIF()
-
-target_include_directories(bls
-  PUBLIC
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${blst_SOURCE_DIR}
-)
-
-target_compile_definitions(bls
-  PRIVATE
-  BLSALLOC_SODIUM=1
-)
-
-IF (WIN32)
-target_link_libraries(bls
-  PUBLIC
-  sodium
-  ${CMAKE_CURRENT_SOURCE_DIR}/blstasm.lib
-)
-ELSE()
-target_link_libraries(bls
-  PUBLIC
-  sodium
-)
-ENDIF()
+add_library(bls ${bls_sources})
+target_include_directories(bls PUBLIC ${blst_SOURCE_DIR})
+target_compile_definitions(bls PRIVATE __BLST_PORTABLE__ BLSALLOC_SODIUM=1)
+target_link_libraries(bls PUBLIC sodium)
 
 if(WITH_COVERAGE)
   target_compile_options(bls PRIVATE --coverage)

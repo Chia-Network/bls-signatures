@@ -13,7 +13,13 @@ if(NOT CMAKE_BUILD_TYPE)
   )
 endif()
 
-project(BLS C CXX ASM)
+project(BLS)
+
+if(MSVC)
+  enable_language(ASM_MASM)
+else()
+  enable_language(ASM)
+endif()
 
 set(BUILD_BLS_PYTHON_BINDINGS "1" CACHE STRING "")
 set(BUILD_BLS_TESTS "1" CACHE STRING "")
@@ -53,7 +59,6 @@ FetchContent_Declare(
   GIT_REPOSITORY ${BLST_REPOSITORY}
   GIT_TAG ${BLST_GIT_TAG}
 )
-
 FetchContent_MakeAvailable(blst)
 
 add_subdirectory(src)
