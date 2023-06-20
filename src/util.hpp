@@ -70,30 +70,28 @@ static void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *
   #define RLC_MD_LEN 32
     uint8_t opad[block_size + RLC_MD_LEN];
     uint8_t *ipad = (uint8_t *)malloc(block_size + in_len);
-        uint8_t _key[block_size];
+    uint8_t _key[block_size];
 
-/*    if (ipad == NULL) {
-        RLC_THROW(ERR_NO_MEMORY);
-                return;
+    if (ipad == NULL)
+        throw std::runtime_error("out of memory");
+
+    if (key_len > block_size) {
+        Hash256(_key, key, key_len);
+        key = _key;
+        key_len = RLC_MD_LEN;
     }
-*/
-        if (key_len > block_size) {
-                Hash256(_key, key, key_len);
-                key = _key;
-                key_len = RLC_MD_LEN;
-        }
-        if (key_len <= block_size) {
-                memcpy(_key, key, key_len);
-                memset(_key + key_len, 0, block_size - key_len);
-                key = _key;
-        }
-        for (int i = 0; i < block_size; i++) {
-                opad[i] = 0x5C ^ key[i];
-                ipad[i] = 0x36 ^ key[i];
-        }
-        memcpy(ipad + block_size, in, in_len);
-        Hash256(opad + block_size, ipad, block_size + in_len);
-        Hash256(mac, opad, block_size + RLC_MD_LEN);
+
+    memcpy(_key, key, key_len);
+    memset(_key + key_len, 0, block_size - key_len);
+    key = _key;
+
+    for (int i = 0; i < block_size; i++) {
+        opad[i] = 0x5C ^ key[i];
+        ipad[i] = 0x36 ^ key[i];
+    }
+    memcpy(ipad + block_size, in, in_len);
+    Hash256(opad + block_size, ipad, block_size + in_len);
+    Hash256(mac, opad, block_size + RLC_MD_LEN);
 
     free(ipad);
 }
