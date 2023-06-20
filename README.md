@@ -14,7 +14,7 @@ NOTE: THIS LIBRARY IS NOT YET FORMALLY REVIEWED FOR SECURITY
 
 NOTE: THIS LIBRARY WAS SHIFTED TO THE IETF BLS SPECIFICATION ON 7/16/20
 
-Implements BLS signatures with aggregation using [relic toolkit](https://github.com/relic-toolkit/relic)
+Implements BLS signatures with aggregation using [blst library](https://github.com/supranational/blst.git)
 for cryptographic primitives (pairings, EC, hashing) according to the
 [IETF BLS RFC](https://datatracker.ietf.org/doc/draft-irtf-cfrg-bls-signature/)
 with [these curve parameters](https://datatracker.ietf.org/doc/draft-irtf-cfrg-pairing-friendly-curves/)
@@ -204,14 +204,13 @@ On a 3.5 GHz i7 Mac, verification takes about 1.1ms per signature, and signing t
 ### Link the library to use it
 
 ```bash
-g++ -Wl,-no_pie -std=c++11  -Ibls-signatures/build/_deps/relic-src/include -Ibls-signatures/build/_deps/relic-build/include -Ibls-signatures/src -L./bls-signatures/build/ -l bls yourapp.cpp
+g++ -Wl,-no_pie -std=c++11 -Ibls-signatures/src -L./bls-signatures/build/ -l bls yourapp.cpp
 ```
 
 ## Notes on dependencies
 
-We use Libsodium and have GMP as an optional dependency: libsodium gives secure memory
-allocation, and GMP speeds up the library by ~ 3x. MPIR is used on Windows via
-GitHub Actions instead. To install them, either download them from github and
+We use Libsodium which provides secure memory
+allocation. To install it, either download them from github and
 follow the instructions for each repo, or use a package manager like APT or
 brew. You can follow the recipe used to build python wheels for multiple
 platforms in `.github/workflows/`.
@@ -240,10 +239,10 @@ them with a source wheel on PyPi. MacOS ARM64 is supported but not automated
 due to a lack of M1 CI runners. See `.github/workflows/build.yml`. CMake uses
 [FetchContent](https://cmake.org/cmake/help/latest/module/FetchContent.html)
 to download [pybind11](https://github.com/pybind/pybind11) for the Python
-bindings and relic from a chia relic forked repository for Windows. Building
+bindings. Building
 is then managed by [cibuildwheel](https://github.com/joerick/cibuildwheel).
 Further installation is then available via `pip install blspy` e.g. The ci
-builds include GMP and a statically linked libsodium.
+builds include a statically linked libsodium.
 
 ## Contributing and workflow
 
@@ -288,12 +287,7 @@ the following copyright notice.
 >ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 >OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-## GMP license
+## BLST license
 
-GMP is distributed under the
-[GNU LGPL v3 license](https://www.gnu.org/licenses/lgpl-3.0.html)
-
-## Relic license
-
-Relic is used with the
-[Apache 2.0 license](https://github.com/relic-toolkit/relic/blob/master/LICENSE.Apache-2.0)
+BLST is used with the
+[Apache 2.0 license](https://github.com/supranational/blst/blob/master/LICENSE)

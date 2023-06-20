@@ -79,10 +79,8 @@ jobs:
     - name: Mac OS build C++ and test
       if: startsWith(matrix.os, 'macos')
       run: |
-        ls -l
         export MACOSX_DEPLOYMENT_TARGET=10.14
         mkdir -p build
-        ls -l build
         cd build
         cmake ../
         cmake --build . -- -j 6
