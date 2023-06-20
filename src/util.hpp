@@ -19,6 +19,7 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
+#include <cstring>
 #include <vector>
 #include <array>
 
@@ -60,8 +61,40 @@ class Util {
  public:
     static void Hash256(uint8_t* output, const uint8_t* message,
                         size_t messageLen) {
-        md_map_sh256(output, message, messageLen);
+        blst_sha256(output, message, messageLen);
     }
+
+static void md_hmac(uint8_t *mac, const uint8_t *in, int in_len, const uint8_t *key,
+    int key_len) {
+  #define block_size 64
+  #define RLC_MD_LEN 32
+    uint8_t opad[block_size + RLC_MD_LEN];
+    uint8_t *ipad = (uint8_t *)malloc(block_size + in_len);
+    uint8_t _key[block_size];
+
+    if (ipad == NULL)
+        throw std::runtime_error("out of memory");
+
+    if (key_len > block_size) {
+        Hash256(_key, key, key_len);
+        key = _key;
+        key_len = RLC_MD_LEN;
+    }
+
+    memcpy(_key, key, key_len);
+    memset(_key + key_len, 0, block_size - key_len);
+    key = _key;
+
+    for (int i = 0; i < block_size; i++) {
+        opad[i] = 0x5C ^ key[i];
+        ipad[i] = 0x36 ^ key[i];
+    }
+    memcpy(ipad + block_size, in, in_len);
+    Hash256(opad + block_size, ipad, block_size + in_len);
+    Hash256(mac, opad, block_size + RLC_MD_LEN);
+
+    free(ipad);
+}
 
     static std::string HexStr(const uint8_t* data, size_t len) {
         std::stringstream s;

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string.h>
+
 #include "bls.hpp"
 
 namespace bls {
@@ -19,44 +21,47 @@ namespace bls {
 const size_t PrivateKey::PRIVATE_KEY_SIZE;
 
 // Construct a private key from a bytearray.
-PrivateKey PrivateKey::FromBytes(const Bytes& bytes, bool modOrder)
+PrivateKey PrivateKey::FromBytes(const Bytes &bytes, bool modOrder)
 {
     if (bytes.size() != PRIVATE_KEY_SIZE) {
         throw std::invalid_argument("PrivateKey::FromBytes: Invalid size");
     }
 
     PrivateKey k;
-    bn_read_bin(k.keydata, bytes.begin(), PrivateKey::PRIVATE_KEY_SIZE);
-    bn_t ord;
-    bn_new(ord);
-    g1_get_ord(ord);
-    if (modOrder) {
-        bn_mod_basic(k.keydata, k.keydata, ord);
-    } else {
-        if (bn_cmp(k.keydata, ord) > 0) {
-            throw std::invalid_argument(
-                "PrivateKey byte data must be less than the group order");
-        }
+    if (modOrder)
+        // this allows any bytes to be input and does proper mod order
+        blst_scalar_from_be_bytes(k.keydata, bytes.begin(), bytes.size());
+    else
+        // this should only be the output of deserialization
+        blst_scalar_from_bendian(k.keydata, bytes.begin());
+
+    if (Util::HasOnlyZeros(bytes)) {
+        return k;  // don't check anything else, we allow zero private key
     }
+
+    if (!blst_sk_check(k.keydata))
+        throw std::invalid_argument(
+            "PrivateKey byte data must be less than the group order");
+
     return k;
 }
 
 // Construct a private key from a bytearray.
-PrivateKey PrivateKey::FromByteVector(const std::vector<uint8_t> bytes, bool modOrder)
+PrivateKey PrivateKey::FromByteVector(
+    const std::vector<uint8_t> bytes,
+    bool modOrder)
 {
     return PrivateKey::FromBytes(Bytes(bytes), modOrder);
 }
 
-PrivateKey::PrivateKey() {
-    AllocateKeyData();
-};
+PrivateKey::PrivateKey() { AllocateKeyData(); };
 
 // Construct a private key from another private key.
 PrivateKey::PrivateKey(const PrivateKey &privateKey)
 {
     privateKey.CheckKeyData();
     AllocateKeyData();
-    bn_copy(keydata, privateKey.keydata);
+    memcpy(keydata, privateKey.keydata, 32);
 }
 
 PrivateKey::PrivateKey(PrivateKey &&k)
@@ -65,14 +70,11 @@ PrivateKey::PrivateKey(PrivateKey &&k)
     k.InvalidateCaches();
 }
 
-PrivateKey::~PrivateKey()
-{
-    DeallocateKeyData();
-}
+PrivateKey::~PrivateKey() { DeallocateKeyData(); }
 
 void PrivateKey::DeallocateKeyData()
 {
-    if(keydata != nullptr) {
+    if (keydata != nullptr) {
         Util::SecFree(keydata);
         keydata = nullptr;
     }
@@ -85,16 +87,16 @@ void PrivateKey::InvalidateCaches()
     fG2CacheValid = false;
 }
 
-PrivateKey& PrivateKey::operator=(const PrivateKey& other)
+PrivateKey &PrivateKey::operator=(const PrivateKey &other)
 {
     CheckKeyData();
     other.CheckKeyData();
     InvalidateCaches();
-    bn_copy(keydata, other.keydata);
+    memcpy(keydata, other.keydata, 32);
     return *this;
 }
 
-PrivateKey& PrivateKey::operator=(PrivateKey&& other)
+PrivateKey &PrivateKey::operator=(PrivateKey &&other)
 {
     DeallocateKeyData();
     keydata = std::exchange(other.keydata, nullptr);
@@ -102,28 +104,28 @@ PrivateKey& PrivateKey::operator=(PrivateKey&& other)
     return *this;
 }
 
-const G1Element& PrivateKey::GetG1Element() const
+const G1Element &PrivateKey::GetG1Element() const
 {
     if (!fG1CacheValid) {
         CheckKeyData();
-        g1_st *p = Util::SecAlloc<g1_st>(1);
-        g1_mul_gen(p, keydata);
+        blst_p1 *p = Util::SecAlloc<blst_p1>(1);
+        blst_sk_to_pk_in_g1(p, keydata);
 
-        g1Cache = G1Element::FromNative(p);
+        g1Cache = G1Element::FromNative(*p);
         Util::SecFree(p);
         fG1CacheValid = true;
     }
     return g1Cache;
 }
 
-const G2Element& PrivateKey::GetG2Element() const
+const G2Element &PrivateKey::GetG2Element() const
 {
     if (!fG2CacheValid) {
         CheckKeyData();
-        g2_st *q = Util::SecAlloc<g2_st>(1);
-        g2_mul_gen(q, keydata);
+        blst_p2 *q = Util::SecAlloc<blst_p2>(1);
+        blst_sk_to_pk_in_g2(q, keydata);
 
-        g2Cache = G2Element::FromNative(q);
+        g2Cache = G2Element::FromNative(*q);
         Util::SecFree(q);
         fG2CacheValid = true;
     }
@@ -133,11 +135,15 @@ const G2Element& PrivateKey::GetG2Element() const
 G1Element operator*(const G1Element &a, const PrivateKey &k)
 {
     k.CheckKeyData();
-    g1_st* ans = Util::SecAlloc<g1_st>(1);
+
+    blst_p1 *ans = Util::SecAlloc<blst_p1>(1);
     a.ToNative(ans);
-    g1_mul(ans, ans, k.keydata);
-    G1Element ret = G1Element::FromNative(ans);
+    byte *bte = Util::SecAlloc<byte>(32);
+    blst_bendian_from_scalar(bte, k.keydata);
+    blst_p1_mult(ans, ans, bte, 256);
+    G1Element ret = G1Element::FromNative(*ans);
     Util::SecFree(ans);
+    Util::SecFree(bte);
     return ret;
 }
 
@@ -146,25 +152,30 @@ G1Element operator*(const PrivateKey &k, const G1Element &a) { return a * k; }
 G2Element operator*(const G2Element &a, const PrivateKey &k)
 {
     k.CheckKeyData();
-    g2_st* ans = Util::SecAlloc<g2_st>(1);
+    blst_p2 *ans = Util::SecAlloc<blst_p2>(1);
     a.ToNative(ans);
-    g2_mul(ans, ans, k.keydata);
-    G2Element ret = G2Element::FromNative(ans);
+    byte *bte = Util::SecAlloc<byte>(32);
+    blst_bendian_from_scalar(bte, k.keydata);
+    blst_p2_mult(ans, ans, bte, 256);
+    G2Element ret = G2Element::FromNative(*ans);
     Util::SecFree(ans);
+    Util::SecFree(bte);
     return ret;
 }
 
 G2Element operator*(const PrivateKey &k, const G2Element &a) { return a * k; }
 
-G2Element PrivateKey::GetG2Power(const G2Element& element) const
+G2Element PrivateKey::GetG2Power(const G2Element &element) const
 {
     CheckKeyData();
-    g2_st* q = Util::SecAlloc<g2_st>(1);
+    blst_p2 *q = Util::SecAlloc<blst_p2>(1);
     element.ToNative(q);
-    g2_mul(q, q, keydata);
-
-    const G2Element ret = G2Element::FromNative(q);
+    byte *bte = Util::SecAlloc<byte>(32);
+    blst_bendian_from_scalar(bte, keydata);
+    blst_p2_mult(q, q, bte, 255);
+    const G2Element ret = G2Element::FromNative(*q);
     Util::SecFree(q);
+    Util::SecFree(bte);
     return ret;
 }
 
@@ -174,30 +185,29 @@ PrivateKey PrivateKey::Aggregate(std::vector<PrivateKey> const &privateKeys)
         throw std::length_error("Number of private keys must be at least 1");
     }
 
-    bn_t order;
-    bn_new(order);
-    g1_get_ord(order);
-
     PrivateKey ret;
     assert(ret.IsZero());
     for (size_t i = 0; i < privateKeys.size(); i++) {
         privateKeys[i].CheckKeyData();
-        bn_add(ret.keydata, ret.keydata, privateKeys[i].keydata);
-        bn_mod_basic(ret.keydata, ret.keydata, order);
+        blst_sk_add_n_check(ret.keydata, ret.keydata, privateKeys[i].keydata);
     }
     return ret;
 }
 
-bool PrivateKey::IsZero() const {
+bool PrivateKey::IsZero() const
+{
     CheckKeyData();
-    return bn_is_zero(keydata);
+    blst_scalar zro;
+    memset(&zro, 0x00, sizeof(blst_scalar));
+
+    return memcmp(keydata, &zro, 32) == 0;
 }
 
 bool operator==(const PrivateKey &a, const PrivateKey &b)
 {
     a.CheckKeyData();
     b.CheckKeyData();
-    return bn_cmp(a.keydata, b.keydata) == RLC_EQ;
+    return memcmp(a.keydata, b.keydata, sizeof(blst_scalar)) == 0;
 }
 
 bool operator!=(const PrivateKey &a, const PrivateKey &b) { return !(a == b); }
@@ -208,7 +218,7 @@ void PrivateKey::Serialize(uint8_t *buffer) const
         throw std::runtime_error("PrivateKey::Serialize buffer invalid");
     }
     CheckKeyData();
-    bn_write_bin(buffer, PrivateKey::PRIVATE_KEY_SIZE, keydata);
+    blst_bendian_from_scalar(buffer, keydata);
 }
 
 std::vector<uint8_t> PrivateKey::Serialize() const
@@ -226,11 +236,12 @@ G2Element PrivateKey::SignG2(
 {
     CheckKeyData();
 
-    g2_st* pt = Util::SecAlloc<g2_st>(1);
+    blst_p2 *pt = Util::SecAlloc<blst_p2>(1);
 
-    ep2_map_dst(pt, msg, len, dst, dst_len);
-    g2_mul(pt, pt, keydata);
-    G2Element ret = G2Element::FromNative(pt);
+    blst_hash_to_g2(pt, msg, len, dst, dst_len, nullptr, 0);
+    blst_sign_pk_in_g1(pt, pt, keydata);
+
+    G2Element ret = G2Element::FromNative(*pt);
     Util::SecFree(pt);
     return ret;
 }
@@ -238,15 +249,15 @@ G2Element PrivateKey::SignG2(
 void PrivateKey::AllocateKeyData()
 {
     assert(!keydata);
-    keydata = Util::SecAlloc<bn_st>(1);
-    keydata->alloc = RLC_BN_SIZE;
-    bn_zero(keydata);
+    keydata = Util::SecAlloc<blst_scalar>(1);
+    memset(keydata, 0x00, sizeof(blst_scalar));
 }
 
 void PrivateKey::CheckKeyData() const
 {
     if (keydata == nullptr) {
-        throw std::runtime_error("PrivateKey::CheckKeyData keydata not initialized");
+        throw std::runtime_error(
+            "PrivateKey::CheckKeyData keydata not initialized");
     }
 }
 

@@ -23,12 +23,6 @@ main
 .o
 obj/
 src/*.o
-contrib/relic/CTestTestfile.cmake
-contrib/relic/bench/CTestTestfile.cmake
-contrib/relic/bin
-contrib/relic/include/relic_conf.h
-contrib/relic/test/CTestTestfile.cmake
-contrib/gmp-6.1.2/
 
 .idea
 .vscode
