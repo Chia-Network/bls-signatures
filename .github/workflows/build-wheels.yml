@@ -4,8 +4,8 @@ on:
   push:
     branches:
     - main
-    tags:
-    - '**'
+  release:
+    types: [published]
   pull_request:
     branches:
     - '**'
@@ -45,25 +45,25 @@ jobs:
             cibw-build: 'cp37-*'
             manylinux:
               arm: manylinux2014
-              intel: manylinux2010
+              intel: manylinux2014
             matrix: '3.7'
           - major-dot-minor: '3.8'
             cibw-build: 'cp38-*'
             manylinux:
               arm: manylinux2014
-              intel: manylinux2010
+              intel: manylinux2014
             matrix: '3.8'
           - major-dot-minor: '3.9'
             cibw-build: 'cp39-*'
             manylinux:
               arm: manylinux2014
-              intel: manylinux2010
+              intel: manylinux2014
             matrix: '3.9'
           - major-dot-minor: '3.10'
             cibw-build: 'cp310-*'
             manylinux:
               arm: manylinux2014
-              intel: manylinux2010
+              intel: manylinux2014
             matrix: '3.10'
           - major-dot-minor: '3.11'
             cibw-build: 'cp311-*'
@@ -112,6 +112,11 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Set Env
+      uses: Chia-Network/actions/setjobenv@main
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
     - uses: chia-network/actions/setup-python@main
       with:
         python-version: ${{ matrix.python.major-dot-minor }}
@@ -145,7 +150,7 @@ jobs:
           python -m pip install --upgrade pip
         CIBW_ARCHS_MACOS: ${{ matrix.os.cibw-archs-macos[matrix.arch.matrix] }}
         CIBW_BEFORE_ALL_MACOS: >
-          brew install gmp boost cmake
+          brew install boost cmake
         CIBW_BEFORE_BUILD_MACOS: >
           python -m pip install --upgrade pip
         CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.14"
@@ -187,6 +192,11 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
+
+    - name: Set Env
+      uses: Chia-Network/actions/setjobenv@main
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - uses: Chia-Network/actions/setup-python@main
       with:
@@ -298,7 +308,7 @@ jobs:
       run: pip install twine
 
     - name: Publish distribution to PyPI
-      if: startsWith(github.event.ref, 'refs/tags') && steps.check_secrets.outputs.HAS_SECRET
+      if: env.RELEASE == 'true' && steps.check_secrets.outputs.HAS_SECRET
       env:
         TWINE_USERNAME: __token__
         TWINE_NON_INTERACTIVE: 1
@@ -306,7 +316,7 @@ jobs:
       run: twine upload --non-interactive --skip-existing --verbose 'dist/*'
 
     - name: Publish distribution to Test PyPI
-      if: steps.check_secrets.outputs.HAS_SECRET
+      if: env.PRE_RELEASE == 'true' && steps.check_secrets.outputs.HAS_SECRET
       env:
         TWINE_REPOSITORY_URL: https://test.pypi.org/legacy/
         TWINE_USERNAME: __token__
