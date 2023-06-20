@@ -112,6 +112,7 @@ TEST_CASE("class PrivateKey")
     SECTION("(De)Serialization")
     {
         PrivateKey pk1 = PrivateKey::FromByteVector(getRandomSeed(), true);
+        REQUIRE_THROWS_AS(pk1.Serialize(nullptr), std::runtime_error);
         pk1.Serialize(buffer);
         REQUIRE(
             memcmp(
@@ -402,16 +403,20 @@ TEST_CASE("Chia test vectors")
         REQUIRE(pk1.GetFingerprint() == 0xb40dd58a);
         REQUIRE(pk2.GetFingerprint() == 0xb839add1);
 
+        std::stringstream out;
+        out << sig1;  // operator<< tests Serialize()
         REQUIRE(
-            Util::HexStr(sig1.Serialize()) ==
+            out.str() ==
             "b8faa6d6a3881c9fdbad803b170d70ca5cbf1e6ba5a586262df368c75acd1d1f"
             "fa3ab6ee21c71f844494659878f5eb230c958dd576b08b8564aad2ee0992e85a"
             "1e565f299cd53a285de729937f70dc176a1f01432129bb2b94d3d5031f8065a1");
         REQUIRE(
             Util::HexStr(sk1.Serialize()) ==
             "4a353be3dac091a0a7e640620372f5e1e2e4401717c1e79cac6ffba8f6905604");
+        out.str("");
+        out << pk1;
         REQUIRE(
-            Util::HexStr(pk1.Serialize()) ==
+            out.str() ==
             "85695fcbc06cc4c4c9451f4dce21cbf8de3e5a13bf48f44cdbb18e2038ba7b8bb1"
             "632d7911e"
             "f1e2e08749bddbf165352");
@@ -1341,6 +1346,9 @@ TEST_CASE("CheckValid")
             "8d5d0fb73b9c92df4eab4216e48c3e358578b4cc30f82c268bd6fef3bd34b55862"
             "8daf1afef798d4c3b0fcd8b28c8973";
 
+        REQUIRE_THROWS_AS(
+            G1Element::FromBytesUnchecked(vector<uint8_t>(100, 0x05)),
+            std::invalid_argument);
         // FromBytes throws
         REQUIRE_THROWS(
             G1Element::FromBytes(Bytes(Util::HexToBytes(badPointHex))));
@@ -1378,6 +1386,50 @@ TEST_CASE("CheckValid")
         auto badSer = point.Serialize();
 
         REQUIRE_THROWS(G2Element::FromByteVector(badSer));
+
+        REQUIRE_THROWS_AS(
+            G2Element::FromBytesUnchecked(vector<uint8_t>(100, 0x04)),
+            std::invalid_argument);
+    }
+}
+
+TEST_CASE("Element operations")
+{
+    SECTION("G1Element")
+    {
+        auto pk1 =
+            PrivateKey::FromByteVector(getRandomSeed(), true).GetG1Element();
+        auto pk2 =
+            PrivateKey::FromByteVector(getRandomSeed(), true).GetG1Element();
+        auto res = pk1 + G1Element();
+        REQUIRE(res == pk1);
+        REQUIRE(pk1 + G1Element() == pk1);
+
+        REQUIRE(pk1 + pk2 == pk2 + pk1);
+        pk1 += pk1.Negate();
+        REQUIRE(pk1 == G1Element());
+
+        auto g = G1Element::Generator();
+        REQUIRE(g.IsValid() == true);
+        // assert g.is_on_curve()
+        // assert 2 * g == g + g
+        // assert (3 * g).is_on_curve()
+        // assert 3 * g == g + g + g
+    }
+    SECTION("G2Element")
+    {
+        auto sig1 =
+            PrivateKey::FromByteVector(getRandomSeed(), true).GetG2Element();
+        auto sig2 =
+            PrivateKey::FromByteVector(getRandomSeed(), true).GetG2Element();
+        auto res = sig1 + G2Element();
+        REQUIRE(res == sig1);
+        REQUIRE(sig1 + G2Element() == sig1);
+
+        REQUIRE(sig1 + sig2 == sig2 + sig1);
+        sig1 += sig1.Negate();
+        REQUIRE(sig1 == G2Element());
+        REQUIRE(G2Element::Generator().IsValid());
     }
 }
 

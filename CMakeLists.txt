@@ -33,6 +33,7 @@ include(FetchContent)
 
 FetchContent_Declare(Sodium
   GIT_REPOSITORY https://github.com/AmineKhaldi/libsodium-cmake.git
+
   # Latest commit at the moment this was added here
   # Anchored to libsodium v1.0.18
   GIT_TAG f73a3fe1afdc4e37ac5fe0ddd401bf521f6bba65

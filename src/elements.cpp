@@ -155,8 +155,7 @@ void G1Element::ToAffine(blst_p1_affine* output) const
 
 G1Element G1Element::Negate() const
 {
-    G1Element ans;
-    ans.FromNative(p);
+    G1Element ans = G1Element::FromNative(p);
     blst_p1_cneg(&(ans.p), true);
     return ans;
 }
@@ -331,8 +330,7 @@ void G2Element::ToAffine(blst_p2_affine* output) const
 
 G2Element G2Element::Negate() const
 {
-    G2Element ans;
-    ans.FromNative(q);
+    G2Element ans = G2Element::FromNative(q);
     blst_p2_cneg(&(ans.q), true);
     return ans;
 }
