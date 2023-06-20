@@ -124,12 +124,9 @@ G1Element G1Element::Generator()
 
 bool G1Element::IsValid() const
 {
-    // Infinity no longer valid in Relic
-    // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    // if (blst_p1_is_inf(&p) == 1)
-    //     return true;
-
-    // return blst_p1_on_curve((blst_p1*)&p);
+    // Infinity was considered a valid G1Element in older Relic versions
+    // on which this library was previously based.
+    // For historical compatibililty this behavior is maintained.
 
     if (blst_p1_is_inf(&p))
         return true;
@@ -299,12 +296,9 @@ G2Element G2Element::Generator()
 
 bool G2Element::IsValid() const
 {
-    // Infinity no longer valid in Relic
-    // https://github.com/relic-toolkit/relic/commit/f3be2babb955cf9f82743e0ae5ef265d3da6c02b
-    // if (blst_p2_is_inf(&q) == 1)
-    //     return true;
-
-    // return blst_p2_on_curve((blst_p2*)&q);
+    // Infinity was considered a valid G2Element in older Relic versions
+    // on which this library was previously based.
+    // For historical compatibililty this behavior is maintained.
 
     if (blst_p2_is_inf(&q))
         return true;

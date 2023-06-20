@@ -264,39 +264,6 @@ bool CoreMPL::AggregateVerify(
     return ret;
 }
 
-// bool CoreMPL::NativeVerify(
-//     blst_p1* pubkeys,
-//     blst_p2* mappedHashes,
-//     size_t length)
-// {
-//     blst_fp12 target, candidate, tmpPairing;
-//     memcpy(&target, blst_fp12_one(), sizeof(blst_fp12));
-//     memcpy(&candidate, blst_fp12_one(), sizeof(blst_fp12));
-
-//     // prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
-//     // Performs pubKeys.size() pairings, 250 at a time
-
-//     blst_p1_affine Ps[length];
-//     blst_p2_affine Qs[length];
-//     const blst_p1* ppoints[2] = {pubkeys, NULL};
-//     const blst_p2* pqoints[2] = {mappedHashes, NULL};
-
-//     blst_p1s_to_affine(Ps, ppoints, length);
-//     blst_p2s_to_affine(Qs, pqoints, length);
-//     for (size_t i = 0; i < length; i += 250) {
-//         size_t numPairings = std::min((length - i), (size_t)250);
-//         const blst_p1_affine* const pP = &(Ps[i]);
-//         const blst_p2_affine* const pQ = &(Qs[i]);
-//         blst_miller_loop_n(&tmpPairing, &pQ, &pP, numPairings);
-//         blst_fp12_mul(&candidate, &candidate, &tmpPairing);
-//     }
-//     // 1 =? prod e(pubkey[i], hash[i]) * e(-g1, aggSig)
-//     if (memcmp(&target, &candidate, sizeof(blst_fp12)) != 0) {
-//         return false;
-//     }
-//     return true;
-// }
-
 PrivateKey CoreMPL::DeriveChildSk(const PrivateKey& sk, uint32_t index)
 {
     return HDKeys::DeriveChildSk(sk, index);
@@ -584,21 +551,6 @@ bool PopSchemeMPL::PopVerify(const Bytes& pubkey, const Bytes& proof)
 {
     return PopSchemeMPL::PopVerify(
         G1Element::FromBytes(pubkey), G2Element::FromBytes(proof));
-
-    // const G2Element hashedPoint = G2Element::FromMessage(
-    //     pubkey,
-    //     (const uint8_t*)POP_CIPHERSUITE_ID.c_str(),
-    //     POP_CIPHERSUITE_ID.length());
-
-    // blst_p1 g1s[2];
-    // blst_p2 g2s[2];
-
-    // G1Element::Generator().Negate().ToNative(&(g1s[0]));
-    // G1Element::FromBytes(pubkey).ToNative(&(g1s[1]));
-    // G2Element::FromBytes(proof).ToNative(&(g2s[0]));
-    // hashedPoint.ToNative(&(g2s[1]));
-
-    // return CoreMPL::NativeVerify(g1s, g2s, 2);
 }
 
 bool PopSchemeMPL::FastAggregateVerify(
