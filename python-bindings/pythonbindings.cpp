@@ -443,20 +443,6 @@ PYBIND11_MODULE(blspy, m)
             },
             py::is_operator())
         .def(
-            "__mul__",
-            [](G1Element &self, bn_t other) {
-                py::gil_scoped_release release;
-                return self * (*(bn_t *)&other);
-            },
-            py::is_operator())
-        .def(
-            "__rmul__",
-            [](G1Element &self, bn_t other) {
-                py::gil_scoped_release release;
-                return self * (*(bn_t *)&other);
-            },
-            py::is_operator())
-        .def(
             "__and__",
             [](G1Element &self, G2Element &other) {
                 py::gil_scoped_release release;
@@ -588,21 +574,6 @@ PYBIND11_MODULE(blspy, m)
                 return self + other;
             },
             py::is_operator())
-        .def(
-            "__mul__",
-            [](G2Element &self, bn_t other) {
-                py::gil_scoped_release release;
-                return self * (*(bn_t *)&other);
-            },
-            py::is_operator())
-        .def(
-            "__rmul__",
-            [](G2Element &self, bn_t other) {
-                py::gil_scoped_release release;
-                return self * (*(bn_t *)&other);
-            },
-            py::is_operator())
-
         .def(
             "__repr__",
             [](const G2Element &ele) {
