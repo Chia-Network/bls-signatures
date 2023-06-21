@@ -29,13 +29,14 @@ jobs:
 
     - name: Ubuntu build C++ and test blst at origin/main
       if: startsWith(matrix.os, 'ubuntu')
+      # blst is still using master instead of main
+      env:
+        BLST_MAIN: 1
       run: |
         echo "blst origin/main commit:"
         curl -H "application/vnd.github.v3.sha" \
         https://api.github.com/repos/supranational/blst/commits/master | \
         head -10
-        cmake --version
-        export BLST_MAIN=1
         cmake -B build .
         cmake --build build -- -j 6
         echo "Running ./src/runtest"
@@ -43,9 +44,10 @@ jobs:
 
     - name: Mac OS build C++ and test
       if: startsWith(matrix.os, 'macos')
+      env:
+        BLST_MAIN: 1
+        MACOSX_DEPLOYMENT_TARGET: 10.14
       run: |
-        export MACOSX_DEPLOYMENT_TARGET=10.14
-        export BLST_MAIN=1
         cmake -B build .
         cmake --build build -- -j 6
         echo "Running ./src/runtest"
@@ -53,8 +55,9 @@ jobs:
 
     - name: Windows build C++ and test
       if: startsWith(matrix.os, 'windows')
+      env:
+        BLST_MAIN: 1
       run: |
-        set BLST_MAIN=1
         cmake -B build .
         cmake --build build
         echo "Running runtest"
