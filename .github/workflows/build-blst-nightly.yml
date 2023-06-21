@@ -73,8 +73,9 @@ jobs:
       uses: mymindstorm/setup-emsdk@v11
 
     - name: Test javascript bindings
+      env:
+        BLST_MAIN: 1
       run: |
         emcc -v
-        export BLST_MAIN=1
         sh emsdk_build.sh
         sh js_test.sh
