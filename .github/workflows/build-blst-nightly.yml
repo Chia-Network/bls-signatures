@@ -32,13 +32,8 @@ jobs:
       run: |
         echo "Relic origin/main commit:"
         curl -H "application/vnd.github.v3.sha" \
-        https://api.github.com/repos/supranational/blst/commits/main | \
+        https://api.github.com/repos/supranational/blst/commits/master | \
         head -10
-        sudo apt-get update
-        sudo apt-get install snap -y
-        sudo apt-get remove --purge cmake -y
-        # sudo snap install cmake --classic
-        hash -r
         cmake --version
         export BLST_MAIN=1
         mkdir -p build
@@ -65,10 +60,8 @@ jobs:
     - name: Windows build C++ and test
       if: startsWith(matrix.os, 'windows')
       run: |
-        ls -l
-        export BLST_MAIN=1
+        set BLST_MAIN=1
         mkdir -p build
-        ls -l build
         cd build
         cmake ../
         cmake --build . -- -j 6
