@@ -5,6 +5,8 @@
 ![PyPI - Format](https://img.shields.io/pypi/format/blspy?logo=pypi)
 ![GitHub](https://img.shields.io/github/license/Chia-Network/bls-signatures?logo=Github)
 
+[![CodeQL](https://github.com/Chia-Network/bls-signatures/actions/workflows/codeql.yml/badge.svg)](https://github.com/Chia-Network/bls-signatures/actions/workflows/codeql.yml)
+
 [![Coverage Status](https://coveralls.io/repos/github/Chia-Network/bls-signatures/badge.svg?branch=main)](https://coveralls.io/github/Chia-Network/bls-signatures?branch=main)
 
 NOTE: THIS LIBRARY IS NOT YET FORMALLY REVIEWED FOR SECURITY
