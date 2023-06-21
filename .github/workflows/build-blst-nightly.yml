@@ -1,6 +1,13 @@
 name:  Build and Test with blst Nightly
 
 on:
+  # temporarily run on all PRs and commits
+  pull_request:
+    branches:
+      - '**'
+  push:
+    branches:
+      - '**'
   schedule:
     - cron: "0 11 * * *"
   workflow_dispatch:
