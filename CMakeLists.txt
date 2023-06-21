@@ -54,6 +54,7 @@ if (DEFINED ENV{BLST_MAIN})
 else ()
   # This is currently anchored to upstream aecdcae7956f542fbee2392c1f0feb0a8ac41dc5
   set(BLST_GIT_TAG "a8cd361c9f671577aeab3f074098443af92a53fc")
+endif ()
 set(BLST_REPOSITORY "https://github.com/supranational/blst")
 
 message(STATUS "blst will be built from: ${BLST_GIT_TAG} and repository ${BLST_REPOSITORY}")
