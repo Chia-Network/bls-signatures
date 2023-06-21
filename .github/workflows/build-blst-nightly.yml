@@ -61,12 +61,12 @@ jobs:
       if: startsWith(matrix.os, 'windows')
       run: |
         set BLST_MAIN=1
-        mkdir -p build
+        mkdir build
         cd build
         cmake ../
-        cmake --build . -- -j 6
+        cmake --build .
         echo "Running ./src/runtest"
-        ./src/runtest
+        .\src\runtest
   
     - name: Install Python
       uses: actions/setup-python@v4
