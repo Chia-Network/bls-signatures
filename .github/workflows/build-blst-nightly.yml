@@ -60,13 +60,14 @@ jobs:
     - name: Windows build C++ and test
       if: startsWith(matrix.os, 'windows')
       run: |
-        set BLST_MAIN=1
+        $env:BLST_MAIN = '1'
         mkdir build
         cd build
         cmake ../
         cmake --build .
+        Get-ChildItem -Path src\ -Force
         echo "Running ./src/runtest"
-        .\src\runtest
+        src\runtest
   
     - name: Install Python
       uses: actions/setup-python@v4
