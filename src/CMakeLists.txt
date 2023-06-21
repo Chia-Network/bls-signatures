@@ -18,9 +18,12 @@ if(MSVC)
     ${blst_SOURCE_DIR}/build/win64/ct_inverse_mod_256-x86_64.asm
     ${blst_SOURCE_DIR}/build/win64/ct_is_square_mod_384-x86_64.asm
     ${blst_SOURCE_DIR}/build/win64/ctq_inverse_mod_384-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/ctx_inverse_mod_384-x86_64.asm
     ${blst_SOURCE_DIR}/build/win64/div3w-x86_64.asm
     ${blst_SOURCE_DIR}/build/win64/mulq_mont_256-x86_64.asm
     ${blst_SOURCE_DIR}/build/win64/mulq_mont_384-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/mulx_mont_256-x86_64.asm
+    ${blst_SOURCE_DIR}/build/win64/mulx_mont_384-x86_64.asm
     ${blst_SOURCE_DIR}/build/win64/sha256-x86_64.asm
   )
 else()
