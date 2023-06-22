@@ -1,0 +1,80 @@
+name:  Build and Test with blst Nightly
+
+on:
+  schedule:
+    - cron: "0 11 * * *"
+  workflow_dispatch:
+
+concurrency:
+  # SHA is added to the end if on `main` to let all main workflows run
+  group: ${{ github.ref }}-${{ github.workflow }}-${{ github.event_name }}-${{ (github.ref == 'refs/heads/main') && github.sha || '' }}
+  cancel-in-progress: true
+
+jobs:
+  build_with_blst_main:
+    name: Build and Test with blst Nightly
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest, windows-latest]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Ubuntu build C++ and test blst at origin/main
+      if: startsWith(matrix.os, 'ubuntu')
+      # blst is still using master instead of main
+      env:
+        BLST_MAIN: 1
+      run: |
+        echo "blst origin/main commit:"
+        curl -H "application/vnd.github.v3.sha" \
+        https://api.github.com/repos/supranational/blst/commits/master | \
+        head -10
+        cmake -B build .
+        cmake --build build -- -j 6
+        echo "Running ./src/runtest"
+        ./build/src/runtest
+
+    - name: Mac OS build C++ and test
+      if: startsWith(matrix.os, 'macos')
+      env:
+        BLST_MAIN: 1
+        MACOSX_DEPLOYMENT_TARGET: 10.14
+      run: |
+        cmake -B build .
+        cmake --build build -- -j 6
+        echo "Running ./src/runtest"
+        ./build/src/runtest
+
+    - name: Windows build C++ and test
+      if: startsWith(matrix.os, 'windows')
+      env:
+        BLST_MAIN: 1
+      run: |
+        cmake -B build .
+        cmake --build build
+        echo "Running runtest"
+        build\src\Debug\runtest.exe
+  
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+
+    - name: Test pure python implementation
+      run: |
+        python python-impl/impl-test.py
+
+    - name: Install emsdk
+      uses: mymindstorm/setup-emsdk@v11
+
+    - name: Test javascript bindings
+      env:
+        BLST_MAIN: 1
+      run: |
+        emcc -v
+        sh emsdk_build.sh
+        sh js_test.sh
