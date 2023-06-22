@@ -52,8 +52,8 @@ FetchContent_MakeAvailable(Sodium)
 if (DEFINED ENV{BLST_MAIN})
   set(BLST_GIT_TAG "origin/master")
 else ()
-  # This is currently anchored to upstream aecdcae7956f542fbee2392c1f0feb0a8ac41dc5
-  set(BLST_GIT_TAG "a8cd361c9f671577aeab3f074098443af92a53fc")
+  # This is currently anchored to upstream 6b837a0921cf41e501faaee1976a4035ae29d893 dated 2023-06-16
+  set(BLST_GIT_TAG "6b837a0921cf41e501faaee1976a4035ae29d893")
 endif ()
 set(BLST_REPOSITORY "https://github.com/supranational/blst.git")
 
