@@ -40,7 +40,10 @@ else()
 endif()
 
 add_library(bls ${bls_sources})
-target_include_directories(bls PUBLIC ${blst_SOURCE_DIR})
+target_include_directories(bls PUBLIC 
+  ${CMAKE_CURRENT_SOURCE_DIR}
+  ${blst_SOURCE_DIR}
+  )
 target_compile_definitions(bls PRIVATE __BLST_PORTABLE__ BLSALLOC_SODIUM=1)
 target_link_libraries(bls PUBLIC sodium)
 
