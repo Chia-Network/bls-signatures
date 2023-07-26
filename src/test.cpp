@@ -913,10 +913,10 @@ TEST_CASE("Agg sks")
 
         //
         // Note, AugScheme will automatically prepend the public key of the
-        // provided private key to the message before singing. This creates
+        // provided private key to the message before signing. This creates
         // problems in aggregation here as then the messages are all technically
         // different so the aggregation doesn't work as expected. So you must
-        // specific directly the same publie key (G1Element) for all messages.
+        // specify directly the same public key (G1Element) for all messages.
         // Here we use the Aggregate Public Key, however, you can use any
         // G1Element as long as there are all the same.
         //
