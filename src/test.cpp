@@ -892,6 +892,47 @@ TEST_CASE("Agg sks")
             vector<vector<uint8_t>>{message, message2},
             aggSigFinal));
     }
+    SECTION("Should create aggregates with agg sk (aug scheme)")
+    {
+        const vector<uint8_t> message = {100, 2, 254, 88, 90, 45, 23};
+        const vector<uint8_t> seed(32, 0x07);
+        const vector<uint8_t> seed2(32, 0x08);
+
+        auto sk1 = AugSchemeMPL().KeyGen(seed);
+        auto pk1 = sk1.GetG1Element();
+
+        auto sk2 = AugSchemeMPL().KeyGen(seed2);
+        auto pk2 = sk2.GetG1Element();
+
+        auto aggSk = PrivateKey::Aggregate({sk1, sk2});
+        auto aggSkAlt = PrivateKey::Aggregate({sk2, sk1});
+        REQUIRE(aggSk == aggSkAlt);
+
+        auto aggPubKey = pk1 + pk2;
+        REQUIRE(aggPubKey == aggSk.GetG1Element());
+
+        //
+        // Note, AugScheme will automatically prepend the public key of the
+        // provided private key to the message before signing. This creates
+        // problems in aggregation here as then the messages are all technically
+        // different so the aggregation doesn't work as expected. So you must
+        // specify directly the same public key (G1Element) for all messages.
+        // Here we use the Aggregate Public Key, however, you can use any
+        // G1Element as long as there are all the same.
+        //
+        auto sig1 = AugSchemeMPL().Sign(sk1, message, aggPubKey);
+        auto sig2 = AugSchemeMPL().Sign(sk2, message, aggPubKey);
+
+        // Technically passing in aggPubKey is unneeded, but kept for clarity
+        auto aggSig2 = AugSchemeMPL().Sign(aggSk, message, aggPubKey);
+
+        auto aggSig = AugSchemeMPL().Aggregate({sig1, sig2});
+        REQUIRE(aggSig == aggSig2);
+
+        // Verify as a single G2Element
+        REQUIRE(AugSchemeMPL().Verify(aggPubKey, message, aggSig));
+        REQUIRE(AugSchemeMPL().Verify(aggPubKey, message, aggSig2));
+    }
 }
 
 TEST_CASE("Advanced")
