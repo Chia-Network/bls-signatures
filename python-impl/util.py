@@ -4,21 +4,21 @@ HMAC_BLOCK_SIZE = 64
 
 
 def hash256(m):
-    if type(m) != bytes:
+    if type(m) is not bytes:
         m = m.encode("utf-8")
     return hashlib.sha256(m).digest()
 
 
 def hash512(m):
-    if type(m) != bytes:
+    if type(m) is not bytes:
         m = m.encode("utf-8")
     return hash256(m + bytes([0])) + hash256(m + bytes([1]))
 
 
 def hmac256(m, k):
-    if type(m) != bytes and type(m) != bytearray:
+    if type(m) is not bytes and type(m) is not bytearray:
         m = m.encode("utf-8")
-    if type(k) != bytes and type(k) != bytearray:
+    if type(k) is not bytes and type(k) is not bytearray:
         k = k.encode("utf-8")
     k = bytes(k)
     if len(k) > HMAC_BLOCK_SIZE:
