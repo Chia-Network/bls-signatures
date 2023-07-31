@@ -41,12 +41,6 @@ jobs:
             runs-on:
               intel: [windows-latest]
         python:
-          - major-dot-minor: '3.7'
-            cibw-build: 'cp37-*'
-            manylinux:
-              arm: manylinux2014
-              intel: manylinux2014
-            matrix: '3.7'
           - major-dot-minor: '3.8'
             cibw-build: 'cp38-*'
             manylinux:
