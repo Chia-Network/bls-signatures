@@ -153,7 +153,7 @@ jobs:
           brew install cmake
         CIBW_BEFORE_BUILD_MACOS: >
           python -m pip install --upgrade pip
-        CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=10.14"
+        CIBW_ENVIRONMENT_MACOS: "MACOSX_DEPLOYMENT_TARGET=11"
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: py.test -v {project}/python-bindings/test.py
       run:
