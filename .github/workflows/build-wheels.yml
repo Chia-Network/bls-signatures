@@ -157,7 +157,7 @@ jobs:
         CIBW_TEST_REQUIRES: pytest
         CIBW_TEST_COMMAND: py.test -v {project}/python-bindings/test.py
       run:
-        pipx run --spec='cibuildwheel==2.9.0' cibuildwheel --output-dir dist 2>&1
+        pipx run --spec='cibuildwheel==2.11.2' cibuildwheel --output-dir dist 2>&1
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
