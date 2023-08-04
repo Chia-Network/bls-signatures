@@ -4,3 +4,33 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
+
+[tool.cibuildwheel]
+test-requires = "pytest"
+test-command = "py.test -v {project}/python-bindings/test.py"
+skip = "*-manylinux_i686 *-win32 *-musllinux_*"
+
+[tool.cibuildwheel.linux]
+build-verbosity = ""
+environment = {PATH="/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"}
+before-all = [
+          "yum -y install epel-release",
+          "epel-release installed",
+          "yum -y install lzip",
+          "echo 'lzip installed'",
+          "curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh",
+          "yes | sh cmake.sh | cat",
+          "rm -f /usr/bin/cmake",
+          "cmake --version",
+          "uname -a"
+]
+before-build = "python -m pip install --upgrade pip"
+
+[tool.cibuildwheel.macos]
+build-verbosity = ""
+before-all = "brew install cmake"
+before-build = "python -m pip install --upgrade pip"
+environment = "MACOSX_DEPLOYMENT_TARGET=11"
+
+[tool.cibuildwheel.windows]
+build-verbosity = ""
