@@ -15,7 +15,7 @@ build-verbosity = ""
 environment = {PATH="/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"}
 before-all = [
           "yum -y install epel-release",
-          "epel-release installed",
+          "echo epel-release installed",
           "yum -y install lzip",
           "echo 'lzip installed'",
           "curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh",
