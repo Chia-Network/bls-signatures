@@ -25,7 +25,7 @@ class AffinePoint:
         if (
             (not isinstance(x, Fq) and not isinstance(x, FieldExtBase))
             or (not isinstance(y, Fq) and not isinstance(y, FieldExtBase))
-            or type(x) != type(y)
+            or type(x) is not type(y)
         ):
             raise Exception("x,y should be field elements")
         self.FE = type(x)
