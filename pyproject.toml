@@ -12,18 +12,6 @@ skip = "*-manylinux_i686 *-win32 *-musllinux_*"
 
 [tool.cibuildwheel.linux]
 build-verbosity = ""
-environment = {PATH="/project/cmake-3.17.3-Linux-`uname -m`/bin:$PATH"}
-before-all = [
-          "yum -y install epel-release",
-          "echo epel-release installed",
-          "yum -y install lzip",
-          "echo 'lzip installed'",
-          "curl -L https://github.com/Kitware/CMake/releases/download/v3.17.3/cmake-3.17.3-Linux-`uname -m`.sh > cmake.sh",
-          "yes | sh cmake.sh | cat",
-          "rm -f /usr/bin/cmake",
-          "cmake --version",
-          "uname -a"
-]
 before-build = "python -m pip install --upgrade pip"
 
 [tool.cibuildwheel.macos]
