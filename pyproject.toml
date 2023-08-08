@@ -4,3 +4,21 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 local_scheme = "no-local-version"
+
+[tool.cibuildwheel]
+test-requires = "pytest"
+test-command = "py.test -v {project}/python-bindings/test.py"
+skip = "*-manylinux_i686 *-win32 *-musllinux_*"
+
+[tool.cibuildwheel.linux]
+build-verbosity = ""
+before-build = "python -m pip install --upgrade pip"
+
+[tool.cibuildwheel.macos]
+build-verbosity = ""
+before-all = "brew install cmake"
+before-build = "python -m pip install --upgrade pip"
+environment = {MACOSX_DEPLOYMENT_TARGET="11", SYSTEM_VERSION_COMPAT=0}
+
+[tool.cibuildwheel.windows]
+build-verbosity = ""
