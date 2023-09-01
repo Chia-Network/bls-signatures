@@ -40,7 +40,7 @@ jobs:
           riscv64/debian:rc-buggy \
           bash -exc '\
             apt-get update && \
-            apt-get install -y cmake build-essential && \
+            apt-get install -y cmake build-essential git && \
             cmake --version && \
             uname -a && \
             mkdir -p build && \
