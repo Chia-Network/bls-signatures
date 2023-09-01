@@ -1,0 +1,49 @@
+name: Build and test riscv64 on ubuntu-latest
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    tags:
+        - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build_wheels:
+    name: QEMU rixcv64 via Debian on ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 1
+
+    - name: Set up QEMU on x86_64
+      if: startsWith(matrix.os, 'ubuntu-latest')
+      id: qemu
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: riscv64
+        image: tonistiigi/binfmt:latest
+
+    - name: Build Python wheels
+      run: |
+        docker run --rm \
+          -v ${{ github.workspace }}:/ws --workdir=/ws \
+          davidburela/riscv-emulator \
+          bash -exc '\
+            apt-get install -y cmake \
+            mkdir build \
+            cd build \
+            cmake ../ \
+            cmake --build . -- -j 6 \
+            echo "Running ./src/runtest" \
+            ./src/runtest \
+          '
