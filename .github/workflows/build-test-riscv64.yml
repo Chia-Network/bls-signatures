@@ -37,7 +37,7 @@ jobs:
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/ws --workdir=/ws \
-          riscv64/debian:latest \
+          riscv64/debian \
           bash -exc '\
             cmake --version && \
             apt-get update && \
