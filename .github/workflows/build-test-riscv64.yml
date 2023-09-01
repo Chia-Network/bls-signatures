@@ -37,8 +37,10 @@ jobs:
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/ws --workdir=/ws \
-          davidburela/riscv-emulator \
+          riscv64/debian:latest \
           bash -exc '\
+            cmake --version && \
+            apt-get update && \
             apt-get install -y cmake && \
             mkdir -p build && \
             cd build && \
