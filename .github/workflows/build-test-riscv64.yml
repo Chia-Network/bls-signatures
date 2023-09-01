@@ -33,17 +33,17 @@ jobs:
         platforms: riscv64
         image: tonistiigi/binfmt:latest
 
-    - name: Build Python wheels
+    - name: Build and Test
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/ws --workdir=/ws \
           davidburela/riscv-emulator \
           bash -exc '\
-            apt-get install -y cmake \
-            mkdir build \
-            cd build \
-            cmake ../ \
-            cmake --build . -- -j 6 \
-            echo "Running ./src/runtest" \
+            apt-get install -y cmake && \
+            mkdir -p build && \
+            cd build && \
+            cmake ../ && \
+            cmake --build . -- -j 6 && \
+            echo "Running ./src/runtest" && \
             ./src/runtest \
           '
