@@ -31,7 +31,7 @@ jobs:
       uses: docker/setup-qemu-action@v2
       with:
         platforms: riscv64
-        image: tonistiigi/binfmt:latest
+#        image: tonistiigi/binfmt:latest
 
     - name: Build and Test
       run: |
@@ -40,8 +40,9 @@ jobs:
           riscv64/debian:rc-buggy \
           bash -exc '\
             apt-get update && \
-            apt-get install -y cmake && \
+            apt-get install -y cmake build-essential && \
             cmake --version && \
+            uname -a && \
             mkdir -p build && \
             cd build && \
             cmake ../ && \
