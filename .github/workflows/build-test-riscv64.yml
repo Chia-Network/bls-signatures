@@ -1,0 +1,56 @@
+name: Build and test riscv64 on ubuntu-latest
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+    tags:
+        - '**'
+  pull_request:
+    branches:
+      - '**'
+
+jobs:
+  build_wheels:
+    name: QEMU riscv64 via Debian on ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 1
+
+    - name: Set up QEMU on x86_64
+      if: startsWith(matrix.os, 'ubuntu-latest')
+      id: qemu
+      uses: docker/setup-qemu-action@v2
+      with:
+        platforms: riscv64
+
+    - name: Build and Test
+      run: |
+        docker run --rm --platform linux/riscv64 \
+          -v ${{ github.workspace }}:/ws --workdir=/ws \
+          riscv64/debian:rc-buggy \
+          bash -exc '\
+            apt-get update && \
+            apt-get install -y cmake build-essential git python3-full python3-dev python3-pip && \
+            cmake --version && \
+            uname -a && \
+            pip wheel -w dist . && \
+            python3 -m venv venv && \
+            ./venv/bin/python -m pip install dist/*.whl && \
+            ./venv/bin/python -m pip install pytest && \
+            ./venv/bin/python -m pytest -v python-bindings/test.py 
+          '
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: packages
+        path: ./dist

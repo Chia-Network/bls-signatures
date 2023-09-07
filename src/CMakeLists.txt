@@ -45,6 +45,12 @@ target_include_directories(bls PUBLIC
   ${blst_SOURCE_DIR}
 )
 target_compile_definitions(bls PRIVATE __BLST_PORTABLE__ BLSALLOC_SODIUM=1)
+
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "riscv64")
+  list(REMOVE_ITEM bls_sources ${blst_SOURCE_DIR}/build/assembly.S)
+  target_compile_definitions(bls PRIVATE __BLST_NO_ASM__)
+endif()
+
 target_link_libraries(bls PUBLIC sodium)
 
 if(WITH_COVERAGE)
