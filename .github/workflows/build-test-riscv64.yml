@@ -33,13 +33,11 @@ jobs:
         platforms: riscv64
 
     - name: Build and Test
-      run: |
+      run: |          
         docker run --rm --platform linux/riscv64 \
           -v ${{ github.workspace }}:/ws --workdir=/ws \
-          riscv64/debian:rc-buggy \
+          chianetwork/ubuntu-22.04-risc-builder:latest \
           bash -exc '\
-            apt-get update && \
-            apt-get install -y cmake build-essential git python3-full python3-dev python3-pip && \
             cmake --version && \
             uname -a && \
             pip wheel -w dist . && \
