@@ -474,6 +474,16 @@ GTElement operator*(GTElement& a, GTElement& b)
     return ans;
 }
 
+GTElement operator/(GTElement& a, GTElement& b)
+{
+    GTElement ans;
+    GTElement b_inv;
+    blst_fp12_inverse(&(b_inv.r), &(b.r));
+    blst_fp12_mul(&(ans.r), &(a.r), &(b_inv.r));
+    
+    return ans;
+}
+
 void GTElement::Serialize(uint8_t* buffer) const
 {
     memcpy(buffer, &r, GTElement::SIZE);
