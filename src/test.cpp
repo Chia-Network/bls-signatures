@@ -1525,6 +1525,11 @@ TEST_CASE("GTElement")
         auto agg_sig_pair = G1Element::Generator().Pair(aggsig);
 
         REQUIRE(pair == agg_sig_pair);
+
+        // test division operator
+        GTElement gt1 = G1Element::Generator().Pair(G2Element::Generator());
+        GTElement gt2 = G1Element::Generator().Pair(G2Element::Generator());
+        REQUIRE(gt1 / gt2 == gt2 / gt1 );
     }
 }
 
