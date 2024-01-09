@@ -1,7 +1,6 @@
 # flake8: noqa: E501
 import binascii
 import time
-from copy import deepcopy
 
 from blspy import (
     AugSchemeMPL,
@@ -10,7 +9,6 @@ from blspy import (
     G2Element,
     PopSchemeMPL,
     PrivateKey,
-    Util,
 )
 
 
@@ -134,7 +132,7 @@ def test_vectors_invalid():
     for s in invalid_inputs_1:
         bytes_ = binascii.unhexlify(s)
         try:
-            g1 = G1Element(bytes_)
+            G1Element(bytes_)
             assert False, "Failed to disallow creation of G1 element."
         except Exception as e:
             pass
@@ -142,7 +140,7 @@ def test_vectors_invalid():
     for s in invalid_inputs_2:
         bytes_ = binascii.unhexlify(s)
         try:
-            g2 = G2Element(bytes_)
+            G2Element(bytes_)
             assert False, "Failed to disallow creation of G2 element."
         except Exception as e:
             pass

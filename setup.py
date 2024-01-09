@@ -3,6 +3,7 @@ import os
 import platform
 import subprocess
 import sys
+from pathlib import Path
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 
@@ -68,7 +69,7 @@ setup(
     description="BLS signatures in c++ (python bindings)",
     python_requires=">=3.7",
     install_requires=["wheel"],
-    long_description=open("README.md").read(),
+    long_description=Path("README.md").read_text(),
     long_description_content_type="text/markdown",
     url="https://github.com/Chia-Network/bls-signatures",
     ext_modules=[CMakeExtension("blspy", ".")],
