@@ -90,7 +90,6 @@ PYBIND11_MODULE(blspy, m)
 
     py::class_<Util>(m, "Util").def("hash256", [](const py::bytes &message) {
         std::string str(message);
-        const uint8_t *input = reinterpret_cast<const uint8_t *>(str.data());
         uint8_t output[BLS::MESSAGE_HASH_LEN];
         {
             py::gil_scoped_release release;
