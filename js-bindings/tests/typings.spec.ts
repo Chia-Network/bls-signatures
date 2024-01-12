@@ -1,7 +1,6 @@
 // This file is used to check if the typescript typings are working
 import createBlsSignaturesModule from '..';
-import {deepStrictEqual, ok, strictEqual} from 'assert';
-import {createHash} from 'crypto';
+import {ok, strictEqual} from 'assert';
 
 createBlsSignaturesModule().then((blsSignatures) => {
     const {
@@ -11,10 +10,6 @@ createBlsSignaturesModule().then((blsSignatures) => {
         G2Element
     } = blsSignatures;
 
-    function makehash(msg : Uint8Array) : Uint8Array {
-        return createHash('sha256').update(msg).digest();
-    }
-
     function getSkSeed(): Uint8Array {
         return Uint8Array.from([
             0, 50, 6, 244, 24, 199, 1, 25, 52, 88, 192, 19, 18, 12, 89, 6, 220,
@@ -22,6 +17,7 @@ createBlsSignaturesModule().then((blsSignatures) => {
          ]);
     }
 
+    /*
     function getSkBytes(): Uint8Array {
         return Uint8Array.from([
             55, 112, 145, 240, 231, 40,  70,  59,
@@ -30,6 +26,7 @@ createBlsSignaturesModule().then((blsSignatures) => {
             41, 197, 144, 139, 113, 81, 163,  45
         ]);
     }
+     */
 
     function getPkBytes(): Uint8Array {
         return Uint8Array.from([
@@ -46,10 +43,6 @@ createBlsSignaturesModule().then((blsSignatures) => {
         return Uint8Array.from([1, 2, 3]);
     }
 
-    function getMessageHash(): Uint8Array {
-        return Uint8Array.from(createHash('sha256').update(getMessageBytes()).digest());
-    }
-
     function getSignatureBytes(): Uint8Array {
         return Uint8Array.from([
             150,  18, 129, 243, 101, 246,  44,  55,  26, 188,  24,  50,
@@ -63,9 +56,11 @@ createBlsSignaturesModule().then((blsSignatures) => {
         ]);
     }
 
+    /*
     function getChainCodeBytes(): Uint8Array {
         return Uint8Array.from([137, 75, 79, 148, 193, 235, 158, 172, 163, 41, 102, 134, 72, 161, 187, 104, 97, 202, 38, 27, 206, 125, 64, 60, 149, 248, 29, 53, 180, 23, 253, 255]);
     }
+     */
 
     describe('typings', () => {
         it('PrivateKey', () => {
@@ -73,7 +68,7 @@ createBlsSignaturesModule().then((blsSignatures) => {
             const sk = AugSchemeMPL.key_gen(getSkSeed());
             const aggSk = PrivateKey.aggregate([sk]);
             const pk = sk.get_g1();
-            const bytes: Uint8Array = sk.serialize();
+            sk.serialize();
             const sig = AugSchemeMPL.sign(sk, getMessageBytes());
             ok(AugSchemeMPL.verify(pk, getMessageBytes(), sig));
             aggSk.delete();
@@ -85,8 +80,8 @@ createBlsSignaturesModule().then((blsSignatures) => {
             strictEqual(G1Element.SIZE, 48);
             const pk = G1Element.from_bytes(getPkBytes());
             const aggPk = pk.add(pk);
-            const fingerprint: number = pk.get_fingerprint();
-            const bytes: Uint8Array = pk.serialize();
+            pk.get_fingerprint();
+            pk.serialize();
             pk.delete();
             aggPk.delete();
         });
@@ -99,7 +94,7 @@ createBlsSignaturesModule().then((blsSignatures) => {
             const sig2 = G2Element.from_bytes(getSignatureBytes());
             const isValid: boolean =
               AugSchemeMPL.verify(pk, getMessageBytes(), sig);
-            const serialized: Uint8Array = sig.serialize();
+            sig.serialize();
             ok(isValid);
             sig.delete();
             aggSig.delete();

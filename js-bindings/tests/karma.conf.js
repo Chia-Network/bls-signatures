@@ -1,5 +1,4 @@
 const testSource = './karma.test.js';
-const mime = require('mime');
 const fs = require('fs');
 
 function webpackConfig() {
