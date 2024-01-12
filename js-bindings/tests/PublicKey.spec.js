@@ -43,7 +43,7 @@ before((done) => {
 describe('G1Element', () => {
     describe('.from_bytes', () => {
         it('Should create a public key from bytes', () => {
-            const {G1Element, Util} = blsSignatures;
+            const {G1Element} = blsSignatures;
 
             const pk = G1Element.from_bytes(getPublicKeyFixture().buffer);
             assert(pk instanceof G1Element);

@@ -42,20 +42,12 @@ before((done) => {
     });
 });
 
-function makehash(msg) {
-    return crypto
-        .createHash('sha256')
-        .update(msg)
-        .digest();
-}
-
 describe('PrivateKey', () => {
     it('Should sign and verify', () => {
-        const {AugSchemeMPL, PrivateKey} = blsSignatures;
+        const {AugSchemeMPL} = blsSignatures;
 
         const message1 = Uint8Array.from([1, 65, 254, 88, 90, 45, 22]);
 
-        const seed = Uint8Array.from([28, 20, 102, 229, 1, 157]);
         const sk1 = AugSchemeMPL.key_gen(getPkSeed());
         const pk1 = AugSchemeMPL.sk_to_g1(sk1);
         const sig1 = AugSchemeMPL.sign(sk1, message1);
@@ -75,14 +67,14 @@ describe('PrivateKey', () => {
 
     describe('.fromBytes', () => {
         it('Should create a private key from a Buffer', () => {
-            const {PrivateKey, Util} = blsSignatures;
+            const {PrivateKey} = blsSignatures;
 
             const pk = PrivateKey.from_bytes(getPkBuffer(), false);
             assert(pk instanceof PrivateKey);
             assert.deepStrictEqual(pk.serialize(), getPkBuffer());
         });
         it('Should create a private key from a Uint8Array', () => {
-            const {PrivateKey, Util} = blsSignatures;
+            const {PrivateKey} = blsSignatures;
 
             const pk = PrivateKey.from_bytes(getPkUint8Array(), false);
             assert(pk instanceof PrivateKey);
@@ -92,7 +84,7 @@ describe('PrivateKey', () => {
 
     describe('#serialize', () => {
         it('Should serialize key to a Buffer', () => {
-            const {AugSchemeMPL, PrivateKey} = blsSignatures;
+            const {AugSchemeMPL} = blsSignatures;
 
             const pk = AugSchemeMPL.key_gen(getPkSeed());
             const serialized = pk.serialize();
@@ -117,7 +109,7 @@ describe('PrivateKey', () => {
 
     describe('#getPublicKey', () => {
         it('Should return a public key with a verifiable fingerprint', () => {
-            const {AugSchemeMPL, PrivateKey, G1Element} = blsSignatures;
+            const {AugSchemeMPL, G1Element} = blsSignatures;
 
             const pk = AugSchemeMPL.key_gen(getPkSeed());
             const publicKey = AugSchemeMPL.sk_to_g1(pk);

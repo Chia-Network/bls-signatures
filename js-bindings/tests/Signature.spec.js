@@ -30,7 +30,7 @@ before((done) => {
 describe('Signature', () => {
     describe('Integration', () => {
         it('Should verify signatures', function () {
-            const {BasicSchemeMPL, G2Element, G1Element, PrivateKey} = blsSignatures;
+            const {BasicSchemeMPL} = blsSignatures;
 
             this.timeout(10000);
             const message = Uint8Array.from([100, 2, 254, 88, 90, 45, 23]);
@@ -72,7 +72,7 @@ describe('Signature', () => {
     });
     describe('.fromBytes', () => {
         it('Should create verifiable signature from bytes', () => {
-            const {AugSchemeMPL, G2Element, Util} = blsSignatures;
+            const {G2Element} = blsSignatures;
 
             const sig = G2Element.fromBytes(getSignatureBytes());
 
@@ -87,7 +87,7 @@ describe('Signature', () => {
     });
     describe('.aggregateSigs', () => {
         it('Should aggregate signature', () => {
-            const {AugSchemeMPL, G2Element, PrivateKey} = blsSignatures;
+            const {AugSchemeMPL, G2Element} = blsSignatures;
 
             const sk = AugSchemeMPL.key_gen(makehash(Uint8Array.from([1, 2, 3])));
             const pk = AugSchemeMPL.sk_to_g1(sk);
@@ -107,7 +107,7 @@ describe('Signature', () => {
     });
     describe('#serialize', () => {
         it('Should serialize signature to Buffer', () => {
-            const {AugSchemeMPL, G2Element, PrivateKey} = blsSignatures;
+            const {AugSchemeMPL, G2Element} = blsSignatures;
 
             const sk = AugSchemeMPL.key_gen(makehash(Uint8Array.from([1, 2, 3, 4, 5])));
             const sig = AugSchemeMPL.sign(sk, Uint8Array.from([100, 2, 254, 88, 90, 45, 23]));
@@ -120,7 +120,7 @@ describe('Signature', () => {
     });
     describe('#verify', () => {
         it('Should return true if signature can be verified', () => {
-            const {AugSchemeMPL, G2Element, G1Element} = blsSignatures;
+            const {AugSchemeMPL} = blsSignatures;
 
             const message = Uint8Array.from(Buffer.from('Message'));
             const seed1 = makehash(Buffer.from([1, 2, 3, 4, 5]));
@@ -144,7 +144,7 @@ describe('Signature', () => {
             sig.delete();
         });
         it("Should return false if signature can't be verified", () => {
-            const {AugSchemeMPL, G1Element, PrivateKey} = blsSignatures;
+            const {AugSchemeMPL} = blsSignatures;
 
             const message1 = Uint8Array.from(Buffer.from('Message'));
             const message2 = Uint8Array.from(Buffer.from('Nessage'));

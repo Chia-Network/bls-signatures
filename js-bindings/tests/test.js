@@ -45,7 +45,6 @@ blsjs().then((blsjs) => {
         G2Element,
         PopSchemeMPL,
         PrivateKey,
-        Util
     } = blsjs;
 
     function test_schemes() {
@@ -155,7 +154,7 @@ blsjs().then((blsjs) => {
         invalid_inputs_1.map((s) => {
             const bytes_ = binascii.unhexlify(s);
             try {
-                const g1 = G1Element(bytes_);
+                G1Element(bytes_);
                 console.log(`Failed to disallow creation of G1 element for string ${s}`);
                 assert(false);
             } catch(e) {
@@ -166,7 +165,7 @@ blsjs().then((blsjs) => {
         invalid_inputs_2.map((s) => {
             const bytes_ = binascii.unhexlify(s);
             try {
-                const g2 = G2Element(bytes_);
+                G2Element(bytes_);
                 console.log(`Failed to disallow creation of G2 element for string ${s}`);
                 assert(false);
             } catch(e) {
@@ -361,7 +360,6 @@ blsjs().then((blsjs) => {
 
         const master_sk = AugSchemeMPL.key_gen(seed);
         const child = AugSchemeMPL.derive_child_sk(master_sk, 152);
-        const grandchild = AugSchemeMPL.derive_child_sk(child, 952);
 
         const master_pk = master_sk.get_g1();
         const child_u = AugSchemeMPL.derive_child_sk_unhardened(master_sk, 22);
@@ -387,15 +385,15 @@ blsjs().then((blsjs) => {
     console.log("\nAll tests passed.");
 });
 
-const copyright = [
-    'Copyright 2020 Chia Network Inc',
-    'Licensed under the Apache License, Version 2.0 (the "License");',
-    'you may not use this file except in compliance with the License.',
-    'You may obtain a copy of the License at',
-    'http://www.apache.org/licenses/LICENSE-2.0',
-    'Unless required by applicable law or agreed to in writing, software',
-    'distributed under the License is distributed on an "AS IS" BASIS,',
-    'WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.',
-    'See the License for the specific language governing permissions and',
-    'limitations under the License.'
-];
+/*
+    Copyright 2020 Chia Network Inc
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+    http://www.apache.org/licenses/LICENSE-2.0
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ */
