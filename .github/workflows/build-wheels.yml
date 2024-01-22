@@ -69,6 +69,13 @@ jobs:
               arm: manylinux2014
               intel: manylinux2014
             matrix: '3.11'
+          - major-dot-minor: '3.12'
+            cibw-build: 'cp312-*'
+            manylinux:
+              arm: manylinux2014
+              intel: manylinux2014
+            matrix: '3.12'
+
         arch:
           - name: ARM
             matrix: arm
@@ -84,19 +91,6 @@ jobs:
               matrix: windows
               runs-on:
                 intel: [windows-latest]
-            arch:
-              name: ARM
-              matrix: arm
-          - os:
-              name: macOS
-              matrix: macos
-              runs-on:
-                arm: [macOS, ARM64]
-                intel: [macos-latest]
-            python:
-              major-dot-minor: '3.7'
-              cibw-build: 'cp37-*'
-              matrix: '3.7'
             arch:
               name: ARM
               matrix: arm
