@@ -41,7 +41,7 @@ export declare class PopSchemeMPL {
 export declare class G1Element {
   static SIZE: number;
   static from_bytes(bytes: Uint8Array): G1Element;
-  static generator(): G2Element;
+  static generator(): G1Element;
   serialize(): Uint8Array;
   negate(): G1Element;
   deepcopy(): G1Element;
