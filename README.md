@@ -177,7 +177,7 @@ ok = (grandchildUPk == grandchildU.GetG1Element();
 
 ## Build
 
-Cmake 3.14+, a c++ compiler, and python3 (for bindings) are required for building.
+Cmake 3.14+, a c++ compiler, python3 and python[3.x]-dev (for bindings) are required for building.
 
 ```bash
 mkdir build
