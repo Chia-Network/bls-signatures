@@ -128,7 +128,7 @@ jobs:
         pipx run --spec='cibuildwheel==2.16.2' cibuildwheel --output-dir dist 2>&1
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: packages
         path: ./dist
@@ -171,7 +171,7 @@ jobs:
         python -m build --sdist --outdir dist .
 
     - name: Upload artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: packages
         path: ./dist
