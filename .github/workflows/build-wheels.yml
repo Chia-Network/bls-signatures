@@ -132,6 +132,7 @@ jobs:
       with:
         name: packages
         path: ./dist
+        overwrite: true
 
   build-sdist:
     name: sdist - ${{ matrix.os.name }} ${{ matrix.python.major-dot-minor }} ${{ matrix.arch.name }}
@@ -175,6 +176,7 @@ jobs:
       with:
         name: packages
         path: ./dist
+        overwrite: true
 
   check:
     name: Check - ${{ matrix.os.name }} ${{ matrix.python.major-dot-minor }} ${{ matrix.arch.name }}
