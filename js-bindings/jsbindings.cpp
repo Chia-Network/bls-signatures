@@ -79,7 +79,7 @@ EMSCRIPTEN_BINDINGS(blsjs) {
         .class_function("from_bytes", &G2ElementWrapper::FromBytes)
         .class_function("from_g2", &G2ElementWrapper::FromG2Element)
         .class_function("aggregate_sigs", &G2ElementWrapper::AggregateSigs)
-        .class_function("generator", &G2ElementWrapper::Generator)
+        .class_function("generator", &G1ElementWrapper::Generator)
         .function("serialize", &G2ElementWrapper::Serialize)
         .function("negate", &G2ElementWrapper::Negate)
         .function("deepcopy", &G2ElementWrapper::Deepcopy)
