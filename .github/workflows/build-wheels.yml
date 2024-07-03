@@ -47,33 +47,23 @@ jobs:
         python:
           - major-dot-minor: '3.8'
             cibw-build: 'cp38-*'
-            manylinux:
-              arm: manylinux2014
-              intel: manylinux2014
+            manylinux: manylinux_2_28
             matrix: '3.8'
           - major-dot-minor: '3.9'
             cibw-build: 'cp39-*'
-            manylinux:
-              arm: manylinux2014
-              intel: manylinux2014
+            manylinux: manylinux_2_28
             matrix: '3.9'
           - major-dot-minor: '3.10'
             cibw-build: 'cp310-*'
-            manylinux:
-              arm: manylinux2014
-              intel: manylinux2014
+            manylinux: manylinux_2_28
             matrix: '3.10'
           - major-dot-minor: '3.11'
             cibw-build: 'cp311-*'
-            manylinux:
-              arm: manylinux2014
-              intel: manylinux2014
+            manylinux: manylinux_2_28
             matrix: '3.11'
           - major-dot-minor: '3.12'
             cibw-build: 'cp312-*'
-            manylinux:
-              arm: manylinux2014
-              intel: manylinux2014
+            manylinux: manylinux_2_28
             matrix: '3.12'
 
         arch:
@@ -121,11 +111,11 @@ jobs:
       env:
         CIBW_PRERELEASE_PYTHONS: True
         CIBW_BUILD: ${{ matrix.python.cibw-build }}
-        CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.python.manylinux['arm'] }}
-        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.python.manylinux['intel'] }}
+        CIBW_MANYLINUX_AARCH64_IMAGE: ${{ matrix.python.manylinux }}
+        CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.python.manylinux }}
         CIBW_ARCHS_MACOS: ${{ matrix.os.cibw-archs-macos[matrix.arch.matrix] }}
       run:
-        pipx run --spec='cibuildwheel==2.16.2' cibuildwheel --output-dir dist 2>&1
+        pipx run --spec='cibuildwheel==2.19.2' cibuildwheel --output-dir dist 2>&1
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
