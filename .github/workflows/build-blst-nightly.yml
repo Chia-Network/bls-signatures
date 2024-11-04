@@ -69,7 +69,7 @@ jobs:
         python python-impl/impl-test.py
 
     - name: Install emsdk
-      uses: mymindstorm/setup-emsdk@v11
+      uses: mymindstorm/setup-emsdk@v14
 
     - name: Test javascript bindings
       env:
