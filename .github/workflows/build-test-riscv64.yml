@@ -28,7 +28,7 @@ jobs:
     - name: Set up QEMU on x86_64
       if: startsWith(matrix.os, 'ubuntu-latest')
       id: qemu
-      uses: docker/setup-qemu-action@v2
+      uses: docker/setup-qemu-action@v3
       with:
         platforms: riscv64
 
