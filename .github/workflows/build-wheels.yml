@@ -115,7 +115,7 @@ jobs:
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.python.manylinux }}
         CIBW_ARCHS_MACOS: ${{ matrix.os.cibw-archs-macos[matrix.arch.matrix] }}
       run:
-        pipx run --spec='cibuildwheel==2.19.2' cibuildwheel --output-dir dist 2>&1
+        pipx run --spec='cibuildwheel==3.0.0' cibuildwheel --output-dir dist 2>&1
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
