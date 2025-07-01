@@ -45,10 +45,6 @@ jobs:
             runs-on:
               intel: [windows-latest]
         python:
-          - major-dot-minor: '3.8'
-            cibw-build: 'cp38-*'
-            manylinux: manylinux_2_28
-            matrix: '3.8'
           - major-dot-minor: '3.9'
             cibw-build: 'cp39-*'
             manylinux: manylinux_2_28
@@ -115,7 +111,7 @@ jobs:
         CIBW_MANYLINUX_X86_64_IMAGE: ${{ matrix.python.manylinux }}
         CIBW_ARCHS_MACOS: ${{ matrix.os.cibw-archs-macos[matrix.arch.matrix] }}
       run:
-        pipx run --spec='cibuildwheel==2.19.2' cibuildwheel --output-dir dist 2>&1
+        pipx run --spec='cibuildwheel==2.23.3' cibuildwheel --output-dir dist 2>&1
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
