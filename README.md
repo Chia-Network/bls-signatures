@@ -1,13 +1,11 @@
 # BLS Signatures implementation
 
-[![Build and Test C++, Javascript, and Python](https://github.com/Chia-Network/bls-signatures/actions/workflows/build-test.yaml/badge.svg)](https://github.com/Chia-Network/bls-signatures/actions/workflows/build-test.yaml)
-![PyPI](https://img.shields.io/pypi/v/blspy?logo=pypi)
-![PyPI - Format](https://img.shields.io/pypi/format/blspy?logo=pypi)
-![GitHub](https://img.shields.io/github/license/Chia-Network/bls-signatures?logo=Github)
 
-[![CodeQL](https://github.com/Chia-Network/bls-signatures/actions/workflows/codeql.yml/badge.svg)](https://github.com/Chia-Network/bls-signatures/actions/workflows/codeql.yml)
+This library and language bindings are no longer maintained.
+The Chia blockchain uses the implementation from https://github.com/Chia-Network/chia_rs
 
-[![Coverage Status](https://coveralls.io/repos/github/Chia-Network/bls-signatures/badge.svg?branch=main)](https://coveralls.io/github/Chia-Network/bls-signatures?branch=main)
+Python projects should use `chia_rs` as a drop-in replacement for `blspy`
+`C/C++` projects are recommended to use `blst` https://github.com/supranational/blst
 
 NOTE: THIS LIBRARY IS NOT YET FORMALLY REVIEWED FOR SECURITY
 
